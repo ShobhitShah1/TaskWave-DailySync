@@ -23,6 +23,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-font",
+      {
+        "fonts": [
+          "./assets/Fonts/ClashGrotesk-Bold.otf",
+          "./assets/Fonts/ClashGrotesk-Light.otf",
+          "./assets/Fonts/ClashGrotesk-Medium.otf",
+          "./assets/Fonts/ClashGrotesk-Regular.otf",
+          "./assets/Fonts/ClashGrotesk-Semibold.otf"
+        ]
+      }
+    ]
   }
 }

@@ -1,14 +1,15 @@
-import { StyleSheet, Text, View } from "react-native";
 import React from "react";
+import { Text, View } from "react-native";
+import styles from "./styles";
 
 const AddReminder = () => {
+  const colors = styles();
+
   return (
-    <View>
+    <View style={colors.container}>
       <Text>AddReminder</Text>
     </View>
   );
 };
 
 export default AddReminder;
-
-const styles = StyleSheet.create({});
