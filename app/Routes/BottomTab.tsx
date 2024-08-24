@@ -16,6 +16,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import AssetsPath from "../Global/AssetsPath";
+import { FONTS } from "../Global/Theme";
 import AddReminder from "../Screens/AddReminder/AddReminder";
 import History from "../Screens/History/History";
 import Home from "../Screens/Home/Home";
@@ -56,7 +57,7 @@ const CustomTabBar = ({
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: indicatorPosition.value }],
+      transform: [{ translateX: indicatorPosition.value + 2 }],
     };
   });
 
@@ -250,12 +251,13 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontSize: 12,
     marginTop: 5,
+    fontFamily: FONTS.Medium,
   },
   indicator: {
     position: "absolute",
     top: 0,
-    width: 40,
-    height: 4,
+    width: 35,
+    height: 2,
     borderRadius: 2,
   },
   addReminderButton: {

@@ -1,0 +1,125 @@
+import React, { useState } from "react";
+import {
+  View,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  Image,
+  StyleProp,
+  ViewStyle,
+  ImageStyle,
+} from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
+import AssetsPath from "../Global/AssetsPath";
+import useThemeColors from "../Theme/useThemeMode";
+import { useAppContext } from "../Contexts/ThemeProvider";
+
+interface CustomSwitchProps {
+  isOn: boolean;
+  onToggle: (state: boolean) => void;
+  width?: number;
+  height?: number;
+  iconSize?: number;
+}
+
+const CustomSwitch: React.FC<CustomSwitchProps> = ({
+  isOn,
+  onToggle,
+  width = 70,
+  height = 35,
+  iconSize = 20,
+}) => {
+  const colors = useThemeColors();
+  const { theme } = useAppContext();
+  const [toggle, setToggle] = useState(isOn);
+
+  const circleSize = height - 4;
+  const translateX = useSharedValue(toggle ? width - circleSize - 2 : 2);
+
+  const toggleSwitch = () => {
+    const newValue = !toggle;
+    setToggle(newValue);
+    translateX.value = newValue
+      ? withTiming(width - circleSize - 2, { duration: 400 })
+      : withTiming(2, { duration: 400 });
+    onToggle(newValue);
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+    backgroundColor: colors.primary,
+  }));
+
+  const styles = getStyles(width, height, circleSize, iconSize);
+
+  return (
+    <TouchableWithoutFeedback onPress={toggleSwitch}>
+      <View
+        style={[
+          styles.switchContainer,
+          {
+            backgroundColor:
+              theme === "dark" ? colors.grayBackground : colors.lightGray,
+          },
+        ]}
+      >
+        <View style={styles.iconContainer}>
+          <Image
+            source={AssetsPath.ic_darkTheme}
+            tintColor={theme === "dark" ? colors.white : colors.lightGray}
+            style={styles.iconStyle}
+          />
+        </View>
+        <Animated.View style={[styles.circle, animatedStyle]} />
+        <View style={styles.iconContainer}>
+          <Image
+            tintColor={colors.white}
+            source={AssetsPath.ic_lightTheme}
+            style={styles.iconStyle}
+          />
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
+  );
+};
+
+const getStyles = (
+  width: number,
+  height: number,
+  circleSize: number,
+  iconSize: number
+) =>
+  StyleSheet.create({
+    switchContainer: {
+      width: width,
+      height: height,
+      borderRadius: height / 2,
+      padding: 2,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    circle: {
+      width: circleSize,
+      height: circleSize,
+      borderRadius: circleSize / 2,
+      backgroundColor: "#fff",
+      position: "absolute",
+    },
+    iconContainer: {
+      zIndex: 9999,
+      width: circleSize,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    iconStyle: {
+      width: iconSize,
+      height: iconSize,
+      resizeMode: "contain",
+    },
+  });
+
+export default CustomSwitch;

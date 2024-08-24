@@ -7,18 +7,11 @@ const styles = () => {
   return StyleSheet.create({
     container: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
       backgroundColor: colors.background,
     },
     text: {
-      color: colors.text,
       fontSize: 18,
-    },
-    button: {
-      backgroundColor: colors.primary,
-      padding: 10,
-      borderRadius: 5,
+      color: colors.text,
     },
   });
 };
