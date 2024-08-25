@@ -13,6 +13,11 @@ const ic_sms = require("../../assets/Icons/ic_sms.png");
 const ic_whatsapp = require("../../assets/Icons/ic_whatsapp.png");
 const ic_whatsappBusiness = require("../../assets/Icons/ic_whatsappBusiness.png");
 
+const ic_edit = require("../../assets/Icons/ic_edit.png");
+const ic_view = require("../../assets/Icons/ic_view.png");
+const ic_duplicate = require("../../assets/Icons/ic_duplicate.png");
+const ic_timerClock = require("../../assets/Icons/ic_timerClock.png");
+
 export default {
   ic_fillHome,
   ic_unFillHistory,
@@ -26,4 +31,8 @@ export default {
   ic_sms,
   ic_whatsapp,
   ic_whatsappBusiness,
+  ic_edit,
+  ic_view,
+  ic_duplicate,
+  ic_timerClock,
 };

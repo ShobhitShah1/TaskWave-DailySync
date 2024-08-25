@@ -54,56 +54,56 @@ const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
     startCountdown(notification.timer);
   }, [notification.timer, startCountdown]);
 
-  const NotificationColors: Record<NotificationType, NotificationColor> = {
-    whatsapp: {
-      backgroundColor: colors.whatsappBackground,
-      typeColor: colors.whatsapp,
-      iconColor: colors.whatsappDark,
-    },
-    whatsappBusiness: {
-      backgroundColor: colors.whatsappBusinessBackground,
-      typeColor: colors.whatsappBusiness,
-      iconColor: colors.whatsappBusinessDark,
-    },
-    SMS: {
-      backgroundColor: colors.smsBackground,
-      typeColor: colors.sms,
-      iconColor: colors.smsDark,
-    },
-    gmail: {
-      backgroundColor: colors.gmailBackground,
-      typeColor: colors.gmail,
-      iconColor: colors.gmailDark,
-    },
-  };
+  const notificationColors = useMemo(() => {
+    const colorMap: Record<NotificationType, NotificationColor> = {
+      whatsapp: {
+        backgroundColor: colors.whatsappBackground,
+        typeColor: colors.whatsapp,
+        iconColor: colors.whatsappDark,
+      },
+      whatsappBusiness: {
+        backgroundColor: colors.whatsappBusinessBackground,
+        typeColor: colors.whatsappBusiness,
+        iconColor: colors.whatsappBusinessDark,
+      },
+      SMS: {
+        backgroundColor: colors.smsBackground,
+        typeColor: colors.sms,
+        iconColor: colors.smsDark,
+      },
+      gmail: {
+        backgroundColor: colors.gmailBackground,
+        typeColor: colors.gmail,
+        iconColor: colors.gmailDark,
+      },
+    };
+    return colorMap[notification.type];
+  }, [notification.type, colors]);
 
-  const notificationColors = useMemo(
-    () => NotificationColors[notification.type],
-    [notification.type]
-  );
+  const cardBackgroundColor = useMemo(() => {
+    return theme === "dark"
+      ? colors.reminderCardBackground
+      : notificationColors.backgroundColor;
+  }, [
+    theme,
+    colors.reminderCardBackground,
+    notificationColors.backgroundColor,
+  ]);
 
-  const cardBackgroundColor = useMemo(
-    () =>
-      theme === "dark"
-        ? colors.reminderCardBackground
-        : notificationColors.backgroundColor,
-    [theme, colors.reminderCardBackground, notificationColors.backgroundColor]
-  );
-
-  const typeColor = useMemo(
-    () =>
-      theme === "dark"
-        ? notificationColors.typeColor
-        : notificationColors.typeColor,
-    [theme, colors.reminderCardBackground, notificationColors.typeColor]
-  );
+  const typeColor = useMemo(() => {
+    return notification.type === "gmail" && theme === "light"
+      ? colors.gmailText
+      : notificationColors.typeColor;
+  }, [
+    notification.type,
+    theme,
+    colors.gmailText,
+    notificationColors.typeColor,
+  ]);
 
   const iconColor = useMemo(
-    () =>
-      theme === "dark"
-        ? notificationColors.iconColor
-        : notificationColors.iconColor,
-    [theme, colors.reminderCardBackground, notificationColors.iconColor]
+    () => notificationColors.iconColor,
+    [notificationColors.iconColor]
   );
 
   const icon = useMemo(
@@ -111,43 +111,38 @@ const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
     [notification.type]
   );
 
-  const style = styles();
-
   return (
-    <Animated.View entering={FadeIn.duration(1 * Number(notification.id))}>
+    <Animated.View
+      entering={FadeIn.duration(1 * Number(notification.id))}
+      style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}
+    >
       <Pressable
-        style={[style.cardContainer, { backgroundColor: cardBackgroundColor }]}
+        style={styles.pressableContainer}
+        onPress={() => console.log("card")}
       >
-        <View
-          style={{
-            flex: 0.8,
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <View
-            style={{
-              width: "20%",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <View style={[style.logoContainer, { backgroundColor: typeColor }]}>
-              <Image source={icon} style={style.logo} />
+        <View style={styles.rowContainer}>
+          <View style={styles.logoWrapper}>
+            <View
+              style={[
+                styles.logoContainer,
+                {
+                  backgroundColor:
+                    notification.type === "gmail" ? colors.gmail : typeColor,
+                },
+              ]}
+            >
+              <Image source={icon} style={styles.logo} />
             </View>
           </View>
-          <View style={{ width: "60%", paddingHorizontal: 15 }}>
+          <View style={styles.textContainer}>
             <Text
               numberOfLines={1}
-              style={{
-                color: colors.text,
-                fontFamily: FONTS.SemiBold,
-                fontSize: 21,
-              }}
+              style={[styles.senderName, { color: colors.text }]}
             >
               {notification.senderName}
             </Text>
             <Text
+              numberOfLines={3}
               style={{
                 color:
                   theme === "dark"
@@ -156,54 +151,63 @@ const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
                 fontFamily: FONTS.Medium,
                 fontSize: 16,
                 lineHeight: 20,
-                marginTop: 5,
+                marginTop: 3,
               }}
-              numberOfLines={3}
             >
               {notification.message}
             </Text>
           </View>
-
-          <View
-            style={{
-              width: "20%",
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              alignSelf: "flex-start",
-            }}
-          >
-            <Text
-              style={{
-                color: typeColor,
-                fontSize: 16,
-                fontFamily: FONTS.Medium,
-                right: 4,
-              }}
-            >
+          <View style={styles.typeContainer}>
+            <Text style={[styles.typeText, { color: typeColor }]}>
               {formatNotificationType(notification.type)}
             </Text>
             <Image
               tintColor={typeColor}
               source={AssetsPath.ic_notification}
-              style={style.notificationIcon}
+              style={styles.notificationIcon}
             />
           </View>
         </View>
-        <View
-          style={{
-            flex: 0.2,
-            justifyContent: "center",
-          }}
-        >
-          <Text
-            style={{
-              color: typeColor,
-              fontSize: 16,
-              fontFamily: FONTS.Medium,
-            }}
-          >
-            {timeLeft}
-          </Text>
+        <View style={styles.footerContainer}>
+          <View style={styles.timeContainer}>
+            <Text style={[styles.timeText, { color: typeColor }]}>
+              {notification.time}
+            </Text>
+            <View style={[styles.separator, { borderColor: typeColor }]} />
+            <View style={styles.countdownContainer}>
+              <Image
+                tintColor={typeColor}
+                source={AssetsPath.ic_timerClock}
+                style={styles.timerIcon}
+              />
+              <Text style={[styles.countdownText, { color: typeColor }]}>
+                {timeLeft}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.actionsContainer}>
+            <Pressable onPress={() => console.log("edit")}>
+              <Image
+                tintColor={typeColor}
+                source={AssetsPath.ic_edit}
+                style={styles.actionIcon}
+              />
+            </Pressable>
+            <Pressable onPress={() => console.log("view")}>
+              <Image
+                tintColor={typeColor}
+                source={AssetsPath.ic_view}
+                style={styles.actionIcon}
+              />
+            </Pressable>
+            <Pressable onPress={() => console.log("duplicate")}>
+              <Image
+                tintColor={typeColor}
+                source={AssetsPath.ic_duplicate}
+                style={styles.actionIcon}
+              />
+            </Pressable>
+          </View>
         </View>
       </Pressable>
     </Animated.View>
@@ -212,33 +216,110 @@ const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
 
 export default ReminderCard;
 
-const styles = () =>
-  StyleSheet.create({
-    cardContainer: {
-      width: "100%",
-      height: 115,
-      borderRadius: 10,
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-      marginVertical: 5,
-    },
-    logoContainer: {
-      width: LOGO_SIZE,
-      height: LOGO_SIZE,
-      borderRadius: 15,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    logo: {
-      width: LOGO_SIZE / 1.8,
-      height: LOGO_SIZE / 1.8,
-      resizeMode: "contain",
-    },
-    notificationIcon: {
-      width: 17,
-      height: 17,
-      justifyContent: "center",
-      alignItems: "center",
-      resizeMode: "contain",
-    },
-  });
+const styles = StyleSheet.create({
+  cardContainer: {
+    width: "100%",
+    height: 120,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginVertical: 5,
+  },
+  pressableContainer: {
+    flex: 1,
+  },
+  rowContainer: {
+    flex: 0.8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  logoWrapper: {
+    width: "20%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoContainer: {
+    width: LOGO_SIZE,
+    height: LOGO_SIZE,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  logo: {
+    width: LOGO_SIZE / 1.8,
+    height: LOGO_SIZE / 1.8,
+    resizeMode: "contain",
+  },
+  textContainer: {
+    width: "60%",
+    paddingHorizontal: 15,
+  },
+  senderName: {
+    fontFamily: FONTS.SemiBold,
+    fontSize: 21,
+  },
+  typeContainer: {
+    width: "20%",
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignSelf: "flex-start",
+  },
+  typeText: {
+    fontSize: 16,
+    fontFamily: FONTS.Medium,
+    right: 4,
+  },
+  notificationIcon: {
+    width: 17,
+    height: 17,
+    justifyContent: "center",
+    alignItems: "center",
+    resizeMode: "contain",
+  },
+  footerContainer: {
+    flex: 0.2,
+    top: 2,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  timeContainer: {
+    flexDirection: "row",
+    width: "73%",
+  },
+  timeText: {
+    fontSize: 16,
+    fontFamily: FONTS.Medium,
+  },
+  separator: {
+    height: 15,
+    justifyContent: "center",
+    alignSelf: "center",
+    marginHorizontal: 10,
+    borderRightWidth: 1.5,
+  },
+  countdownContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  timerIcon: {
+    width: 12,
+    height: 12,
+    marginRight: 5,
+  },
+  countdownText: {
+    fontSize: 16,
+    fontFamily: FONTS.Medium,
+  },
+  actionsContainer: {
+    flexDirection: "row",
+    width: "25%",
+    justifyContent: "flex-end",
+  },
+  actionIcon: {
+    width: 20,
+    height: 20,
+    resizeMode: "contain",
+    marginLeft: 8,
+  },
+});

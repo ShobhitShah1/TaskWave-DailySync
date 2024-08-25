@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^4.6.4",
-    "@marceloterreiro/flash-calendar": "^1.0.0",
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
@@ -21,6 +20,7 @@
     "react": "18.2.0",
     "react-native": "0.74.5",
     "react-native-bootsplash": "^6.1.1",
+    "react-native-calendars": "^1.1306.0",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-mmkv": "^2.12.2",
     "react-native-reanimated": "~3.10.1",

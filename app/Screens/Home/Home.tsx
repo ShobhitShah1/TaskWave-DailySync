@@ -7,6 +7,7 @@ import { SIZE } from "../../Global/Theme";
 import useThemeColors from "../../Theme/useThemeMode";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
+import { CalendarProvider, WeekCalendar } from "react-native-calendars";
 
 export type NotificationType =
   | "whatsapp"
