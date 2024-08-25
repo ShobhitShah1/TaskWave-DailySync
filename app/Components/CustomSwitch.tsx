@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { memo, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -34,14 +34,12 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
-  const [toggle, setToggle] = useState(isOn);
 
   const circleSize = height - 4;
-  const translateX = useSharedValue(toggle ? width - circleSize - 2 : 2);
+  const translateX = useSharedValue(isOn ? width - circleSize - 2 : 2);
 
   const toggleSwitch = () => {
-    const newValue = !toggle;
-    setToggle(newValue);
+    const newValue = !isOn;
     translateX.value = newValue
       ? withTiming(width - circleSize - 2, { duration: 400 })
       : withTiming(2, { duration: 400 });
@@ -122,4 +120,4 @@ const getStyles = (
     },
   });
 
-export default CustomSwitch;
+export default memo(CustomSwitch);

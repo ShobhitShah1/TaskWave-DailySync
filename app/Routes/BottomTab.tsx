@@ -33,7 +33,7 @@ const TabBarIcon = ({ source, focused }: { source: any; focused: boolean }) => {
       <Image
         source={source}
         resizeMode="contain"
-        style={[styles.icon, { tintColor: colors.text }]}
+        style={[styles.icon, { tintColor: colors.white }]}
       />
     </View>
   );
@@ -63,7 +63,7 @@ const CustomTabBar = ({
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.tabBar, { backgroundColor: colors.background }]}>
+      <View style={[styles.tabBar, { backgroundColor: colors.bottomTab }]}>
         {state.routes.map((route: any, index: number) => {
           const { options } = descriptors[route.key];
           const label =
@@ -122,13 +122,12 @@ const CustomTabBar = ({
             <Pressable
               key={route.key}
               onPress={onPress}
-              android_ripple={{ color: colors.background }}
               style={[styles.tabButton, { width: tabWidth }]}
             >
               {label !== "AddReminder" && (
                 <React.Fragment>
                   <TabBarIcon source={iconSource} focused={isFocused} />
-                  <Text style={[styles.tabLabel, { color: colors.text }]}>
+                  <Text style={[styles.tabLabel, { color: colors.white }]}>
                     {label}
                   </Text>
                 </React.Fragment>
@@ -140,7 +139,7 @@ const CustomTabBar = ({
         <Animated.View
           style={[
             styles.indicator,
-            { backgroundColor: colors.text },
+            { backgroundColor: colors.white },
             animatedStyle,
           ]}
         />
@@ -227,8 +226,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+
     paddingTop: 10,
 
     shadowRadius: 2,
