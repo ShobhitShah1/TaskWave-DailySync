@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   titleText: {
+    left: 10,
     fontSize: 24,
     fontFamily: FONTS.Medium,
   },

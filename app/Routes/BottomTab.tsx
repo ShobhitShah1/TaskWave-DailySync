@@ -1,10 +1,17 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import React, { useCallback, useEffect, useState } from "react";
 import {
-  Button,
-  Dimensions,
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps,
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { StatusBar } from "expo-status-bar";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  FlatList,
   Image,
-  Modal,
+  ImageSourcePropType,
   Pressable,
   StyleSheet,
   Text,
@@ -15,6 +22,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import { FONTS } from "../Global/Theme";
 import AddReminder from "../Screens/AddReminder/AddReminder";
@@ -23,6 +31,47 @@ import Home from "../Screens/Home/Home";
 import Notification from "../Screens/Notification/Notification";
 import Setting from "../Screens/Setting/Setting";
 import useThemeColors from "../Theme/useThemeMode";
+import RenderCategoryItem from "./Components/RenderCategoryItem";
+import { NotificationType } from "../Types/Interface";
+
+export type categoriesType = {
+  id: string;
+  type: NotificationType;
+  title: string;
+  description: string;
+  icon: ImageSourcePropType;
+};
+
+const categories: categoriesType[] = [
+  {
+    id: "1",
+    type: "whatsapp",
+    title: "Whatsapp",
+    description: "Let’s create whatsapp event",
+    icon: AssetsPath.ic_whatsapp,
+  },
+  {
+    id: "2",
+    type: "SMS",
+    title: "SMS",
+    description: "Let’s create text messages event",
+    icon: AssetsPath.ic_sms,
+  },
+  {
+    id: "3",
+    type: "whatsappBusiness",
+    title: "WA Business",
+    description: "Let’s create business event",
+    icon: AssetsPath.ic_whatsappBusiness,
+  },
+  {
+    id: "4",
+    type: "gmail",
+    title: "Email",
+    description: "Let’s compose mail event",
+    icon: AssetsPath.ic_gmail,
+  },
+];
 
 const Bottom = createBottomTabNavigator();
 
@@ -49,11 +98,6 @@ const CustomTabBar = ({
   tabWidth,
 }: any) => {
   const colors = useThemeColors();
-  const screenWidth = Dimensions.get("window").width;
-  const tabCount = state.routes.length;
-
-  const totalTabWidth = tabWidth * tabCount;
-  const spaceBetweenTabs = (screenWidth - totalTabWidth) / (tabCount + 1);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -153,11 +197,20 @@ const CustomTabBar = ({
 };
 
 const BottomTab = () => {
-  const [isModalVisible, setModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   const tabWidth = 80;
   const indicatorPosition = useSharedValue(0);
+
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+
+  const colors = useThemeColors();
+  const { theme } = useAppContext();
+
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
 
   useEffect(() => {
     indicatorPosition.value = withTiming(selectedIndex * tabWidth + 20, {
@@ -165,13 +218,23 @@ const BottomTab = () => {
     });
   }, [selectedIndex]);
 
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
-
   const handleIndexChange = (index: number) => {
     setSelectedIndex(index);
   };
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        style={[props.style, { backgroundColor: "rgba(0,0,0,0.7)" }]}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
 
   return (
     <React.Fragment>
@@ -184,7 +247,7 @@ const BottomTab = () => {
           <CustomTabBar
             {...props}
             indicatorPosition={indicatorPosition}
-            onAddReminderPress={toggleModal}
+            onAddReminderPress={handlePresentModalPress}
             onTabChange={handleIndexChange}
             tabWidth={tabWidth}
           />
@@ -197,19 +260,55 @@ const BottomTab = () => {
         <Bottom.Screen name="Setting" component={Setting} />
       </Bottom.Navigator>
 
-      <Modal
-        visible={isModalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={toggleModal}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <AddReminder />
-            <Button title="Close" onPress={toggleModal} />
-          </View>
-        </View>
-      </Modal>
+      <BottomSheetModalProvider>
+        <BottomSheetModal
+          backdropComponent={renderBackdrop}
+          containerStyle={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+          backgroundStyle={{ backgroundColor: colors.background }}
+          handleStyle={{
+            backgroundColor: colors.background,
+            borderTopRightRadius: 20,
+            borderTopLeftRadius: 20,
+          }}
+          handleIndicatorStyle={{
+            backgroundColor: colors.text,
+            top: 2,
+            width: 35,
+            marginTop: 10,
+          }}
+          ref={bottomSheetModalRef}
+          snapPoints={["50%"]}
+        >
+          <BottomSheetScrollView
+            style={[
+              styles.contentContainer,
+              { backgroundColor: colors.background },
+            ]}
+          >
+            <View>
+              <StatusBar
+                translucent
+                backgroundColor={colors.background}
+                style={theme === "dark" ? "light" : "dark"}
+              />
+              <FlatList
+                numColumns={2}
+                data={categories}
+                renderItem={({ item }) => (
+                  <RenderCategoryItem
+                    item={item}
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                  />
+                )}
+                keyExtractor={(item, index) => index.toString()}
+                contentContainerStyle={{ rowGap: 15 }}
+                columnWrapperStyle={{ justifyContent: "space-between" }}
+              />
+            </View>
+          </BottomSheetScrollView>
+        </BottomSheetModal>
+      </BottomSheetModalProvider>
     </React.Fragment>
   );
 };
@@ -292,6 +391,11 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
+  },
+
+  contentContainer: {
+    flex: 1,
+    padding: 16,
   },
 });
 

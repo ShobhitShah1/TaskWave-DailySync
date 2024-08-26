@@ -13,6 +13,8 @@ export const LightThemeColors = {
   bottomTab: "rgba(59, 59, 59, 1)",
   green: "rgba(21, 255, 0, 1)",
   reminderCardBackground: "rgba(63, 65, 69, 1)",
+  borderColor: "rgba(173, 175, 176, 0.4)",
+
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",
   whatsappDark: "rgba(0, 125, 22, 1)",
@@ -41,6 +43,8 @@ export const DarkThemeColors = {
   bottomTab: "rgba(59, 59, 59, 1)",
   green: "rgba(21, 255, 0, 1)",
   reminderCardBackground: "rgba(63, 65, 69, 1)",
+  borderColor: "rgba(217, 217, 217, 1)",
+
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",
   whatsappDark: "rgba(0, 125, 22, 1)",

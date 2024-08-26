@@ -1,32 +1,39 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
-export function useCountdownTimer() {
+export function useCountdownTimer(initialTime: string) {
   const [timeLeft, setTimeLeft] = useState("00:00:00");
-  const animationFrameId = useRef<number | null>(null);
+  const intervalId = useRef<NodeJS.Timeout | null>(null);
 
   const startCountdown = useCallback((endTime: string) => {
     const updateTimer = () => {
       const timeDifference = getTimeDifference(endTime);
       setTimeLeft(timeDifference);
 
-      if (timeDifference !== "00:00:00") {
-        animationFrameId.current = requestAnimationFrame(updateTimer);
+      if (timeDifference === "00:00:00" && intervalId.current) {
+        clearInterval(intervalId.current);
       }
     };
 
-    // Cancel any existing animation frame
-    if (animationFrameId.current) {
-      cancelAnimationFrame(animationFrameId.current);
+    if (intervalId.current) {
+      clearInterval(intervalId.current);
     }
 
-    // Start the countdown
+    intervalId.current = setInterval(updateTimer, 1000);
     updateTimer();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (intervalId.current) {
+        clearInterval(intervalId.current);
+      }
+    };
   }, []);
 
   return { timeLeft, startCountdown };
 }
 
-export function getTimeDifference(endTime: string) {
+function getTimeDifference(endTime: string) {
   const [hours, minutes, seconds] = endTime.split(":").map(Number);
   const now = new Date();
   const targetTime = new Date(now);

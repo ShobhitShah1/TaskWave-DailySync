@@ -1,12 +1,13 @@
 import React, { memo, useEffect, useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { useAppContext } from "../Contexts/ThemeProvider";
-import { Notification, NotificationType } from "../Screens/Home/Home";
-import useThemeColors from "../Theme/useThemeMode";
 import Animated, { FadeIn } from "react-native-reanimated";
+import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import { FONTS } from "../Global/Theme";
 import { useCountdownTimer } from "../Hooks/useCountdownTimer";
+import useThemeColors from "../Theme/useThemeMode";
+import { Notification, NotificationType } from "../Types/Interface";
+import useNotificationIconColors from "../Hooks/useNotificationIconColors";
 
 const LOGO_SIZE = 65;
 
@@ -20,15 +21,13 @@ export interface NotificationColor {
   iconColor: string;
 }
 
-function formatNotificationType(type: string) {
-  if (type === "whatsappBusiness") {
-    return "Whatsapp Business";
-  }
+const formatNotificationType = (type: string) => {
+  if (type === "whatsappBusiness") return "Whatsapp Business";
   return type
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
-}
+};
 
 const getNotificationIcon = (type: NotificationType) => {
   switch (type) {
@@ -48,37 +47,38 @@ const getNotificationIcon = (type: NotificationType) => {
 const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
-  const { timeLeft, startCountdown } = useCountdownTimer();
+  const { timeLeft, startCountdown } = useCountdownTimer(notification.timer);
+  const notificationColors = useNotificationIconColors(notification.type);
 
   useEffect(() => {
     startCountdown(notification.timer);
   }, [notification.timer, startCountdown]);
 
-  const notificationColors = useMemo(() => {
-    const colorMap: Record<NotificationType, NotificationColor> = {
-      whatsapp: {
-        backgroundColor: colors.whatsappBackground,
-        typeColor: colors.whatsapp,
-        iconColor: colors.whatsappDark,
-      },
-      whatsappBusiness: {
-        backgroundColor: colors.whatsappBusinessBackground,
-        typeColor: colors.whatsappBusiness,
-        iconColor: colors.whatsappBusinessDark,
-      },
-      SMS: {
-        backgroundColor: colors.smsBackground,
-        typeColor: colors.sms,
-        iconColor: colors.smsDark,
-      },
-      gmail: {
-        backgroundColor: colors.gmailBackground,
-        typeColor: colors.gmail,
-        iconColor: colors.gmailDark,
-      },
-    };
-    return colorMap[notification.type];
-  }, [notification.type, colors]);
+  // const notificationColors = useMemo(() => {
+  //   const colorMap: Record<NotificationType, NotificationColor> = {
+  //     whatsapp: {
+  //       backgroundColor: colors.whatsappBackground,
+  //       typeColor: colors.whatsapp,
+  //       iconColor: colors.whatsappDark,
+  //     },
+  //     whatsappBusiness: {
+  //       backgroundColor: colors.whatsappBusinessBackground,
+  //       typeColor: colors.whatsappBusiness,
+  //       iconColor: colors.whatsappBusinessDark,
+  //     },
+  //     SMS: {
+  //       backgroundColor: colors.smsBackground,
+  //       typeColor: colors.sms,
+  //       iconColor: colors.smsDark,
+  //     },
+  //     gmail: {
+  //       backgroundColor: colors.gmailBackground,
+  //       typeColor: colors.gmail,
+  //       iconColor: colors.gmailDark,
+  //     },
+  //   };
+  //   return colorMap[notification.type];
+  // }, [notification.type, colors]);
 
   const cardBackgroundColor = useMemo(() => {
     return theme === "dark"
@@ -100,11 +100,6 @@ const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
     colors.gmailText,
     notificationColors.typeColor,
   ]);
-
-  const iconColor = useMemo(
-    () => notificationColors.iconColor,
-    [notificationColors.iconColor]
-  );
 
   const icon = useMemo(
     () => getNotificationIcon(notification.type),

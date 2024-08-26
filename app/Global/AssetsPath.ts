@@ -18,6 +18,8 @@ const ic_view = require("../../assets/Icons/ic_view.png");
 const ic_duplicate = require("../../assets/Icons/ic_duplicate.png");
 const ic_timerClock = require("../../assets/Icons/ic_timerClock.png");
 
+const ic_categoryFrame = require("../../assets/Icons/ic_categoryFrame.png");
+
 export default {
   ic_fillHome,
   ic_unFillHistory,
@@ -35,4 +37,5 @@ export default {
   ic_view,
   ic_duplicate,
   ic_timerClock,
+  ic_categoryFrame,
 };
