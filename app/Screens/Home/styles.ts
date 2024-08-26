@@ -51,6 +51,40 @@ const styles = () => {
       fontSize: 16,
       fontFamily: FONTS.Medium,
     },
+    emptyViewContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    emptyDateTimeImage: {
+      width: 90,
+      height: 90,
+      justifyContent: "center",
+    },
+    emptyTextContainer: {
+      marginVertical: 10,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    emptyNoEventTitle: {
+      fontSize: 25,
+      color: colors.text,
+      fontFamily: FONTS.Medium,
+    },
+    emptyListText: {
+      fontSize: 17,
+      marginTop: 5,
+      color: colors.text,
+      fontFamily: FONTS.Medium,
+    },
+    emptyArrowRocket: {
+      height: 380,
+      left: 30,
+      top: 10,
+      marginTop: 20,
+      marginVertical: 10,
+      alignSelf: "flex-end",
+    },
   });
 };
 

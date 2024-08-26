@@ -19,6 +19,8 @@ const ic_duplicate = require("../../assets/Icons/ic_duplicate.png");
 const ic_timerClock = require("../../assets/Icons/ic_timerClock.png");
 
 const ic_categoryFrame = require("../../assets/Icons/ic_categoryFrame.png");
+const ic_emptyDateTime = require("../../assets/Icons/ic_emptyDateTime.png");
+const ic_emptyRocket = require("../../assets/Icons/ic_emptyRocket.png");
 
 export default {
   ic_fillHome,
@@ -38,4 +40,6 @@ export default {
   ic_duplicate,
   ic_timerClock,
   ic_categoryFrame,
+  ic_emptyDateTime,
+  ic_emptyRocket,
 };

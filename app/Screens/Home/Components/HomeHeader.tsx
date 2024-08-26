@@ -8,7 +8,11 @@ import TextString from "../../../Global/TextString";
 import { FONTS, SIZE } from "../../../Global/Theme";
 import CustomSwitch from "../../../Components/CustomSwitch";
 
-const HomeHeader = () => {
+interface IHomeHeaderProps {
+  hideGrid?: boolean;
+}
+
+const HomeHeader = ({ hideGrid }: IHomeHeaderProps) => {
   const { theme, toggleTheme } = useAppContext();
   const colors = useThemeColors();
   const [isSwitchOn, setIsSwitchOn] = useState(theme !== "dark");
@@ -32,10 +36,14 @@ const HomeHeader = () => {
         <View
           style={[
             styles.menuIconView,
-            { backgroundColor: colors.grayBackground },
+            {
+              backgroundColor: hideGrid ? "transparent" : colors.grayBackground,
+            },
           ]}
         >
-          <Image source={AssetsPath.ic_menu} style={styles.menuIcon} />
+          {!hideGrid && (
+            <Image source={AssetsPath.ic_menu} style={styles.menuIcon} />
+          )}
         </View>
         <Text style={[styles.titleText, { color: colors.text }]}>
           {TextString.DailySync}

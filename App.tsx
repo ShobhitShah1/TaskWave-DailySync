@@ -1,10 +1,12 @@
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
-import { StyleSheet } from "react-native";
+import { LogBox, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppProvider } from "./app/Contexts/ThemeProvider";
 import Routes from "./app/Routes/Routes";
+
+LogBox.ignoreAllLogs();
 
 export default function App() {
   const [loaded, error] = useFonts({
