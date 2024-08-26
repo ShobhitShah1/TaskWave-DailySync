@@ -33,6 +33,8 @@ import Setting from "../Screens/Setting/Setting";
 import useThemeColors from "../Theme/useThemeMode";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
 import { NotificationType } from "../Types/Interface";
+import TextString from "../Global/TextString";
+import LinearGradient from "react-native-linear-gradient";
 
 export type categoriesType = {
   id: string;
@@ -265,17 +267,14 @@ const BottomTab = () => {
           backdropComponent={renderBackdrop}
           containerStyle={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
           backgroundStyle={{ backgroundColor: colors.background }}
-          handleStyle={{
-            backgroundColor: colors.background,
-            borderTopRightRadius: 20,
-            borderTopLeftRadius: 20,
-          }}
-          handleIndicatorStyle={{
-            backgroundColor: colors.text,
-            top: 2,
-            width: 35,
-            marginTop: 10,
-          }}
+          handleStyle={[
+            styles.handleStyle,
+            { backgroundColor: colors.background },
+          ]}
+          handleIndicatorStyle={[
+            styles.handleIndicatorStyle,
+            { backgroundColor: colors.text },
+          ]}
           ref={bottomSheetModalRef}
           snapPoints={["50%"]}
         >
@@ -307,6 +306,21 @@ const BottomTab = () => {
               />
             </View>
           </BottomSheetScrollView>
+
+          <LinearGradient
+            start={{ x: 1, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            colors={["rgba(0,0,0,0.8)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.2)"]}
+            style={styles.sheetNextButtonContainer}
+          >
+            <Pressable style={styles.sheetNextButton}>
+              <Text
+                style={[styles.sheetNextButtonText, { color: colors.text }]}
+              >
+                {TextString.Next}
+              </Text>
+            </Pressable>
+          </LinearGradient>
         </BottomSheetModal>
       </BottomSheetModalProvider>
     </React.Fragment>
@@ -396,6 +410,37 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     padding: 16,
+  },
+  sheetNextButtonContainer: {
+    position: "absolute",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    bottom: 0,
+    padding: 0,
+    height: 70,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sheetNextButton: {
+    width: 110,
+    height: 35,
+    borderRadius: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(64, 93, 240, 1)",
+  },
+  sheetNextButtonText: {
+    fontFamily: FONTS.Medium,
+    fontSize: 17,
+  },
+  handleStyle: {
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+  },
+  handleIndicatorStyle: {
+    top: 2,
+    width: 35,
+    marginTop: 10,
   },
 });
 
