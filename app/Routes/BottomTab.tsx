@@ -35,6 +35,7 @@ import RenderCategoryItem from "./Components/RenderCategoryItem";
 import { NotificationType } from "../Types/Interface";
 import TextString from "../Global/TextString";
 import LinearGradient from "react-native-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
 
 export type categoriesType = {
   id: string;
@@ -200,7 +201,9 @@ const CustomTabBar = ({
 
 const BottomTab = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] =
+    useState<NotificationType | null>();
+  const navigation = useNavigation();
 
   const tabWidth = 80;
   const indicatorPosition = useSharedValue(0);
@@ -301,19 +304,31 @@ const BottomTab = () => {
                   />
                 )}
                 keyExtractor={(item, index) => index.toString()}
-                contentContainerStyle={{ rowGap: 15 }}
+                contentContainerStyle={{ rowGap: 15, paddingBottom: 90 }}
                 columnWrapperStyle={{ justifyContent: "space-between" }}
               />
             </View>
           </BottomSheetScrollView>
 
           <LinearGradient
-            start={{ x: 1, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            colors={["rgba(0,0,0,0.8)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.2)"]}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 0, y: 0 }}
+            colors={["rgba(0,0,0,1)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.0)"]}
             style={styles.sheetNextButtonContainer}
           >
-            <Pressable style={styles.sheetNextButton}>
+            <Pressable
+              disabled={selectedCategory?.length === 0}
+              onPress={() => {
+                if (selectedCategory && bottomSheetModalRef) {
+                  bottomSheetModalRef.current?.dismiss();
+
+                  navigation.navigate("CreateReminder", {
+                    notificationType: selectedCategory,
+                  });
+                }
+              }}
+              style={styles.sheetNextButton}
+            >
               <Text
                 style={[styles.sheetNextButtonText, { color: colors.text }]}
               >
@@ -413,10 +428,9 @@ const styles = StyleSheet.create({
   },
   sheetNextButtonContainer: {
     position: "absolute",
-    backgroundColor: "rgba(0,0,0,0.5)",
     bottom: 0,
     padding: 0,
-    height: 70,
+    height: 80,
     width: "100%",
     justifyContent: "center",
     alignItems: "center",

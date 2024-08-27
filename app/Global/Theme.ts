@@ -28,6 +28,7 @@ export const LightThemeColors = {
   gmailBackground: "rgba(241, 68, 64, 0.15)",
   gmailDark: "rgba(190, 11, 7, 0.88)",
   gmailText: "rgba(241, 68, 64, 1)",
+  gmailLightDark: "rgba(241, 68, 64, 1)",
 };
 
 export const DarkThemeColors = {
@@ -58,6 +59,7 @@ export const DarkThemeColors = {
   gmailBackground: "rgba(241, 68, 64, 0.15)",
   gmailDark: "rgba(190, 11, 7, 0.88)",
   gmailText: "rgba(241, 68, 64, 1)",
+  gmailLightDark: "rgba(241, 68, 64, 1)",
 };
 
 export const FONTS = {

@@ -22,6 +22,8 @@ const ic_categoryFrame = require("../../assets/Icons/ic_categoryFrame.png");
 const ic_emptyDateTime = require("../../assets/Icons/ic_emptyDateTime.png");
 const ic_emptyRocket = require("../../assets/Icons/ic_emptyRocket.png");
 
+const ic_leftArrow = require("../../assets/Icons/ic_leftArrow.png");
+
 export default {
   ic_fillHome,
   ic_unFillHistory,
@@ -42,4 +44,5 @@ export default {
   ic_categoryFrame,
   ic_emptyDateTime,
   ic_emptyRocket,
+  ic_leftArrow,
 };

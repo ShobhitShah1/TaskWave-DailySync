@@ -16,8 +16,8 @@ import { categoriesType } from "../BottomTab";
 
 interface CategoryItemType {
   item: categoriesType;
-  setSelectedCategory: (category: string) => void;
-  selectedCategory: string;
+  setSelectedCategory: (category: NotificationType) => void;
+  selectedCategory: NotificationType | null | undefined;
 }
 
 const RenderCategoryItem = ({
@@ -25,18 +25,18 @@ const RenderCategoryItem = ({
   selectedCategory,
   setSelectedCategory,
 }: CategoryItemType) => {
-  const { typeColor } = useNotificationIconColors(
-    item.type as NotificationType
-  );
+  const { typeColor } = useNotificationIconColors(item.type);
   const colors = useThemeColors();
 
   const isSelected = useMemo(
-    () => selectedCategory.toLowerCase() === item.title.toLowerCase(),
+    () =>
+      selectedCategory &&
+      selectedCategory.toLowerCase() === item.title.toLowerCase(),
     [selectedCategory]
   );
 
   const onCategoryClick = useCallback(() => {
-    setSelectedCategory(item.title);
+    setSelectedCategory(item.type);
   }, []);
 
   return (

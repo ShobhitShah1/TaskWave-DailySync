@@ -1,3 +1,5 @@
+import { ReminderCardProps } from "../Components/ReminderCard";
+
 declare global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}
@@ -20,6 +22,9 @@ export type RootStackParamList = {
   AddReminder: undefined;
   History: undefined;
   Setting: undefined;
+  CreateReminder: {
+    notificationType: NotificationType;
+  };
 };
 
 export interface ReusableBottomSheetProps {

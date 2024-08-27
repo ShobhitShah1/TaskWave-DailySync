@@ -14,21 +14,25 @@ const useNotificationIconColors = (
         backgroundColor: colors.whatsappBackground,
         typeColor: colors.whatsapp,
         iconColor: colors.whatsappDark,
+        createViewColor: colors.whatsappDark,
       },
       whatsappBusiness: {
         backgroundColor: colors.whatsappBusinessBackground,
         typeColor: colors.whatsappBusiness,
         iconColor: colors.whatsappBusinessDark,
+        createViewColor: colors.whatsappBusinessDark,
       },
       SMS: {
         backgroundColor: colors.smsBackground,
         typeColor: colors.sms,
         iconColor: colors.smsDark,
+        createViewColor: colors.smsDark,
       },
       gmail: {
         backgroundColor: colors.gmailBackground,
         typeColor: colors.gmail,
         iconColor: colors.gmailDark,
+        createViewColor: colors.gmailLightDark,
       },
     };
   }, [colors]);

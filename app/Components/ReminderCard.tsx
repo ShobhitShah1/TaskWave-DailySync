@@ -8,10 +8,11 @@ import { useCountdownTimer } from "../Hooks/useCountdownTimer";
 import useThemeColors from "../Theme/useThemeMode";
 import { Notification, NotificationType } from "../Types/Interface";
 import useNotificationIconColors from "../Hooks/useNotificationIconColors";
+import { useNavigation } from "@react-navigation/native";
 
 const LOGO_SIZE = 65;
 
-interface ReminderCardProps {
+export interface ReminderCardProps {
   notification: Notification;
 }
 
@@ -19,9 +20,10 @@ export interface NotificationColor {
   backgroundColor: string;
   typeColor: string;
   iconColor: string;
+  createViewColor: string;
 }
 
-const formatNotificationType = (type: string) => {
+export const formatNotificationType = (type: string) => {
   if (type === "whatsappBusiness") return "Whatsapp Business";
   return type
     .split(" ")
@@ -47,6 +49,7 @@ const getNotificationIcon = (type: NotificationType) => {
 const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
+  const navigation = useNavigation();
   const { timeLeft, startCountdown } = useCountdownTimer(notification.timer);
   const notificationColors = useNotificationIconColors(notification.type);
 
@@ -113,7 +116,11 @@ const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
     >
       <Pressable
         style={styles.pressableContainer}
-        onPress={() => console.log("card")}
+        onPress={() =>
+          navigation.navigate("CreateReminder", {
+            notificationType: notification.type,
+          })
+        }
       >
         <View style={styles.rowContainer}>
           <View style={styles.logoWrapper}>
