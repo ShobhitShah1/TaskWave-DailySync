@@ -41,6 +41,23 @@ const Home = () => {
     );
   };
 
+  const RenderHeaderView = () => {
+    return (
+      <View style={style.listHeaderView}>
+        <Text style={style.headerScheduleText}>Schedule</Text>
+        <View>
+          <View></View>
+          <Image
+            resizeMode="contain"
+            tintColor={colors.text}
+            source={AssetsPath.ic_fullScreen}
+            style={style.fullScreenIcon}
+          />
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={style.container}>
       <HomeHeader hideGrid={fakeNotifications?.length === 0} />
@@ -78,6 +95,10 @@ const Home = () => {
           getItemType={(_, index) => {
             // Disables recycling of items by assigning a unique type to each item
             return index;
+          }}
+          stickyHeaderHiddenOnScroll={true}
+          ListHeaderComponent={() => {
+            return <RenderHeaderView />;
           }}
           contentContainerStyle={{ paddingBottom: 30 }}
           showsVerticalScrollIndicator={false}

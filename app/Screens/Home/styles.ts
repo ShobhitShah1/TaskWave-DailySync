@@ -85,6 +85,21 @@ const styles = () => {
       marginVertical: 10,
       alignSelf: "flex-end",
     },
+    listHeaderView: {
+      marginVertical: 10,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    headerScheduleText: {
+      color: colors.text,
+      fontFamily: FONTS.Medium,
+      fontSize: 21,
+    },
+    fullScreenIcon: {
+      width: 18,
+      height: 18,
+    },
   });
 };
 

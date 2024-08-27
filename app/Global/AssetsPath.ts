@@ -23,6 +23,7 @@ const ic_emptyDateTime = require("../../assets/Icons/ic_emptyDateTime.png");
 const ic_emptyRocket = require("../../assets/Icons/ic_emptyRocket.png");
 
 const ic_leftArrow = require("../../assets/Icons/ic_leftArrow.png");
+const ic_fullScreen = require("../../assets/Icons/ic_fullScreen.png");
 
 export default {
   ic_fillHome,
@@ -45,4 +46,5 @@ export default {
   ic_emptyDateTime,
   ic_emptyRocket,
   ic_leftArrow,
+  ic_fullScreen,
 };
