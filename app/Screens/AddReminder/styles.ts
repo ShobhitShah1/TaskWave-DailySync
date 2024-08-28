@@ -14,10 +14,12 @@ const styles = () => {
       width: "90%",
       flex: 1,
       alignSelf: "center",
-      marginVertical: 15,
+      marginVertical: 10,
     },
     headerContainer: {
       flexDirection: "row",
+      height: 35,
+      alignItems: "center",
       justifyContent: "space-between",
     },
     headerIcon: {
@@ -26,9 +28,9 @@ const styles = () => {
       resizeMode: "contain",
     },
     headerText: {
-      fontFamily: FONTS.SemiBold,
-      fontSize: 20,
       right: 8,
+      fontSize: 22,
+      fontFamily: FONTS.SemiBold,
     },
     createButton: {
       position: "absolute",
@@ -40,10 +42,14 @@ const styles = () => {
       alignItems: "center",
     },
     createButtonText: {
-      color: colors.text,
+      color: colors.white,
       textAlign: "center",
       fontFamily: FONTS.Medium,
       fontSize: 22,
+    },
+    itemsContainer: {
+      marginTop: 20,
+      marginBottom: 30,
     },
   });
 };

@@ -13,7 +13,7 @@ const styles = () => {
     wrapper: {
       flexDirection: "row",
       justifyContent: "space-between",
-      width: SIZE.appContainWidth,
+      width: "100%",
       alignSelf: "center",
       marginVertical: 10,
     },

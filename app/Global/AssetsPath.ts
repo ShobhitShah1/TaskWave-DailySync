@@ -23,7 +23,11 @@ const ic_emptyDateTime = require("../../assets/Icons/ic_emptyDateTime.png");
 const ic_emptyRocket = require("../../assets/Icons/ic_emptyRocket.png");
 
 const ic_leftArrow = require("../../assets/Icons/ic_leftArrow.png");
+const ic_downArrow = require("../../assets/Icons/ic_downArrow.png");
 const ic_fullScreen = require("../../assets/Icons/ic_fullScreen.png");
+const ic_attachment = require("../../assets/Icons/ic_attachment.png");
+const ic_calender = require("../../assets/Icons/ic_calender.png");
+const ic_time = require("../../assets/Icons/ic_time.png");
 
 export default {
   ic_fillHome,
@@ -46,5 +50,9 @@ export default {
   ic_emptyDateTime,
   ic_emptyRocket,
   ic_leftArrow,
+  ic_downArrow,
   ic_fullScreen,
+  ic_attachment,
+  ic_calender,
+  ic_time,
 };

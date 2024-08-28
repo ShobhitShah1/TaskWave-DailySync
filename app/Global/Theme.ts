@@ -14,6 +14,8 @@ export const LightThemeColors = {
   green: "rgba(21, 255, 0, 1)",
   reminderCardBackground: "rgba(63, 65, 69, 1)",
   borderColor: "rgba(173, 175, 176, 0.4)",
+  placeholderText: "rgba(0, 0, 0, 0.5)",
+  scheduleReminderCardBackground: "rgba(241, 241, 240, 1)",
 
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",
@@ -45,6 +47,8 @@ export const DarkThemeColors = {
   green: "rgba(21, 255, 0, 1)",
   reminderCardBackground: "rgba(63, 65, 69, 1)",
   borderColor: "rgba(217, 217, 217, 1)",
+  placeholderText: "rgba(255, 255, 255, 0.6)",
+  scheduleReminderCardBackground: "rgba(63, 65, 69, 1)",
 
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",
@@ -72,6 +76,7 @@ export const FONTS = {
 
 export const SIZE = {
   appContainWidth: "95%" as DimensionValue,
+  listBorderRadius: 15,
 };
 
 export const ActiveOpacity = 0.8;

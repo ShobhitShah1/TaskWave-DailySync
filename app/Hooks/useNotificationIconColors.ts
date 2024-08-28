@@ -14,7 +14,7 @@ const useNotificationIconColors = (
         backgroundColor: colors.whatsappBackground,
         typeColor: colors.whatsapp,
         iconColor: colors.whatsappDark,
-        createViewColor: colors.whatsappDark,
+        createViewColor: colors.whatsapp,
       },
       whatsappBusiness: {
         backgroundColor: colors.whatsappBusinessBackground,
