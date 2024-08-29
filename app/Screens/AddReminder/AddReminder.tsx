@@ -32,18 +32,32 @@ const AddReminder = () => {
   }, [params]);
 
   const { createViewColor } = useNotificationIconColors(notificationType);
+  const { requestPermission, checkPermissionStatus } = useContactPermission();
 
-  const onContactFetch = async () => {
+  const onHandelContactClick = async () => {
     try {
-      const contacts = await Contacts.getAll();
-      console.log("Contacts:", contacts);
+      const isPermissionEnable = await checkPermissionStatus();
+
+      if (!isPermissionEnable) {
+        await requestPermission().then((res) => {
+          if (res) requestContactData();
+        });
+
+        return;
+      }
+
+      requestContactData();
     } catch (error: any) {
       console.log("Contact ERROR:", error?.message);
     }
   };
 
-  const { permissionStatus, checkPermissionStatus } =
-    useContactPermission(onContactFetch);
+  const requestContactData = async () => {
+    try {
+      const contacts = await Contacts.getAllWithoutPhotos();
+      console.log("Contacts:", contacts);
+    } catch (error) {}
+  };
 
   const RenderHeader = () => {
     const onBackPress = () => {
@@ -80,7 +94,7 @@ const AddReminder = () => {
           showsVerticalScrollIndicator={false}
         >
           <AddContact
-            onContactPress={onContactFetch}
+            onContactPress={onHandelContactClick}
             themeColor={createViewColor}
           />
           <AddMessage themeColor={createViewColor} />
