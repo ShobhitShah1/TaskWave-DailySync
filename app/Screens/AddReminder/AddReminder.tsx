@@ -1,64 +1,43 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import React, { useMemo, useState } from "react";
-import {
-  Alert,
-  FlatList,
-  Image,
-  Pressable,
-  StatusBar,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import React, { useCallback, useMemo, useState } from "react";
+import { Alert, Image, Pressable, StatusBar, Text, View } from "react-native";
+import Contacts from "react-native-contacts";
+import Animated from "react-native-reanimated";
 import { formatNotificationType } from "../../Components/ReminderCard";
 import AssetsPath from "../../Global/AssetsPath";
+import useContactPermission from "../../Hooks/useContactPermission";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
-import { NotificationType } from "../../Types/Interface";
-import styles from "./styles";
 import useThemeColors from "../../Theme/useThemeMode";
-import Animated from "react-native-reanimated";
+import { NotificationType, SimplifiedContact } from "../../Types/Interface";
 import AddContact from "./Components/AddContact";
+import AddDateAndTime from "./Components/AddDateAndTime";
 import AddMessage from "./Components/AddMessage";
 import AttachFile from "./Components/AttachFile";
-import AddDateAndTime from "./Components/AddDateAndTime";
-import useContactPermission from "../../Hooks/useContactPermission";
-import Contacts from "react-native-contacts";
-import Modal from "react-native-modal";
 import ContactListModal from "./Components/ContactListModal";
+import styles from "./styles";
+import DocumentPicker, {
+  DocumentPickerResponse,
+} from "react-native-document-picker";
+import RNDateTimePicker from "@react-native-community/datetimepicker";
 
 type NotificationProps = {
   params: { notificationType: NotificationType };
 };
 
-export interface SimplifiedContact {
-  recordID: string;
-  displayName: string; // Full name of the contact
-  phoneNumbers: {
-    // List of phone numbers with labels
-    label: string;
-    number: string;
-  }[];
-  postalAddresses: {
-    // Location details (address)
-    street: string;
-    city: string;
-    state: string;
-    postCode: string;
-    country: string;
-  }[];
-  hasThumbnail: boolean;
-  thumbnailPath: string;
-}
-
 const AddReminder = () => {
   const style = styles();
   const colors = useThemeColors();
   const navigation = useNavigation();
-  const { width, height } = useWindowDimensions();
   const { params } = useRoute<RouteProp<NotificationProps, "params">>();
 
   const [contacts, setContacts] = useState<SimplifiedContact[]>([]);
   const [contactModalVisible, setContactModalVisible] = useState(false);
+
+  const [selectedDocument, setSelectedDocument] =
+    useState<DocumentPickerResponse | null>(null);
+  const [pickerVisibleType, setPickerVisibleType] = useState<
+    "date" | "time" | null
+  >(null);
 
   const notificationType = useMemo(() => {
     return params.notificationType;
@@ -115,6 +94,23 @@ const AddReminder = () => {
     }
   };
 
+  const onHandelAttachmentClick = useCallback(async () => {
+    try {
+      const result = await DocumentPicker.pickSingle({
+        type: [DocumentPicker.types.allFiles],
+      });
+
+      setSelectedDocument(result);
+      console.log("Document selected:", result);
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        console.log("User canceled document picker");
+      } else {
+        console.error("Document picker error:", err);
+      }
+    }
+  }, []);
+
   const RenderHeader = () => {
     const onBackPress = () => {
       if (navigation.canGoBack()) {
@@ -154,11 +150,30 @@ const AddReminder = () => {
             themeColor={createViewColor}
           />
           <AddMessage themeColor={createViewColor} />
-          <AttachFile themeColor={createViewColor} />
-          <AddDateAndTime themeColor={createViewColor} />
+          <AttachFile
+            themeColor={createViewColor}
+            onHandelAttachmentClick={onHandelAttachmentClick}
+          />
+          <AddDateAndTime
+            themeColor={createViewColor}
+            onDatePress={() => setPickerVisibleType("date")}
+            onTimePress={() => setPickerVisibleType("time")}
+          />
+          {pickerVisibleType && (
+            <RNDateTimePicker
+              value={new Date()}
+              mode={pickerVisibleType}
+              is24Hour={true}
+              display="default"
+              onChange={(event, date) => {
+                console.log("Date:", date);
+              }}
+            />
+          )}
         </Animated.ScrollView>
 
         <Pressable
+          onPress={() => navigation.navigate("ReminderScheduled")}
           style={[style.createButton, { backgroundColor: createViewColor }]}
         >
           <Text style={style.createButtonText}>Create</Text>
@@ -173,7 +188,5 @@ const AddReminder = () => {
     </View>
   );
 };
-
-console.log(StatusBar?.currentHeight);
 
 export default AddReminder;

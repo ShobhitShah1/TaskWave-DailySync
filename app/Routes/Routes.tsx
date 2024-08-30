@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar, StyleSheet } from "react-native";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AddReminder from "../Screens/AddReminder/AddReminder";
+import ReminderScheduled from "../Screens/AddReminder/ReminderScheduled";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -29,6 +30,10 @@ const Routes = () => {
           <Stack.Screen name="BottomTab" component={BottomTab} />
           {/* Create Reminder Is Add Reminder Added In Bottom Tab Also */}
           <Stack.Screen name="CreateReminder" component={AddReminder} />
+          <Stack.Screen
+            name="ReminderScheduled"
+            component={ReminderScheduled}
+          />
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>

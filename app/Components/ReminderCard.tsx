@@ -50,38 +50,8 @@ const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
   const navigation = useNavigation();
-  const { timeLeft, startCountdown } = useCountdownTimer(notification.timer);
+  const { timeLeft } = useCountdownTimer(notification.timer);
   const notificationColors = useNotificationIconColors(notification.type);
-
-  useEffect(() => {
-    startCountdown(notification.timer);
-  }, [notification.timer, startCountdown]);
-
-  // const notificationColors = useMemo(() => {
-  //   const colorMap: Record<NotificationType, NotificationColor> = {
-  //     whatsapp: {
-  //       backgroundColor: colors.whatsappBackground,
-  //       typeColor: colors.whatsapp,
-  //       iconColor: colors.whatsappDark,
-  //     },
-  //     whatsappBusiness: {
-  //       backgroundColor: colors.whatsappBusinessBackground,
-  //       typeColor: colors.whatsappBusiness,
-  //       iconColor: colors.whatsappBusinessDark,
-  //     },
-  //     SMS: {
-  //       backgroundColor: colors.smsBackground,
-  //       typeColor: colors.sms,
-  //       iconColor: colors.smsDark,
-  //     },
-  //     gmail: {
-  //       backgroundColor: colors.gmailBackground,
-  //       typeColor: colors.gmail,
-  //       iconColor: colors.gmailDark,
-  //     },
-  //   };
-  //   return colorMap[notification.type];
-  // }, [notification.type, colors]);
 
   const cardBackgroundColor = useMemo(() => {
     return theme === "dark"

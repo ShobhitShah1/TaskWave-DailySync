@@ -1,16 +1,35 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-export function useCountdownTimer(initialTime: string) {
-  const [timeLeft, setTimeLeft] = useState("00:00:00");
+interface CountdownTimerHook {
+  timeLeft: string;
+  formattedTimeLeft: string;
+  timeIsOver: boolean;
+}
+
+export function useCountdownTimer(
+  initialTime: string,
+  onTimeOver?: () => void
+): CountdownTimerHook {
+  const [timeLeft, setTimeLeft] = useState(initialTime);
+  const [formattedTimeLeft, setFormattedTimeLeft] = useState(
+    "00Hrs : 00Min : 00Sec"
+  );
+  const [timeIsOver, setTimeIsOver] = useState(false);
   const intervalId = useRef<NodeJS.Timeout | null>(null);
 
-  const startCountdown = useCallback((endTime: string) => {
+  useEffect(() => {
     const updateTimer = () => {
-      const timeDifference = getTimeDifference(endTime);
+      const timeDifference = getTimeDifference(initialTime);
       setTimeLeft(timeDifference);
+      setFormattedTimeLeft(formatTime(timeDifference));
 
       if (timeDifference === "00:00:00" && intervalId.current) {
         clearInterval(intervalId.current);
+        setTimeIsOver(true);
+
+        if (onTimeOver) {
+          onTimeOver();
+        }
       }
     };
 
@@ -18,19 +37,18 @@ export function useCountdownTimer(initialTime: string) {
       clearInterval(intervalId.current);
     }
 
+    setTimeIsOver(false);
     intervalId.current = setInterval(updateTimer, 1000);
     updateTimer();
-  }, []);
 
-  useEffect(() => {
     return () => {
       if (intervalId.current) {
         clearInterval(intervalId.current);
       }
     };
-  }, []);
+  }, [initialTime, onTimeOver]);
 
-  return { timeLeft, startCountdown };
+  return { timeLeft, formattedTimeLeft, timeIsOver };
 }
 
 function getTimeDifference(endTime: string) {
@@ -48,4 +66,9 @@ function getTimeDifference(endTime: string) {
   const secondsLeft = Math.floor((diff % (1000 * 60)) / 1000);
 
   return `${String(hoursLeft).padStart(2, "0")}:${String(minutesLeft).padStart(2, "0")}:${String(secondsLeft).padStart(2, "0")}`;
+}
+
+function formatTime(time: string) {
+  const [hours, minutes, seconds] = time.split(":");
+  return `${hours}Hrs : ${minutes}Min : ${seconds}Sec`;
 }

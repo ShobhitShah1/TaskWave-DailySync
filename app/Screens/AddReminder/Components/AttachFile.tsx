@@ -6,9 +6,13 @@ import AssetsPath from "../../../Global/AssetsPath";
 
 interface AttachFileProps {
   themeColor: string;
+  onHandelAttachmentClick: () => void;
 }
 
-const AttachFile: FC<AttachFileProps> = ({ themeColor }) => {
+const AttachFile: FC<AttachFileProps> = ({
+  themeColor,
+  onHandelAttachmentClick,
+}) => {
   const colors = useThemeColors();
 
   return (
@@ -18,6 +22,7 @@ const AttachFile: FC<AttachFileProps> = ({ themeColor }) => {
           Attach File:
         </Text>
         <Pressable
+          onPress={onHandelAttachmentClick}
           style={[styles.attachmentIconView, { backgroundColor: themeColor }]}
         >
           <Image

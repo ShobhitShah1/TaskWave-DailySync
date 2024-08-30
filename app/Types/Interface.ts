@@ -25,6 +25,7 @@ export type RootStackParamList = {
   CreateReminder: {
     notificationType: NotificationType;
   };
+  ReminderScheduled: undefined;
 };
 
 export interface ReusableBottomSheetProps {
@@ -49,4 +50,22 @@ export interface Notification {
   timer: string;
   isRead: boolean;
   actions: string[];
+}
+
+export interface SimplifiedContact {
+  recordID: string;
+  displayName: string;
+  phoneNumbers: {
+    label: string;
+    number: string;
+  }[];
+  postalAddresses: {
+    street: string;
+    city: string;
+    state: string;
+    postCode: string;
+    country: string;
+  }[];
+  hasThumbnail: boolean;
+  thumbnailPath: string;
 }

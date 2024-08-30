@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import React, { FC } from "react";
 import useThemeColors from "../../../Theme/useThemeMode";
 import { FONTS, SIZE } from "../../../Global/Theme";
@@ -7,9 +7,15 @@ import AssetsPath from "../../../Global/AssetsPath";
 
 interface AddDateAndTimeProps {
   themeColor: string;
+  onDatePress: () => void;
+  onTimePress: () => void;
 }
 
-const AddDateAndTime: FC<AddDateAndTimeProps> = ({ themeColor }) => {
+const AddDateAndTime: FC<AddDateAndTimeProps> = ({
+  themeColor,
+  onDatePress,
+  onTimePress,
+}) => {
   const colors = useThemeColors();
 
   return (
@@ -21,7 +27,8 @@ const AddDateAndTime: FC<AddDateAndTimeProps> = ({ themeColor }) => {
       <View style={styles.flexView}>
         <View style={styles.dateAndTimeView}>
           <Text style={[styles.mainTitle, { color: colors.text }]}>Date:</Text>
-          <View
+          <Pressable
+            onPress={onDatePress}
             style={[
               styles.dateAndTimeFlexView,
               { backgroundColor: colors.scheduleReminderCardBackground },
@@ -38,12 +45,13 @@ const AddDateAndTime: FC<AddDateAndTimeProps> = ({ themeColor }) => {
             >
               DD/MM/YY
             </Text>
-          </View>
+          </Pressable>
         </View>
 
         <View style={styles.dateAndTimeView}>
           <Text style={[styles.mainTitle, { color: colors.text }]}>Time:</Text>
-          <View
+          <Pressable
+            onPress={onTimePress}
             style={[
               styles.dateAndTimeFlexView,
               { backgroundColor: colors.scheduleReminderCardBackground },
@@ -60,7 +68,7 @@ const AddDateAndTime: FC<AddDateAndTimeProps> = ({ themeColor }) => {
             >
               Time
             </Text>
-          </View>
+          </Pressable>
         </View>
       </View>
     </View>

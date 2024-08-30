@@ -28,6 +28,7 @@ const ic_fullScreen = require("../../assets/Icons/ic_fullScreen.png");
 const ic_attachment = require("../../assets/Icons/ic_attachment.png");
 const ic_calender = require("../../assets/Icons/ic_calender.png");
 const ic_time = require("../../assets/Icons/ic_time.png");
+const ic_hand = require("../../assets/Icons/ic_hand.png");
 
 export default {
   ic_fillHome,
@@ -55,4 +56,5 @@ export default {
   ic_attachment,
   ic_calender,
   ic_time,
+  ic_hand,
 };
