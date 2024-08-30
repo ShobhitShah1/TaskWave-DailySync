@@ -1,5 +1,12 @@
 import { FlashList } from "@shopify/flash-list";
-import React from "react";
+import React, {
+  FC,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Dimensions,
   Image,
@@ -16,6 +23,13 @@ import useThemeColors from "../../../Theme/useThemeMode";
 import { SimplifiedContact } from "../AddReminder";
 import styles from "../styles";
 import LinearGradient from "react-native-linear-gradient";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
+import RenderContactList from "./RenderContactList";
 
 const { height } = Dimensions.get("window");
 
@@ -25,18 +39,93 @@ interface ContactListModalProps {
   contacts: SimplifiedContact[];
 }
 
-const ContactListModal: React.FC<ContactListModalProps> = ({
+const ContactListModal: FC<ContactListModalProps> = ({
   isVisible,
   onClose,
   contacts,
 }) => {
   const style = styles();
   const colors = useThemeColors();
-  const [searchText, setSearchText] = React.useState("");
+  const [searchText, setSearchText] = useState("");
+  const [selectedContact, setSelectedContact] = useState<string | null>(null);
 
-  const filteredContacts = contacts.filter((contact) =>
-    contact.displayName.toLowerCase().includes(searchText.toLowerCase())
+  const filteredContacts = useMemo(
+    () =>
+      contacts.filter((contact) =>
+        contact.displayName.toLowerCase().includes(searchText.toLowerCase())
+      ),
+    [contacts, searchText]
   );
+
+  const handleSelectContact = (contactId) => {
+    setSelectedContact(contactId);
+  };
+
+  // const RenderContactList = ({ contacts }: { contacts: SimplifiedContact }) => {
+  //   const scale = useSharedValue(0.8);
+  //   const opacity = useSharedValue(0);
+
+  //   useEffect(() => {
+  //     scale.value = withSpring(1, { damping: 10 });
+  //     opacity.value = withTiming(1, { duration: 300 });
+  //   }, []);
+
+  //   const animatedStyle = useAnimatedStyle(() => ({
+  //     transform: [{ scale: scale.value }],
+  //     opacity: opacity.value,
+  //   }));
+
+  //   const isSelected = selectedContact === contacts.recordID;
+  //   const backgroundColor = useSharedValue(
+  //     isSelected ? "rgba(0, 0, 255, 0.2)" : colors.reminderCardBackground
+  //   );
+
+  //   useEffect(() => {
+  //     backgroundColor.value = withTiming(
+  //       isSelected ? "rgba(0, 0, 255, 0.2)" : colors.reminderCardBackground,
+  //       { duration: 500 }
+  //     );
+  //   }, [isSelected, backgroundColor]);
+
+  //   const colorStyle = useAnimatedStyle(() => ({
+  //     backgroundColor: backgroundColor.value,
+  //   }));
+
+  //   return (
+  //     <Animated.View
+  //       style={[style.contactItemContainer, animatedStyle, colorStyle]}
+  //     >
+  //       <Pressable
+  //         onPress={() => handleSelectContact(contacts.recordID)}
+  //         style={[{ flexDirection: "row", padding: 15 }]}
+  //       >
+  //         {contacts.thumbnailPath && (
+  //           <Image
+  //             source={{ uri: contacts.thumbnailPath }}
+  //             style={style.contactAvatar}
+  //           />
+  //         )}
+  //         <View>
+  //           <Text
+  //             style={[style.contactName, { color: "rgba(255, 255, 255, 0.5)" }]}
+  //           >
+  //             {contacts.displayName}
+  //           </Text>
+  //           <Text
+  //             style={[
+  //               style.contactNumber,
+  //               { color: "rgba(255, 255, 255, 0.5)" },
+  //             ]}
+  //           >
+  //             {contacts.phoneNumbers[0]?.number}
+  //           </Text>
+  //         </View>
+  //       </Pressable>
+  //     </Animated.View>
+  //   );
+  // };
+
+  const handleOnClose = useCallback(() => onClose(), [onClose]);
 
   return (
     <Modal
@@ -44,7 +133,7 @@ const ContactListModal: React.FC<ContactListModalProps> = ({
       statusBarTranslucent
       style={{ margin: 0, justifyContent: "flex-end" }}
       deviceHeight={height + (StatusBar.currentHeight || 30)}
-      onBackdropPress={onClose}
+      onBackdropPress={handleOnClose}
     >
       <View style={[style.contactModalContainer, { paddingTop: 50 }]}>
         <View style={style.contactHeaderContainer}>
@@ -66,37 +155,18 @@ const ContactListModal: React.FC<ContactListModalProps> = ({
 
         <FlashList
           data={filteredContacts}
+          extraData={selectedContact}
+          estimatedItemSize={1000}
           keyExtractor={(item) => item.recordID}
           style={style.contactListContainer}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 80 }}
           renderItem={({ item }) => (
-            <Pressable style={style.contactItemContainer}>
-              {item.thumbnailPath && (
-                <Image
-                  source={{ uri: item.thumbnailPath }}
-                  style={style.contactAvatar}
-                />
-              )}
-              <View>
-                <Text
-                  style={[
-                    style.contactName,
-                    { color: "rgba(255, 255, 255, 0.5)" },
-                  ]}
-                >
-                  {item.displayName}
-                </Text>
-                <Text
-                  style={[
-                    style.contactNumber,
-                    { color: "rgba(255, 255, 255, 0.5)" },
-                  ]}
-                >
-                  {item.phoneNumbers[0]?.number}
-                </Text>
-              </View>
-            </Pressable>
+            <RenderContactList
+              contacts={item}
+              selectedContact={selectedContact}
+              handleSelectContact={handleSelectContact}
+            />
           )}
         />
 
@@ -108,7 +178,7 @@ const ContactListModal: React.FC<ContactListModalProps> = ({
             "rgba(0,0,0,0.8)",
             "rgba(0,0,0,0.6)",
             "rgba(0,0,0,0.4)",
-            "rgba(0,0,0,0.0)",
+            "rgba(0,0,0,0.2)",
           ]}
           style={style.contactDoneButton}
         >

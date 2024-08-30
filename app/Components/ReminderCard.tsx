@@ -221,7 +221,7 @@ export default ReminderCard;
 const styles = StyleSheet.create({
   cardContainer: {
     width: "100%",
-    height: 120,
+    height: 125,
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   footerContainer: {
     flex: 0.2,
-    top: 2,
+    top: 4,
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",

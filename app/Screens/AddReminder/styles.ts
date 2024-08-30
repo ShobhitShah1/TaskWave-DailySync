@@ -55,8 +55,8 @@ const styles = () => {
     contactModalContainer: {
       flex: 1,
       backgroundColor: colors.background,
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
+      // borderTopLeftRadius: 20,
+      // borderTopRightRadius: 20,
       overflow: "hidden",
     },
     contactHeaderContainer: {
@@ -86,13 +86,11 @@ const styles = () => {
       marginTop: 10,
     },
     contactItemContainer: {
-      padding: 15,
+      width: SIZE.appContainWidth,
+      alignSelf: "center",
       borderRadius: 25,
       marginBottom: 15,
-      flexDirection: "row",
-      marginHorizontal: 15,
-      alignItems: "center",
-      backgroundColor: colors.reminderCardBackground,
+      columnGap: 15,
     },
     contactAvatar: {
       width: 40,
@@ -113,7 +111,6 @@ const styles = () => {
       width: "100%",
       height: 80,
       bottom: 0,
-      borderRadius: 10,
       position: "absolute",
       justifyContent: "center",
       alignItems: "center",
