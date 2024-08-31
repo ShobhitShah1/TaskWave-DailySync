@@ -25,7 +25,11 @@ const Routes = () => {
           barStyle={theme === "dark" ? "light-content" : "dark-content"}
         />
         <Stack.Navigator
-          screenOptions={{ headerShown: false, animation: "ios" }}
+          screenOptions={{
+            headerShown: false,
+            animation: "ios",
+            navigationBarColor: colors.background,
+          }}
         >
           <Stack.Screen name="BottomTab" component={BottomTab} />
           {/* Create Reminder Is Add Reminder Added In Bottom Tab Also */}

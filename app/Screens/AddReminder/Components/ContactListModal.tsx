@@ -17,6 +17,7 @@ import useThemeColors from "../../../Theme/useThemeMode";
 import styles from "../styles";
 import RenderContactList from "./RenderContactList";
 import { SimplifiedContact } from "../../../Types/Interface";
+import { Easing, FadeIn } from "react-native-reanimated";
 
 const { height } = Dimensions.get("window");
 
@@ -57,7 +58,11 @@ const ContactListModal: FC<ContactListModalProps> = ({
   return (
     <Modal
       isVisible={isVisible}
-      statusBarTranslucent
+      statusBarTranslucent={true}
+      animationIn={"slideInUp"}
+      animationOut={"slideOutDown"}
+      animationInTiming={600}
+      animationOutTiming={600}
       style={{ margin: 0, justifyContent: "flex-end" }}
       deviceHeight={height + (StatusBar.currentHeight || 30)}
       onBackdropPress={handleOnClose}

@@ -1,14 +1,14 @@
-import React, { memo, useEffect, useMemo } from "react";
+import { useNavigation } from "@react-navigation/native";
+import React, { memo, useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import { FONTS } from "../Global/Theme";
 import { useCountdownTimer } from "../Hooks/useCountdownTimer";
+import useNotificationIconColors from "../Hooks/useNotificationIconColors";
 import useThemeColors from "../Theme/useThemeMode";
 import { Notification, NotificationType } from "../Types/Interface";
-import useNotificationIconColors from "../Hooks/useNotificationIconColors";
-import { useNavigation } from "@react-navigation/native";
 
 const LOGO_SIZE = 65;
 

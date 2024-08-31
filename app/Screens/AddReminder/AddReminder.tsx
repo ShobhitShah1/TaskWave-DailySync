@@ -164,10 +164,14 @@ const AddReminder = () => {
               value={new Date()}
               mode={pickerVisibleType}
               is24Hour={true}
+              themeVariant="dark"
               display="default"
               onChange={(event, date) => {
                 console.log("Date:", date);
+                console.log("event", event);
+                setPickerVisibleType(null);
               }}
+              negativeButton={{ label: "Cancel", textColor: colors.text }}
             />
           )}
         </Animated.ScrollView>
