@@ -3,19 +3,19 @@ import React from "react";
 import { Image, Text, useWindowDimensions, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import ReminderCard from "../../Components/ReminderCard";
-import { FONTS, SIZE } from "../../Global/Theme";
+import AssetsPath from "../../Global/AssetsPath";
+import TextString from "../../Global/TextString";
+import { SIZE } from "../../Global/Theme";
+import { useFakeNotifications } from "../../Hooks/useFakeNotifications";
 import useThemeColors from "../../Theme/useThemeMode";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
-import { useFakeNotifications } from "../../Hooks/useFakeNotifications";
-import AssetsPath from "../../Global/AssetsPath";
-import TextString from "../../Global/TextString";
 
 const Home = () => {
   const style = styles();
   const colors = useThemeColors();
   const { height, width } = useWindowDimensions();
-  const fakeNotifications = useFakeNotifications(150);
+  const fakeNotifications = useFakeNotifications(100);
 
   const renderEmptyView = () => {
     return (
@@ -90,16 +90,12 @@ const Home = () => {
         <Animated.View></Animated.View>
 
         <FlashList
-          estimatedItemSize={100}
+          estimatedItemSize={300}
           data={fakeNotifications}
-          getItemType={(_, index) => {
-            // Disables recycling of items by assigning a unique type to each item
-            return index;
-          }}
-          stickyHeaderHiddenOnScroll={true}
           ListHeaderComponent={() => {
             return <RenderHeaderView />;
           }}
+          stickyHeaderHiddenOnScroll={true}
           contentContainerStyle={{ paddingBottom: 30 }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={renderEmptyView}

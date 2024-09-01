@@ -8,7 +8,9 @@ import { FONTS } from "../Global/Theme";
 import { useCountdownTimer } from "../Hooks/useCountdownTimer";
 import useNotificationIconColors from "../Hooks/useNotificationIconColors";
 import useThemeColors from "../Theme/useThemeMode";
-import { Notification, NotificationType } from "../Types/Interface";
+import { Notification } from "../Types/Interface";
+import { formatNotificationType } from "../Utils/formatNotificationType";
+import { getNotificationIcon } from "../Utils/getNotificationIcon";
 
 const LOGO_SIZE = 65;
 
@@ -22,29 +24,6 @@ export interface NotificationColor {
   iconColor: string;
   createViewColor: string;
 }
-
-export const formatNotificationType = (type: string) => {
-  if (type === "whatsappBusiness") return "Whatsapp Business";
-  return type
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-};
-
-const getNotificationIcon = (type: NotificationType) => {
-  switch (type) {
-    case "whatsapp":
-      return AssetsPath.ic_whatsapp;
-    case "whatsappBusiness":
-      return AssetsPath.ic_whatsappBusiness;
-    case "SMS":
-      return AssetsPath.ic_sms;
-    case "gmail":
-      return AssetsPath.ic_gmail;
-    default:
-      return null;
-  }
-};
 
 const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
   const colors = useThemeColors();

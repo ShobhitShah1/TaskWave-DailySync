@@ -3,7 +3,6 @@ import React, { useCallback, useMemo, useState } from "react";
 import { Alert, Image, Pressable, StatusBar, Text, View } from "react-native";
 import Contacts from "react-native-contacts";
 import Animated from "react-native-reanimated";
-import { formatNotificationType } from "../../Components/ReminderCard";
 import AssetsPath from "../../Global/AssetsPath";
 import useContactPermission from "../../Hooks/useContactPermission";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
@@ -19,6 +18,7 @@ import DocumentPicker, {
   DocumentPickerResponse,
 } from "react-native-document-picker";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
+import { formatNotificationType } from "../../Utils/formatNotificationType";
 
 type NotificationProps = {
   params: { notificationType: NotificationType };
@@ -177,7 +177,11 @@ const AddReminder = () => {
         </Animated.ScrollView>
 
         <Pressable
-          onPress={() => navigation.navigate("ReminderScheduled")}
+          onPress={() =>
+            navigation.navigate("ReminderScheduled", {
+              themeColor: createViewColor,
+            })
+          }
           style={[style.createButton, { backgroundColor: createViewColor }]}
         >
           <Text style={style.createButtonText}>Create</Text>

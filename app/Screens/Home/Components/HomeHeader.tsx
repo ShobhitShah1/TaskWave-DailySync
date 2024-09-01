@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
 import AssetsPath from "../../../Global/AssetsPath";
@@ -10,9 +10,13 @@ import CustomSwitch from "../../../Components/CustomSwitch";
 
 interface IHomeHeaderProps {
   hideGrid?: boolean;
+  hideThemeButton?: boolean;
 }
 
-const HomeHeader = ({ hideGrid }: IHomeHeaderProps) => {
+const HomeHeader = ({
+  hideGrid,
+  hideThemeButton = false,
+}: IHomeHeaderProps) => {
   const { theme, toggleTheme } = useAppContext();
   const colors = useThemeColors();
   const [isSwitchOn, setIsSwitchOn] = useState(theme !== "dark");
@@ -44,11 +48,24 @@ const HomeHeader = ({ hideGrid }: IHomeHeaderProps) => {
           {!hideGrid && (
             <Image source={AssetsPath.ic_menu} style={styles.menuIcon} />
           )}
+          {hideGrid && hideThemeButton && (
+            <Pressable style={styles.backButton}>
+              <Image
+                source={AssetsPath.ic_leftArrow}
+                tintColor={colors.text}
+                style={styles.menuIcon}
+              />
+            </Pressable>
+          )}
         </View>
         <Text style={[styles.titleText, { color: colors.text }]}>
           {TextString.DailySync}
         </Text>
-        <CustomSwitch isOn={isSwitchOn} onToggle={handleToggle} />
+        <View style={{ width: 70, height: 35 }}>
+          {!hideThemeButton && (
+            <CustomSwitch isOn={isSwitchOn} onToggle={handleToggle} />
+          )}
+        </View>
       </View>
     </Animated.View>
   );
@@ -78,8 +95,12 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   titleText: {
-    left: 10,
+    left: 13,
     fontSize: 24,
     fontFamily: FONTS.Medium,
+  },
+  backButton: {
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
