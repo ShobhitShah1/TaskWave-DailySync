@@ -4,7 +4,7 @@ export const LightThemeColors = {
   background: "rgba(255, 255, 255, 1)",
   text: "#000000",
   grayBackground: "rgba(255, 255, 255, 0.21)",
-  black: "rgba(0,0,0,0)",
+  black: "#000",
   white: "rgba(255, 255, 255, 1)",
   lightGray: "rgba(21, 22, 22, 0.2)",
   primary: "rgba(48, 51, 52, 1)",
@@ -20,6 +20,7 @@ export const LightThemeColors = {
   darkPrimaryBackground: "rgba(67, 69, 69, 1)",
   contactBackground: "rgba(241, 241, 240, 1)",
   lightContact: "rgba(139, 142, 142, 1)",
+  yellow: "rgba(246, 255, 0, 1)",
 
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",
@@ -41,7 +42,7 @@ export const DarkThemeColors = {
   background: "rgba(48, 51, 52, 1)",
   text: "#ffffff",
   grayBackground: "rgba(255, 255, 255, 0.21)",
-  black: "rgba(0,0,0,0)",
+  black: "#000",
   white: "rgba(255, 255, 255, 1)",
   lightGray: "rgba(21, 22, 22, 0.2)",
   primary: "rgba(48, 51, 52, 1)",
@@ -57,6 +58,7 @@ export const DarkThemeColors = {
   darkPrimaryBackground: "rgba(67, 69, 69, 1)",
   contactBackground: "rgba(63, 65, 69, 1)",
   lightContact: "rgba(139, 142, 142, 1)",
+  yellow: "rgba(246, 255, 0, 1)",
 
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",
