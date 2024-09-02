@@ -1,6 +1,7 @@
 import { Image, Pressable, Text, View } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import Animated, {
+  runOnUI,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -9,6 +10,7 @@ import Animated, {
 import styles from "../styles";
 import useThemeColors from "../../../Theme/useThemeMode";
 import { SimplifiedContact } from "../../../Types/Interface";
+import { useAppContext } from "../../../Contexts/ThemeProvider";
 
 interface RenderContactListProps {
   contacts: SimplifiedContact;
@@ -23,42 +25,43 @@ const RenderContactList: React.FC<RenderContactListProps> = ({
 }) => {
   const style = styles();
   const colors = useThemeColors();
+  const { theme } = useAppContext();
 
   const scale = useSharedValue(0.8);
   const opacity = useSharedValue(0);
   const isSelected = selectedContacts.includes(contacts.recordID);
 
   useEffect(() => {
-    scale.value = withSpring(1, { damping: 10 });
-    opacity.value = withTiming(1, { duration: 200 });
+    runOnUI(() => {
+      scale.value = withSpring(1, { damping: 20, stiffness: 500 });
+      opacity.value = withTiming(1, { duration: 500 });
+    })();
   }, []);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-  }));
-
-  const backgroundColor = useSharedValue(
-    isSelected ? "rgba(1, 133, 226, 1)" : colors.reminderCardBackground
+  const animatedStyle = useAnimatedStyle(
+    () => ({
+      transform: [{ scale: scale.value }],
+      opacity: opacity.value,
+      backgroundColor: withTiming(
+        isSelected ? "rgba(1, 133, 226, 1)" : colors.contactBackground,
+        { duration: 500 }
+      ),
+    }),
+    [isSelected, colors.reminderCardBackground]
   );
 
-  useEffect(() => {
-    backgroundColor.value = withTiming(
-      isSelected ? "rgba(1, 133, 226, 1)" : colors.reminderCardBackground,
-      { duration: 500 }
-    );
-  }, [isSelected, backgroundColor]);
-
-  const colorStyle = useAnimatedStyle(() => ({
-    backgroundColor: backgroundColor.value,
-  }));
-
-  const textColor = isSelected ? "#FFFFFF" : "rgba(255, 255, 255, 0.5)";
+  const textColor = useMemo(
+    () =>
+      isSelected
+        ? "#FFFFFF"
+        : theme === "light"
+          ? colors.lightContact
+          : colors.placeholderText,
+    [isSelected]
+  );
 
   return (
-    <Animated.View
-      style={[style.contactItemContainer, animatedStyle, colorStyle]}
-    >
+    <Animated.View style={[style.contactItemContainer, animatedStyle]}>
       <Pressable
         onPress={() => handleSelectContact(contacts.recordID)}
         style={{ flexDirection: "row", padding: 15 }}

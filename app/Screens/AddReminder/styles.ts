@@ -77,7 +77,7 @@ const styles = () => {
       marginVertical: 25,
       paddingHorizontal: 15,
       borderRadius: 20,
-      backgroundColor: colors.reminderCardBackground,
+      backgroundColor: colors.contactBackground,
       fontFamily: FONTS.Medium,
       fontSize: 18,
     },

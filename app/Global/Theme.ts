@@ -17,6 +17,9 @@ export const LightThemeColors = {
   placeholderText: "rgba(0, 0, 0, 0.5)",
   scheduleReminderCardBackground: "rgba(241, 241, 240, 1)",
   white08: "rgba(255, 255, 255, 0.8)",
+  darkPrimaryBackground: "rgba(67, 69, 69, 1)",
+  contactBackground: "rgba(241, 241, 240, 1)",
+  lightContact: "rgba(139, 142, 142, 1)",
 
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",
@@ -51,6 +54,9 @@ export const DarkThemeColors = {
   placeholderText: "rgba(255, 255, 255, 0.6)",
   scheduleReminderCardBackground: "rgba(63, 65, 69, 1)",
   white08: "rgba(255, 255, 255, 0.8)",
+  darkPrimaryBackground: "rgba(67, 69, 69, 1)",
+  contactBackground: "rgba(63, 65, 69, 1)",
+  lightContact: "rgba(139, 142, 142, 1)",
 
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",

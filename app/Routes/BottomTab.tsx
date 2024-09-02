@@ -84,8 +84,9 @@ const TabBarIcon = ({ source, focused }: { source: any; focused: boolean }) => {
     <View style={styles.iconContainer}>
       <Image
         source={source}
+        tintColor={focused ? colors.gmail : undefined}
         resizeMode="contain"
-        style={[styles.icon, { tintColor: colors.white }]}
+        style={[styles.icon]}
       />
     </View>
   );
@@ -183,13 +184,13 @@ const CustomTabBar = ({
           );
         })}
 
-        <Animated.View
+        {/* <Animated.View
           style={[
             styles.indicator,
             { backgroundColor: colors.white },
             animatedStyle,
           ]}
-        />
+        /> */}
       </View>
 
       <Pressable onPress={onAddReminderPress} style={styles.addReminderButton}>

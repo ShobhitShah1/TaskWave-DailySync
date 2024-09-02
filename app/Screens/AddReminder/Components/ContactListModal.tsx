@@ -14,10 +14,9 @@ import LinearGradient from "react-native-linear-gradient";
 import Modal from "react-native-modal";
 import AssetsPath from "../../../Global/AssetsPath";
 import useThemeColors from "../../../Theme/useThemeMode";
+import { SimplifiedContact } from "../../../Types/Interface";
 import styles from "../styles";
 import RenderContactList from "./RenderContactList";
-import { SimplifiedContact } from "../../../Types/Interface";
-import { Easing, FadeIn } from "react-native-reanimated";
 
 const { height } = Dimensions.get("window");
 
@@ -39,8 +38,10 @@ const ContactListModal: FC<ContactListModalProps> = ({
 
   const filteredContacts = useMemo(
     () =>
-      contacts.filter((contact) =>
-        contact.displayName.toLowerCase().includes(searchText.toLowerCase())
+      contacts.filter(
+        (contact) =>
+          contact.phoneNumbers &&
+          contact.displayName.toLowerCase().includes(searchText.toLowerCase())
       ),
     [contacts, searchText]
   );
@@ -63,6 +64,7 @@ const ContactListModal: FC<ContactListModalProps> = ({
       animationOut={"slideOutDown"}
       animationInTiming={600}
       animationOutTiming={600}
+      useNativeDriver={true}
       style={{ margin: 0, justifyContent: "flex-end" }}
       deviceHeight={height + (StatusBar.currentHeight || 30)}
       onBackdropPress={handleOnClose}
@@ -71,6 +73,7 @@ const ContactListModal: FC<ContactListModalProps> = ({
         <View style={style.contactHeaderContainer}>
           <TouchableOpacity onPress={onClose}>
             <Image
+              tintColor={colors.text}
               source={AssetsPath.ic_leftArrow}
               style={style.contactHeaderIcon}
             />
@@ -88,8 +91,8 @@ const ContactListModal: FC<ContactListModalProps> = ({
         <FlashList
           data={filteredContacts}
           extraData={selectedContacts}
-          estimatedItemSize={1000}
-          keyExtractor={(item) => item.recordID}
+          estimatedItemSize={200}
+          keyExtractor={(item, index) => index.toString()}
           style={style.contactListContainer}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 80 }}

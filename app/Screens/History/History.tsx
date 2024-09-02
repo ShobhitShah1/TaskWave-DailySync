@@ -1,11 +1,11 @@
+import { FlashList } from "@shopify/flash-list";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { SIZE } from "../../Global/Theme";
+import { useFakeNotifications } from "../../Hooks/useFakeNotifications";
 import useThemeColors from "../../Theme/useThemeMode";
 import HomeHeader from "../Home/Components/HomeHeader";
-import { FlashList } from "@shopify/flash-list";
-import ReminderCard from "../../Components/ReminderCard";
-import { useFakeNotifications } from "../../Hooks/useFakeNotifications";
-import { SIZE } from "../../Global/Theme";
+import RenderHistoryList from "./Components/RenderHistoryList";
 
 const History = () => {
   const style = styles();
@@ -22,14 +22,10 @@ const History = () => {
         <FlashList
           estimatedItemSize={300}
           data={fakeNotifications}
-          // ListHeaderComponent={() => {
-          //   return <RenderHeaderView />;
-          // }}
           stickyHeaderHiddenOnScroll={true}
-          contentContainerStyle={{ paddingBottom: 30 }}
           showsVerticalScrollIndicator={false}
-          // ListEmptyComponent={renderEmptyView}
-          renderItem={({ item }) => <ReminderCard notification={item} />}
+          contentContainerStyle={{ paddingBottom: 30 }}
+          renderItem={({ item }) => <RenderHistoryList notification={item} />}
         />
       </View>
     </View>
