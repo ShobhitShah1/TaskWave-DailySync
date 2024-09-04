@@ -28,6 +28,9 @@ export type RootStackParamList = {
   ReminderScheduled: {
     themeColor: string;
   };
+  ReminderPreview: {
+    notificationType: NotificationType;
+  };
 };
 
 export interface ReusableBottomSheetProps {

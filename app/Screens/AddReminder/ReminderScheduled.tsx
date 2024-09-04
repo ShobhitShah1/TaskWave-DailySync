@@ -24,6 +24,7 @@ const ReminderScheduled = () => {
   const { width } = useWindowDimensions();
   const { formattedTimeLeft } = useCountdownTimer("12:00:00");
   const { params } = useRoute<RouteProp<ReminderScheduledProps, "params">>();
+
   const themeColor = useMemo(() => {
     return params?.themeColor;
   }, [params]);

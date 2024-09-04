@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import React, { memo, useMemo } from "react";
+import React, { memo, useCallback, useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
@@ -23,9 +23,10 @@ export interface NotificationColor {
   typeColor: string;
   iconColor: string;
   createViewColor: string;
+  icon: number;
 }
 
-const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
+const ReminderCard: React.FC<ReminderCardProps> = ({ notification }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
   const navigation = useNavigation();
@@ -58,19 +59,24 @@ const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
     [notification.type]
   );
 
+  const onCardPress = useCallback(() => {
+    navigation.navigate("ReminderPreview", {
+      notificationType: notification.type,
+    });
+  }, [notification]);
+
+  const onEditPress = useCallback(() => {
+    navigation.navigate("CreateReminder", {
+      notificationType: notification.type,
+    });
+  }, [notification]);
+
   return (
     <Animated.View
       entering={FadeIn.duration(1 * Number(notification.id))}
       style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}
     >
-      <Pressable
-        style={styles.pressableContainer}
-        onPress={() =>
-          navigation.navigate("CreateReminder", {
-            notificationType: notification.type,
-          })
-        }
-      >
+      <Pressable style={styles.pressableContainer} onPress={onCardPress}>
         <View style={styles.rowContainer}>
           <View style={styles.logoWrapper}>
             <View
@@ -137,14 +143,14 @@ const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
             </View>
           </View>
           <View style={styles.actionsContainer}>
-            <Pressable onPress={() => console.log("edit")}>
+            <Pressable onPress={onEditPress}>
               <Image
                 tintColor={typeColor}
                 source={AssetsPath.ic_edit}
                 style={styles.actionIcon}
               />
             </Pressable>
-            <Pressable onPress={() => console.log("view")}>
+            <Pressable onPress={onCardPress}>
               <Image
                 tintColor={typeColor}
                 source={AssetsPath.ic_view}
@@ -163,9 +169,9 @@ const ReminderCard: React.FC<ReminderCardProps> = memo(({ notification }) => {
       </Pressable>
     </Animated.View>
   );
-});
+};
 
-export default ReminderCard;
+export default memo(ReminderCard);
 
 const styles = StyleSheet.create({
   cardContainer: {

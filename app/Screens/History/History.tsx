@@ -1,5 +1,5 @@
 import { FlashList } from "@shopify/flash-list";
-import React, { useState, useMemo, useCallback, useRef } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -8,33 +8,22 @@ import {
   Text,
   View,
 } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
+import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
 import { useFakeNotifications } from "../../Hooks/useFakeNotifications";
 import useThemeColors from "../../Theme/useThemeMode";
+import { countNotificationsByType } from "../../Utils/countNotificationsByType";
 import HomeHeader from "../Home/Components/HomeHeader";
 import RenderHistoryList from "./Components/RenderHistoryList";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-export function countNotificationsByType(notifications) {
-  return notifications.reduce((acc, { type }) => {
-    acc[type] = (acc[type] || 0) + 1;
-    return acc;
-  }, {});
-}
-
 const History = () => {
   const style = styles();
   const colors = useThemeColors();
   const fakeNotifications = useFakeNotifications(100);
-  const flashListRef = useRef<FlashList>(null);
+  const flashListRef = useRef<any>(null);
 
   const notificationCounts = useMemo(
     () => countNotificationsByType(fakeNotifications),
@@ -138,6 +127,7 @@ const History = () => {
                 handleTabPress(index);
               }
             };
+
             return (
               <Pressable
                 key={index}

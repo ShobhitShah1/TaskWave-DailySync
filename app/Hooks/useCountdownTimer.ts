@@ -10,26 +10,42 @@ export function useCountdownTimer(
   initialTime: string,
   onTimeOver?: () => void
 ): CountdownTimerHook {
-  const [timeLeft, setTimeLeft] = useState(initialTime);
+  const [timeLeft, setTimeLeft] = useState("00:00:00");
   const [formattedTimeLeft, setFormattedTimeLeft] = useState(
     "00Hrs : 00Min : 00Sec"
   );
   const [timeIsOver, setTimeIsOver] = useState(false);
   const intervalId = useRef<NodeJS.Timeout | null>(null);
+  const endTime = useRef<Date>(calculateEndTime(initialTime));
 
   useEffect(() => {
     const updateTimer = () => {
-      const timeDifference = getTimeDifference(initialTime);
-      setTimeLeft(timeDifference);
-      setFormattedTimeLeft(formatTime(timeDifference));
+      const now = new Date();
+      const diff = endTime.current.getTime() - now.getTime();
 
-      if (timeDifference === "00:00:00" && intervalId.current) {
-        clearInterval(intervalId.current);
+      if (diff <= 0) {
+        setTimeLeft("00:00:00");
+        setFormattedTimeLeft("00Hrs : 00Min : 00Sec");
         setTimeIsOver(true);
 
         if (onTimeOver) {
           onTimeOver();
         }
+
+        if (intervalId.current) {
+          clearInterval(intervalId.current);
+        }
+      } else {
+        const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
+        const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secondsLeft = Math.floor((diff % (1000 * 60)) / 1000);
+
+        setTimeLeft(
+          `${String(hoursLeft).padStart(2, "0")}:${String(minutesLeft).padStart(2, "0")}:${String(secondsLeft).padStart(2, "0")}`
+        );
+        setFormattedTimeLeft(
+          `${String(hoursLeft).padStart(2, "0")}Hrs : ${String(minutesLeft).padStart(2, "0")}Min : ${String(secondsLeft).padStart(2, "0")}Sec`
+        );
       }
     };
 
@@ -37,8 +53,9 @@ export function useCountdownTimer(
       clearInterval(intervalId.current);
     }
 
-    setTimeIsOver(false);
     intervalId.current = setInterval(updateTimer, 1000);
+
+    // Initial call to set the timer right away
     updateTimer();
 
     return () => {
@@ -51,24 +68,12 @@ export function useCountdownTimer(
   return { timeLeft, formattedTimeLeft, timeIsOver };
 }
 
-function getTimeDifference(endTime: string) {
-  const [hours, minutes, seconds] = endTime.split(":").map(Number);
+function calculateEndTime(initialTime: string): Date {
+  const [hours, minutes, seconds] = initialTime.split(":").map(Number);
   const now = new Date();
-  const targetTime = new Date(now);
-  targetTime.setHours(hours, minutes, seconds, 0);
 
-  const diff = targetTime.getTime() - now.getTime();
-
-  if (diff <= 0) return "00:00:00";
-
-  const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
-  const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const secondsLeft = Math.floor((diff % (1000 * 60)) / 1000);
-
-  return `${String(hoursLeft).padStart(2, "0")}:${String(minutesLeft).padStart(2, "0")}:${String(secondsLeft).padStart(2, "0")}`;
-}
-
-function formatTime(time: string) {
-  const [hours, minutes, seconds] = time.split(":");
-  return `${hours}Hrs : ${minutes}Min : ${seconds}Sec`;
+  // Calculate end time based on initial time plus the current time
+  return new Date(
+    now.getTime() + (hours * 3600 + minutes * 60 + seconds) * 1000
+  );
 }

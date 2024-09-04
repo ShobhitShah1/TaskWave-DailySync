@@ -58,16 +58,13 @@ function generateFutureTimer(): string {
   const now = new Date();
   const futureTime = new Date(
     now.getTime() + Math.floor(Math.random() * 24 * 60 * 60 * 1000)
-  ); // Add up to 24 hours
-  const hours = Math.floor(
-    (futureTime.getTime() - now.getTime()) / (1000 * 60 * 60)
   );
+  const diffMilliseconds = futureTime.getTime() - now.getTime();
+  const hours = Math.floor(diffMilliseconds / (1000 * 60 * 60));
   const minutes = Math.floor(
-    ((futureTime.getTime() - now.getTime()) % (1000 * 60 * 60)) / (1000 * 60)
+    (diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
   );
-  const seconds = Math.floor(
-    ((futureTime.getTime() - now.getTime()) % (1000 * 60)) / 1000
-  );
+  const seconds = Math.floor((diffMilliseconds % (1000 * 60)) / 1000);
 
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }

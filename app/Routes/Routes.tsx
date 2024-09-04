@@ -9,6 +9,7 @@ import { StatusBar, StyleSheet } from "react-native";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AddReminder from "../Screens/AddReminder/AddReminder";
 import ReminderScheduled from "../Screens/AddReminder/ReminderScheduled";
+import ReminderPreview from "../Screens/Preview/ReminderPreview";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -38,6 +39,7 @@ const Routes = () => {
             name="ReminderScheduled"
             component={ReminderScheduled}
           />
+          <Stack.Screen name="ReminderPreview" component={ReminderPreview} />
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>
