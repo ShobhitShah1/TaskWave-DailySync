@@ -30,7 +30,7 @@ const ReminderPreview = () => {
 
   return (
     <View style={style.container}>
-      <View style={{ width: SIZE.appContainWidth }}>
+      <View style={style.innerContainer}>
         <View style={style.backView}>
           <Pressable
             onPress={() => navigation.goBack()}
@@ -44,38 +44,20 @@ const ReminderPreview = () => {
           </Pressable>
         </View>
 
-        <View>
+        <View style={style.centeredContainer}>
           <View
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: 10,
-              backgroundColor:
-                notificationType === "gmail" ? colors.white : createViewColor,
-              alignSelf: "center",
-              justifyContent: "center",
-            }}
+            style={[
+              style.notificationIconContainer,
+              {
+                backgroundColor:
+                  notificationType === "gmail" ? colors.white : createViewColor,
+              },
+            ]}
           >
-            <Image
-              source={icon}
-              style={{
-                width: 55,
-                height: 55,
-                resizeMode: "contain",
-                alignSelf: "center",
-              }}
-            />
+            <Image source={icon} style={style.notificationIcon} />
           </View>
 
-          <Text
-            style={{
-              fontSize: 20,
-              marginVertical: 10,
-              fontFamily: FONTS.Medium,
-              color: colors.text,
-              textAlign: "center",
-            }}
-          >
+          <Text style={[style.notificationText, { color: colors.text }]}>
             {formatNotificationType(notificationType)}
           </Text>
 
@@ -108,7 +90,32 @@ const ReminderPreview = () => {
             </Text>
           </View>
 
-          <View></View>
+          <View style={style.reminderDetails}>
+            <View style={style.reminderDateTime}>
+              <Text style={[style.dateTimeText, { color: colors.text }]}>
+                Mon, jan 23
+              </Text>
+              <Text style={[style.dateTimeText, { color: colors.text }]}>
+                8:30 pm
+              </Text>
+            </View>
+
+            <View
+              style={[
+                style.reminderCard,
+                { backgroundColor: colors.reminderCardBackground },
+              ]}
+            >
+              <Text style={[style.reminderCardText, { color: colors.text }]}>
+                Lorem Ipsum is simply dummy text of the printing and typesetting
+                industry. Lorem Ipsum has been the industry's standard dummy
+                text ever since the 1500s, when an unknown printer took a galley
+                of type and scrambled it to make a type specimen book. It has
+                survived not only five centuries but also the leap into
+                electronic
+              </Text>
+            </View>
+          </View>
         </View>
       </View>
     </View>
@@ -125,8 +132,12 @@ const styles = () => {
       flex: 1,
       backgroundColor: colors.background,
     },
-    backView: {
+    innerContainer: {
       width: SIZE.appContainWidth,
+      alignSelf: "center",
+    },
+    backView: {
+      width: "100%",
       paddingVertical: 10,
       alignSelf: "center",
       flexDirection: "row",
@@ -145,6 +156,30 @@ const styles = () => {
       height: 18,
       resizeMode: "contain",
     },
+    centeredContainer: {
+      width: "100%",
+      alignContent: "center",
+      alignSelf: "center",
+    },
+    notificationIconContainer: {
+      width: 80,
+      height: 80,
+      borderRadius: 10,
+      alignSelf: "center",
+      justifyContent: "center",
+    },
+    notificationIcon: {
+      width: 55,
+      height: 55,
+      resizeMode: "contain",
+      alignSelf: "center",
+    },
+    notificationText: {
+      fontSize: 20,
+      marginVertical: 10,
+      fontFamily: FONTS.Medium,
+      textAlign: "center",
+    },
     timeContainer: {
       flexDirection: "row",
       alignItems: "center",
@@ -161,6 +196,28 @@ const styles = () => {
     },
     timeSeparator: {
       fontSize: 34,
+      fontFamily: FONTS.Medium,
+    },
+    reminderDetails: {
+      marginVertical: 20,
+    },
+    reminderDateTime: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    dateTimeText: {
+      fontSize: 19,
+      fontFamily: FONTS.Medium,
+    },
+    reminderCard: {
+      width: "100%",
+      marginVertical: 15,
+      borderRadius: 10,
+      padding: 10,
+    },
+    reminderCardText: {
+      fontSize: 18,
+      lineHeight: 28,
       fontFamily: FONTS.Medium,
     },
   });

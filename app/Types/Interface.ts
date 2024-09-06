@@ -1,5 +1,3 @@
-import { ReminderCardProps } from "../Components/ReminderCard";
-
 declare global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}

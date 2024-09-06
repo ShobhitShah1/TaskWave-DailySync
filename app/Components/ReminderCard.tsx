@@ -11,6 +11,7 @@ import useThemeColors from "../Theme/useThemeMode";
 import { Notification } from "../Types/Interface";
 import { formatNotificationType } from "../Utils/formatNotificationType";
 import { getNotificationIcon } from "../Utils/getNotificationIcon";
+import AnimatedRollingNumber from "react-native-animated-rolling-numbers";
 
 const LOGO_SIZE = 65;
 
@@ -118,6 +119,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({ notification }) => {
             <Text style={[styles.typeText, { color: typeColor }]}>
               {formatNotificationType(notification.type)}
             </Text>
+
             <Image
               tintColor={typeColor}
               source={AssetsPath.ic_notification}
