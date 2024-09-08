@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface CountdownTimerHook {
   timeLeft: string;
@@ -55,7 +55,6 @@ export function useCountdownTimer(
 
     intervalId.current = setInterval(updateTimer, 1000);
 
-    // Initial call to set the timer right away
     updateTimer();
 
     return () => {
@@ -72,7 +71,6 @@ function calculateEndTime(initialTime: string): Date {
   const [hours, minutes, seconds] = initialTime.split(":").map(Number);
   const now = new Date();
 
-  // Calculate end time based on initial time plus the current time
   return new Date(
     now.getTime() + (hours * 3600 + minutes * 60 + seconds) * 1000
   );

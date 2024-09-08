@@ -1,6 +1,12 @@
 import { FlashList } from "@shopify/flash-list";
-import React from "react";
-import { Image, Text, useWindowDimensions, View } from "react-native";
+import React, { useState } from "react";
+import {
+  Image,
+  Pressable,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import ReminderCard from "../../Components/ReminderCard";
 import AssetsPath from "../../Global/AssetsPath";
@@ -10,12 +16,14 @@ import { useFakeNotifications } from "../../Hooks/useFakeNotifications";
 import useThemeColors from "../../Theme/useThemeMode";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
+import FullScreenPreviewModal from "./Components/FullScreenPreviewModal";
 
 const Home = () => {
   const style = styles();
   const colors = useThemeColors();
   const { height, width } = useWindowDimensions();
   const fakeNotifications = useFakeNotifications(100);
+  const [fullScreenPreview, setFullScreenPreview] = useState(false);
 
   const renderEmptyView = () => {
     return (
@@ -47,12 +55,14 @@ const Home = () => {
         <Text style={style.headerScheduleText}>Schedule</Text>
         <View>
           <View></View>
-          <Image
-            resizeMode="contain"
-            tintColor={colors.text}
-            source={AssetsPath.ic_fullScreen}
-            style={style.fullScreenIcon}
-          />
+          <Pressable onPress={() => setFullScreenPreview(true)}>
+            <Image
+              resizeMode="contain"
+              tintColor={colors.text}
+              source={AssetsPath.ic_fullScreen}
+              style={style.fullScreenIcon}
+            />
+          </Pressable>
         </View>
       </View>
     );
@@ -92,16 +102,19 @@ const Home = () => {
         <FlashList
           estimatedItemSize={300}
           data={fakeNotifications}
-          ListHeaderComponent={() => {
-            return <RenderHeaderView />;
-          }}
           stickyHeaderHiddenOnScroll={true}
-          contentContainerStyle={{ paddingBottom: 30 }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={renderEmptyView}
+          contentContainerStyle={{ paddingBottom: 30 }}
+          ListHeaderComponent={() => <RenderHeaderView />}
           renderItem={({ item }) => <ReminderCard notification={item} />}
         />
       </View>
+
+      <FullScreenPreviewModal
+        isVisible={fullScreenPreview}
+        onClose={() => setFullScreenPreview(false)}
+      />
     </View>
   );
 };

@@ -1,16 +1,16 @@
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
-import useThemeColors from "../../Theme/useThemeMode";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import { NotificationType } from "../../Types/Interface";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
+import useThemeColors from "../../Theme/useThemeMode";
+import { Notification } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 
 type NotificationProps = {
-  params: { notificationType: NotificationType };
+  params: { notificationData: Notification };
 };
 
 const ReminderPreview = () => {
@@ -19,12 +19,16 @@ const ReminderPreview = () => {
   const colors = useThemeColors();
   const { params } = useRoute<RouteProp<NotificationProps, "params">>();
 
-  const notificationType = useMemo(() => {
-    return params.notificationType;
+  const notificationData = useMemo(() => {
+    return params.notificationData;
   }, [params]);
 
+  const notificationType = useMemo(() => {
+    return notificationData?.type;
+  }, [params, notificationData]);
+
   const { createViewColor, icon } = useNotificationIconColors(notificationType);
-  const { formattedTimeLeft } = useCountdownTimer("12:00:00");
+  const { formattedTimeLeft } = useCountdownTimer(notificationData?.timer);
 
   const [hours, minutes, seconds] = formattedTimeLeft.split(" : ");
 

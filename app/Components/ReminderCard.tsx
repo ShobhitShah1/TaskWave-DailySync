@@ -62,7 +62,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({ notification }) => {
 
   const onCardPress = useCallback(() => {
     navigation.navigate("ReminderPreview", {
-      notificationType: notification.type,
+      notificationData: notification,
     });
   }, [notification]);
 
