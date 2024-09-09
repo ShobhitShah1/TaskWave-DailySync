@@ -99,14 +99,15 @@ const Home = () => {
 
         <Animated.View></Animated.View>
 
+        <RenderHeaderView />
+
         <FlashList
           estimatedItemSize={300}
           data={fakeNotifications}
-          stickyHeaderHiddenOnScroll={true}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={renderEmptyView}
           contentContainerStyle={{ paddingBottom: 30 }}
-          ListHeaderComponent={() => <RenderHeaderView />}
+          // ListHeaderComponent={() => <RenderHeaderView />}
           renderItem={({ item }) => <ReminderCard notification={item} />}
         />
       </View>

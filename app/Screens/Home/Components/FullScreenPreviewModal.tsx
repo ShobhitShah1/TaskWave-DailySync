@@ -68,7 +68,6 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
       // deviceHeight={height + (StatusBar.currentHeight || 20)}
       animationOutTiming={800}
       hideModalContentWhileAnimating
-      swipeDirection={"down"}
       animationOut={"fadeOutDown"}
       customBackdrop={
         <Pressable
@@ -89,8 +88,8 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
       <View
         style={{
           flex: 1,
+          width: "100%",
           alignSelf: "center",
-          width: SIZE.appContainWidth,
         }}
       >
         <View
@@ -114,16 +113,29 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
           </Pressable>
         </View>
 
-        <View style={{ height: "90%", backgroundColor: colors.background }}>
-          <FlashList
-            estimatedItemSize={300}
-            data={fakeNotifications}
-            stickyHeaderHiddenOnScroll={true}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={renderEmptyView}
-            contentContainerStyle={{ paddingBottom: 30 }}
-            renderItem={({ item }) => <ReminderCard notification={item} />}
-          />
+        <View
+          style={{
+            height: "90%",
+            backgroundColor: colors.background,
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              alignSelf: "center",
+              width: SIZE.appContainWidth,
+            }}
+          >
+            <FlashList
+              estimatedItemSize={300}
+              data={fakeNotifications}
+              stickyHeaderHiddenOnScroll={true}
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={renderEmptyView}
+              contentContainerStyle={{ paddingBottom: 30 }}
+              renderItem={({ item }) => <ReminderCard notification={item} />}
+            />
+          </View>
         </View>
       </View>
     </ReactNativeModal>

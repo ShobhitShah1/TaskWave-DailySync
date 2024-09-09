@@ -40,11 +40,12 @@ const Routes = () => {
           barStyle={theme === "dark" ? "light-content" : "dark-content"}
         />
         <Stack.Navigator
-          screenOptions={{
+          screenOptions={({ route }) => ({
             headerShown: false,
             animation: "ios",
-            navigationBarColor: colors.background,
-          }}
+            navigationBarColor:
+              route?.name === "OnBoarding" ? colors.white : colors.bottomTab,
+          })}
         >
           <Stack.Screen name="OnBoarding" component={OnBoarding} />
           <Stack.Screen name="BottomTab" component={BottomTab} />
