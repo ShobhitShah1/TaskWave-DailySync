@@ -46,7 +46,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
 
     const onCardPress = useCallback(() => {
       navigation.navigate("ReminderPreview", {
-        notificationType: notification.type,
+        notificationData: notification,
       });
     }, [notification]);
 

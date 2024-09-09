@@ -2,6 +2,7 @@ import React, { FC } from "react";
 import {
   Image,
   Pressable,
+  StatusBar,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -15,6 +16,7 @@ import { FONTS, SIZE } from "../../../Global/Theme";
 import ReminderCard from "../../../Components/ReminderCard";
 import TextString from "../../../Global/TextString";
 import AssetsPath from "../../../Global/AssetsPath";
+import { useAppContext } from "../../../Contexts/ThemeProvider";
 
 interface FullScreenProps {
   isVisible: boolean;
@@ -26,6 +28,7 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
   onClose,
 }) => {
   const style = styles();
+  const { theme } = useAppContext();
   const fakeNotifications = useFakeNotifications(100);
   const { height, width } = useWindowDimensions();
   const colors = useThemeColors();
@@ -61,13 +64,15 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
       onBackdropPress={onClose}
       animationIn={"fadeInUp"}
       animationInTiming={800}
+      // statusBarTranslucent
+      // deviceHeight={height + (StatusBar.currentHeight || 20)}
       animationOutTiming={800}
       hideModalContentWhileAnimating
-      backdropColor="red"
       swipeDirection={"down"}
       animationOut={"fadeOutDown"}
       customBackdrop={
-        <View
+        <Pressable
+          onPress={onClose}
           style={{
             backgroundColor: "rgba(48, 51, 52, 0.9)",
             opacity: 0.5,
@@ -88,12 +93,22 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
           width: SIZE.appContainWidth,
         }}
       >
-        <View style={style.listHeaderView}>
-          <Pressable onPress={() => {}}>
+        <View
+          style={[
+            style.listHeaderView,
+            {
+              backgroundColor:
+                theme === "dark"
+                  ? "rgba(48, 51, 52, 0.9)"
+                  : "rgba(255,255,255,0.9)",
+            },
+          ]}
+        >
+          <Pressable onPress={onClose}>
             <Image
               resizeMode="contain"
               tintColor={colors.text}
-              source={AssetsPath.ic_fullScreen}
+              source={AssetsPath.ic_minimize}
               style={style.fullScreenIcon}
             />
           </Pressable>
@@ -169,7 +184,6 @@ const styles = () => {
       justifyContent: "center",
       alignSelf: "flex-end",
       alignItems: "flex-end",
-      backgroundColor: "rgba(48, 51, 52, 0.9)",
     },
     headerScheduleText: {
       color: colors.text,
@@ -177,8 +191,8 @@ const styles = () => {
       fontSize: 21,
     },
     fullScreenIcon: {
-      width: 25,
-      height: 25,
+      width: 35,
+      height: 35,
     },
   });
 };

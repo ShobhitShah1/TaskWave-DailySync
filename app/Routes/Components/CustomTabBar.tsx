@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
-import { useAnimatedStyle } from "react-native-reanimated";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS } from "../../Global/Theme";
 import useThemeColors from "../../Theme/useThemeMode";
@@ -14,6 +14,7 @@ export const CustomTabBar = ({
   onAddReminderPress,
   onTabChange,
   tabWidth,
+  shouldShowTabBar,
 }: any) => {
   const colors = useThemeColors();
   const width = Dimensions.get("window").width;
@@ -25,7 +26,15 @@ export const CustomTabBar = ({
   });
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.background,
+          display: shouldShowTabBar ? "flex" : "none",
+        },
+      ]}
+    >
       <View style={[styles.tabBar, { backgroundColor: colors.bottomTab }]}>
         {state.routes.map((route: any, index: number) => {
           const { options } = descriptors[route.key];
@@ -111,7 +120,7 @@ export const CustomTabBar = ({
       <Pressable onPress={onAddReminderPress} style={styles.addReminderButton}>
         <Text style={styles.addReminderText}>+</Text>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -122,6 +131,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000000",
     elevation: 4,
     shadowOpacity: 1.0,
+    // display: "none",
   },
   tabBar: {
     flexDirection: "row",

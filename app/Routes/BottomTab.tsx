@@ -98,7 +98,7 @@ export const TabBarIcon = ({
 const BottomTab = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] =
-    useState<NotificationType | null>();
+    useState<NotificationType | null>("whatsapp");
   const navigation = useNavigation();
 
   const tabWidth = 80;
@@ -140,10 +140,10 @@ const BottomTab = () => {
   return (
     <React.Fragment>
       <Bottom.Navigator
-        screenOptions={{
+        screenOptions={({ route }) => ({
           headerShown: false,
-          tabBarStyle: { borderTopWidth: 0 },
-        }}
+          tabBarStyle: { borderTopWidth: 0, display: "none" },
+        })}
         tabBar={(props) => (
           <CustomTabBar
             {...props}
@@ -151,6 +151,9 @@ const BottomTab = () => {
             onAddReminderPress={handlePresentModalPress}
             onTabChange={handleIndexChange}
             tabWidth={tabWidth}
+            shouldShowTabBar={
+              props.state.index !== 3 && props.state.index !== 4
+            }
           />
         )}
       >

@@ -1,23 +1,19 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { useAppContext } from "../../../Contexts/ThemeProvider";
-import AssetsPath from "../../../Global/AssetsPath";
-import useThemeColors from "../../../Theme/useThemeMode";
-import TextString from "../../../Global/TextString";
-import { FONTS, SIZE } from "../../../Global/Theme";
-import CustomSwitch from "../../../Components/CustomSwitch";
+import { useAppContext } from "../Contexts/ThemeProvider";
+import useThemeColors from "../Theme/useThemeMode";
+import AssetsPath from "../Global/AssetsPath";
+import TextString from "../Global/TextString";
+import CustomSwitch from "./CustomSwitch";
+import { FONTS, SIZE } from "../Global/Theme";
 import { useNavigation } from "@react-navigation/native";
 
 interface IHomeHeaderProps {
-  hideGrid?: boolean;
-  hideThemeButton?: boolean;
+  title: string;
 }
 
-const HomeHeader = ({
-  hideGrid,
-  hideThemeButton = false,
-}: IHomeHeaderProps) => {
+const WithBackHeader = ({ title }: IHomeHeaderProps) => {
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { theme, toggleTheme } = useAppContext();
@@ -39,61 +35,47 @@ const HomeHeader = ({
   return (
     <Animated.View entering={FadeIn.duration(400)}>
       <View style={styles.container}>
-        <View
-          style={[
-            styles.menuIconView,
-            {
-              backgroundColor: hideGrid ? "transparent" : colors.grayBackground,
-            },
-          ]}
+        <Pressable
+          onPress={() => navigation.navigate("BottomTab", { screen: "Home" })}
+          style={[styles.menuIconView]}
         >
-          {!hideGrid && (
-            <Image source={AssetsPath.ic_menu} style={styles.menuIcon} />
-          )}
-          {hideGrid && hideThemeButton && (
-            <Pressable
-              onPress={() =>
-                navigation.navigate("BottomTab", { screen: "Home" })
-              }
-              style={styles.backButton}
-            >
-              <Image
-                source={AssetsPath.ic_leftArrow}
-                tintColor={colors.text}
-                style={styles.menuIcon}
-              />
-            </Pressable>
-          )}
+          <Image
+            tintColor={colors.text}
+            source={AssetsPath.ic_leftArrow}
+            style={styles.menuIcon}
+          />
+        </Pressable>
+        <View style={{ width: "71%" }}>
+          <Text style={[styles.titleText, { color: colors.text }]}>
+            {title}
+          </Text>
         </View>
-        <Text style={[styles.titleText, { color: colors.text }]}>
-          {TextString.DailySync}
-        </Text>
-        <View style={{ width: 70, height: 35 }}>
-          {!hideThemeButton && (
+        <View style={{ width: "18%", alignSelf: "flex-end" }}>
+          <View style={{ width: 70, height: 35 }}>
             <CustomSwitch isOn={isSwitchOn} onToggle={handleToggle} />
-          )}
+          </View>
         </View>
       </View>
     </Animated.View>
   );
 };
 
-export default memo(HomeHeader);
+export default memo(WithBackHeader);
 
 const styles = StyleSheet.create({
   container: {
     width: SIZE.appContainWidth,
     paddingVertical: 10,
+    overflow: "hidden",
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
   menuIconView: {
-    width: 28,
+    width: "10%",
     height: 28,
     borderRadius: 5,
-    alignItems: "center",
     justifyContent: "center",
   },
   menuIcon: {
@@ -102,7 +84,6 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   titleText: {
-    left: 13,
     fontSize: 24,
     fontFamily: FONTS.Medium,
   },

@@ -5,6 +5,7 @@ declare global {
 }
 
 export type RootStackParamList = {
+  OnBoarding: undefined;
   BottomTab:
     | {
         screen?:
