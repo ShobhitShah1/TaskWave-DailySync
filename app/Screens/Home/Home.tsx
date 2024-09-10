@@ -16,7 +16,7 @@ import { useFakeNotifications } from "../../Hooks/useFakeNotifications";
 import useThemeColors from "../../Theme/useThemeMode";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
-import FullScreenPreviewModal from "./Components/FullScreenPreviewModal";
+import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
 
 const Home = () => {
   const style = styles();
@@ -107,7 +107,6 @@ const Home = () => {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={renderEmptyView}
           contentContainerStyle={{ paddingBottom: 30 }}
-          // ListHeaderComponent={() => <RenderHeaderView />}
           renderItem={({ item }) => <ReminderCard notification={item} />}
         />
       </View>

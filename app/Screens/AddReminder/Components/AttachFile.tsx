@@ -3,14 +3,17 @@ import React, { FC, memo } from "react";
 import useThemeColors from "../../../Theme/useThemeMode";
 import { FONTS, SIZE } from "../../../Global/Theme";
 import AssetsPath from "../../../Global/AssetsPath";
+import { DocumentPickerResponse } from "react-native-document-picker";
 
 interface AttachFileProps {
   themeColor: string;
+  selectedDocuments: DocumentPickerResponse[];
   onHandelAttachmentClick: () => void;
 }
 
 const AttachFile: FC<AttachFileProps> = ({
   themeColor,
+  selectedDocuments,
   onHandelAttachmentClick,
 }) => {
   const colors = useThemeColors();
@@ -30,6 +33,20 @@ const AttachFile: FC<AttachFileProps> = ({
             source={AssetsPath.ic_attachment}
           />
         </Pressable>
+      </View>
+
+      <View style={styles.previewContainer}>
+        {selectedDocuments &&
+          selectedDocuments?.map(
+            (document: DocumentPickerResponse, index: number) => (
+              console.log(document),
+              (
+                <View key={index} style={styles.documentPreview}>
+                  <Text style={styles.documentName}>{document.type}</Text>
+                </View>
+              )
+            )
+          )}
       </View>
     </View>
   );
@@ -67,5 +84,25 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     resizeMode: "contain",
+  },
+
+  previewContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 10,
+  },
+  documentPreview: {
+    width: 60,
+    height: 60,
+    backgroundColor: "#f8d7da",
+    justifyContent: "center",
+    alignItems: "center",
+    margin: 5,
+    borderRadius: 8,
+  },
+  documentName: {
+    fontSize: 10,
+    color: "#333",
+    textAlign: "center",
   },
 });

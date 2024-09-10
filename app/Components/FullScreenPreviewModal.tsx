@@ -1,22 +1,21 @@
+import { FlashList } from "@shopify/flash-list";
 import React, { FC } from "react";
 import {
   Image,
   Pressable,
-  StatusBar,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from "react-native";
 import ReactNativeModal from "react-native-modal";
-import useThemeColors from "../../../Theme/useThemeMode";
-import { FlashList } from "@shopify/flash-list";
-import { useFakeNotifications } from "../../../Hooks/useFakeNotifications";
-import { FONTS, SIZE } from "../../../Global/Theme";
-import ReminderCard from "../../../Components/ReminderCard";
-import TextString from "../../../Global/TextString";
-import AssetsPath from "../../../Global/AssetsPath";
-import { useAppContext } from "../../../Contexts/ThemeProvider";
+import ReminderCard from "./ReminderCard";
+import { useAppContext } from "../Contexts/ThemeProvider";
+import AssetsPath from "../Global/AssetsPath";
+import TextString from "../Global/TextString";
+import { FONTS, SIZE } from "../Global/Theme";
+import { useFakeNotifications } from "../Hooks/useFakeNotifications";
+import useThemeColors from "../Theme/useThemeMode";
 
 interface FullScreenProps {
   isVisible: boolean;
@@ -85,13 +84,7 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
       style={style.container}
       backdropOpacity={0.5}
     >
-      <View
-        style={{
-          flex: 1,
-          width: "100%",
-          alignSelf: "center",
-        }}
-      >
+      <View style={style.mainContainer}>
         <View
           style={[
             style.listHeaderView,
@@ -113,19 +106,8 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
           </Pressable>
         </View>
 
-        <View
-          style={{
-            height: "90%",
-            backgroundColor: colors.background,
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              alignSelf: "center",
-              width: SIZE.appContainWidth,
-            }}
-          >
+        <View style={style.listContainer}>
+          <View style={style.listView}>
             <FlashList
               estimatedItemSize={300}
               data={fakeNotifications}
@@ -154,7 +136,11 @@ const styles = () => {
       height: "100%",
       width: "100%",
     },
-
+    mainContainer: {
+      flex: 1,
+      width: "100%",
+      alignSelf: "center",
+    },
     emptyViewContainer: {
       flex: 1,
       justifyContent: "center",
@@ -205,6 +191,15 @@ const styles = () => {
     fullScreenIcon: {
       width: 35,
       height: 35,
+    },
+    listContainer: {
+      height: "90%",
+      backgroundColor: colors.background,
+    },
+    listView: {
+      flex: 1,
+      alignSelf: "center",
+      width: SIZE.appContainWidth,
     },
   });
 };

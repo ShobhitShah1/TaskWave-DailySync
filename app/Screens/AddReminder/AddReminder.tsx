@@ -33,8 +33,9 @@ const AddReminder = () => {
   const [contacts, setContacts] = useState<SimplifiedContact[]>([]);
   const [contactModalVisible, setContactModalVisible] = useState(false);
 
-  const [selectedDocument, setSelectedDocument] =
-    useState<DocumentPickerResponse | null>(null);
+  const [selectedDocuments, setSelectedDocuments] = useState<
+    DocumentPickerResponse[]
+  >([]);
   const [pickerVisibleType, setPickerVisibleType] = useState<
     "date" | "time" | null
   >(null);
@@ -100,7 +101,7 @@ const AddReminder = () => {
         type: [DocumentPicker.types.allFiles],
       });
 
-      setSelectedDocument(result);
+      setSelectedDocuments((prev) => [...prev, result]);
       console.log("Document selected:", result);
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
@@ -151,6 +152,7 @@ const AddReminder = () => {
           />
           <AddMessage themeColor={createViewColor} />
           <AttachFile
+            selectedDocuments={selectedDocuments}
             themeColor={createViewColor}
             onHandelAttachmentClick={onHandelAttachmentClick}
           />
@@ -167,8 +169,6 @@ const AddReminder = () => {
               themeVariant="dark"
               display="default"
               onChange={(event, date) => {
-                console.log("Date:", date);
-                console.log("event", event);
                 setPickerVisibleType(null);
               }}
               negativeButton={{ label: "Cancel", textColor: colors.text }}
@@ -189,9 +189,9 @@ const AddReminder = () => {
       </View>
 
       <ContactListModal
+        contacts={contacts}
         isVisible={contactModalVisible}
         onClose={() => setContactModalVisible(false)}
-        contacts={contacts}
       />
     </View>
   );
