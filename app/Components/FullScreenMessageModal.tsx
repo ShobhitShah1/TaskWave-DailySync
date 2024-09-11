@@ -9,6 +9,8 @@ interface FullScreenMessageModalProps {
   onClose: () => void;
   themeColor: string;
   backgroundColor: string;
+  message: string;
+  onChangeText: (text: string) => void;
 }
 
 const FullScreenMessageModal: FC<FullScreenMessageModalProps> = ({
@@ -16,6 +18,8 @@ const FullScreenMessageModal: FC<FullScreenMessageModalProps> = ({
   onClose,
   themeColor,
   backgroundColor,
+  message,
+  onChangeText,
 }) => {
   const colors = useThemeColors();
 
@@ -52,6 +56,8 @@ const FullScreenMessageModal: FC<FullScreenMessageModalProps> = ({
           multiline
           spellCheck
           scrollEnabled
+          value={message}
+          onChangeText={onChangeText}
           selectionColor={themeColor}
           textAlignVertical="top"
           placeholder="Message"

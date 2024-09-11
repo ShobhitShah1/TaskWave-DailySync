@@ -1,4 +1,4 @@
-import React, { FC, memo, useMemo } from "react";
+import React, { FC, memo, useMemo, useState } from "react";
 import {
   Image,
   Pressable,
@@ -11,6 +11,7 @@ import { DocumentPickerResponse } from "react-native-document-picker";
 import AssetsPath from "../../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../../Global/Theme";
 import useThemeColors from "../../../Theme/useThemeMode";
+import ImagePreviewModal from "../../../Components/ImagePreviewModal";
 
 interface AttachFileProps {
   themeColor: string;
@@ -24,6 +25,10 @@ const AttachFile: FC<AttachFileProps> = ({
   onHandelAttachmentClick,
 }) => {
   const colors = useThemeColors();
+  const [showFilePreview, setShowFilePreview] = useState({
+    isVisible: false,
+    index: -1,
+  });
 
   const containerStyle = useMemo(
     () => [
@@ -38,16 +43,28 @@ const AttachFile: FC<AttachFileProps> = ({
     [themeColor]
   );
 
+  console.log(showFilePreview);
+
   const documentPreviews = useMemo(
     () =>
-      selectedDocuments.map((document: DocumentPickerResponse) => {
+      selectedDocuments.map((document: DocumentPickerResponse, index) => {
         const isImage = document.type?.startsWith("image");
         const documentStyle = isImage
           ? styles.fullImage
           : styles.attachmentIconSmall;
 
+        const onPressDoc = () => {
+          if (document.type?.startsWith("image")) {
+            setShowFilePreview({ isVisible: true, index });
+          }
+        };
+
         return (
-          <View key={document.uri} style={styles.documentPreview}>
+          <Pressable
+            onPress={onPressDoc}
+            key={document.uri}
+            style={styles.documentPreview}
+          >
             <Image
               resizeMode={isImage ? "cover" : "contain"}
               source={
@@ -56,11 +73,20 @@ const AttachFile: FC<AttachFileProps> = ({
               tintColor={isImage ? undefined : themeColor}
               style={documentStyle}
             />
-          </View>
+          </Pressable>
         );
       }),
     [selectedDocuments, themeColor]
   );
+
+  const imageUrls = useMemo(() => {
+    return (
+      selectedDocuments &&
+      selectedDocuments
+        .filter((doc) => doc.type?.startsWith("image") && doc.uri)
+        .map((doc) => doc.uri)
+    );
+  }, [selectedDocuments]);
 
   return (
     <View>
@@ -93,6 +119,13 @@ const AttachFile: FC<AttachFileProps> = ({
           {documentPreviews}
         </ScrollView>
       )}
+
+      <ImagePreviewModal
+        isVisible={showFilePreview.isVisible}
+        onClose={() => setShowFilePreview({ isVisible: false, index: -1 })}
+        images={imageUrls}
+        initialIndex={showFilePreview.index}
+      />
     </View>
   );
 };

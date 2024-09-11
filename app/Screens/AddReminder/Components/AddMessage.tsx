@@ -8,9 +8,15 @@ import useThemeColors from "../../../Theme/useThemeMode";
 
 interface AddMessageProps {
   themeColor: string;
+  message: string;
+  setMessage: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const AddMessage: FC<AddMessageProps> = ({ themeColor }) => {
+const AddMessage: FC<AddMessageProps> = ({
+  themeColor,
+  message,
+  setMessage,
+}) => {
   const style = styles();
   const colors = useThemeColors();
   const { theme } = useAppContext();
@@ -26,6 +32,13 @@ const AddMessage: FC<AddMessageProps> = ({ themeColor }) => {
     setFullScreen((prevState) => !prevState);
   }, []);
 
+  const onChangeText = useCallback(
+    (text: string) => {
+      setMessage(text);
+    },
+    [setMessage]
+  );
+
   return (
     <View
       style={[
@@ -37,6 +50,8 @@ const AddMessage: FC<AddMessageProps> = ({ themeColor }) => {
         multiline
         spellCheck
         scrollEnabled
+        value={message}
+        onChangeText={onChangeText}
         textAlignVertical="top"
         selectionColor={themeColor}
         placeholder="Message"
@@ -52,9 +67,11 @@ const AddMessage: FC<AddMessageProps> = ({ themeColor }) => {
       </Pressable>
 
       <FullScreenMessageModal
+        message={message}
         isVisible={fullScreen}
         onClose={toggleFullScreen}
         themeColor={themeColor}
+        onChangeText={onChangeText}
         backgroundColor={backgroundColor}
       />
     </View>

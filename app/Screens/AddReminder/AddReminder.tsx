@@ -33,6 +33,8 @@ const AddReminder = () => {
   const [contacts, setContacts] = useState<SimplifiedContact[]>([]);
   const [contactModalVisible, setContactModalVisible] = useState(false);
 
+  const [message, setMessage] = useState("");
+
   const [selectedDocuments, setSelectedDocuments] = useState<
     DocumentPickerResponse[]
   >([]);
@@ -143,6 +145,7 @@ const AddReminder = () => {
 
         <Animated.ScrollView
           style={style.itemsContainer}
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 50 }}
           showsVerticalScrollIndicator={false}
         >
@@ -150,7 +153,11 @@ const AddReminder = () => {
             onContactPress={onHandelContactClick}
             themeColor={createViewColor}
           />
-          <AddMessage themeColor={createViewColor} />
+          <AddMessage
+            message={message}
+            setMessage={setMessage}
+            themeColor={createViewColor}
+          />
           <AttachFile
             themeColor={createViewColor}
             selectedDocuments={selectedDocuments}
