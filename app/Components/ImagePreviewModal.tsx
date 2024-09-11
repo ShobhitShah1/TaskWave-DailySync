@@ -46,15 +46,8 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
 
   const renderImageItem = useCallback(
     ({ item }: { item: string }) => (
-      <View style={[styles.imageWrapper, { width, height }]}>
-        <View
-          style={{
-            borderRadius: 20,
-            overflow: "hidden",
-            width: width - 30,
-            height: height,
-          }}
-        >
+      <View style={[styles.imageWrapper, { width, height: "95%" }]}>
+        <View style={{ width: width - 30, height: height }}>
           <Image
             resizeMode="contain"
             source={{ uri: item }}
@@ -220,11 +213,12 @@ const useStyles = () => {
     },
     listHeaderView: {
       width: "100%",
+      height: "10%",
       paddingHorizontal: 10,
       justifyContent: "center",
       top: 20,
       left: 5,
-      position: "absolute",
+      //   position: "absolute",
     },
     backButtonImage: {
       width: 20,
