@@ -152,8 +152,8 @@ const AddReminder = () => {
           />
           <AddMessage themeColor={createViewColor} />
           <AttachFile
-            selectedDocuments={selectedDocuments}
             themeColor={createViewColor}
+            selectedDocuments={selectedDocuments}
             onHandelAttachmentClick={onHandelAttachmentClick}
           />
           <AddDateAndTime

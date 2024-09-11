@@ -1,9 +1,16 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import React, { FC, memo } from "react";
-import useThemeColors from "../../../Theme/useThemeMode";
-import { FONTS, SIZE } from "../../../Global/Theme";
-import AssetsPath from "../../../Global/AssetsPath";
+import React, { FC, memo, useMemo } from "react";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { DocumentPickerResponse } from "react-native-document-picker";
+import AssetsPath from "../../../Global/AssetsPath";
+import { FONTS, SIZE } from "../../../Global/Theme";
+import useThemeColors from "../../../Theme/useThemeMode";
 
 interface AttachFileProps {
   themeColor: string;
@@ -18,36 +25,74 @@ const AttachFile: FC<AttachFileProps> = ({
 }) => {
   const colors = useThemeColors();
 
+  const containerStyle = useMemo(
+    () => [
+      styles.container,
+      { marginBottom: selectedDocuments.length === 0 ? 15 : 10 },
+    ],
+    [selectedDocuments.length]
+  );
+
+  const attachmentIconViewStyle = useMemo(
+    () => [styles.attachmentIconView, { backgroundColor: themeColor }],
+    [themeColor]
+  );
+
+  const documentPreviews = useMemo(
+    () =>
+      selectedDocuments.map((document: DocumentPickerResponse) => {
+        const isImage = document.type?.startsWith("image");
+        const documentStyle = isImage
+          ? styles.fullImage
+          : styles.attachmentIconSmall;
+
+        return (
+          <View key={document.uri} style={styles.documentPreview}>
+            <Image
+              resizeMode={isImage ? "cover" : "contain"}
+              source={
+                isImage ? { uri: document.uri } : AssetsPath.ic_attachment
+              }
+              tintColor={isImage ? undefined : themeColor}
+              style={documentStyle}
+            />
+          </View>
+        );
+      }),
+    [selectedDocuments, themeColor]
+  );
+
   return (
-    <View style={[styles.container]}>
-      <View style={styles.flexView}>
-        <Text style={[styles.attachmentText, { color: colors.text }]}>
-          Attach File:
-        </Text>
-        <Pressable
-          onPress={onHandelAttachmentClick}
-          style={[styles.attachmentIconView, { backgroundColor: themeColor }]}
-        >
-          <Image
-            style={styles.attachmentIcon}
-            source={AssetsPath.ic_attachment}
-          />
-        </Pressable>
+    <View>
+      <View style={containerStyle}>
+        <View style={styles.flexView}>
+          <Text style={[styles.attachmentText, { color: colors.text }]}>
+            Attach File:
+          </Text>
+          <Pressable
+            onPress={onHandelAttachmentClick}
+            style={attachmentIconViewStyle}
+          >
+            <Image
+              resizeMode="contain"
+              style={styles.attachmentIcon}
+              source={AssetsPath.ic_attachment}
+            />
+          </Pressable>
+        </View>
       </View>
 
-      <View style={styles.previewContainer}>
-        {selectedDocuments &&
-          selectedDocuments?.map(
-            (document: DocumentPickerResponse, index: number) => (
-              console.log(document),
-              (
-                <View key={index} style={styles.documentPreview}>
-                  <Text style={styles.documentName}>{document.type}</Text>
-                </View>
-              )
-            )
-          )}
-      </View>
+      {selectedDocuments.length !== 0 && (
+        <ScrollView
+          horizontal
+          removeClippedSubviews={true}
+          style={styles.previewContainer}
+          contentContainerStyle={styles.scrollContent}
+          showsHorizontalScrollIndicator={false}
+        >
+          {documentPreviews}
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -57,7 +102,6 @@ export default memo(AttachFile);
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    marginBottom: 20,
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
@@ -83,26 +127,31 @@ const styles = StyleSheet.create({
   attachmentIcon: {
     width: 18,
     height: 18,
-    resizeMode: "contain",
   },
-
   previewContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginTop: 10,
+    marginBottom: 15,
+    marginTop: 5,
+  },
+  scrollContent: {
+    gap: 10,
   },
   documentPreview: {
-    width: 60,
-    height: 60,
+    width: 65,
+    height: 65,
     backgroundColor: "#f8d7da",
     justifyContent: "center",
     alignItems: "center",
-    margin: 5,
+    overflow: "hidden",
     borderRadius: 8,
   },
-  documentName: {
-    fontSize: 10,
-    color: "#333",
-    textAlign: "center",
+  fullImage: {
+    width: "100%",
+    height: "100%",
+  },
+  attachmentIconSmall: {
+    width: 40,
+    height: 40,
   },
 });

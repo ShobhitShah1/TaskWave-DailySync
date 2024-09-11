@@ -65,7 +65,7 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
       animationInTiming={800}
       // statusBarTranslucent
       // deviceHeight={height + (StatusBar.currentHeight || 20)}
-      animationOutTiming={800}
+      animationOutTiming={300}
       hideModalContentWhileAnimating
       animationOut={"fadeOutDown"}
       customBackdrop={
