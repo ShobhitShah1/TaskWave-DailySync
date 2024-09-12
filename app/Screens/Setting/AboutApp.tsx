@@ -43,7 +43,7 @@ const AboutApp = () => {
           <Text style={style.versionText}>App Virson 1.0</Text>
         </View>
 
-        <View style={style.section}>
+        <View style={[style.section, { borderBottomWidth: 0 }]}>
           <Text style={style.productText}>
             Product by{`\n`}
             <Text style={style.productSubText}>nirvanatechlabs</Text>
