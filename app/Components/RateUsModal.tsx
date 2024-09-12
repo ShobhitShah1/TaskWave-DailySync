@@ -24,11 +24,11 @@ const RateUsModal: FC<RateUsModalProps> = ({ isVisible, onClose }) => {
   return (
     <ReactNativeModal
       isVisible={isVisible}
-      animationIn="fadeInUp"
-      animationInTiming={800}
-      animationOutTiming={800}
+      animationIn="fadeIn"
+      animationInTiming={300}
+      animationOutTiming={300}
       hideModalContentWhileAnimating
-      animationOut="fadeOutDown"
+      animationOut="fadeOut"
       customBackdrop={
         <Pressable style={style.customBackdrop} onPress={onClose} />
       }
@@ -49,7 +49,7 @@ const RateUsModal: FC<RateUsModalProps> = ({ isVisible, onClose }) => {
                 onPress={() => handleEmojiSelect(index)}
                 style={[
                   style.emojiWrapper,
-                  selectedIndex === index && style.selectedEmojiBackground, // Apply background color if selected
+                  selectedIndex === index && style.selectedEmojiBackground,
                 ]}
               >
                 <Image source={emoji} style={style.emoji} />
@@ -88,6 +88,15 @@ const styles = (colors: any) =>
     },
     rateUsViewContainer: {
       alignItems: "center",
+      shadowColor: "red",
+      shadowOffset: {
+        width: 0,
+        height: 5,
+      },
+      shadowOpacity: 0.34,
+      shadowRadius: 6.27,
+
+      elevation: 10,
     },
     rateUsTitle: {
       fontFamily: FONTS.Medium,
@@ -149,7 +158,7 @@ const styles = (colors: any) =>
     },
     customBackdrop: {
       flex: 1,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      backgroundColor: "rgba(48, 51, 52, 0.5)",
     },
   });
 

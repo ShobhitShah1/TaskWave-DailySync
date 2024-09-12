@@ -5,16 +5,17 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import BottomTab from "./BottomTab";
-import { RootStackParamList } from "../Types/Interface";
-import useThemeColors from "../Theme/useThemeMode";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AddReminder from "../Screens/AddReminder/AddReminder";
 import ReminderScheduled from "../Screens/AddReminder/ReminderScheduled";
-import ReminderPreview from "../Screens/Preview/ReminderPreview";
 import OnBoarding from "../Screens/OnBoarding/Index";
+import ReminderPreview from "../Screens/Preview/ReminderPreview";
+import AboutApp from "../Screens/Setting/AboutApp";
+import useThemeColors from "../Theme/useThemeMode";
+import { RootStackParamList } from "../Types/Interface";
+import BottomTab from "./BottomTab";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -56,6 +57,7 @@ const Routes = () => {
             component={ReminderScheduled}
           />
           <Stack.Screen name="ReminderPreview" component={ReminderPreview} />
+          <Stack.Screen name="AboutApp" component={AboutApp} />
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>

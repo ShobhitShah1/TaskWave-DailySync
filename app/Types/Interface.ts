@@ -30,6 +30,7 @@ export type RootStackParamList = {
   ReminderPreview: {
     notificationData: Notification;
   };
+  AboutApp: undefined;
 };
 
 export interface ReusableBottomSheetProps {

@@ -7,9 +7,12 @@ import useThemeColors from "../../Theme/useThemeMode";
 import SettingItem from "./Components/SettingItem";
 import Share from "react-native-share";
 import RateUsModal from "../../Components/RateUsModal";
+import { useNavigation } from "@react-navigation/native";
 
 const Settings = () => {
   const style = styles();
+  const navigation = useNavigation();
+
   const [modalStatus, setModalStatus] = useState({
     rateUs: false,
   });
@@ -27,7 +30,11 @@ const Settings = () => {
           });
       },
     },
-    { title: "Privacy Policy", icon: AssetsPath.ic_support, onPress: () => {} },
+    {
+      title: "Privacy Policy",
+      icon: AssetsPath.ic_support,
+      onPress: () => {},
+    },
     {
       title: "Rate us",
       icon: AssetsPath.ic_star,
@@ -35,7 +42,11 @@ const Settings = () => {
         setModalStatus({ ...modalStatus, rateUs: !modalStatus.rateUs }),
     },
     { title: "Contact us", icon: AssetsPath.ic_contact, onPress: () => {} },
-    { title: "About app", icon: AssetsPath.ic_info, onPress: () => {} },
+    {
+      title: "About app",
+      icon: AssetsPath.ic_info,
+      onPress: () => navigation.navigate("AboutApp"),
+    },
     { title: "How app works", icon: AssetsPath.ic_info, onPress: () => {} },
   ];
 

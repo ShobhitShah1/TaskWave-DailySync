@@ -11,11 +11,13 @@ import { useNavigation } from "@react-navigation/native";
 
 interface IHomeHeaderProps {
   hideGrid?: boolean;
+  title?: string;
   hideThemeButton?: boolean;
 }
 
 const HomeHeader = ({
   hideGrid,
+  title,
   hideThemeButton = false,
 }: IHomeHeaderProps) => {
   const colors = useThemeColors();
@@ -66,7 +68,7 @@ const HomeHeader = ({
           )}
         </View>
         <Text style={[styles.titleText, { color: colors.text }]}>
-          {TextString.DailySync}
+          {title || TextString.DailySync}
         </Text>
         <View style={{ width: 70, height: 35 }}>
           {!hideThemeButton && (
