@@ -39,11 +39,15 @@ const ic_star = require("../../assets/Icons/ic_star.png");
 const ic_contact = require("../../assets/Icons/ic_contact.png");
 const ic_support = require("../../assets/Icons/ic_support.png");
 
+const ic_sad = require("../../assets/Icons/ic_sad.png");
+const ic_happy = require("../../assets/Icons/ic_happy.png");
+const ic_mid = require("../../assets/Icons/ic_mid.png");
+
 //* Images
-const ob_Email = require("../../assets/Images/ob_Email.webp");
-const ob_TextMessage = require("../../assets/Images/ob_TextMessage.webp");
-const ob_Whatsapp = require("../../assets/Images/ob_Whatsapp.webp");
-const ob_WhatsappBusiness = require("../../assets/Images/ob_WhatsappBusiness.webp");
+const ob_Email = require("../../assets/Images/ob_Email.png");
+const ob_TextMessage = require("../../assets/Images/ob_TextMessage.png");
+const ob_Whatsapp = require("../../assets/Images/ob_Whatsapp.png");
+const ob_WhatsappBusiness = require("../../assets/Images/ob_WhatsappBusiness.png");
 
 export default {
   //* Icons
@@ -80,6 +84,9 @@ export default {
   ic_star,
   ic_contact,
   ic_support,
+  ic_sad,
+  ic_happy,
+  ic_mid,
 
   //* Images
   ob_Email,

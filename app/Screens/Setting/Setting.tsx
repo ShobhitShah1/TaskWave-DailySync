@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import WithBackHeader from "../../Components/WithBackHeader";
 import AssetsPath from "../../Global/AssetsPath";
@@ -6,9 +6,13 @@ import { SIZE } from "../../Global/Theme";
 import useThemeColors from "../../Theme/useThemeMode";
 import SettingItem from "./Components/SettingItem";
 import Share from "react-native-share";
+import RateUsModal from "../../Components/RateUsModal";
 
 const Settings = () => {
   const style = styles();
+  const [modalStatus, setModalStatus] = useState({
+    rateUs: false,
+  });
   const settingsData = [
     {
       title: "Share",
@@ -24,7 +28,12 @@ const Settings = () => {
       },
     },
     { title: "Privacy Policy", icon: AssetsPath.ic_support, onPress: () => {} },
-    { title: "Rate us", icon: AssetsPath.ic_star, onPress: () => {} },
+    {
+      title: "Rate us",
+      icon: AssetsPath.ic_star,
+      onPress: () =>
+        setModalStatus({ ...modalStatus, rateUs: !modalStatus.rateUs }),
+    },
     { title: "Contact us", icon: AssetsPath.ic_contact, onPress: () => {} },
     { title: "About app", icon: AssetsPath.ic_info, onPress: () => {} },
     { title: "How app works", icon: AssetsPath.ic_info, onPress: () => {} },
@@ -50,6 +59,11 @@ const Settings = () => {
           />
         ))}
       </View>
+
+      <RateUsModal
+        isVisible={modalStatus.rateUs}
+        onClose={() => setModalStatus({ ...modalStatus, rateUs: false })}
+      />
     </View>
   );
 };
