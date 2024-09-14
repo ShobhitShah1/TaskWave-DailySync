@@ -41,32 +41,12 @@ function getRandomElement<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function generateFutureTime(): string {
-  const now = new Date();
-  const futureTime = new Date(
-    now.getTime() + Math.floor(Math.random() * 60 * 60 * 1000)
-  );
-  const hours = futureTime.getHours();
-  const minutes = futureTime.getMinutes();
-  const ampm = hours >= 12 ? "PM" : "AM";
-  const formattedHours = hours % 12 || 12;
-
-  return `${formattedHours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
-}
-
-function generateFutureTimer(): string {
+function generateRandomDate(): Date {
   const now = new Date();
   const futureTime = new Date(
     now.getTime() + Math.floor(Math.random() * 24 * 60 * 60 * 1000)
   );
-  const diffMilliseconds = futureTime.getTime() - now.getTime();
-  const hours = Math.floor(diffMilliseconds / (1000 * 60 * 60));
-  const minutes = Math.floor(
-    (diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
-  );
-  const seconds = Math.floor((diffMilliseconds % (1000 * 60)) / 1000);
-
-  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  return futureTime;
 }
 
 function generateRandomNotification(id: number): Notification {
@@ -75,15 +55,10 @@ function generateRandomNotification(id: number): Notification {
     type: getRandomElement(notificationTypes),
     senderName: getRandomElement(senderNames),
     message: getRandomElement(messages),
-    time: generateFutureTime(),
-    timer: generateFutureTimer(),
+    date: generateRandomDate(), // Using the new date property
     isRead: Math.random() > 0.5,
     actions: Array.from(
-      new Set([
-        getRandomElement(actions),
-        getRandomElement(actions),
-        getRandomElement(actions),
-      ])
+      new Set([getRandomElement(actions), getRandomElement(actions)])
     ),
   };
 }

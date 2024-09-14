@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   titleText: {
-    left: 13,
+    left: 17,
     fontSize: 24,
     fontFamily: FONTS.Medium,
   },

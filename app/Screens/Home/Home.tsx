@@ -1,6 +1,8 @@
 import { FlashList } from "@shopify/flash-list";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
+  Button,
   Image,
   Pressable,
   Text,
@@ -17,6 +19,8 @@ import useThemeColors from "../../Theme/useThemeMode";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
 import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
+import useDatabase from "../../Hooks/useReminder";
+import { Contact, Notification } from "../../Types/Interface";
 
 const Home = () => {
   const style = styles();
@@ -25,9 +29,54 @@ const Home = () => {
   const fakeNotifications = useFakeNotifications(100);
   const [fullScreenPreview, setFullScreenPreview] = useState(false);
 
+  const {
+    createNotification,
+    getAllNotifications,
+    updateNotification,
+    deleteNotification,
+  } = useDatabase();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  useEffect(() => {
+    console.log("notifications:", notifications);
+  }, [notifications]);
+
+  const loadNotifications = async () => {
+    const allNotifications = await getAllNotifications();
+    setNotifications(allNotifications);
+  };
+
+  const handleCreateNotification = async () => {
+    const newNotification: Notification = {
+      id: `new ${Math.random()}`,
+      type: "whatsapp",
+      message: "Remember to call",
+      date: new Date(Date.now() + 86400000), // Tomorrow
+      to: [
+        { name: "John Doe", number: "+1234567890" },
+        { name: "Jane Doe", number: "+0987654321" },
+      ],
+      subject: "",
+      attachments: [],
+    };
+    const newId = await createNotification(newNotification);
+    if (newId === null) {
+      Alert.alert(
+        "Error",
+        "Failed to create notification. Database might not be initialized."
+      );
+    } else {
+      loadNotifications();
+    }
+  };
+
   const renderEmptyView = () => {
     return (
-      <View style={[style.emptyViewContainer, { width, height: height - 50 }]}>
+      <View style={[style.emptyViewContainer, { width, height: "80%" }]}>
         <Image
           style={style.emptyDateTimeImage}
           source={AssetsPath.ic_emptyDateTime}
@@ -70,12 +119,14 @@ const Home = () => {
 
   return (
     <View style={style.container}>
-      <HomeHeader hideGrid={fakeNotifications?.length === 0} />
+      <HomeHeader hideGrid={notifications?.length === 0} />
+
+      {/* <Button onPress={() => handleCreateNotification()} title="Create" /> */}
 
       <View
         style={{ flex: 1, width: SIZE.appContainWidth, alignSelf: "center" }}
       >
-        {fakeNotifications?.length !== 0 && (
+        {notifications?.length !== 0 && (
           <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>
             <View style={style.dateContainer}>
               <Text style={style.todayText}>Today</Text>
@@ -99,16 +150,19 @@ const Home = () => {
 
         <Animated.View></Animated.View>
 
-        <RenderHeaderView />
+        {notifications?.length !== 0 && <RenderHeaderView />}
 
-        <FlashList
-          estimatedItemSize={300}
-          data={fakeNotifications}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={renderEmptyView}
-          contentContainerStyle={{ paddingBottom: 30 }}
-          renderItem={({ item }) => <ReminderCard notification={item} />}
-        />
+        <View style={{ flex: 1, zIndex: 99999 }}>
+          <FlashList
+            extraData={true}
+            data={notifications}
+            estimatedItemSize={300}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={renderEmptyView}
+            contentContainerStyle={{ paddingBottom: 30 }}
+            renderItem={({ item }) => <ReminderCard notification={item} />}
+          />
+        </View>
       </View>
 
       <FullScreenPreviewModal

@@ -48,7 +48,7 @@ const Routes = () => {
               route?.name === "OnBoarding" ? colors.white : colors.bottomTab,
           })}
         >
-          <Stack.Screen name="OnBoarding" component={OnBoarding} />
+          {/* <Stack.Screen name="OnBoarding" component={OnBoarding} /> */}
           <Stack.Screen name="BottomTab" component={BottomTab} />
           {/* Create Reminder Is Add Reminder Added In Bottom Tab Also */}
           <Stack.Screen name="CreateReminder" component={AddReminder} />

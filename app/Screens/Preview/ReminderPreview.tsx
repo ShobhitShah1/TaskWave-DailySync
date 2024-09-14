@@ -28,7 +28,7 @@ const ReminderPreview = () => {
   }, [params, notificationData]);
 
   const { createViewColor, icon } = useNotificationIconColors(notificationType);
-  const { formattedTimeLeft } = useCountdownTimer(notificationData?.timer);
+  const { formattedTimeLeft } = useCountdownTimer(notificationData?.date);
 
   const [hours, minutes, seconds] = formattedTimeLeft.split(" : ");
 

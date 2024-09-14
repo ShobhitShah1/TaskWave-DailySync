@@ -7,7 +7,7 @@ interface CountdownTimerHook {
 }
 
 export function useCountdownTimer(
-  initialTime: string,
+  endDate: Date,
   onTimeOver?: () => void
 ): CountdownTimerHook {
   const [timeLeft, setTimeLeft] = useState("00:00:00");
@@ -16,12 +16,11 @@ export function useCountdownTimer(
   );
   const [timeIsOver, setTimeIsOver] = useState(false);
   const intervalId = useRef<NodeJS.Timeout | null>(null);
-  const endTime = useRef<Date>(calculateEndTime(initialTime));
 
   useEffect(() => {
     const updateTimer = () => {
       const now = new Date();
-      const diff = endTime.current.getTime() - now.getTime();
+      const diff = endDate.getTime() - now.getTime();
 
       if (diff <= 0) {
         setTimeLeft("00:00:00");
@@ -54,7 +53,6 @@ export function useCountdownTimer(
     }
 
     intervalId.current = setInterval(updateTimer, 1000);
-
     updateTimer();
 
     return () => {
@@ -62,16 +60,7 @@ export function useCountdownTimer(
         clearInterval(intervalId.current);
       }
     };
-  }, [initialTime, onTimeOver]);
+  }, [endDate, onTimeOver]);
 
   return { timeLeft, formattedTimeLeft, timeIsOver };
-}
-
-function calculateEndTime(initialTime: string): Date {
-  const [hours, minutes, seconds] = initialTime.split(":").map(Number);
-  const now = new Date();
-
-  return new Date(
-    now.getTime() + (hours * 3600 + minutes * 60 + seconds) * 1000
-  );
 }

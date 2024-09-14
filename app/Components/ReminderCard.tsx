@@ -29,7 +29,8 @@ const ReminderCard: React.FC<ReminderCardProps> = ({ notification }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
   const navigation = useNavigation();
-  const { timeLeft } = useCountdownTimer(notification.timer);
+  const { timeLeft } = useCountdownTimer(notification.date);
+
   const notificationColors = useNotificationIconColors(notification.type);
 
   const cardBackgroundColor = useMemo(() => {
@@ -95,7 +96,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({ notification }) => {
               numberOfLines={1}
               style={[styles.senderName, { color: colors.text }]}
             >
-              {notification.senderName}
+              {notification?.to?.[0]?.name}
             </Text>
             <Text
               numberOfLines={3}
@@ -128,7 +129,11 @@ const ReminderCard: React.FC<ReminderCardProps> = ({ notification }) => {
         <View style={styles.footerContainer}>
           <View style={styles.timeContainer}>
             <Text style={[styles.timeText, { color: typeColor }]}>
-              {notification.time}
+              {new Date(notification.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
             </Text>
             <View style={[styles.separator, { borderColor: typeColor }]} />
             <View style={styles.countdownContainer}>

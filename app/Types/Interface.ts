@@ -46,15 +46,19 @@ export type NotificationType =
   | "SMS"
   | "gmail";
 
+export interface Contact {
+  name: string;
+  number: string;
+}
+
 export interface Notification {
   id: string;
   type: NotificationType;
-  senderName: string;
   message: string;
-  time: string;
-  timer: string;
-  isRead: boolean;
-  actions: string[];
+  date: Date;
+  to: Contact[];
+  subject: string;
+  attachments: string[];
 }
 
 export interface SimplifiedContact {
