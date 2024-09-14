@@ -53,7 +53,7 @@ const styles = () => {
     },
     emptyViewContainer: {
       flex: 1,
-      justifyContent: "center",
+      justifyContent: "flex-end",
       alignItems: "center",
     },
     emptyDateTimeImage: {

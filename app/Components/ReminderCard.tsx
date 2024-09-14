@@ -1,7 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { memo, useCallback, useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import { FONTS } from "../Global/Theme";
@@ -13,6 +12,7 @@ import { formatNotificationType } from "../Utils/formatNotificationType";
 import { getNotificationIcon } from "../Utils/getNotificationIcon";
 
 const LOGO_SIZE = 65;
+
 export interface ReminderCardProps {
   notification: Notification;
 }
@@ -30,7 +30,6 @@ const ReminderCard: React.FC<ReminderCardProps> = ({ notification }) => {
   const { theme } = useAppContext();
   const navigation = useNavigation();
   const { timeLeft } = useCountdownTimer(notification.date);
-
   const notificationColors = useNotificationIconColors(notification.type);
 
   const cardBackgroundColor = useMemo(() => {
@@ -72,8 +71,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({ notification }) => {
   }, [notification]);
 
   return (
-    <Animated.View
-      entering={FadeIn.duration(1 * Number(notification.id))}
+    <View
       style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}
     >
       <Pressable style={styles.pressableContainer} onPress={onCardPress}>
@@ -172,7 +170,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({ notification }) => {
           </View>
         </View>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 };
 

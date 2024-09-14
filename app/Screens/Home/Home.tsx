@@ -1,53 +1,48 @@
-import { FlashList } from "@shopify/flash-list";
+import { useIsFocused } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
-  Button,
   Image,
   Pressable,
   Text,
   useWindowDimensions,
   View,
 } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeIn,
+  LinearTransition,
+} from "react-native-reanimated";
+import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
 import ReminderCard from "../../Components/ReminderCard";
 import AssetsPath from "../../Global/AssetsPath";
 import TextString from "../../Global/TextString";
 import { SIZE } from "../../Global/Theme";
-import { useFakeNotifications } from "../../Hooks/useFakeNotifications";
+import useDatabase from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
+import { Notification } from "../../Types/Interface";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
-import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
-import useDatabase from "../../Hooks/useReminder";
-import { Contact, Notification } from "../../Types/Interface";
 
 const Home = () => {
   const style = styles();
   const colors = useThemeColors();
+  const isFocus = useIsFocused();
   const { height, width } = useWindowDimensions();
-  const fakeNotifications = useFakeNotifications(100);
   const [fullScreenPreview, setFullScreenPreview] = useState(false);
 
-  const {
-    createNotification,
-    getAllNotifications,
-    updateNotification,
-    deleteNotification,
-  } = useDatabase();
+  const { createNotification, getAllNotifications } = useDatabase();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
-    loadNotifications();
-  }, []);
-
-  useEffect(() => {
-    console.log("notifications:", notifications);
-  }, [notifications]);
+    if (isFocus) loadNotifications();
+  }, [isFocus]);
 
   const loadNotifications = async () => {
     const allNotifications = await getAllNotifications();
-    setNotifications(allNotifications);
+    if (allNotifications) {
+      setNotifications(allNotifications.reverse());
+    }
   };
 
   const handleCreateNotification = async () => {
@@ -76,7 +71,7 @@ const Home = () => {
 
   const renderEmptyView = () => {
     return (
-      <View style={[style.emptyViewContainer, { width, height: "80%" }]}>
+      <View style={[style.emptyViewContainer, { width, height: height - 180 }]}>
         <Image
           style={style.emptyDateTimeImage}
           source={AssetsPath.ic_emptyDateTime}
@@ -152,14 +147,15 @@ const Home = () => {
 
         {notifications?.length !== 0 && <RenderHeaderView />}
 
-        <View style={{ flex: 1, zIndex: 99999 }}>
-          <FlashList
-            extraData={true}
+        <View style={{ flex: 1, height }}>
+          <Animated.FlatList
             data={notifications}
-            estimatedItemSize={300}
+            extraData={notifications}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={renderEmptyView}
             contentContainerStyle={{ paddingBottom: 30 }}
+            keyExtractor={(item, index) => index.toString()}
+            layout={LinearTransition.easing(Easing.ease).duration(500)}
             renderItem={({ item }) => <ReminderCard notification={item} />}
           />
         </View>

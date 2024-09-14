@@ -19,6 +19,8 @@ import DocumentPicker, {
 } from "react-native-document-picker";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
+import AddMailTo from "./Components/AddMailTo";
+import AddMailSubject from "./Components/AddMailSubject";
 
 type NotificationProps = {
   params: { notificationType: NotificationType };
@@ -34,6 +36,9 @@ const AddReminder = () => {
   const [contactModalVisible, setContactModalVisible] = useState(false);
 
   const [message, setMessage] = useState("");
+
+  const [to, setTo] = useState("");
+  const [subject, setSubject] = useState("");
 
   const [selectedDocuments, setSelectedDocuments] = useState<
     DocumentPickerResponse[]
@@ -90,10 +95,11 @@ const AddReminder = () => {
 
       setContacts(simplifiedContacts);
       setContactModalVisible(true);
-      console.log("Simplified Contacts:", simplifiedContacts);
-    } catch (error) {
-      console.error("Error fetching contacts:", error);
-      Alert.alert("Error", "Failed to fetch contacts.");
+    } catch (error: any) {
+      Alert.alert(
+        "Error",
+        String(error?.message) || "Failed to fetch contacts."
+      );
     }
   };
 
@@ -104,7 +110,6 @@ const AddReminder = () => {
       });
 
       setSelectedDocuments((prev) => [...prev, result]);
-      console.log("Document selected:", result);
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
         console.log("User canceled document picker");
@@ -149,25 +154,45 @@ const AddReminder = () => {
           contentContainerStyle={{ paddingBottom: 50 }}
           showsVerticalScrollIndicator={false}
         >
-          <AddContact
-            onContactPress={onHandelContactClick}
-            themeColor={createViewColor}
-          />
-          <AddMessage
-            message={message}
-            setMessage={setMessage}
-            themeColor={createViewColor}
-          />
+          {notificationType === "gmail" && (
+            <AddMailTo to={to} setTo={setTo} themeColor={createViewColor} />
+          )}
+
+          {notificationType === "gmail" && (
+            <AddMailSubject
+              subject={subject}
+              setSubject={setSubject}
+              themeColor={createViewColor}
+            />
+          )}
+
+          {notificationType !== "gmail" && (
+            <AddContact
+              onContactPress={onHandelContactClick}
+              themeColor={createViewColor}
+            />
+          )}
+
+          {notificationType !== "gmail" && (
+            <AddMessage
+              message={message}
+              setMessage={setMessage}
+              themeColor={createViewColor}
+            />
+          )}
+
           <AttachFile
             themeColor={createViewColor}
             selectedDocuments={selectedDocuments}
             onHandelAttachmentClick={onHandelAttachmentClick}
           />
+
           <AddDateAndTime
             themeColor={createViewColor}
             onDatePress={() => setPickerVisibleType("date")}
             onTimePress={() => setPickerVisibleType("time")}
           />
+
           {pickerVisibleType && (
             <RNDateTimePicker
               value={new Date()}
