@@ -9,12 +9,14 @@ interface AddDateAndTimeProps {
   themeColor: string;
   onDatePress: () => void;
   onTimePress: () => void;
+  selectedDateAndTime: { date: Date | undefined; time: Date | undefined };
 }
 
 const AddDateAndTime: FC<AddDateAndTimeProps> = ({
   themeColor,
   onDatePress,
   onTimePress,
+  selectedDateAndTime,
 }) => {
   const colors = useThemeColors();
 
@@ -43,7 +45,9 @@ const AddDateAndTime: FC<AddDateAndTimeProps> = ({
               numberOfLines={1}
               style={[styles.valueText, { color: colors.text }]}
             >
-              DD/MM/YY
+              {selectedDateAndTime?.date
+                ? new Date(selectedDateAndTime.date).toLocaleDateString()
+                : "DD / MM / YY"}
             </Text>
           </Pressable>
         </View>
@@ -66,7 +70,9 @@ const AddDateAndTime: FC<AddDateAndTimeProps> = ({
               numberOfLines={1}
               style={[styles.valueText, { color: colors.text }]}
             >
-              Time
+              {selectedDateAndTime?.time
+                ? new Date(selectedDateAndTime.time).toLocaleTimeString()
+                : "Time"}
             </Text>
           </Pressable>
         </View>

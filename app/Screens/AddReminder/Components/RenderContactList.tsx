@@ -14,8 +14,8 @@ import { useAppContext } from "../../../Contexts/ThemeProvider";
 
 interface RenderContactListProps {
   contacts: SimplifiedContact;
-  selectedContacts: string[];
-  handleSelectContact: (contactId: string) => void;
+  selectedContacts: SimplifiedContact[];
+  handleSelectContact: (contactId: SimplifiedContact) => void;
 }
 
 const RenderContactList: React.FC<RenderContactListProps> = ({
@@ -29,7 +29,9 @@ const RenderContactList: React.FC<RenderContactListProps> = ({
 
   const scale = useSharedValue(0.8);
   const opacity = useSharedValue(0);
-  const isSelected = selectedContacts.includes(contacts.recordID);
+  const isSelected = selectedContacts.some(
+    (contact) => contact.recordID === contacts.recordID
+  );
 
   useEffect(() => {
     runOnUI(() => {
@@ -63,7 +65,7 @@ const RenderContactList: React.FC<RenderContactListProps> = ({
   return (
     <Animated.View style={[style.contactItemContainer, animatedStyle]}>
       <Pressable
-        onPress={() => handleSelectContact(contacts.recordID)}
+        onPress={() => handleSelectContact(contacts)}
         style={{ flexDirection: "row", padding: 15 }}
       >
         {contacts.thumbnailPath && (

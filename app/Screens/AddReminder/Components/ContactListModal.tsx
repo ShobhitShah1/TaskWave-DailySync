@@ -24,17 +24,22 @@ interface ContactListModalProps {
   isVisible: boolean;
   onClose: () => void;
   contacts: SimplifiedContact[];
+  selectedContacts: SimplifiedContact[];
+  setSelectedContacts: React.Dispatch<
+    React.SetStateAction<SimplifiedContact[]>
+  >;
 }
 
 const ContactListModal: FC<ContactListModalProps> = ({
   isVisible,
   onClose,
   contacts,
+  selectedContacts,
+  setSelectedContacts,
 }) => {
   const style = styles();
   const colors = useThemeColors();
   const [searchText, setSearchText] = useState("");
-  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
 
   const filteredContacts = useMemo(
     () =>
@@ -46,11 +51,11 @@ const ContactListModal: FC<ContactListModalProps> = ({
     [contacts, searchText]
   );
 
-  const handleSelectContact = useCallback((contactId: string) => {
+  const handleSelectContact = useCallback((contact: SimplifiedContact) => {
     setSelectedContacts((prevSelectedContacts) =>
-      prevSelectedContacts.includes(contactId)
-        ? prevSelectedContacts.filter((id) => id !== contactId)
-        : [...prevSelectedContacts, contactId]
+      prevSelectedContacts.some((c) => c.recordID === contact.recordID)
+        ? prevSelectedContacts.filter((c) => c.recordID !== contact.recordID)
+        : [...prevSelectedContacts, contact]
     );
   }, []);
 

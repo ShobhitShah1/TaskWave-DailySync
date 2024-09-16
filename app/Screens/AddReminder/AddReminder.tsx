@@ -21,6 +21,7 @@ import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 import AddMailTo from "./Components/AddMailTo";
 import AddMailSubject from "./Components/AddMailSubject";
+import AddScheduleFrequency from "./Components/AddScheduleFrequency";
 
 type NotificationProps = {
   params: { notificationType: NotificationType };
@@ -33,6 +34,9 @@ const AddReminder = () => {
   const { params } = useRoute<RouteProp<NotificationProps, "params">>();
 
   const [contacts, setContacts] = useState<SimplifiedContact[]>([]);
+  const [selectedContacts, setSelectedContacts] = useState<SimplifiedContact[]>(
+    []
+  );
   const [contactModalVisible, setContactModalVisible] = useState(false);
 
   const [message, setMessage] = useState("");
@@ -46,6 +50,14 @@ const AddReminder = () => {
   const [pickerVisibleType, setPickerVisibleType] = useState<
     "date" | "time" | null
   >(null);
+
+  const [selectedDateAndTime, setSelectedDateAndTime] = useState<{
+    date: Date | undefined;
+    time: Date | undefined;
+  }>({
+    date: undefined,
+    time: undefined,
+  });
 
   const notificationType = useMemo(() => {
     return params.notificationType;
@@ -101,6 +113,14 @@ const AddReminder = () => {
         String(error?.message) || "Failed to fetch contacts."
       );
     }
+  };
+
+  const handleRemoveContact = (contactToRemove: SimplifiedContact) => {
+    setSelectedContacts((prevContacts) =>
+      prevContacts.filter(
+        (contact) => contact.recordID !== contactToRemove.recordID
+      )
+    );
   };
 
   const onHandelAttachmentClick = useCallback(async () => {
@@ -170,6 +190,8 @@ const AddReminder = () => {
             <AddContact
               onContactPress={onHandelContactClick}
               themeColor={createViewColor}
+              selectedContacts={selectedContacts}
+              onRemoveContact={handleRemoveContact}
             />
           )}
 
@@ -187,20 +209,39 @@ const AddReminder = () => {
             onHandelAttachmentClick={onHandelAttachmentClick}
           />
 
+          <AddScheduleFrequency themeColor={createViewColor} />
+
           <AddDateAndTime
             themeColor={createViewColor}
+            selectedDateAndTime={selectedDateAndTime}
             onDatePress={() => setPickerVisibleType("date")}
             onTimePress={() => setPickerVisibleType("time")}
           />
 
           {pickerVisibleType && (
             <RNDateTimePicker
-              value={new Date()}
+              value={
+                pickerVisibleType === "date"
+                  ? selectedDateAndTime.date || new Date() // default to current date if no date is selected
+                  : selectedDateAndTime.time || new Date() // default to current time if no time is selected
+              }
               mode={pickerVisibleType}
               is24Hour={true}
               themeVariant="dark"
               display="default"
-              onChange={(event, date) => {
+              onChange={(event, selectedDate) => {
+                if (event.type === "set" && selectedDate) {
+                  const updatedDateTime =
+                    pickerVisibleType === "date"
+                      ? { date: selectedDate }
+                      : { time: selectedDate };
+
+                  setSelectedDateAndTime((prev) => ({
+                    ...prev,
+                    ...updatedDateTime,
+                  }));
+                }
+
                 setPickerVisibleType(null);
               }}
               negativeButton={{ label: "Cancel", textColor: colors.text }}
@@ -224,6 +265,8 @@ const AddReminder = () => {
         contacts={contacts}
         isVisible={contactModalVisible}
         onClose={() => setContactModalVisible(false)}
+        setSelectedContacts={setSelectedContacts}
+        selectedContacts={selectedContacts}
       />
     </View>
   );
