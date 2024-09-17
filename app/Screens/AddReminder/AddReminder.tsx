@@ -1,27 +1,29 @@
+import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useCallback, useMemo, useState } from "react";
-import { Alert, Image, Pressable, StatusBar, Text, View } from "react-native";
+import { Alert, Image, Pressable, Text, View } from "react-native";
 import Contacts from "react-native-contacts";
+import DocumentPicker, {
+  DocumentPickerResponse,
+} from "react-native-document-picker";
 import Animated from "react-native-reanimated";
 import AssetsPath from "../../Global/AssetsPath";
 import useContactPermission from "../../Hooks/useContactPermission";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useThemeColors from "../../Theme/useThemeMode";
 import { NotificationType, SimplifiedContact } from "../../Types/Interface";
+import { formatNotificationType } from "../../Utils/formatNotificationType";
 import AddContact from "./Components/AddContact";
 import AddDateAndTime from "./Components/AddDateAndTime";
+import AddMailSubject from "./Components/AddMailSubject";
+import AddMailTo from "./Components/AddMailTo";
 import AddMessage from "./Components/AddMessage";
+import AddScheduleFrequency, {
+  FrequencyType,
+} from "./Components/AddScheduleFrequency";
 import AttachFile from "./Components/AttachFile";
 import ContactListModal from "./Components/ContactListModal";
 import styles from "./styles";
-import DocumentPicker, {
-  DocumentPickerResponse,
-} from "react-native-document-picker";
-import RNDateTimePicker from "@react-native-community/datetimepicker";
-import { formatNotificationType } from "../../Utils/formatNotificationType";
-import AddMailTo from "./Components/AddMailTo";
-import AddMailSubject from "./Components/AddMailSubject";
-import AddScheduleFrequency from "./Components/AddScheduleFrequency";
 
 type NotificationProps = {
   params: { notificationType: NotificationType };
@@ -58,6 +60,9 @@ const AddReminder = () => {
     date: undefined,
     time: undefined,
   });
+
+  const [scheduleFrequency, setScheduleFrequency] =
+    useState<FrequencyType | null>(null);
 
   const notificationType = useMemo(() => {
     return params.notificationType;
@@ -139,6 +144,14 @@ const AddReminder = () => {
     }
   }, []);
 
+  const onRemoveDocument = (index: number) => {
+    const updatedDocuments = selectedDocuments.filter(
+      (_document, i) => i !== index
+    );
+
+    setSelectedDocuments(updatedDocuments);
+  };
+
   const RenderHeader = () => {
     const onBackPress = () => {
       if (navigation.canGoBack()) {
@@ -205,11 +218,16 @@ const AddReminder = () => {
 
           <AttachFile
             themeColor={createViewColor}
+            onRemoveDocument={onRemoveDocument}
             selectedDocuments={selectedDocuments}
             onHandelAttachmentClick={onHandelAttachmentClick}
           />
 
-          <AddScheduleFrequency themeColor={createViewColor} />
+          <AddScheduleFrequency
+            themeColor={createViewColor}
+            scheduleFrequency={scheduleFrequency}
+            setScheduleFrequency={setScheduleFrequency}
+          />
 
           <AddDateAndTime
             themeColor={createViewColor}

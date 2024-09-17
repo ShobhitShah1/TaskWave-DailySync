@@ -12,17 +12,24 @@ import AssetsPath from "../../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../../Global/Theme";
 import useThemeColors from "../../../Theme/useThemeMode";
 import ImagePreviewModal from "../../../Components/ImagePreviewModal";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 
 interface AttachFileProps {
   themeColor: string;
   selectedDocuments: DocumentPickerResponse[];
   onHandelAttachmentClick: () => void;
+  onRemoveDocument: (index: number) => void;
 }
 
 const AttachFile: FC<AttachFileProps> = ({
   themeColor,
   selectedDocuments,
   onHandelAttachmentClick,
+  onRemoveDocument,
 }) => {
   const colors = useThemeColors();
   const [showFilePreview, setShowFilePreview] = useState({
@@ -43,8 +50,6 @@ const AttachFile: FC<AttachFileProps> = ({
     [themeColor]
   );
 
-  console.log(showFilePreview);
-
   const documentPreviews = useMemo(
     () =>
       selectedDocuments.map((document: DocumentPickerResponse, index) => {
@@ -59,21 +64,39 @@ const AttachFile: FC<AttachFileProps> = ({
           }
         };
 
+        const onRemove = () => {
+          onRemoveDocument(index);
+        };
+
         return (
-          <Pressable
-            onPress={onPressDoc}
-            key={document.uri}
-            style={styles.documentPreview}
-          >
-            <Image
-              resizeMode={isImage ? "cover" : "contain"}
-              source={
-                isImage ? { uri: document.uri } : AssetsPath.ic_attachment
-              }
-              tintColor={isImage ? undefined : themeColor}
-              style={documentStyle}
-            />
-          </Pressable>
+          <React.Fragment key={document.uri}>
+            <Animated.View
+              style={styles.documentPreview}
+              exiting={FadeOut}
+              entering={FadeIn}
+              layout={LinearTransition.springify(300)}
+            >
+              <Pressable
+                onPress={onPressDoc}
+                onLongPress={onRemove}
+                key={document.uri}
+                style={styles.imageButton}
+              >
+                <Image
+                  resizeMode={isImage ? "cover" : "contain"}
+                  source={
+                    isImage ? { uri: document.uri } : AssetsPath.ic_attachment
+                  }
+                  tintColor={isImage ? undefined : themeColor}
+                  style={documentStyle}
+                />
+              </Pressable>
+            </Animated.View>
+
+            {/* <Pressable style={styles.cancelButton} onPress={onRemove}>
+              <Text style={styles.cancelText}>×</Text>
+            </Pressable> */}
+          </React.Fragment>
         );
       }),
     [selectedDocuments, themeColor]
@@ -95,16 +118,18 @@ const AttachFile: FC<AttachFileProps> = ({
           <Text style={[styles.attachmentText, { color: colors.text }]}>
             Attach File:
           </Text>
-          <Pressable
-            onPress={onHandelAttachmentClick}
-            style={attachmentIconViewStyle}
-          >
-            <Image
-              resizeMode="contain"
-              style={styles.attachmentIcon}
-              source={AssetsPath.ic_attachment}
-            />
-          </Pressable>
+          <Animated.View>
+            <Pressable
+              onPress={onHandelAttachmentClick}
+              style={attachmentIconViewStyle}
+            >
+              <Image
+                resizeMode="contain"
+                style={styles.attachmentIcon}
+                source={AssetsPath.ic_attachment}
+              />
+            </Pressable>
+          </Animated.View>
         </View>
       </View>
 
@@ -137,6 +162,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     flexDirection: "row",
+    overflow: "visible",
     justifyContent: "space-between",
     borderRadius: SIZE.listBorderRadius,
   },
@@ -176,7 +202,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8d7da",
     justifyContent: "center",
     alignItems: "center",
-    overflow: "hidden",
     borderRadius: 8,
   },
   fullImage: {
@@ -186,5 +211,31 @@ const styles = StyleSheet.create({
   attachmentIconSmall: {
     width: 40,
     height: 40,
+  },
+  imageButton: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+    borderRadius: 8,
+  },
+
+  cancelButton: {
+    position: "absolute",
+    top: -5,
+    zIndex: 9999,
+    right: -5,
+    width: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f00",
+    borderRadius: 10,
+  },
+  cancelText: {
+    color: "#fff",
+    fontSize: 18,
+    lineHeight: 20,
   },
 });

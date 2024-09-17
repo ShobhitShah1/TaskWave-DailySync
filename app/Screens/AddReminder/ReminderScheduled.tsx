@@ -22,7 +22,11 @@ const ReminderScheduled = () => {
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
-  const { formattedTimeLeft } = useCountdownTimer("12:00:00");
+  const { formattedTimeLeft, timeLeft } = useCountdownTimer(
+    new Date(Date.now() + 24 * 60 * 60 * 1000)
+  );
+  console.log(formattedTimeLeft, timeLeft);
+
   const { params } = useRoute<RouteProp<ReminderScheduledProps, "params">>();
 
   const themeColor = useMemo(() => {

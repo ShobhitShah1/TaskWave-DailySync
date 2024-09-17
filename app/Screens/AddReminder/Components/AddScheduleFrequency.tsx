@@ -1,30 +1,30 @@
-import React, { FC, useState } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
-import useThemeColors from "../../../Theme/useThemeMode";
+import React, { FC } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated from "react-native-reanimated";
+import { FONTS } from "../../../Global/Theme";
+import useThemeColors from "../../../Theme/useThemeMode";
 
-const frequencies = ["Daily", "Weekly", "Monthly", "Yearly"];
+export const frequencies = ["Daily", "Weekly", "Monthly", "Yearly"];
+
+export type FrequencyType = (typeof frequencies)[number];
 
 interface AddScheduleFrequencyProps {
   themeColor: string;
+  scheduleFrequency: FrequencyType | null;
+  setScheduleFrequency: React.Dispatch<
+    React.SetStateAction<FrequencyType | null>
+  >;
 }
 
 const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
   themeColor,
+  scheduleFrequency,
+  setScheduleFrequency,
 }) => {
-  const [selectedFrequencies, setSelectedFrequencies] = useState<string>("");
-  //   const [selectedFrequencies, setSelectedFrequencies] = useState<string[]>([]);
   const colors = useThemeColors();
 
   const toggleFrequency = (frequency: string) => {
-    setSelectedFrequencies(frequency);
-
-    //* Multiple
-    // setSelectedFrequencies((prev) =>
-    //   prev.includes(frequency)
-    //     ? prev.filter((item) => item !== frequency)
-    //     : [...prev, frequency]
-    // );
+    setScheduleFrequency(frequency);
   };
 
   return (
@@ -32,25 +32,24 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
       <Text style={[styles.title, { color: colors.text }]}>Reminder:</Text>
       <View style={styles.checkboxContainer}>
         {frequencies.map((frequency) => (
-          <Animated.View style={styles.checkboxContainer}>
+          <Animated.View key={frequency} style={styles.checkboxContainer}>
             <Pressable
-              key={frequency}
               style={[
                 styles.checkbox,
                 {
                   borderColor:
-                    selectedFrequencies === frequency
+                    scheduleFrequency === frequency
                       ? themeColor
                       : colors.grayTitle,
                   backgroundColor:
-                    selectedFrequencies === frequency
+                    scheduleFrequency === frequency
                       ? colors.primary
                       : "transparent",
                 },
               ]}
               onPress={() => toggleFrequency(frequency)}
             >
-              {selectedFrequencies.includes(frequency) && (
+              {scheduleFrequency?.includes(frequency) && (
                 <Text style={styles.checkmark}>✓</Text>
               )}
             </Pressable>
@@ -72,16 +71,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 16,
-    marginBottom: 10,
+    fontFamily: FONTS.Medium,
+    fontSize: 19,
+    marginBottom: 18,
   },
   checkboxContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
   checkbox: {
-    width: 24,
-    height: 24,
+    width: 22,
+    height: 22,
     borderRadius: 4,
     borderWidth: 2,
     alignItems: "center",
