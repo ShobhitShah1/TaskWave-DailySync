@@ -10,8 +10,16 @@ import Animated from "react-native-reanimated";
 import AssetsPath from "../../Global/AssetsPath";
 import useContactPermission from "../../Hooks/useContactPermission";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
+import useDatabase, {
+  scheduleNotificationWithNotifee,
+} from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
-import { NotificationType, SimplifiedContact } from "../../Types/Interface";
+import {
+  Contact,
+  Notification,
+  NotificationType,
+  SimplifiedContact,
+} from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 import AddContact from "./Components/AddContact";
 import AddDateAndTime from "./Components/AddDateAndTime";
@@ -34,6 +42,7 @@ const AddReminder = () => {
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { params } = useRoute<RouteProp<NotificationProps, "params">>();
+  const { createNotification } = useDatabase();
 
   const [contacts, setContacts] = useState<SimplifiedContact[]>([]);
   const [selectedContacts, setSelectedContacts] = useState<SimplifiedContact[]>(
@@ -65,7 +74,7 @@ const AddReminder = () => {
     useState<FrequencyType | null>(null);
 
   const notificationType = useMemo(() => {
-    return params.notificationType;
+    return params.notificationType as NotificationType;
   }, [params]);
 
   const { createViewColor } = useNotificationIconColors(notificationType);
@@ -150,6 +159,83 @@ const AddReminder = () => {
     );
 
     setSelectedDocuments(updatedDocuments);
+  };
+
+  const validateFields = () => {
+    if (notificationType === "gmail") {
+      if (
+        !to ||
+        !subject ||
+        !selectedDateAndTime.date ||
+        !selectedDateAndTime.time
+      ) {
+        Alert.alert(
+          "Validation Error",
+          "All fields are required: 'To', 'Subject', 'Date', and 'Time'."
+        );
+        return false;
+      }
+    } else {
+      if (
+        !selectedContacts.length ||
+        !message ||
+        !selectedDateAndTime.date ||
+        !selectedDateAndTime.time
+      ) {
+        Alert.alert(
+          "Validation Error",
+          "All fields are required: 'Contact(s)', 'Message', 'Date', and 'Time'."
+        );
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleCreateNotification = async () => {
+    if (validateFields()) {
+      const extractedContacts: Contact[] = selectedContacts.map((contact) => ({
+        name: contact.displayName,
+        number: contact.phoneNumbers?.[0]?.number || "",
+      }));
+
+      const notificationData: Notification = {
+        type: notificationType,
+        message: message || "",
+        date: new Date(
+          selectedDateAndTime.date!.getFullYear(),
+          selectedDateAndTime.date!.getMonth(),
+          selectedDateAndTime.date!.getDate(),
+          selectedDateAndTime.time!.getHours(),
+          selectedDateAndTime.time!.getMinutes()
+        ),
+        subject: notificationType === "gmail" ? subject : undefined,
+        to: extractedContacts,
+        attachments: [],
+      };
+
+      console.log("notificationData:", notificationData);
+
+      const notificationSchedule =
+        await scheduleNotificationWithNotifee(notificationData);
+      console.log("notificationSchedule", notificationSchedule);
+
+      if (notificationSchedule?.trim()) {
+        const data = {
+          ...notificationData,
+          id: notificationSchedule,
+        };
+        const createNotificationSchedule = await createNotification(data);
+        console.log("createNotificationSchedule:", createNotificationSchedule);
+
+        navigation.navigate("ReminderScheduled", {
+          themeColor: createViewColor,
+          notification: data,
+        });
+      } else {
+        Alert.alert("Failed to schedule notification.");
+      }
+    }
   };
 
   const RenderHeader = () => {
@@ -268,11 +354,7 @@ const AddReminder = () => {
         </Animated.ScrollView>
 
         <Pressable
-          onPress={() =>
-            navigation.navigate("ReminderScheduled", {
-              themeColor: createViewColor,
-            })
-          }
+          onPress={handleCreateNotification}
           style={[style.createButton, { backgroundColor: createViewColor }]}
         >
           <Text style={style.createButtonText}>Create</Text>

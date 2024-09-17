@@ -20,7 +20,7 @@ export function useCountdownTimer(
   useEffect(() => {
     const updateTimer = () => {
       const now = new Date();
-      const diff = endDate.getTime() - now.getTime();
+      const diff = endDate?.getTime() - now?.getTime();
 
       if (diff <= 0) {
         setTimeLeft("00:00:00");

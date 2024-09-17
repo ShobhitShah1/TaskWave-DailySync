@@ -12,9 +12,49 @@ import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useThemeColors from "../../Theme/useThemeMode";
+import { Notification } from "../../Types/Interface";
+import TextString from "../../Global/TextString";
 
 type ReminderScheduledProps = {
-  params: { themeColor: string };
+  params: { themeColor: string; notification: Notification };
+};
+
+const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const monthsOfYear = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+export const formatTime = (date: Date) => {
+  const hours = date.getHours() % 12 || 12; // Convert 24-hour to 12-hour format
+  const minutes = date.getMinutes().toString().padStart(2, "0"); // Add leading 0 if needed
+  const ampm = date.getHours() >= 12 ? "PM" : "AM"; // AM or PM
+  return `${hours}:${minutes} ${ampm}`;
+};
+
+// Function to format the date part (e.g., Thu, Jan 23)
+export const formatDate = (date: Date) => {
+  const dayName = daysOfWeek[date.getDay()]; // e.g., Thu
+  const day = date.getDate(); // e.g., 23
+  const month = monthsOfYear[date.getMonth()]; // e.g., Jan
+  return `${dayName}, ${month} ${day}`;
+};
+
+// Function to join both the date and time parts (optional)
+export const formatDateTime = (date: Date) => {
+  const formattedTime = formatTime(date);
+  const formattedDate = formatDate(date);
+  return `${formattedTime} on ${formattedDate}`;
 };
 
 const ReminderScheduled = () => {
@@ -22,15 +62,18 @@ const ReminderScheduled = () => {
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
-  const { formattedTimeLeft, timeLeft } = useCountdownTimer(
-    new Date(Date.now() + 24 * 60 * 60 * 1000)
-  );
-  console.log(formattedTimeLeft, timeLeft);
-
   const { params } = useRoute<RouteProp<ReminderScheduledProps, "params">>();
+
+  const { formattedTimeLeft, timeLeft } = useCountdownTimer(
+    params?.notification?.date
+  );
 
   const themeColor = useMemo(() => {
     return params?.themeColor;
+  }, [params]);
+
+  const notificationData = useMemo(() => {
+    return params?.notification;
   }, [params]);
 
   const [hours, minutes, seconds] = formattedTimeLeft.split(" : ");
@@ -72,11 +115,11 @@ const ReminderScheduled = () => {
               <View style={style.userInfo}>
                 <Image
                   resizeMode="cover"
-                  source={{ uri: "https://picsum.photos/200/300" }}
+                  source={AssetsPath.ic_appLogo}
                   style={style.userImage}
                 />
                 <Text style={[style.userName, { color: colors.white }]}>
-                  Shobhit
+                  {TextString.TaskWave}
                 </Text>
               </View>
               <Text style={[style.timeAgo, { color: colors.white08 }]}>
@@ -85,8 +128,7 @@ const ReminderScheduled = () => {
             </View>
 
             <Text style={[style.notificationText, { color: colors.white08 }]}>
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry
+              {notificationData.message || "No Message Available"}
             </Text>
 
             <Image
@@ -99,8 +141,7 @@ const ReminderScheduled = () => {
           <Text
             style={[style.receivedNotificationText, { color: colors.text }]}
           >
-            You have received a notification at 8:30 PM on Thus, Jan 23, tap on
-            it.
+            {`You have received a notification at ${formatDateTime(notificationData.date)}, tap on it.`}
           </Text>
         </View>
       </View>

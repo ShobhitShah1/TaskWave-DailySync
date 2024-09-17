@@ -9,26 +9,27 @@ import {
   View,
 } from "react-native";
 import ReactNativeModal from "react-native-modal";
-import ReminderCard from "./ReminderCard";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import TextString from "../Global/TextString";
 import { FONTS, SIZE } from "../Global/Theme";
-import { useFakeNotifications } from "../Hooks/useFakeNotifications";
 import useThemeColors from "../Theme/useThemeMode";
+import { Notification } from "../Types/Interface";
+import ReminderCard from "./ReminderCard";
 
 interface FullScreenProps {
   isVisible: boolean;
   onClose: () => void;
+  notifications: Notification[];
 }
 
 const FullScreenPreviewModal: FC<FullScreenProps> = ({
   isVisible,
   onClose,
+  notifications,
 }) => {
   const style = styles();
   const { theme } = useAppContext();
-  const fakeNotifications = useFakeNotifications(100);
   const { height, width } = useWindowDimensions();
   const colors = useThemeColors();
 
@@ -110,7 +111,7 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
           <View style={style.listView}>
             <FlashList
               estimatedItemSize={300}
-              data={fakeNotifications}
+              data={notifications}
               stickyHeaderHiddenOnScroll={true}
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={renderEmptyView}

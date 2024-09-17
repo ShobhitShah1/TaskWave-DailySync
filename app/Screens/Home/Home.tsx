@@ -1,9 +1,9 @@
 import { useIsFocused } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  Alert,
   Image,
   Pressable,
+  RefreshControl,
   Text,
   useWindowDimensions,
   View,
@@ -31,43 +31,44 @@ const Home = () => {
   const { height, width } = useWindowDimensions();
   const [fullScreenPreview, setFullScreenPreview] = useState(false);
 
-  const { createNotification, getAllNotifications } = useDatabase();
+  const { getAllNotifications, deleteNotification, initializeDatabase } =
+    useDatabase();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadNotifications();
+    setRefreshing(false);
+  }, []);
 
   useEffect(() => {
     if (isFocus) loadNotifications();
   }, [isFocus]);
 
   const loadNotifications = async () => {
-    const allNotifications = await getAllNotifications();
-    if (allNotifications) {
-      setNotifications(allNotifications.reverse());
+    try {
+      const allNotifications = await getAllNotifications();
+      console.log("Fetched Notifications:", allNotifications);
+      if (allNotifications && allNotifications.length > 0) {
+        setNotifications(allNotifications.reverse());
+      } else {
+        setNotifications([]);
+      }
+    } catch (error) {
+      console.error("Error loading notifications:", error);
     }
   };
 
-  const handleCreateNotification = async () => {
-    const newNotification: Notification = {
-      id: `new ${Math.random()}`,
-      type: "whatsapp",
-      message: "Remember to call",
-      date: new Date(Date.now() + 86400000), // Tomorrow
-      to: [
-        { name: "John Doe", number: "+1234567890" },
-        { name: "Jane Doe", number: "+0987654321" },
-      ],
-      subject: "",
-      attachments: [],
-    };
-    const newId = await createNotification(newNotification);
-    if (newId === null) {
-      Alert.alert(
-        "Error",
-        "Failed to create notification. Database might not be initialized."
-      );
-    } else {
-      loadNotifications();
+  const deleteReminder = useCallback(async (id?: string) => {
+    if (!id) {
+      return;
     }
-  };
+
+    const deleteResponse = await deleteNotification(id);
+    console.log("deleteResponse:", deleteResponse);
+    loadNotifications();
+  }, []);
 
   const renderEmptyView = () => {
     return (
@@ -116,8 +117,6 @@ const Home = () => {
     <View style={style.container}>
       <HomeHeader hideGrid={notifications?.length === 0} />
 
-      {/* <Button onPress={() => handleCreateNotification()} title="Create" /> */}
-
       <View
         style={{ flex: 1, width: SIZE.appContainWidth, alignSelf: "center" }}
       >
@@ -151,18 +150,32 @@ const Home = () => {
           <Animated.FlatList
             data={notifications}
             extraData={notifications}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                progressBackgroundColor={colors.background}
+                colors={[colors.text]}
+                onRefresh={onRefresh}
+              />
+            }
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={renderEmptyView}
             contentContainerStyle={{ paddingBottom: 30 }}
             keyExtractor={(item, index) => index.toString()}
             layout={LinearTransition.easing(Easing.ease).duration(500)}
-            renderItem={({ item }) => <ReminderCard notification={item} />}
+            renderItem={({ item }) => (
+              <ReminderCard
+                notification={item}
+                deleteReminder={deleteReminder}
+              />
+            )}
           />
         </View>
       </View>
 
       <FullScreenPreviewModal
         isVisible={fullScreenPreview}
+        notifications={notifications}
         onClose={() => setFullScreenPreview(false)}
       />
     </View>

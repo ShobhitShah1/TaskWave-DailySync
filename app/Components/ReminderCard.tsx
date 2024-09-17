@@ -10,11 +10,13 @@ import useThemeColors from "../Theme/useThemeMode";
 import { Notification } from "../Types/Interface";
 import { formatNotificationType } from "../Utils/formatNotificationType";
 import { getNotificationIcon } from "../Utils/getNotificationIcon";
+import useDatabase from "../Hooks/useReminder";
 
 const LOGO_SIZE = 65;
 
 export interface ReminderCardProps {
   notification: Notification;
+  deleteReminder: (id?: string) => void;
 }
 
 export interface NotificationColor {
@@ -25,7 +27,10 @@ export interface NotificationColor {
   icon: number;
 }
 
-const ReminderCard: React.FC<ReminderCardProps> = ({ notification }) => {
+const ReminderCard: React.FC<ReminderCardProps> = ({
+  notification,
+  deleteReminder,
+}) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
   const navigation = useNavigation();
@@ -74,7 +79,11 @@ const ReminderCard: React.FC<ReminderCardProps> = ({ notification }) => {
     <View
       style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}
     >
-      <Pressable style={styles.pressableContainer} onPress={onCardPress}>
+      <Pressable
+        onPress={onCardPress}
+        onLongPress={() => deleteReminder(notification?.id)}
+        style={styles.pressableContainer}
+      >
         <View style={styles.rowContainer}>
           <View style={styles.logoWrapper}>
             <View

@@ -8,6 +8,7 @@ import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useThemeColors from "../../Theme/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
+import { formatDate, formatTime } from "../AddReminder/ReminderScheduled";
 
 type NotificationProps = {
   params: { notificationData: Notification };
@@ -97,10 +98,10 @@ const ReminderPreview = () => {
           <View style={style.reminderDetails}>
             <View style={style.reminderDateTime}>
               <Text style={[style.dateTimeText, { color: colors.text }]}>
-                Mon, jan 23
+                {formatDate(notificationData.date)}
               </Text>
               <Text style={[style.dateTimeText, { color: colors.text }]}>
-                8:30 pm
+                {formatTime(notificationData.date)}
               </Text>
             </View>
 
@@ -111,12 +112,7 @@ const ReminderPreview = () => {
               ]}
             >
               <Text style={[style.reminderCardText, { color: colors.text }]}>
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has been the industry's standard dummy
-                text ever since the 1500s, when an unknown printer took a galley
-                of type and scrambled it to make a type specimen book. It has
-                survived not only five centuries but also the leap into
-                electronic
+                {notificationData.message || notificationData.subject}
               </Text>
             </View>
           </View>

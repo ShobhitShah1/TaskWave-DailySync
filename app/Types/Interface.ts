@@ -26,6 +26,7 @@ export type RootStackParamList = {
   };
   ReminderScheduled: {
     themeColor: string;
+    notification: Notification;
   };
   ReminderPreview: {
     notificationData: Notification;
@@ -52,12 +53,12 @@ export interface Contact {
 }
 
 export interface Notification {
-  id: string;
+  id?: string;
   type: NotificationType;
   message: string;
   date: Date;
   to: Contact[];
-  subject: string;
+  subject: string | undefined;
   attachments: string[];
 }
 

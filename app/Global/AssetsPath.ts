@@ -43,6 +43,8 @@ const ic_sad = require("../../assets/Icons/ic_sad.png");
 const ic_happy = require("../../assets/Icons/ic_happy.png");
 const ic_mid = require("../../assets/Icons/ic_mid.png");
 
+const ic_appLogo = require("../../assets/Icons/ic_appLogo.png");
+
 //* Images
 const ob_Email = require("../../assets/Images/ob_Email.png");
 const ob_TextMessage = require("../../assets/Images/ob_TextMessage.png");
@@ -87,6 +89,7 @@ export default {
   ic_sad,
   ic_happy,
   ic_mid,
+  ic_appLogo,
 
   //* Images
   ob_Email,
