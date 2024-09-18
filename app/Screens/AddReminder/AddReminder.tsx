@@ -254,6 +254,7 @@ const AddReminder = () => {
           toContact: extractedContacts,
           toMail: [to],
           attachments: selectedDocuments,
+          scheduleFrequency: scheduleFrequency,
         };
 
         console.log("notificationData:", notificationData);

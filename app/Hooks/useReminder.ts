@@ -1,36 +1,52 @@
 import { useState, useEffect } from "react";
 import * as SQLite from "expo-sqlite";
 import notifee, {
+  AndroidImportance,
+  AndroidVisibility,
   RepeatFrequency,
   TimestampTrigger,
   TriggerType,
 } from "@notifee/react-native";
 import { Contact, Notification } from "../Types/Interface";
 
+let CHANNEL_ID = "reminder";
+let CHANNEL_NAME = "Reminder";
+
 export const scheduleNotificationWithNotifee = async (
   notification: Notification
 ): Promise<string | null> => {
   try {
-    const { date, type, message, subject } = notification;
+    const { date, type, message, subject, scheduleFrequency } = notification;
 
     await notifee.requestPermission();
 
     const channelId = await notifee.createChannel({
-      id: "reminder",
-      name: "Reminder",
+      id: CHANNEL_ID,
+      name: CHANNEL_NAME,
+      visibility: AndroidVisibility.PUBLIC,
+      importance: AndroidImportance.HIGH,
     });
 
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
       timestamp: date.getTime(),
-      repeatFrequency: RepeatFrequency.DAILY,
+      repeatFrequency:
+        scheduleFrequency === "Daily"
+          ? RepeatFrequency.DAILY
+          : scheduleFrequency === "Weekly"
+            ? RepeatFrequency.WEEKLY
+            : undefined,
     };
 
     const notifeeNotificationId = await notifee.createTriggerNotification(
       {
         title: type === "gmail" ? subject : "New Message",
         body: message,
-        android: { channelId },
+        android: {
+          channelId,
+          visibility: AndroidVisibility.PUBLIC,
+          importance: AndroidImportance.HIGH,
+        },
       },
       trigger
     );
@@ -65,7 +81,8 @@ const useReminder = () => {
         message TEXT NOT NULL,
         date TEXT NOT NULL,
         subject TEXT,
-        attachments TEXT
+        attachments TEXT,
+        scheduleFrequency TEXT
       );
       CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,9 +113,9 @@ const useReminder = () => {
       notification;
 
     const insertNotificationSQL = `
-      INSERT INTO notifications (id, type, message, date, subject, attachments)
-      VALUES ('${notifeeNotificationId}', '${type}', '${message}', '${date.toISOString()}', '${subject}', '${JSON.stringify(attachments)}')
-    `;
+  INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency)
+  VALUES ('${notifeeNotificationId}', '${type}', '${message}', '${date.toISOString()}', '${subject}', '${JSON.stringify(attachments)}', '${notification.scheduleFrequency}')
+`;
 
     let insertContactsSQL = "";
 
@@ -140,6 +157,13 @@ const useReminder = () => {
     const { id, type, message, date, toContact, toMail, subject, attachments } =
       notification;
 
+    const channelId = await notifee.createChannel({
+      id: CHANNEL_ID,
+      name: CHANNEL_NAME,
+      visibility: AndroidVisibility.PUBLIC,
+      importance: AndroidImportance.HIGH,
+    });
+
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
       timestamp: date.getTime(),
@@ -151,6 +175,11 @@ const useReminder = () => {
           id,
           title: type === "gmail" ? subject : undefined,
           body: message,
+          android: {
+            channelId,
+            visibility: AndroidVisibility.PUBLIC,
+            importance: AndroidImportance.HIGH,
+          },
         },
         trigger
       );
@@ -160,11 +189,12 @@ const useReminder = () => {
     }
 
     const updateNotificationSQL = `
-      UPDATE notifications
-      SET type = '${type}', message = '${message}', date = '${date.toISOString()}',
-          subject = '${subject}', attachments = '${JSON.stringify(attachments)}'
-      WHERE id = '${id}'
-    `;
+  UPDATE notifications
+  SET type = '${type}', message = '${message}', date = '${date.toISOString()}',
+      subject = '${subject}', attachments = '${JSON.stringify(attachments)}',
+      scheduleFrequency = '${notification.scheduleFrequency}'
+  WHERE id = '${id}'
+`;
 
     const deleteContactsSQL = `
       DELETE FROM contacts WHERE notification_id = '${id}'
@@ -241,6 +271,7 @@ const useReminder = () => {
       result.push({
         ...notification,
         date: new Date(notification.date),
+        scheduleFrequency: notification.scheduleFrequency, // Add this
         toContact: contacts.filter((contact) => contact.number !== null),
         toMail: contacts
           .filter((contact) => contact.number === null)

@@ -1,4 +1,5 @@
 import { DocumentPickerResponse } from "react-native-document-picker";
+import { FrequencyType } from "../Screens/AddReminder/Components/AddScheduleFrequency";
 
 declare global {
   namespace ReactNavigation {
@@ -63,6 +64,7 @@ export interface Notification {
   toMail: string[];
   subject: string | undefined;
   attachments: DocumentPickerResponse[];
+  scheduleFrequency: FrequencyType | null;
 }
 
 export interface SimplifiedContact {
