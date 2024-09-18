@@ -1,7 +1,9 @@
 import { useIsFocused } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   Image,
+  Linking,
   Pressable,
   RefreshControl,
   Text,
@@ -11,6 +13,7 @@ import {
 import Animated, {
   Easing,
   FadeIn,
+  FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
 import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
@@ -23,6 +26,8 @@ import useThemeColors from "../../Theme/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
+import { PERMISSIONS, request } from "react-native-permissions";
+import useNotificationPermission from "../../Hooks/useNotificationPermission";
 
 const Home = () => {
   const style = styles();
@@ -33,6 +38,8 @@ const Home = () => {
 
   const { getAllNotifications, deleteNotification, initializeDatabase } =
     useDatabase();
+  const { permissionStatus, requestPermission, checkPermission } =
+    useNotificationPermission();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -43,8 +50,16 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    if (isFocus) loadNotifications();
+    if (isFocus) {
+      loadNotifications();
+    }
   }, [isFocus]);
+
+  useEffect(() => {
+    if (permissionStatus !== "granted") {
+      requestPermission();
+    }
+  }, [permissionStatus]);
 
   const loadNotifications = async () => {
     try {
@@ -62,12 +77,23 @@ const Home = () => {
 
   const deleteReminder = useCallback(async (id?: string) => {
     if (!id) {
+      Alert.alert("Error", "Invalid reminder ID");
       return;
     }
 
-    const deleteResponse = await deleteNotification(id);
-    console.log("deleteResponse:", deleteResponse);
-    loadNotifications();
+    Alert.alert("Confirmation", "Are you sure you want to delete this?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        onPress: async () => {
+          await deleteNotification(id);
+          loadNotifications();
+        },
+      },
+    ]);
   }, []);
 
   const renderEmptyView = () => {
@@ -162,7 +188,9 @@ const Home = () => {
             ListEmptyComponent={renderEmptyView}
             contentContainerStyle={{ paddingBottom: 30 }}
             keyExtractor={(item, index) => index.toString()}
-            layout={LinearTransition.easing(Easing.ease).duration(500)}
+            layout={LinearTransition.stiffness(200)}
+            entering={FadeIn}
+            exiting={FadeOut}
             renderItem={({ item }) => (
               <ReminderCard
                 notification={item}

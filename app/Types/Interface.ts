@@ -1,3 +1,5 @@
+import { DocumentPickerResponse } from "react-native-document-picker";
+
 declare global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}
@@ -57,9 +59,10 @@ export interface Notification {
   type: NotificationType;
   message: string;
   date: Date;
-  to: Contact[];
+  toContact: Contact[];
+  toMail: string[];
   subject: string | undefined;
-  attachments: string[];
+  attachments: DocumentPickerResponse[];
 }
 
 export interface SimplifiedContact {

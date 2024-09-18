@@ -3,14 +3,12 @@ import * as SQLite from "expo-sqlite";
 import notifee, { TimestampTrigger, TriggerType } from "@notifee/react-native";
 import { Contact, Notification } from "../Types/Interface";
 
-// type Notification = Omit<Notification, "id">;
-
 // Function to schedule a notification using Notifee
 export const scheduleNotificationWithNotifee = async (
   notification: Notification
 ): Promise<string | null> => {
   try {
-    const { date, to, type, message, subject } = notification;
+    const { date, type, message, subject } = notification;
 
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
@@ -33,13 +31,14 @@ export const scheduleNotificationWithNotifee = async (
   }
 };
 
-const useDatabase = () => {
+const useReminder = () => {
   const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null);
 
   async function openDatabase() {
     const database = await SQLite.openDatabaseAsync("notifications.db");
     setDb(database);
     await initializeDatabase(database);
+    return database;
   }
 
   useEffect(() => {
@@ -61,7 +60,7 @@ const useDatabase = () => {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         notification_id TEXT,
         name TEXT NOT NULL,
-        number TEXT NOT NULL,
+        number TEXT,
         FOREIGN KEY (notification_id) REFERENCES notifications (id) ON DELETE CASCADE
       );
     `);
@@ -71,6 +70,8 @@ const useDatabase = () => {
   const createNotification = async (
     notification: Notification
   ): Promise<string | null> => {
+    await openDatabase();
+
     if (!db) return null;
 
     // Schedule notification in Notifee first
@@ -82,39 +83,60 @@ const useDatabase = () => {
       return null;
     }
 
-    const { type, message, date, to, subject, attachments } = notification;
+    const { type, message, date, toContact, toMail, subject, attachments } =
+      notification;
 
+    // Insert notification details into the notifications table
     const insertNotificationSQL = `
       INSERT INTO notifications (id, type, message, date, subject, attachments)
       VALUES ('${notifeeNotificationId}', '${type}', '${message}', '${date.toISOString()}', '${subject}', '${JSON.stringify(attachments)}')
     `;
 
-    const insertContactsSQL = to
-      .map(
-        (contact) => `
-          INSERT INTO contacts (notification_id, name, number)
-          VALUES ('${notifeeNotificationId}', '${contact.name}', '${contact?.number}')
-        `
-      )
-      .join(";");
+    // Prepare SQL for contacts or email addresses
+    let insertContactsSQL = "";
 
+    if (type === "gmail") {
+      // If it's a Gmail notification, insert email addresses
+      insertContactsSQL = toMail
+        .map(
+          (email) => `
+          INSERT INTO contacts (notification_id, name, number)
+          VALUES ('${notifeeNotificationId}', '${email}', null)
+        `
+        )
+        .join(";");
+    } else {
+      // If it's a regular notification, insert contacts (name and number)
+      insertContactsSQL = toContact
+        .map(
+          (contact) => `
+          INSERT INTO contacts (notification_id, name, number)
+          VALUES ('${notifeeNotificationId}', '${contact.name}', '${contact.number ?? null}')
+        `
+        )
+        .join(";");
+    }
+
+    // Combine the notification and contacts SQL into a transaction
     const transactionSQL = `
       ${insertNotificationSQL};
       ${insertContactsSQL}
     `;
 
+    // Execute the SQL transaction
     await db.execAsync(transactionSQL);
 
     return notifeeNotificationId;
   };
 
-  // Update the notification both in Notifee and database
+  // Update the notification both in Notifee and the database
   const updateNotification = async (
     notification: Notification
   ): Promise<boolean> => {
     if (!db) return false;
 
-    const { id, type, message, date, to, subject, attachments } = notification;
+    const { id, type, message, date, toContact, toMail, subject, attachments } =
+      notification;
 
     // Update notification in Notifee
     const trigger: TimestampTrigger = {
@@ -125,7 +147,7 @@ const useDatabase = () => {
     try {
       await notifee.createTriggerNotification(
         {
-          id, // use the existing notifeeNotificationId
+          id, // Use the existing Notifee notification ID
           title: type === "gmail" ? subject : undefined,
           body: message,
         },
@@ -136,7 +158,7 @@ const useDatabase = () => {
       return false;
     }
 
-    // Update notification in database
+    // Update notification details in the database
     const updateNotificationSQL = `
       UPDATE notifications
       SET type = '${type}', message = '${message}', date = '${date.toISOString()}',
@@ -148,15 +170,30 @@ const useDatabase = () => {
       DELETE FROM contacts WHERE notification_id = '${id}'
     `;
 
-    const insertContactsSQL = to
-      .map(
-        (contact) => `
-          INSERT INTO contacts (notification_id, name, number)
-          VALUES ('${id}', '${contact.name}', '${contact?.number}')
-        `
-      )
-      .join(";");
+    // Insert new contacts or email addresses based on the type of notification
+    let insertContactsSQL = "";
 
+    if (type === "gmail") {
+      insertContactsSQL = toMail
+        .map(
+          (email) => `
+          INSERT INTO contacts (notification_id, name, number)
+          VALUES ('${id}', '${email}', null)
+        `
+        )
+        .join(";");
+    } else {
+      insertContactsSQL = toContact
+        .map(
+          (contact) => `
+          INSERT INTO contacts (notification_id, name, number)
+          VALUES ('${id}', '${contact.name}', '${contact.number ?? null}')
+        `
+        )
+        .join(";");
+    }
+
+    // Combine the update notification and contacts SQL into a single transaction
     const transactionSQL = `
       ${updateNotificationSQL};
       ${deleteContactsSQL};
@@ -164,6 +201,7 @@ const useDatabase = () => {
     `;
 
     try {
+      // Execute the transaction to update the notification and contacts in the database
       await db.execAsync(transactionSQL);
       return true;
     } catch (error) {
@@ -172,7 +210,7 @@ const useDatabase = () => {
     }
   };
 
-  // Delete the notification both in Notifee and database
+  // Delete the notification both in Notifee and the database
   const deleteNotification = async (id: string): Promise<boolean> => {
     if (!db) return false;
 
@@ -190,24 +228,29 @@ const useDatabase = () => {
   };
 
   const getAllNotifications = async (): Promise<Notification[]> => {
-    await openDatabase();
+    const database = await openDatabase();
 
-    if (!db) return [];
+    if (!database) {
+      return [];
+    }
 
-    const notifications = await db.getAllAsync<any>(
+    const notifications = await database.getAllAsync<any>(
       "SELECT * FROM notifications"
     );
     const result: Notification[] = [];
 
     for (const notification of notifications) {
-      const contacts = await db.getAllAsync<Contact>(
+      const contacts = await database.getAllAsync<Contact>(
         `SELECT name, number FROM contacts WHERE notification_id = '${notification.id}'`
       );
 
       result.push({
         ...notification,
         date: new Date(notification.date),
-        to: contacts,
+        toContact: contacts.filter((contact) => contact.number !== null),
+        toMail: contacts
+          .filter((contact) => contact.number === null)
+          .map((contact) => contact.name),
         attachments: JSON.parse(notification.attachments),
       });
     }
@@ -224,4 +267,4 @@ const useDatabase = () => {
   };
 };
 
-export default useDatabase;
+export default useReminder;

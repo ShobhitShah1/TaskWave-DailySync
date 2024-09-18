@@ -103,7 +103,9 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
               numberOfLines={1}
               style={[styles.senderName, { color: colors.text }]}
             >
-              {notification?.to?.[0]?.name}
+              {notification.type === "gmail"
+                ? notification?.toMail.map((res) => `${res}, `)
+                : notification?.toContact?.map((res) => res.name)}
             </Text>
             <Text
               numberOfLines={3}
@@ -118,7 +120,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
                 marginTop: 3,
               }}
             >
-              {notification.message}
+              {notification.message || notification.subject}
             </Text>
           </View>
           <View style={styles.typeContainer}>

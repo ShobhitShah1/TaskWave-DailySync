@@ -161,80 +161,124 @@ const AddReminder = () => {
     setSelectedDocuments(updatedDocuments);
   };
 
-  const validateFields = () => {
-    if (notificationType === "gmail") {
-      if (
-        !to ||
-        !subject ||
-        !selectedDateAndTime.date ||
-        !selectedDateAndTime.time
-      ) {
-        Alert.alert(
-          "Validation Error",
-          "All fields are required: 'To', 'Subject', 'Date', and 'Time'."
-        );
-        return false;
-      }
-    } else {
-      if (
-        !selectedContacts.length ||
-        !message ||
-        !selectedDateAndTime.date ||
-        !selectedDateAndTime.time
-      ) {
-        Alert.alert(
-          "Validation Error",
-          "All fields are required: 'Contact(s)', 'Message', 'Date', and 'Time'."
-        );
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
+  };
+
+  const validateMultipleEmails = (emailString: string) => {
+    const emails = emailString.split(",").map((email) => email.trim());
+    for (let email of emails) {
+      if (!validateEmail(email)) {
         return false;
       }
     }
     return true;
   };
 
-  const handleCreateNotification = async () => {
-    if (validateFields()) {
-      const extractedContacts: Contact[] = selectedContacts.map((contact) => ({
-        name: contact.displayName,
-        number: contact.phoneNumbers?.[0]?.number || "",
-      }));
-
-      const notificationData: Notification = {
-        type: notificationType,
-        message: message || "",
-        date: new Date(
-          selectedDateAndTime.date!.getFullYear(),
-          selectedDateAndTime.date!.getMonth(),
-          selectedDateAndTime.date!.getDate(),
-          selectedDateAndTime.time!.getHours(),
-          selectedDateAndTime.time!.getMinutes()
-        ),
-        subject: notificationType === "gmail" ? subject : undefined,
-        to: extractedContacts,
-        attachments: [],
-      };
-
-      console.log("notificationData:", notificationData);
-
-      const notificationSchedule =
-        await scheduleNotificationWithNotifee(notificationData);
-      console.log("notificationSchedule", notificationSchedule);
-
-      if (notificationSchedule?.trim()) {
-        const data = {
-          ...notificationData,
-          id: notificationSchedule,
-        };
-        const createNotificationSchedule = await createNotification(data);
-        console.log("createNotificationSchedule:", createNotificationSchedule);
-
-        navigation.navigate("ReminderScheduled", {
-          themeColor: createViewColor,
-          notification: data,
-        });
-      } else {
-        Alert.alert("Failed to schedule notification.");
+  const validateFields = () => {
+    if (notificationType === "gmail") {
+      if (!to) {
+        Alert.alert("Validation Error", "'To' field is required.");
+        return false;
       }
+
+      if (!validateMultipleEmails(to)) {
+        Alert.alert(
+          "Validation Error",
+          "Invalid email address(es) in 'To' field."
+        );
+        return false;
+      }
+
+      if (!subject) {
+        Alert.alert("Validation Error", "'Subject' field is required.");
+        return false;
+      }
+
+      if (!selectedDateAndTime.date) {
+        Alert.alert("Validation Error", "'Date' field is required.");
+        return false;
+      }
+
+      if (!selectedDateAndTime.time) {
+        Alert.alert("Validation Error", "'Time' field is required.");
+        return false;
+      }
+    } else {
+      if (!selectedContacts.length) {
+        Alert.alert("Validation Error", "'Contact(s)' field is required.");
+        return false;
+      }
+
+      if (!message) {
+        Alert.alert("Validation Error", "'Message' field is required.");
+        return false;
+      }
+
+      if (!selectedDateAndTime.date) {
+        Alert.alert("Validation Error", "'Date' field is required.");
+        return false;
+      }
+
+      if (!selectedDateAndTime.time) {
+        Alert.alert("Validation Error", "'Time' field is required.");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleCreateNotification = async () => {
+    try {
+      if (validateFields()) {
+        const extractedContacts: Contact[] = selectedContacts.map(
+          (contact) => ({
+            name: contact.displayName,
+            number: contact.phoneNumbers?.[0]?.number || "",
+          })
+        );
+
+        const notificationData: Notification = {
+          type: notificationType,
+          message: message || "",
+          date: new Date(
+            selectedDateAndTime.date!.getFullYear(),
+            selectedDateAndTime.date!.getMonth(),
+            selectedDateAndTime.date!.getDate(),
+            selectedDateAndTime.time!.getHours(),
+            selectedDateAndTime.time!.getMinutes()
+          ),
+          subject: notificationType === "gmail" ? subject : undefined,
+          toContact: extractedContacts,
+          toMail: [to],
+          attachments: selectedDocuments,
+        };
+
+        console.log("notificationData:", notificationData);
+
+        const notificationSchedule =
+          await scheduleNotificationWithNotifee(notificationData);
+        console.log("notificationSchedule", notificationSchedule);
+
+        if (notificationSchedule?.trim()) {
+          const data = {
+            ...notificationData,
+            id: notificationSchedule,
+          };
+          const createNotificationSchedule = await createNotification(data);
+
+          navigation.navigate("ReminderScheduled", {
+            themeColor: createViewColor,
+            notification: data,
+          });
+        } else {
+          Alert.alert("Failed to schedule notification.");
+        }
+      }
+    } catch (error) {
+      console.log("ERROR:", error);
     }
   };
 

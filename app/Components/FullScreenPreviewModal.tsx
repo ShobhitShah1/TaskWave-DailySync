@@ -116,7 +116,9 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={renderEmptyView}
               contentContainerStyle={{ paddingBottom: 30 }}
-              renderItem={({ item }) => <ReminderCard notification={item} />}
+              renderItem={({ item }) => (
+                <ReminderCard notification={item} deleteReminder={() => {}} />
+              )}
             />
           </View>
         </View>

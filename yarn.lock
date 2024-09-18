@@ -15,6 +15,11 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
+"@animatereactnative/marquee@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@animatereactnative/marquee/-/marquee-0.2.0.tgz#a5f2a6b44e61cb375fc37264d00d900ccc9b594d"
+  integrity sha512-pwdKnBr+0JzaKZ4eNmfiALQxNCxN0XkDyW0h+h90x5tSYaMAn/0H9lpF7nNum2JR7LYDgp0hfEl7Y1uVRRKdjA==
+
 "@babel/code-frame@7.10.4", "@babel/code-frame@~7.10.4":
   version "7.10.4"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.4.tgz#168da1a36e90da68ae8d49c0f1b48c7c6249213a"
