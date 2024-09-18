@@ -74,10 +74,6 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
     });
   }, [notification]);
 
-  useEffect(() => {
-    console.log("EMAIL:", notification?.toMail);
-  }, [notification]);
-
   return (
     <View
       style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}

@@ -25,13 +25,13 @@ const RenderCategoryItem = ({
   selectedCategory,
   setSelectedCategory,
 }: CategoryItemType) => {
-  const { typeColor } = useNotificationIconColors(item.type);
+  const { typeColor, createViewColor } = useNotificationIconColors(item.type);
   const colors = useThemeColors();
 
   const isSelected = useMemo(
     () =>
       selectedCategory &&
-      selectedCategory.toLowerCase() === item.title.toLowerCase(),
+      selectedCategory.toLowerCase() === item.type.toLowerCase(),
     [selectedCategory]
   );
 
@@ -43,7 +43,13 @@ const RenderCategoryItem = ({
     <Pressable
       style={[
         styles.pressableContainer,
-        { borderColor: isSelected ? typeColor : colors.borderColor },
+        {
+          borderColor: isSelected
+            ? selectedCategory === "gmail"
+              ? createViewColor
+              : typeColor
+            : colors.borderColor,
+        },
       ]}
       onPress={onCategoryClick}
     >
