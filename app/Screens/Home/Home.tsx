@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Image,
-  Linking,
   Pressable,
   RefreshControl,
   Text,
@@ -11,7 +10,6 @@ import {
   View,
 } from "react-native";
 import Animated, {
-  Easing,
   FadeIn,
   FadeOut,
   LinearTransition,
@@ -21,13 +19,12 @@ import ReminderCard from "../../Components/ReminderCard";
 import AssetsPath from "../../Global/AssetsPath";
 import TextString from "../../Global/TextString";
 import { SIZE } from "../../Global/Theme";
+import useNotificationPermission from "../../Hooks/useNotificationPermission";
 import useDatabase from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
-import { PERMISSIONS, request } from "react-native-permissions";
-import useNotificationPermission from "../../Hooks/useNotificationPermission";
 
 const Home = () => {
   const style = styles();
@@ -56,6 +53,7 @@ const Home = () => {
   }, [isFocus]);
 
   useEffect(() => {
+    console.log("permissionStatus:", permissionStatus);
     if (permissionStatus !== "granted") {
       requestPermission();
     }

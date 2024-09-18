@@ -9,6 +9,8 @@ import useNotificationIconColors from "../../../Hooks/useNotificationIconColors"
 import useThemeColors from "../../../Theme/useThemeMode";
 import { Notification } from "../../../Types/Interface";
 import { getNotificationIcon } from "../../../Utils/getNotificationIcon";
+import { Marquee } from "@animatereactnative/marquee";
+import { formatDate, formatTime } from "../../AddReminder/ReminderScheduled";
 
 export interface ReminderCardProps {
   notification: Notification;
@@ -68,17 +70,16 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                 numberOfLines={1}
                 style={[styles.titleText, { color: colors.text }]}
               >
-                To: Shobhit
+                To:{" "}
+                {notification.type === "gmail"
+                  ? notification?.toMail?.[0]
+                  : notification?.toContact?.map((res) => `${res.name}, `)}
               </Text>
               <Text
                 style={[styles.descriptionText, { color: colors.grayTitle }]}
                 numberOfLines={2}
               >
-                Paragraphs are the building blocks of papers. Many students
-                define paragraphs in terms of length: a paragraph is a group of
-                at least five sentences, a paragraph is half a page long, etc.
-                In reality, though, the unity and coherence of ideas among
-                sentences is what constitutes a paragraph.
+                {notification?.message || notification.subject}
               </Text>
             </View>
             <View style={styles.iconContainer}>
@@ -120,7 +121,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                       },
                     ]}
                   >
-                    Wed 23, Jan
+                    {formatDate(notification.date)}
                   </Text>
                 </View>
                 <View style={styles.timeIconContainer}>
@@ -138,7 +139,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                       },
                     ]}
                   >
-                    9:30
+                    {formatTime(notification.date)}
                   </Text>
                 </View>
               </View>

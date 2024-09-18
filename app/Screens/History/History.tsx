@@ -1,5 +1,11 @@
 import { FlashList } from "@shopify/flash-list";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Dimensions,
   Image,
@@ -11,30 +17,61 @@ import {
 import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
-import { useFakeNotifications } from "../../Hooks/useFakeNotifications";
 import useThemeColors from "../../Theme/useThemeMode";
 import { countNotificationsByType } from "../../Utils/countNotificationsByType";
 import HomeHeader from "../Home/Components/HomeHeader";
 import RenderHistoryList from "./Components/RenderHistoryList";
+import { useIsFocused } from "@react-navigation/native";
+import useReminder from "../../Hooks/useReminder";
+import { Notification } from "../../Types/Interface";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const History = () => {
   const style = styles();
   const colors = useThemeColors();
-  const fakeNotifications = useFakeNotifications(100);
   const flashListRef = useRef<any>(null);
+  const isFocus = useIsFocused();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const notificationCounts = useMemo(
-    () => countNotificationsByType(fakeNotifications),
-    [fakeNotifications]
+    () => countNotificationsByType(notifications),
+    [notifications]
   );
+
+  const { getAllNotifications } = useReminder();
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadNotifications();
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => {
+    if (isFocus) {
+      loadNotifications();
+    }
+  }, [isFocus]);
+  const loadNotifications = async () => {
+    try {
+      const allNotifications = await getAllNotifications();
+      console.log("Fetched Notifications:", allNotifications);
+      if (allNotifications && allNotifications.length > 0) {
+        setNotifications(allNotifications.reverse());
+      } else {
+        setNotifications([]);
+      }
+    } catch (error) {
+      console.error("Error loading notifications:", error);
+    }
+  };
 
   const filterTabData = useMemo(
     () => [
       {
         title: "All",
-        reminders: fakeNotifications.length,
+        reminders: notifications.length,
         icon: null,
         type: null,
       },
@@ -63,12 +100,12 @@ const History = () => {
         type: "gmail",
       },
     ],
-    [notificationCounts, fakeNotifications]
+    [notificationCounts, notifications]
   );
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [filteredNotifications, setFilteredNotifications] =
-    useState(fakeNotifications);
+    useState(notifications);
 
   const translateX = useSharedValue(0);
   const scale = useSharedValue(1);
@@ -83,15 +120,15 @@ const History = () => {
       const selectedType = filterTabData[index].type;
       if (selectedType) {
         setFilteredNotifications(
-          fakeNotifications.filter(
+          notifications.filter(
             (notification) => notification.type === selectedType
           )
         );
       } else {
-        setFilteredNotifications(fakeNotifications);
+        setFilteredNotifications(notifications);
       }
     },
-    [filterTabData, fakeNotifications, tabWidth]
+    [filterTabData, notifications, tabWidth]
   );
 
   return (
@@ -104,7 +141,7 @@ const History = () => {
         <FlashList
           ref={flashListRef}
           estimatedItemSize={300}
-          data={filteredNotifications}
+          data={filteredNotifications || notifications}
           stickyHeaderHiddenOnScroll={true}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}

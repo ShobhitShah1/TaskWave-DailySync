@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import React, { memo, useCallback, useMemo } from "react";
+import React, { memo, useCallback, useEffect, useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
@@ -11,6 +11,7 @@ import { Notification } from "../Types/Interface";
 import { formatNotificationType } from "../Utils/formatNotificationType";
 import { getNotificationIcon } from "../Utils/getNotificationIcon";
 import useDatabase from "../Hooks/useReminder";
+import { Marquee } from "@animatereactnative/marquee";
 
 const LOGO_SIZE = 65;
 
@@ -75,6 +76,10 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
     });
   }, [notification]);
 
+  useEffect(() => {
+    console.log("EMAIL:", notification?.toMail);
+  }, [notification]);
+
   return (
     <View
       style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}
@@ -99,14 +104,16 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
             </View>
           </View>
           <View style={styles.textContainer}>
-            <Text
-              numberOfLines={1}
-              style={[styles.senderName, { color: colors.text }]}
-            >
-              {notification.type === "gmail"
-                ? notification?.toMail.map((res) => `${res}, `)
-                : notification?.toContact?.map((res) => res.name)}
-            </Text>
+            <Marquee spacing={5} speed={0.3}>
+              <Text
+                numberOfLines={1}
+                style={[styles.senderName, { color: colors.text }]}
+              >
+                {notification.type === "gmail"
+                  ? notification?.toMail?.[0]
+                  : notification?.toContact?.map((res) => `${res.name}, `)}
+              </Text>
+            </Marquee>
             <Text
               numberOfLines={3}
               style={{
