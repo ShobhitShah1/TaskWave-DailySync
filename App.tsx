@@ -1,5 +1,4 @@
 import { useFonts } from "expo-font";
-import { useEffect } from "react";
 import { LogBox, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,9 +16,9 @@ export default function App() {
     "ClashGrotesk-Semibold": require("./assets/Fonts/ClashGrotesk-Semibold.otf"),
   });
 
-  useEffect(() => {
-    console.log("Font Loaded:", loaded);
-  }, [loaded]);
+  if (!loaded) {
+    return;
+  }
 
   return (
     <GestureHandlerRootView style={styles.container}>

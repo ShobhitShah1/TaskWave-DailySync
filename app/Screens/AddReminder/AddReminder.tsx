@@ -1,7 +1,14 @@
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Image, Pressable, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import Contacts from "react-native-contacts";
 import DocumentPicker, {
   DocumentPickerResponse,
@@ -46,7 +53,7 @@ const AddReminder = () => {
   }, [params]);
 
   const id = useMemo(() => {
-    return params.id as NotificationType;
+    return params?.id as NotificationType;
   }, [params]);
 
   useEffect(() => {
@@ -99,6 +106,8 @@ const AddReminder = () => {
 
   const [scheduleFrequency, setScheduleFrequency] =
     useState<FrequencyType | null>(null);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const { createViewColor } = useNotificationIconColors(notificationType);
   const { requestPermission, checkPermissionStatus } = useContactPermission();
@@ -240,6 +249,37 @@ const AddReminder = () => {
   const handleCreateNotification = async () => {
     try {
       if (validateFields()) {
+        setIsLoading(true);
+
+        const selectedDateTime = new Date(
+          selectedDateAndTime.date!.getFullYear(),
+          selectedDateAndTime.date!.getMonth(),
+          selectedDateAndTime.date!.getDate(),
+          selectedDateAndTime.time!.getHours(),
+          selectedDateAndTime.time!.getMinutes()
+        );
+
+        const now = new Date();
+        const oneMinuteFromNow = new Date(now.getTime() + 1 * 60 * 1000);
+
+        if (selectedDateTime < now) {
+          Alert.alert(
+            "Error",
+            "The selected date and time cannot be in the past."
+          );
+          setIsLoading(false);
+          return;
+        }
+
+        if (selectedDateTime < oneMinuteFromNow) {
+          Alert.alert(
+            "Error",
+            "The notification must be scheduled at least 1 minute in the future."
+          );
+          setIsLoading(false);
+          return;
+        }
+
         const extractedContacts: Contact[] = selectedContacts.map(
           (contact) => ({
             name: contact.name,
@@ -252,13 +292,7 @@ const AddReminder = () => {
         const notificationData: Notification = {
           type: notificationType,
           message: message || "",
-          date: new Date(
-            selectedDateAndTime.date!.getFullYear(),
-            selectedDateAndTime.date!.getMonth(),
-            selectedDateAndTime.date!.getDate(),
-            selectedDateAndTime.time!.getHours(),
-            selectedDateAndTime.time!.getMinutes()
-          ),
+          date: selectedDateTime,
           subject: notificationType === "gmail" ? subject : undefined,
           toContact: extractedContacts,
           toMail: [to],
@@ -271,16 +305,14 @@ const AddReminder = () => {
         let notificationScheduleId;
 
         if (id) {
-          // If ID exists, update the existing notification
           const updated = await updateNotification({ ...notificationData, id });
           if (updated) {
             notificationScheduleId = id;
           } else {
-            Alert.alert("Failed to update notification.");
+            Alert.alert("Error", "Failed to update notification.");
             return;
           }
         } else {
-          // Create a new notification if no ID exists
           notificationScheduleId =
             await scheduleNotificationWithNotifee(notificationData);
           if (notificationScheduleId?.trim()) {
@@ -291,16 +323,16 @@ const AddReminder = () => {
             const created = await createNotification(data);
 
             if (!created) {
-              Alert.alert("Failed to create notification.");
+              Alert.alert("Error", "Failed to create notification.");
               return;
             }
           } else {
-            Alert.alert("Failed to schedule notification.");
+            Alert.alert("Error", "Failed to schedule notification.");
             return;
           }
         }
 
-        // Navigate to success page after creation or update
+        setIsLoading(false);
         navigation.navigate("ReminderScheduled", {
           themeColor: createViewColor,
           notification: { ...notificationData, id: notificationScheduleId },
@@ -308,7 +340,11 @@ const AddReminder = () => {
       }
     } catch (error) {
       console.log("ERROR:", error);
-      Alert.alert("An error occurred while creating the notification.");
+      Alert.alert(
+        "Error",
+        "An error occurred while creating the notification."
+      );
+      setIsLoading(false);
     }
   };
 
@@ -400,14 +436,17 @@ const AddReminder = () => {
             <RNDateTimePicker
               value={
                 pickerVisibleType === "date"
-                  ? selectedDateAndTime.date || new Date() // default to current date if no date is selected
-                  : selectedDateAndTime.time || new Date() // default to current time if no time is selected
+                  ? selectedDateAndTime.date || new Date()
+                  : selectedDateAndTime.time || new Date()
               }
               mode={pickerVisibleType}
-              is24Hour={true}
+              is24Hour={false}
+              minimumDate={new Date()}
               themeVariant="dark"
               display="default"
               onChange={(event, selectedDate) => {
+                setPickerVisibleType(null);
+
                 if (event.type === "set" && selectedDate) {
                   const updatedDateTime =
                     pickerVisibleType === "date"
@@ -419,8 +458,6 @@ const AddReminder = () => {
                     ...updatedDateTime,
                   }));
                 }
-
-                setPickerVisibleType(null);
               }}
               negativeButton={{ label: "Cancel", textColor: colors.text }}
             />
@@ -428,10 +465,17 @@ const AddReminder = () => {
         </Animated.ScrollView>
 
         <Pressable
+          disabled={isLoading}
           onPress={handleCreateNotification}
           style={[style.createButton, { backgroundColor: createViewColor }]}
         >
-          <Text style={style.createButtonText}>{id ? "Update" : "Create"}</Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color={colors.text} />
+          ) : (
+            <Text style={style.createButtonText}>
+              {id ? "Update" : "Create"}
+            </Text>
+          )}
         </Pressable>
       </View>
 

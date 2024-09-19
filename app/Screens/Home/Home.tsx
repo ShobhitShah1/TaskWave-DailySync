@@ -34,11 +34,13 @@ const Home = () => {
   const { height, width } = useWindowDimensions();
   const [fullScreenPreview, setFullScreenPreview] = useState(false);
 
-  const { getAllNotifications, deleteNotification, initializeDatabase } =
-    useDatabase();
-  const { permissionStatus, requestPermission, checkPermission } =
-    useNotificationPermission();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { getAllNotifications, deleteNotification } = useDatabase();
+  const { permissionStatus, requestPermission } = useNotificationPermission();
+  const [notificationsState, setNotificationsState] = useState({
+    all: [] as Notification[],
+    active: [] as Notification[],
+    inactive: [] as Notification[],
+  });
   const [refreshing, setRefreshing] = React.useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -63,10 +65,27 @@ const Home = () => {
   const loadNotifications = async () => {
     try {
       const allNotifications = await getAllNotifications();
+
       if (allNotifications && allNotifications.length > 0) {
-        setNotifications(allNotifications.reverse());
+        const now = new Date();
+        const active = allNotifications.filter(
+          (notification) => new Date(notification.date) >= now
+        );
+        const inactive = allNotifications.filter(
+          (notification) => new Date(notification.date) < now
+        );
+
+        setNotificationsState({
+          all: allNotifications.reverse(),
+          active: active.reverse(),
+          inactive: inactive.reverse(),
+        });
       } else {
-        setNotifications([]);
+        setNotificationsState({
+          all: [],
+          active: [],
+          inactive: [],
+        });
       }
     } catch (error) {
       console.error("Error loading notifications:", error);
@@ -139,12 +158,12 @@ const Home = () => {
 
   return (
     <View style={style.container}>
-      <HomeHeader hideGrid={notifications?.length === 0} />
+      <HomeHeader hideGrid={notificationsState.active?.length === 0} />
 
       <View
         style={{ flex: 1, width: SIZE.appContainWidth, alignSelf: "center" }}
       >
-        {notifications?.length !== 0 && (
+        {notificationsState.active?.length !== 0 && (
           <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>
             <View style={style.dateContainer}>
               <Text style={style.todayText}>Today</Text>
@@ -156,11 +175,15 @@ const Home = () => {
                 <View
                   style={[style.statusDot, { backgroundColor: colors.green }]}
                 />
-                <Text style={style.statusText}>12</Text>
+                <Text style={style.statusText}>
+                  {notificationsState?.active.length}
+                </Text>
               </View>
               <View style={style.statusItem}>
                 <View style={[style.statusDot, { backgroundColor: "gray" }]} />
-                <Text style={style.statusText}>23</Text>
+                <Text style={style.statusText}>
+                  {notificationsState?.inactive.length}
+                </Text>
               </View>
             </View>
           </Animated.View>
@@ -168,12 +191,12 @@ const Home = () => {
 
         <Animated.View></Animated.View>
 
-        {notifications?.length !== 0 && <RenderHeaderView />}
+        {notificationsState.active?.length !== 0 && <RenderHeaderView />}
 
         <View style={{ flex: 1, height }}>
           <Animated.FlatList
-            data={notifications}
-            extraData={notifications}
+            data={notificationsState?.active}
+            extraData={notificationsState?.active}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -201,7 +224,7 @@ const Home = () => {
 
       <FullScreenPreviewModal
         isVisible={fullScreenPreview}
-        notifications={notifications}
+        notifications={notificationsState?.active}
         onClose={() => setFullScreenPreview(false)}
       />
     </View>
