@@ -5,13 +5,13 @@ import AssetsPath from "../../../Global/AssetsPath";
 import TextString from "../../../Global/TextString";
 import { FONTS, SIZE } from "../../../Global/Theme";
 import useThemeColors from "../../../Theme/useThemeMode";
-import { SimplifiedContact } from "../../../Types/Interface";
+import { Contact, SimplifiedContact } from "../../../Types/Interface";
 
 interface AddContactProps {
   themeColor: string;
   onContactPress: () => void;
-  selectedContacts: SimplifiedContact[];
-  onRemoveContact: (contact: SimplifiedContact) => void;
+  selectedContacts: Contact[];
+  onRemoveContact: (contact: Contact) => void;
 }
 
 const AddContact: FC<AddContactProps> = ({
@@ -37,14 +37,14 @@ const AddContact: FC<AddContactProps> = ({
         </Text>
       ) : (
         <Animated.View style={style.contactListContainer}>
-          {selectedContacts.map((contact: SimplifiedContact, index) => (
+          {selectedContacts.map((contact: Contact, index) => (
             <Animated.View layout={LinearTransition.springify().mass(0.5)}>
               <Pressable
                 key={contact.recordID || index}
                 style={[style.contactChip, { backgroundColor: themeColor }]}
                 onPress={() => onRemoveContact(contact)}
               >
-                <Text style={style.contactName}>{contact.displayName}</Text>
+                <Text style={style.contactName}>{contact.name}</Text>
                 <Text style={style.removeIcon}>✕</Text>
               </Pressable>
             </Animated.View>

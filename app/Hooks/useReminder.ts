@@ -89,6 +89,8 @@ const useReminder = () => {
         notification_id TEXT,
         name TEXT NOT NULL,
         number TEXT,
+        recordID TEXT NOT NULL,
+        thumbnailPath TEXT,
         FOREIGN KEY (notification_id) REFERENCES notifications (id) ON DELETE CASCADE
       );
     `);
@@ -123,8 +125,8 @@ const useReminder = () => {
       insertContactsSQL = toMail
         .map(
           (email) => `
-          INSERT INTO contacts (notification_id, name, number)
-          VALUES ('${notifeeNotificationId}', '${email}', null)
+          INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
+          VALUES ('${notifeeNotificationId}', '${email}', null, '${email}', null)
         `
         )
         .join(";");
@@ -132,8 +134,8 @@ const useReminder = () => {
       insertContactsSQL = toContact
         .map(
           (contact) => `
-          INSERT INTO contacts (notification_id, name, number)
-          VALUES ('${notifeeNotificationId}', '${contact.name}', '${contact.number ?? null}')
+          INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
+          VALUES ('${notifeeNotificationId}', '${contact.name}', '${contact.number ?? null}', '${contact.recordID}', '${contact.thumbnailPath ?? null}')
         `
         )
         .join(";");
@@ -206,8 +208,8 @@ const useReminder = () => {
       insertContactsSQL = toMail
         .map(
           (email) => `
-          INSERT INTO contacts (notification_id, name, number)
-          VALUES ('${id}', '${email}', null)
+          INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
+          VALUES ('${id}', '${email}', null, '${email}', null)
         `
         )
         .join(";");
@@ -215,8 +217,8 @@ const useReminder = () => {
       insertContactsSQL = toContact
         .map(
           (contact) => `
-          INSERT INTO contacts (notification_id, name, number)
-          VALUES ('${id}', '${contact.name}', '${contact.number ?? null}')
+          INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
+          VALUES ('${id}', '${contact.name}', '${contact.number ?? null}', '${contact.recordID}', '${contact.thumbnailPath ?? null}')
         `
         )
         .join(";");
@@ -265,7 +267,7 @@ const useReminder = () => {
 
     for (const notification of notifications) {
       const contacts = await database.getAllAsync<Contact>(
-        `SELECT name, number FROM contacts WHERE notification_id = '${notification.id}'`
+        `SELECT name, number, recordID, thumbnailPath FROM contacts WHERE notification_id = '${notification.id}'`
       );
 
       result.push({
@@ -283,12 +285,50 @@ const useReminder = () => {
     return result;
   };
 
+  const getNotificationById = async (
+    id: string
+  ): Promise<Notification | null> => {
+    const database = await openDatabase();
+
+    if (!database) {
+      return null;
+    }
+
+    const notificationQuery = await database.getAllAsync<any>(
+      `SELECT * FROM notifications WHERE id = '${id}'`
+    );
+
+    if (notificationQuery.length === 0) {
+      return null;
+    }
+
+    const notification = notificationQuery[0];
+
+    const contacts = await database.getAllAsync<Contact>(
+      `SELECT name, number, recordID, thumbnailPath FROM contacts WHERE notification_id = '${notification.id}'`
+    );
+
+    const result: Notification = {
+      ...notification,
+      date: new Date(notification.date),
+      scheduleFrequency: notification.scheduleFrequency,
+      toContact: contacts.filter((contact) => contact.number !== null),
+      toMail: contacts
+        .filter((contact) => contact.number === null)
+        .map((contact) => contact.name),
+      attachments: JSON.parse(notification.attachments),
+    };
+
+    return result;
+  };
+
   return {
     initializeDatabase,
     createNotification,
     getAllNotifications,
     updateNotification,
     deleteNotification,
+    getNotificationById,
   };
 };
 

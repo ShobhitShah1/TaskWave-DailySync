@@ -1,6 +1,13 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useMemo } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
@@ -9,6 +16,12 @@ import useThemeColors from "../../Theme/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 import { formatDate, formatTime } from "../AddReminder/ReminderScheduled";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
+import { DocumentPickerResponse } from "react-native-document-picker";
 
 type NotificationProps = {
   params: { notificationData: Notification };
@@ -32,6 +45,47 @@ const ReminderPreview = () => {
   const { formattedTimeLeft } = useCountdownTimer(notificationData?.date);
 
   const [hours, minutes, seconds] = formattedTimeLeft.split(" : ");
+
+  const documentPreviews = useMemo(
+    () =>
+      notificationData?.attachments?.map(
+        (document: DocumentPickerResponse, index) => {
+          const isImage = document.type?.startsWith("image");
+          const documentStyle = isImage
+            ? style.fullImage
+            : style.attachmentIconSmall;
+
+          const onPressDoc = () => {
+            if (document.type?.startsWith("image")) {
+              //  setShowFilePreview({ isVisible: true, index });
+            }
+          };
+
+          return (
+            <React.Fragment key={document.uri}>
+              <Animated.View
+                style={style.documentPreview}
+                exiting={FadeOut}
+                entering={FadeIn}
+                layout={LinearTransition.springify(300)}
+              >
+                <Pressable onPress={onPressDoc} style={style.imageButton}>
+                  <Image
+                    resizeMode={isImage ? "cover" : "contain"}
+                    source={
+                      isImage ? { uri: document.uri } : AssetsPath.ic_attachment
+                    }
+                    tintColor={isImage ? undefined : createViewColor}
+                    style={documentStyle}
+                  />
+                </Pressable>
+              </Animated.View>
+            </React.Fragment>
+          );
+        }
+      ),
+    [notificationData]
+  );
 
   return (
     <View style={style.container}>
@@ -116,6 +170,48 @@ const ReminderPreview = () => {
               </Text>
             </View>
           </View>
+
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+            {notificationData?.attachments?.length !== 0 && (
+              <ScrollView
+                horizontal
+                removeClippedSubviews={true}
+                style={style.previewContainer}
+                contentContainerStyle={style.scrollContent}
+                showsHorizontalScrollIndicator={false}
+              >
+                {documentPreviews}
+              </ScrollView>
+            )}
+          </View>
+
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+            {notificationData?.type === "gmail"
+              ? notificationData?.toMail?.map((item, index) =>
+                  item.split(",").map((email, emailIndex) => (
+                    <View
+                      key={`${index}-${emailIndex}`}
+                      style={style.toContainer}
+                    >
+                      <Text key={`${index}-${emailIndex}`} style={style.toText}>
+                        {email.trim()}
+                      </Text>
+                    </View>
+                  ))
+                )
+              : notificationData?.toContact?.map((item, index) => (
+                  <View key={index} style={style.toContainer}>
+                    <Text style={[style.toText, { color: createViewColor }]}>
+                      {item?.name}
+                    </Text>
+                    <Text
+                      style={[style.toText, { fontSize: 14, marginTop: 3 }]}
+                    >
+                      {item?.number}
+                    </Text>
+                  </View>
+                ))}
+          </View>
         </View>
       </View>
     </View>
@@ -199,7 +295,7 @@ const styles = () => {
       fontFamily: FONTS.Medium,
     },
     reminderDetails: {
-      marginVertical: 20,
+      marginTop: 20,
     },
     reminderDateTime: {
       flexDirection: "row",
@@ -219,6 +315,50 @@ const styles = () => {
       fontSize: 18,
       lineHeight: 28,
       fontFamily: FONTS.Medium,
+    },
+    toContainer: {
+      padding: 10,
+      backgroundColor: colors.reminderCardBackground,
+      borderRadius: 15,
+    },
+    toText: {
+      color: colors.text,
+      fontFamily: FONTS.Medium,
+      fontSize: 16,
+    },
+
+    previewContainer: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      marginBottom: 15,
+      marginTop: 5,
+    },
+    scrollContent: {
+      gap: 10,
+    },
+    documentPreview: {
+      width: 65,
+      height: 65,
+      backgroundColor: "#f8d7da",
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: 8,
+    },
+    fullImage: {
+      width: "100%",
+      height: "100%",
+    },
+    attachmentIconSmall: {
+      width: 40,
+      height: 40,
+    },
+    imageButton: {
+      width: "100%",
+      height: "100%",
+      justifyContent: "center",
+      alignItems: "center",
+      overflow: "hidden",
+      borderRadius: 8,
     },
   });
 };

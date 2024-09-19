@@ -6,7 +6,7 @@ import useThemeColors from "../../Theme/useThemeMode";
 import NextButton from "./Components/NextButton";
 import OnBoardingListView from "./Components/OnBoardingListView";
 import Paginator from "./Components/Paginator";
-import { useAppContext } from "../../Contexts/ThemeProvider";
+import { storage, useAppContext } from "../../Contexts/ThemeProvider";
 
 const OnBoarding = () => {
   const navigation = useNavigation<any>();
@@ -15,10 +15,9 @@ const OnBoarding = () => {
   const sliderRef = useRef<FlatList>(null);
   const colors = useThemeColors();
   const { theme } = useAppContext();
-  // const {setOnboardingShown} = useAppContext();
 
   const viewableItemsChanged = useRef(({ viewableItems }: any) => {
-    setCurrentIndex(viewableItems[0]?.index);
+    setCurrentIndex(viewableItems?.[0]?.index);
   }).current;
 
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
@@ -27,8 +26,8 @@ const OnBoarding = () => {
     if (CurrentIndex < OnBoardingData.length - 1) {
       sliderRef.current?.scrollToIndex({ index: CurrentIndex + 1 });
     } else {
+      storage.set("onboardingShown", "no");
       navigation.replace("BottomTab");
-      // setOnboardingShown(true);
     }
   };
 

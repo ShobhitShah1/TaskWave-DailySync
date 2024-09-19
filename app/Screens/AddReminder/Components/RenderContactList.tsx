@@ -1,5 +1,5 @@
-import { Image, Pressable, Text, View } from "react-native";
 import React, { useEffect, useMemo } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 import Animated, {
   runOnUI,
   useAnimatedStyle,
@@ -7,15 +7,15 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import styles from "../styles";
-import useThemeColors from "../../../Theme/useThemeMode";
-import { SimplifiedContact } from "../../../Types/Interface";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
+import useThemeColors from "../../../Theme/useThemeMode";
+import { Contact } from "../../../Types/Interface";
+import styles from "../styles";
 
 interface RenderContactListProps {
-  contacts: SimplifiedContact;
-  selectedContacts: SimplifiedContact[];
-  handleSelectContact: (contactId: SimplifiedContact) => void;
+  contacts: Contact;
+  selectedContacts: Contact[];
+  handleSelectContact: (contactId: Contact) => void;
 }
 
 const RenderContactList: React.FC<RenderContactListProps> = ({
@@ -68,18 +68,18 @@ const RenderContactList: React.FC<RenderContactListProps> = ({
         onPress={() => handleSelectContact(contacts)}
         style={{ flexDirection: "row", padding: 15 }}
       >
-        {contacts.thumbnailPath && (
+        {contacts?.thumbnailPath && (
           <Image
-            source={{ uri: contacts.thumbnailPath }}
+            source={{ uri: contacts?.thumbnailPath }}
             style={style.contactAvatar}
           />
         )}
         <View>
           <Text style={[style.contactName, { color: textColor }]}>
-            {contacts.displayName}
+            {contacts.name}
           </Text>
           <Text style={[style.contactNumber, { color: textColor }]}>
-            {contacts.phoneNumbers[0]?.number}
+            {contacts.number}
           </Text>
         </View>
       </Pressable>

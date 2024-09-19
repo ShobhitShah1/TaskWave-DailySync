@@ -26,6 +26,7 @@ export type RootStackParamList = {
   Setting: undefined;
   CreateReminder: {
     notificationType: NotificationType;
+    id?: string;
   };
   ReminderScheduled: {
     themeColor: string;
@@ -53,6 +54,8 @@ export type NotificationType =
 export interface Contact {
   name: string;
   number: string;
+  recordID: string;
+  thumbnailPath?: string;
 }
 
 export interface Notification {

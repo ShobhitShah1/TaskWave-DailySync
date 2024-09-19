@@ -62,7 +62,6 @@ const Home = () => {
   const loadNotifications = async () => {
     try {
       const allNotifications = await getAllNotifications();
-      console.log("Fetched Notifications:", allNotifications);
       if (allNotifications && allNotifications.length > 0) {
         setNotifications(allNotifications.reverse());
       } else {

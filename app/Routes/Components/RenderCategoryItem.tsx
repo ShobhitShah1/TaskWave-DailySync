@@ -31,13 +31,13 @@ const RenderCategoryItem = ({
   const isSelected = useMemo(
     () =>
       selectedCategory &&
-      selectedCategory.toLowerCase() === item.type.toLowerCase(),
+      selectedCategory?.toLowerCase() === item?.type?.toLowerCase(),
     [selectedCategory]
   );
 
   const onCategoryClick = useCallback(() => {
     setSelectedCategory(item.type);
-  }, []);
+  }, [item]);
 
   return (
     <Pressable

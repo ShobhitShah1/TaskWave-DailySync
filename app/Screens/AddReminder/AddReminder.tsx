@@ -1,6 +1,6 @@
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Image, Pressable, Text, View } from "react-native";
 import Contacts from "react-native-contacts";
 import DocumentPicker, {
@@ -14,13 +14,9 @@ import useDatabase, {
   scheduleNotificationWithNotifee,
 } from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
-import {
-  Contact,
-  Notification,
-  NotificationType,
-  SimplifiedContact,
-} from "../../Types/Interface";
+import { Contact, Notification, NotificationType } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
+import { validateEmail } from "../../Utils/validateEmail";
 import AddContact from "./Components/AddContact";
 import AddDateAndTime from "./Components/AddDateAndTime";
 import AddMailSubject from "./Components/AddMailSubject";
@@ -34,7 +30,7 @@ import ContactListModal from "./Components/ContactListModal";
 import styles from "./styles";
 
 type NotificationProps = {
-  params: { notificationType: NotificationType };
+  params: { notificationType: NotificationType; id?: string };
 };
 
 const AddReminder = () => {
@@ -42,12 +38,43 @@ const AddReminder = () => {
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { params } = useRoute<RouteProp<NotificationProps, "params">>();
-  const { createNotification } = useDatabase();
+  const { createNotification, getNotificationById, updateNotification } =
+    useDatabase();
 
-  const [contacts, setContacts] = useState<SimplifiedContact[]>([]);
-  const [selectedContacts, setSelectedContacts] = useState<SimplifiedContact[]>(
-    []
-  );
+  const notificationType = useMemo(() => {
+    return params.notificationType as NotificationType;
+  }, [params]);
+
+  const id = useMemo(() => {
+    return params.id as NotificationType;
+  }, [params]);
+
+  useEffect(() => {
+    if (id) {
+      getExistingNotificationData();
+    }
+  }, [id]);
+
+  const getExistingNotificationData = async () => {
+    const response = await getNotificationById(id);
+
+    if (response) {
+      setMessage(response?.message);
+      setTo(response?.toMail?.[0]);
+      setSubject(response?.subject || "");
+      setScheduleFrequency(response?.scheduleFrequency);
+      setSelectedDateAndTime({
+        date: new Date(response?.date),
+        time: new Date(response?.date),
+      });
+      setSelectedDocuments(response?.attachments);
+      setContacts(response?.toContact);
+      setSelectedContacts(response?.toContact);
+    }
+  };
+
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
   const [contactModalVisible, setContactModalVisible] = useState(false);
 
   const [message, setMessage] = useState("");
@@ -73,10 +100,6 @@ const AddReminder = () => {
   const [scheduleFrequency, setScheduleFrequency] =
     useState<FrequencyType | null>(null);
 
-  const notificationType = useMemo(() => {
-    return params.notificationType as NotificationType;
-  }, [params]);
-
   const { createViewColor } = useNotificationIconColors(notificationType);
   const { requestPermission, checkPermissionStatus } = useContactPermission();
 
@@ -101,22 +124,11 @@ const AddReminder = () => {
   const requestContactData = async () => {
     try {
       const contactsData = await Contacts.getAll();
-      const simplifiedContacts = contactsData.map((contact) => ({
+      const simplifiedContacts: Contact[] = contactsData.map((contact) => ({
         recordID: contact.recordID,
-        displayName: contact.displayName,
+        name: contact.displayName,
+        number: contact.phoneNumbers?.[0]?.number,
         hasThumbnail: contact.hasThumbnail,
-        thumbnailPath: contact.thumbnailPath,
-        phoneNumbers: contact.phoneNumbers.map((phone) => ({
-          label: phone.label,
-          number: phone.number,
-        })),
-        postalAddresses: contact.postalAddresses.map((address) => ({
-          street: address.street,
-          city: address.city,
-          state: address.state,
-          postCode: address.postCode,
-          country: address.country,
-        })),
       }));
 
       setContacts(simplifiedContacts);
@@ -129,7 +141,7 @@ const AddReminder = () => {
     }
   };
 
-  const handleRemoveContact = (contactToRemove: SimplifiedContact) => {
+  const handleRemoveContact = (contactToRemove: Contact) => {
     setSelectedContacts((prevContacts) =>
       prevContacts.filter(
         (contact) => contact.recordID !== contactToRemove.recordID
@@ -159,11 +171,6 @@ const AddReminder = () => {
     );
 
     setSelectedDocuments(updatedDocuments);
-  };
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email.trim());
   };
 
   const validateMultipleEmails = (emailString: string) => {
@@ -196,17 +203,17 @@ const AddReminder = () => {
         return false;
       }
 
-      if (!selectedDateAndTime.date) {
+      if (!selectedDateAndTime?.date) {
         Alert.alert("Validation Error", "'Date' field is required.");
         return false;
       }
 
-      if (!selectedDateAndTime.time) {
+      if (!selectedDateAndTime?.time) {
         Alert.alert("Validation Error", "'Time' field is required.");
         return false;
       }
     } else {
-      if (!selectedContacts.length) {
+      if (!selectedContacts?.length) {
         Alert.alert("Validation Error", "'Contact(s)' field is required.");
         return false;
       }
@@ -216,12 +223,12 @@ const AddReminder = () => {
         return false;
       }
 
-      if (!selectedDateAndTime.date) {
+      if (!selectedDateAndTime?.date) {
         Alert.alert("Validation Error", "'Date' field is required.");
         return false;
       }
 
-      if (!selectedDateAndTime.time) {
+      if (!selectedDateAndTime?.time) {
         Alert.alert("Validation Error", "'Time' field is required.");
         return false;
       }
@@ -235,8 +242,10 @@ const AddReminder = () => {
       if (validateFields()) {
         const extractedContacts: Contact[] = selectedContacts.map(
           (contact) => ({
-            name: contact.displayName,
-            number: contact.phoneNumbers?.[0]?.number || "",
+            name: contact.name,
+            number: contact.number || "",
+            recordID: contact?.recordID,
+            thumbnailPath: contact?.thumbnailPath,
           })
         );
 
@@ -259,27 +268,47 @@ const AddReminder = () => {
 
         console.log("notificationData:", notificationData);
 
-        const notificationSchedule =
-          await scheduleNotificationWithNotifee(notificationData);
-        console.log("notificationSchedule", notificationSchedule);
+        let notificationScheduleId;
 
-        if (notificationSchedule?.trim()) {
-          const data = {
-            ...notificationData,
-            id: notificationSchedule,
-          };
-          const createNotificationSchedule = await createNotification(data);
-
-          navigation.navigate("ReminderScheduled", {
-            themeColor: createViewColor,
-            notification: data,
-          });
+        if (id) {
+          // If ID exists, update the existing notification
+          const updated = await updateNotification({ ...notificationData, id });
+          if (updated) {
+            notificationScheduleId = id;
+          } else {
+            Alert.alert("Failed to update notification.");
+            return;
+          }
         } else {
-          Alert.alert("Failed to schedule notification.");
+          // Create a new notification if no ID exists
+          notificationScheduleId =
+            await scheduleNotificationWithNotifee(notificationData);
+          if (notificationScheduleId?.trim()) {
+            const data = {
+              ...notificationData,
+              id: notificationScheduleId,
+            };
+            const created = await createNotification(data);
+
+            if (!created) {
+              Alert.alert("Failed to create notification.");
+              return;
+            }
+          } else {
+            Alert.alert("Failed to schedule notification.");
+            return;
+          }
         }
+
+        // Navigate to success page after creation or update
+        navigation.navigate("ReminderScheduled", {
+          themeColor: createViewColor,
+          notification: { ...notificationData, id: notificationScheduleId },
+        });
       }
     } catch (error) {
       console.log("ERROR:", error);
+      Alert.alert("An error occurred while creating the notification.");
     }
   };
 
@@ -402,7 +431,7 @@ const AddReminder = () => {
           onPress={handleCreateNotification}
           style={[style.createButton, { backgroundColor: createViewColor }]}
         >
-          <Text style={style.createButtonText}>Create</Text>
+          <Text style={style.createButtonText}>{id ? "Update" : "Create"}</Text>
         </Pressable>
       </View>
 

@@ -14,20 +14,18 @@ import LinearGradient from "react-native-linear-gradient";
 import Modal from "react-native-modal";
 import AssetsPath from "../../../Global/AssetsPath";
 import useThemeColors from "../../../Theme/useThemeMode";
-import { SimplifiedContact } from "../../../Types/Interface";
 import styles from "../styles";
 import RenderContactList from "./RenderContactList";
+import { Contact } from "../../../Types/Interface";
 
 const { height } = Dimensions.get("window");
 
 interface ContactListModalProps {
   isVisible: boolean;
   onClose: () => void;
-  contacts: SimplifiedContact[];
-  selectedContacts: SimplifiedContact[];
-  setSelectedContacts: React.Dispatch<
-    React.SetStateAction<SimplifiedContact[]>
-  >;
+  contacts: Contact[];
+  selectedContacts: Contact[];
+  setSelectedContacts: React.Dispatch<React.SetStateAction<Contact[]>>;
 }
 
 const ContactListModal: FC<ContactListModalProps> = ({
@@ -45,13 +43,13 @@ const ContactListModal: FC<ContactListModalProps> = ({
     () =>
       contacts.filter(
         (contact) =>
-          contact.phoneNumbers &&
-          contact.displayName.toLowerCase().includes(searchText.toLowerCase())
+          contact.number &&
+          contact.name.toLowerCase().includes(searchText.toLowerCase())
       ),
     [contacts, searchText]
   );
 
-  const handleSelectContact = useCallback((contact: SimplifiedContact) => {
+  const handleSelectContact = useCallback((contact: Contact) => {
     setSelectedContacts((prevSelectedContacts) =>
       prevSelectedContacts.some((c) => c.recordID === contact.recordID)
         ? prevSelectedContacts.filter((c) => c.recordID !== contact.recordID)

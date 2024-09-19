@@ -7,7 +7,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { StatusBar, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAppContext } from "../Contexts/ThemeProvider";
+import { storage, useAppContext } from "../Contexts/ThemeProvider";
 import AddReminder from "../Screens/AddReminder/AddReminder";
 import ReminderScheduled from "../Screens/AddReminder/ReminderScheduled";
 import OnBoarding from "../Screens/OnBoarding/Index";
@@ -32,6 +32,8 @@ const Routes = () => {
     },
   };
 
+  const showOnboarding = storage.getString("onboardingShown");
+
   return (
     <NavigationContainer theme={MyTheme}>
       <SafeAreaView style={styles.container}>
@@ -48,7 +50,9 @@ const Routes = () => {
               route?.name === "OnBoarding" ? colors.white : colors.bottomTab,
           })}
         >
-          <Stack.Screen name="OnBoarding" component={OnBoarding} />
+          {showOnboarding !== "no" && (
+            <Stack.Screen name="OnBoarding" component={OnBoarding} />
+          )}
           <Stack.Screen name="BottomTab" component={BottomTab} />
           {/* Create Reminder Is Add Reminder Added In Bottom Tab Also */}
           <Stack.Screen name="CreateReminder" component={AddReminder} />

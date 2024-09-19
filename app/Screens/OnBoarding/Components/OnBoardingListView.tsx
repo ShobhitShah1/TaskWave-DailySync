@@ -15,7 +15,6 @@ interface OnBoardingProps {
 
 const OnBoardingListView: FC<OnBoardingProps> = ({ item }) => {
   const { width } = useWindowDimensions();
-  const colors = useThemeColors();
   const style = styles();
 
   return (

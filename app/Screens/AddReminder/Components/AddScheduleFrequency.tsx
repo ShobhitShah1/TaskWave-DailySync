@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: "white",
-    fontSize: 16,
+    fontSize: 12,
   },
   label: {
     fontSize: 16,

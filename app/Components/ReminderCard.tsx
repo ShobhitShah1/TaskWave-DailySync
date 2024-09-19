@@ -71,6 +71,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   const onEditPress = useCallback(() => {
     navigation.navigate("CreateReminder", {
       notificationType: notification.type,
+      id: notification?.id,
     });
   }, [notification]);
 
