@@ -25,6 +25,7 @@ import useThemeColors from "../../Theme/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
+import { formatDate } from "../AddReminder/ReminderScheduled";
 
 const Home = () => {
   const style = styles();
@@ -147,7 +148,7 @@ const Home = () => {
           <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>
             <View style={style.dateContainer}>
               <Text style={style.todayText}>Today</Text>
-              <Text style={style.dateText}>Monday, 23 Nov</Text>
+              <Text style={style.dateText}>{formatDate(new Date())}</Text>
             </View>
 
             <View style={style.statusContainer}>

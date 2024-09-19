@@ -1,6 +1,7 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -22,6 +23,7 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 import { DocumentPickerResponse } from "react-native-document-picker";
+import useReminder from "../../Hooks/useReminder";
 
 type NotificationProps = {
   params: { notificationData: Notification };
@@ -43,6 +45,7 @@ const ReminderPreview = () => {
 
   const { createViewColor, icon } = useNotificationIconColors(notificationType);
   const { formattedTimeLeft } = useCountdownTimer(notificationData?.date);
+  const { deleteNotification } = useReminder();
 
   const [hours, minutes, seconds] = formattedTimeLeft.split(" : ");
 
@@ -86,6 +89,37 @@ const ReminderPreview = () => {
       ),
     [notificationData]
   );
+
+  const onDeleteClick = useCallback(async () => {
+    if (!notificationData?.id) {
+      Alert.alert("Error", "Notification ID not found.");
+      return;
+    }
+
+    Alert.alert(
+      "Confirmation",
+      "Are you sure you want to delete this reminder?",
+      [
+        {
+          text: "Yes",
+          onPress: async () => {
+            if (!notificationData?.id) {
+              Alert.alert("Error", "Invalid reminder ID");
+              return;
+            }
+
+            await deleteNotification(notificationData?.id);
+            navigation.goBack();
+          },
+          style: "destructive",
+        },
+        {
+          text: "No",
+          style: "cancel",
+        },
+      ]
+    );
+  }, [notificationData]);
 
   return (
     <View style={style.container}>
@@ -213,6 +247,26 @@ const ReminderPreview = () => {
                 ))}
           </View>
         </View>
+      </View>
+
+      <View style={style.bottomButtons}>
+        <Pressable style={style.deleteButton} onPress={onDeleteClick}>
+          <Image source={AssetsPath.ic_delete} style={style.buttonIcon} />
+          <Text style={style.buttonText}>Delete</Text>
+        </Pressable>
+
+        <Pressable
+          style={style.editButton}
+          onPress={() => {
+            navigation.navigate("CreateReminder", {
+              notificationType: notificationData.type,
+              id: notificationData.id,
+            });
+          }}
+        >
+          <Image source={AssetsPath.ic_edit} style={style.buttonIcon} />
+          <Text style={style.buttonText}>Edit</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -359,6 +413,48 @@ const styles = () => {
       alignItems: "center",
       overflow: "hidden",
       borderRadius: 8,
+    },
+
+    bottomButtons: {
+      position: "absolute",
+      bottom: 0,
+      flexDirection: "row",
+      alignSelf: "center",
+      justifyContent: "space-between",
+      paddingVertical: 15,
+      backgroundColor: colors.background,
+    },
+    deleteButton: {
+      width: "46%",
+      backgroundColor: "#ff4c4c",
+      paddingHorizontal: 20,
+      paddingVertical: 13,
+      borderRadius: 20,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    editButton: {
+      width: "46%",
+      backgroundColor: "#4c8dff",
+      paddingHorizontal: 20,
+      paddingVertical: 13,
+      borderRadius: 20,
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "center",
+    },
+    buttonIcon: {
+      width: 18,
+      height: 18,
+      alignItems: "center",
+      resizeMode: "contain",
+      marginHorizontal: 5,
+    },
+    buttonText: {
+      color: "white",
+      fontSize: 19,
+      fontFamily: FONTS.Medium,
     },
   });
 };
