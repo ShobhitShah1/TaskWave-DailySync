@@ -59,8 +59,10 @@ const History = () => {
       const allNotifications = await getAllNotifications();
       if (allNotifications && allNotifications.length > 0) {
         setNotifications(allNotifications.reverse());
+        setFilteredNotifications(allNotifications.reverse());
       } else {
         setNotifications([]);
+        setFilteredNotifications([]);
       }
     } catch (error) {
       console.error("Error loading notifications:", error);
@@ -105,7 +107,7 @@ const History = () => {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [filteredNotifications, setFilteredNotifications] =
-    useState(notifications);
+    useState<Notification[]>(notifications);
 
   const translateX = useSharedValue(0);
   const scale = useSharedValue(1);
@@ -140,12 +142,26 @@ const History = () => {
       >
         <FlashList
           ref={flashListRef}
+          extraData={filteredNotifications}
           estimatedItemSize={300}
-          data={filteredNotifications || notifications}
+          data={filteredNotifications}
           stickyHeaderHiddenOnScroll={true}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item }) => <RenderHistoryList notification={item} />}
+          ListEmptyComponent={
+            <Text
+              style={{
+                textAlign: "center",
+                paddingTop: 50,
+                color: colors.text,
+                fontFamily: FONTS.SemiBold,
+                fontSize: 20,
+              }}
+            >
+              No Notifications Found
+            </Text>
+          }
         />
 
         <View style={style.tabsContainer}>
@@ -226,7 +242,6 @@ const styles = () => {
       flex: 1,
       backgroundColor: colors.background,
     },
-
     tabsContainer: {
       bottom: 38,
       height: 68,

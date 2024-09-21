@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Keyboard,
   Pressable,
   Text,
   View,
@@ -127,6 +128,7 @@ const AddReminder = () => {
       requestContactData();
     } catch (error: any) {
       console.log("Contact ERROR:", error?.message);
+      Alert.alert("Error", error?.message);
     }
   };
 
@@ -260,7 +262,7 @@ const AddReminder = () => {
         );
 
         const now = new Date();
-        const oneMinuteFromNow = new Date(now.getTime() + 1 * 60 * 1000);
+        const tenSecondsFromNow = new Date(now.getTime() + 10 * 1000); // 10 seconds from now
 
         if (selectedDateTime < now) {
           Alert.alert(
@@ -271,7 +273,7 @@ const AddReminder = () => {
           return;
         }
 
-        if (selectedDateTime < oneMinuteFromNow) {
+        if (selectedDateTime < tenSecondsFromNow) {
           Alert.alert(
             "Error",
             "The notification must be scheduled at least 1 minute in the future."
@@ -280,7 +282,7 @@ const AddReminder = () => {
           return;
         }
 
-        const extractedContacts: Contact[] = selectedContacts.map(
+        const extractedContacts: Contact[] = selectedContacts?.map(
           (contact) => ({
             name: contact.name,
             number: contact.number || "",
@@ -293,14 +295,12 @@ const AddReminder = () => {
           type: notificationType,
           message: message || "",
           date: selectedDateTime,
-          subject: notificationType === "gmail" ? subject : undefined,
+          subject: notificationType === "gmail" ? subject : "",
           toContact: extractedContacts,
           toMail: [to],
           attachments: selectedDocuments,
-          scheduleFrequency: scheduleFrequency,
+          scheduleFrequency: scheduleFrequency || "",
         };
-
-        console.log("notificationData:", notificationData);
 
         let notificationScheduleId;
 
@@ -315,6 +315,9 @@ const AddReminder = () => {
         } else {
           notificationScheduleId =
             await scheduleNotificationWithNotifee(notificationData);
+
+          console.log("notificationScheduleId:", notificationScheduleId);
+
           if (notificationScheduleId?.trim()) {
             const data = {
               ...notificationData,
@@ -322,8 +325,9 @@ const AddReminder = () => {
             };
             const created = await createNotification(data);
 
+            console.log("created", created);
             if (!created) {
-              Alert.alert("Error", "Failed to create notification.");
+              Alert.alert("Error", String(created));
               return;
             }
           } else {
@@ -338,12 +342,9 @@ const AddReminder = () => {
           notification: { ...notificationData, id: notificationScheduleId },
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log("ERROR:", error);
-      Alert.alert(
-        "Error",
-        "An error occurred while creating the notification."
-      );
+      Alert.alert("Error", error?.message);
       setIsLoading(false);
     }
   };
@@ -428,8 +429,14 @@ const AddReminder = () => {
           <AddDateAndTime
             themeColor={createViewColor}
             selectedDateAndTime={selectedDateAndTime}
-            onDatePress={() => setPickerVisibleType("date")}
-            onTimePress={() => setPickerVisibleType("time")}
+            onDatePress={() => {
+              Keyboard.dismiss();
+              setPickerVisibleType("date");
+            }}
+            onTimePress={() => {
+              Keyboard.dismiss();
+              setPickerVisibleType("time");
+            }}
           />
 
           {pickerVisibleType && (

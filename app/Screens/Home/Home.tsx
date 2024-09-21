@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Image,
+  NativeModules,
   Pressable,
   RefreshControl,
   Text,

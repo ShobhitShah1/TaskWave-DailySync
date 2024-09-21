@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { FONTS } from "../../../Global/Theme";
 import useThemeColors from "../../../Theme/useThemeMode";
@@ -24,6 +24,7 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
   const colors = useThemeColors();
 
   const toggleFrequency = (frequency: string) => {
+    Keyboard.dismiss();
     setScheduleFrequency(frequency);
   };
 

@@ -17,7 +17,18 @@ export const scheduleNotificationWithNotifee = async (
   notification: Notification
 ): Promise<string | null> => {
   try {
-    const { date, type, message, subject, scheduleFrequency } = notification;
+    const {
+      date,
+      type,
+      message,
+      subject,
+      scheduleFrequency,
+      toContact,
+      toMail,
+      attachments,
+    } = notification;
+
+    console.log("subject:", subject);
 
     await notifee.requestPermission();
 
@@ -39,6 +50,14 @@ export const scheduleNotificationWithNotifee = async (
             : undefined,
     };
 
+    const notificationData = {
+      ...notification,
+      subject: subject || "",
+      toContact: JSON.stringify(toContact),
+      toMail: JSON.stringify(toMail),
+      attachments: JSON.stringify(attachments),
+    };
+
     const notifeeNotificationId = await notifee.createTriggerNotification(
       {
         title: type === "gmail" ? subject : "New Message",
@@ -48,15 +67,14 @@ export const scheduleNotificationWithNotifee = async (
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
         },
+        data: notificationData as any,
       },
       trigger
     );
 
     return notifeeNotificationId;
-  } catch (error) {
-    console.error("Error scheduling notification with Notifee:", error);
-    Alert.alert("Error", "Failed to schedule notification. Please try again.");
-    return null;
+  } catch (error: any) {
+    throw new Error(error);
   }
 };
 
@@ -157,11 +175,12 @@ const useReminder = () => {
     try {
       await db.execAsync(transactionSQL);
       return notifeeNotificationId;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating notification in database:", error);
       Alert.alert(
         "Error",
-        "Failed to create notification in the database. Please try again."
+        error?.message ||
+          "Failed to create notification in the database. Please try again."
       );
       return null;
     }
@@ -190,6 +209,14 @@ const useReminder = () => {
       timestamp: date.getTime(),
     };
 
+    const notificationData = {
+      ...notification,
+      subject: subject || "",
+      toContact: JSON.stringify(toContact),
+      toMail: JSON.stringify(toMail),
+      attachments: JSON.stringify(attachments),
+    };
+
     try {
       await notifee.createTriggerNotification(
         {
@@ -201,6 +228,7 @@ const useReminder = () => {
             visibility: AndroidVisibility.PUBLIC,
             importance: AndroidImportance.HIGH,
           },
+          data: notificationData as any,
         },
         trigger
       );
@@ -264,6 +292,8 @@ const useReminder = () => {
   };
 
   const deleteNotification = async (id: string): Promise<boolean> => {
+    await openDatabase();
+
     if (!db) {
       Alert.alert("Error", "Database connection error. Please try again.");
       return false;

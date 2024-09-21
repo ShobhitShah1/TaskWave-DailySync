@@ -1,5 +1,13 @@
 import React, { FC, memo, useCallback, useMemo, useState } from "react";
-import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  Image,
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import FullScreenMessageModal from "../../../Components/FullScreenMessageModal";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
 import AssetsPath from "../../../Global/AssetsPath";
@@ -40,41 +48,43 @@ const AddMessage: FC<AddMessageProps> = ({
   );
 
   return (
-    <View
-      style={[
-        style.container,
-        { backgroundColor: colors.scheduleReminderCardBackground },
-      ]}
-    >
-      <TextInput
-        multiline
-        spellCheck
-        scrollEnabled
-        value={message}
-        onChangeText={onChangeText}
-        textAlignVertical="top"
-        selectionColor={themeColor}
-        placeholder="Message"
-        placeholderTextColor={colors.placeholderText}
-        style={[style.textInputStyle, { color: colors.text }]}
-      />
-
-      <Pressable onPress={() => setFullScreen(true)} style={style.fullScreen}>
-        <Image
-          source={AssetsPath.ic_fullScreen}
-          style={{ width: 15, height: 15 }}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View
+        style={[
+          style.container,
+          { backgroundColor: colors.scheduleReminderCardBackground },
+        ]}
+      >
+        <TextInput
+          multiline
+          spellCheck
+          scrollEnabled
+          value={message}
+          onChangeText={onChangeText}
+          textAlignVertical="top"
+          selectionColor={themeColor}
+          placeholder="Message"
+          placeholderTextColor={colors.placeholderText}
+          style={[style.textInputStyle, { color: colors.text }]}
         />
-      </Pressable>
 
-      <FullScreenMessageModal
-        message={message}
-        isVisible={fullScreen}
-        onClose={toggleFullScreen}
-        themeColor={themeColor}
-        onChangeText={onChangeText}
-        backgroundColor={backgroundColor}
-      />
-    </View>
+        <Pressable onPress={() => setFullScreen(true)} style={style.fullScreen}>
+          <Image
+            source={AssetsPath.ic_fullScreen}
+            style={{ width: 15, height: 15 }}
+          />
+        </Pressable>
+
+        <FullScreenMessageModal
+          message={message}
+          isVisible={fullScreen}
+          onClose={toggleFullScreen}
+          themeColor={themeColor}
+          onChangeText={onChangeText}
+          backgroundColor={backgroundColor}
+        />
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
