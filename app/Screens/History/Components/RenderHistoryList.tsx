@@ -175,7 +175,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
   }
 );
 
-export default RenderHistoryList;
+export default memo(RenderHistoryList);
 
 const styles = StyleSheet.create({
   cardContainer: {

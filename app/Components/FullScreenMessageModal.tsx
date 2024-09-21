@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, memo } from "react";
 import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
 import ReactNativeModal from "react-native-modal";
 import AssetsPath from "../Global/AssetsPath";
@@ -77,7 +77,7 @@ const FullScreenMessageModal: FC<FullScreenMessageModalProps> = ({
   );
 };
 
-export default FullScreenMessageModal;
+export default memo(FullScreenMessageModal);
 
 const styles = StyleSheet.create({
   modalContainer: {

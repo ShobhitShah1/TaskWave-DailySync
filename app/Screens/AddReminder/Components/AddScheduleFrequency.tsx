@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, memo } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { FONTS } from "../../../Global/Theme";
@@ -64,7 +64,7 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
   );
 };
 
-export default AddScheduleFrequency;
+export default memo(AddScheduleFrequency);
 
 const styles = StyleSheet.create({
   container: {

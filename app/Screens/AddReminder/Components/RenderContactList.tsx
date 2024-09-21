@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { memo, useEffect, useMemo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import Animated, {
   runOnUI,
@@ -87,4 +87,4 @@ const RenderContactList: React.FC<RenderContactListProps> = ({
   );
 };
 
-export default RenderContactList;
+export default memo(RenderContactList);

@@ -7,7 +7,7 @@ const Notification = () => {
 
   return (
     <View style={colors.container}>
-      <Text>Notification</Text>
+      <Text style={colors.text}>Notification</Text>
     </View>
   );
 };

@@ -1,5 +1,5 @@
 import { FlashList } from "@shopify/flash-list";
-import React, { FC, useCallback, useMemo, useState } from "react";
+import React, { FC, memo, useCallback, useMemo, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -129,4 +129,4 @@ const ContactListModal: FC<ContactListModalProps> = ({
   );
 };
 
-export default ContactListModal;
+export default memo(ContactListModal);

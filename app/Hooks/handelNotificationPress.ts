@@ -8,22 +8,20 @@ export const handelNotificationPress = (notification: any) => {
 
     const { SendMessagesModule } = NativeModules;
 
-    console.log("INSIDE HOOK:", notification);
-
     let numbers: string[] = [];
     try {
-      const contacts: Contact[] = JSON.parse(toContact); // Ensure toContact is parsed as an array of Contact
+      const contacts: Contact[] = JSON.parse(toContact as any);
       if (Array.isArray(contacts)) {
-        numbers = contacts.map((contact: Contact) => contact.number); // Extract all numbers
+        numbers = contacts.map((contact: Contact) => contact.number);
       }
     } catch (error) {
       console.error("Failed to parse toContact:", error);
     }
 
-    // Extract emails from toMail field
-    let emails: string[] = [];
+    let emailMails: string = "";
     try {
-      emails = JSON.parse(toMail); // Parse the toMail field which is in string format
+      const emails: string[] = JSON.parse(toMail as any);
+      emailMails = emails.filter((email) => email !== "").join(", "); // Create a string of email addresses
     } catch (error) {
       console.error("Failed to parse toMail:", error);
     }
@@ -31,17 +29,16 @@ export const handelNotificationPress = (notification: any) => {
     switch (type) {
       case "whatsapp":
         if (numbers.length > 0) {
-          const whatsappMessage = message; // message content from notification
+          const filterNumber = Array.isArray(numbers) ? numbers?.[0] : numbers;
+          const whatsappMessage = message;
           const whatsappAttachment =
-            attachments.length > 0 ? attachments[0] : ""; // optional attachment path
-          const isWhatsapp = true; // true for WhatsApp, false for WhatsApp Business
+            attachments.length > 0 ? attachments[0] : "";
 
-          // Send WhatsApp to all numbers at once
           SendMessagesModule.sendWhatsapp(
-            numbers,
+            filterNumber,
             whatsappMessage,
-            whatsappAttachment,
-            isWhatsapp
+            "",
+            true
           );
         } else {
           console.log("No valid contact found for WhatsApp.");
@@ -50,11 +47,10 @@ export const handelNotificationPress = (notification: any) => {
 
       case "whatsappBusiness":
         if (numbers.length > 0) {
-          const businessWhatsappMessage = message; // message content from notification
+          const businessWhatsappMessage = message;
           const businessWhatsappAttachment =
-            attachments.length > 0 ? attachments[0] : ""; // optional attachment path
+            attachments.length > 0 ? attachments[0] : "";
 
-          // Send WhatsApp Business to all numbers at once
           SendMessagesModule.sendWhatsapp(
             numbers,
             businessWhatsappMessage,
@@ -68,9 +64,7 @@ export const handelNotificationPress = (notification: any) => {
 
       case "SMS":
         if (numbers.length > 0) {
-          const smsMessage = message; // message content from notification
-
-          // Send SMS to all numbers at once
+          const smsMessage = message;
           SendMessagesModule.sendSms(numbers, smsMessage);
         } else {
           console.log("No valid phone numbers found for SMS.");
@@ -78,23 +72,9 @@ export const handelNotificationPress = (notification: any) => {
         break;
 
       case "gmail":
-        // Dummy data for testing
-        const emails = ["alice@example.com", "bob@example.com", ""]; // Example email addresses
-        const emailSubject = "Test Subject"; // Example subject
-        const emailBody = "This is a test email message."; // Example body
-        const attachments = ["test.pdf"]; // Example attachment file (ensure it exists in the app's file directory)
-
-        if (emails.length > 0 && emails.some((email) => email !== "")) {
-          // Pass all valid emails to the sendMail function
-          SendMessagesModule.sendMail(
-            emails,
-            emailSubject,
-            emailBody,
-            attachments.length > 0 ? attachments[0] : ""
-          );
-        } else {
-          console.log("No valid email addresses found for Gmail.");
-        }
+        const emailSubject = subject || "";
+        const emailBody = message || "";
+        SendMessagesModule.sendMail(emailMails, emailSubject, emailBody, "");
         break;
 
       default:

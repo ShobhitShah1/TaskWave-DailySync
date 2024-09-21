@@ -1,5 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import React, { useMemo } from "react";
+import React, { memo, useMemo } from "react";
 import {
   Image,
   Pressable,
@@ -160,7 +160,7 @@ const ReminderScheduled = () => {
   );
 };
 
-export default ReminderScheduled;
+export default memo(ReminderScheduled);
 
 const styles = () => {
   const colors = useThemeColors();

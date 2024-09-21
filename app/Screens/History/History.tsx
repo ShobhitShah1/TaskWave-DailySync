@@ -34,7 +34,10 @@ const History = () => {
   const flashListRef = useRef<any>(null);
   const isFocus = useIsFocused();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
+  const [filteredNotifications, setFilteredNotifications] = useState<
+    Notification[]
+  >([]);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const notificationCounts = useMemo(
@@ -44,29 +47,10 @@ const History = () => {
 
   const { getAllNotifications } = useReminder();
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadNotifications();
-    setRefreshing(false);
-  }, []);
-
-  useEffect(() => {
-    if (isFocus) {
-      setLoading(filteredNotifications?.length === 0);
-      loadNotifications();
-    }
-  }, [isFocus]);
-
   const loadNotifications = async () => {
     try {
       const allNotifications = await getAllNotifications();
-      if (allNotifications && allNotifications.length > 0) {
-        setNotifications(allNotifications.reverse());
-        setFilteredNotifications(allNotifications.reverse());
-      } else {
-        setNotifications([]);
-        setFilteredNotifications([]);
-      }
+      setNotifications(allNotifications.reverse());
     } catch (error) {
       console.error("Error loading notifications:", error);
     } finally {
@@ -110,32 +94,37 @@ const History = () => {
     [notificationCounts, notifications]
   );
 
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [filteredNotifications, setFilteredNotifications] =
-    useState<Notification[]>(notifications);
+  useEffect(() => {
+    setLoading(filteredNotifications?.length === 0);
+    loadNotifications();
+  }, [isFocus]);
 
-  const translateX = useSharedValue(0);
-  const scale = useSharedValue(1);
-  const tabWidth = SCREEN_WIDTH / filterTabData.length;
+  useEffect(() => {
+    if (notifications.length > 0) {
+      const selectedType = filterTabData[activeIndex].type;
+      setFilteredNotifications(
+        selectedType
+          ? notifications.filter(
+              (notification) => notification.type === selectedType
+            )
+          : notifications
+      );
+    }
+  }, [notifications, activeIndex, filterTabData]);
 
   const handleTabPress = useCallback(
     (index: number) => {
       setActiveIndex(index);
-      translateX.value = withTiming(index * tabWidth, { duration: 300 });
-      scale.value = 1.1;
-
       const selectedType = filterTabData[index].type;
-      if (selectedType) {
-        setFilteredNotifications(
-          notifications.filter(
-            (notification) => notification.type === selectedType
-          )
-        );
-      } else {
-        setFilteredNotifications(notifications);
-      }
+      setFilteredNotifications(
+        selectedType
+          ? notifications.filter(
+              (notification) => notification.type === selectedType
+            )
+          : notifications
+      );
     },
-    [filterTabData, notifications, tabWidth]
+    [filterTabData, notifications]
   );
 
   return (

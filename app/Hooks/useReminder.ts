@@ -292,16 +292,16 @@ const useReminder = () => {
   };
 
   const deleteNotification = async (id: string): Promise<boolean> => {
-    await openDatabase();
+    const database = await openDatabase();
 
-    if (!db) {
+    if (!database) {
       Alert.alert("Error", "Database connection error. Please try again.");
       return false;
     }
 
     try {
       await notifee.cancelNotification(id);
-      await db.execAsync(`DELETE FROM notifications WHERE id = '${id}'`);
+      await database.execAsync(`DELETE FROM notifications WHERE id = '${id}'`);
       return true;
     } catch (error) {
       console.error("Error deleting notification:", error);

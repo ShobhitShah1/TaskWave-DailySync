@@ -1,13 +1,12 @@
+import notifee, { EventType } from "@notifee/react-native";
 import { useFonts } from "expo-font";
+import { useEffect } from "react";
 import { LogBox, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppProvider } from "./app/Contexts/ThemeProvider";
-import Routes from "./app/Routes/Routes";
-import notifee, { EventType } from "@notifee/react-native";
-import { useEffect } from "react";
 import { handelNotificationPress } from "./app/Hooks/handelNotificationPress";
-import { Notification } from "./app/Types/Interface";
+import Routes from "./app/Routes/Routes";
 
 LogBox.ignoreAllLogs();
 
@@ -22,10 +21,8 @@ export default function App() {
 
   useEffect(() => {
     return notifee.onForegroundEvent(({ type, detail }) => {
-      console.log(type, detail);
       switch (type) {
         case EventType.DISMISSED:
-          console.log("User dismissed notification");
           break;
         case EventType.PRESS:
           handelNotificationPress(detail.notification?.data);
@@ -37,7 +34,6 @@ export default function App() {
             // onDeleteEvent(id);
             // onDeleteNotification(detail.notification?.id);
           }
-          console.log("User Got Notification:");
           break;
       }
     });

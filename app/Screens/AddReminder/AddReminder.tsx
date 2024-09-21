@@ -127,7 +127,6 @@ const AddReminder = () => {
 
       requestContactData();
     } catch (error: any) {
-      console.log("Contact ERROR:", error?.message);
       Alert.alert("Error", error?.message);
     }
   };
@@ -167,13 +166,7 @@ const AddReminder = () => {
       });
 
       setSelectedDocuments((prev) => [...prev, result]);
-    } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        console.log("User canceled document picker");
-      } else {
-        console.error("Document picker error:", err);
-      }
-    }
+    } catch (err) {}
   }, []);
 
   const onRemoveDocument = (index: number) => {
@@ -316,8 +309,6 @@ const AddReminder = () => {
           notificationScheduleId =
             await scheduleNotificationWithNotifee(notificationData);
 
-          console.log("notificationScheduleId:", notificationScheduleId);
-
           if (notificationScheduleId?.trim()) {
             const data = {
               ...notificationData,
@@ -325,7 +316,6 @@ const AddReminder = () => {
             };
             const created = await createNotification(data);
 
-            console.log("created", created);
             if (!created) {
               Alert.alert("Error", String(created));
               return;
@@ -343,8 +333,7 @@ const AddReminder = () => {
         });
       }
     } catch (error: any) {
-      console.log("ERROR:", error);
-      Alert.alert("Error", error?.message);
+      Alert.alert("Error", String(error?.message));
       setIsLoading(false);
     }
   };

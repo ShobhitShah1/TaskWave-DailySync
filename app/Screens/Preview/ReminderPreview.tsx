@@ -103,13 +103,17 @@ const ReminderPreview = () => {
         {
           text: "Yes",
           onPress: async () => {
-            if (!notificationData?.id) {
-              Alert.alert("Error", "Invalid reminder ID");
-              return;
-            }
+            try {
+              if (!notificationData?.id) {
+                Alert.alert("Error", "Invalid reminder ID");
+                return;
+              }
 
-            await deleteNotification(notificationData?.id);
-            navigation.goBack();
+              await deleteNotification(notificationData?.id);
+              navigation.goBack();
+            } catch (error: any) {
+              Alert.alert("Error", String(error?.message));
+            }
           },
           style: "destructive",
         },

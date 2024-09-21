@@ -1,5 +1,5 @@
 import { FlashList } from "@shopify/flash-list";
-import React, { FC } from "react";
+import React, { FC, memo } from "react";
 import {
   Image,
   Pressable,
@@ -127,7 +127,7 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
   );
 };
 
-export default FullScreenPreviewModal;
+export default memo(FullScreenPreviewModal);
 
 const styles = () => {
   const colors = useThemeColors();
