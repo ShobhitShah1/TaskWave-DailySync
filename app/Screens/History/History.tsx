@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   Pressable,
@@ -34,6 +35,7 @@ const History = () => {
   const isFocus = useIsFocused();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const notificationCounts = useMemo(
     () => countNotificationsByType(notifications),
@@ -50,6 +52,7 @@ const History = () => {
 
   useEffect(() => {
     if (isFocus) {
+      setLoading(filteredNotifications?.length === 0);
       loadNotifications();
     }
   }, [isFocus]);
@@ -66,6 +69,8 @@ const History = () => {
       }
     } catch (error) {
       console.error("Error loading notifications:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -140,29 +145,35 @@ const History = () => {
       <View
         style={{ flex: 1, width: SIZE.appContainWidth, alignSelf: "center" }}
       >
-        <FlashList
-          ref={flashListRef}
-          extraData={filteredNotifications}
-          estimatedItemSize={300}
-          data={filteredNotifications}
-          stickyHeaderHiddenOnScroll={true}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }}
-          renderItem={({ item }) => <RenderHistoryList notification={item} />}
-          ListEmptyComponent={
-            <Text
-              style={{
-                textAlign: "center",
-                paddingTop: 50,
-                color: colors.text,
-                fontFamily: FONTS.SemiBold,
-                fontSize: 20,
-              }}
-            >
-              No Notifications Found
-            </Text>
-          }
-        />
+        {loading ? (
+          <View style={style.loaderView}>
+            <ActivityIndicator color={colors.text} size="large" />
+          </View>
+        ) : (
+          <FlashList
+            ref={flashListRef}
+            extraData={filteredNotifications}
+            estimatedItemSize={300}
+            data={filteredNotifications}
+            stickyHeaderHiddenOnScroll={true}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120 }}
+            renderItem={({ item }) => <RenderHistoryList notification={item} />}
+            ListEmptyComponent={
+              <Text
+                style={{
+                  textAlign: "center",
+                  paddingTop: 50,
+                  color: colors.text,
+                  fontFamily: FONTS.SemiBold,
+                  fontSize: 20,
+                }}
+              >
+                No Notifications Found
+              </Text>
+            }
+          />
+        )}
 
         <View style={style.tabsContainer}>
           {filterTabData.map((res, index) => {
@@ -301,6 +312,11 @@ const styles = () => {
       textAlign: "center",
       color: colors.black,
       fontFamily: FONTS.Medium,
+    },
+    loaderView: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
     },
   });
 };
