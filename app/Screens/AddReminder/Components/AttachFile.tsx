@@ -85,7 +85,9 @@ const AttachFile: FC<AttachFileProps> = ({
                 <Image
                   resizeMode={isImage ? "cover" : "contain"}
                   source={
-                    isImage ? { uri: document.uri } : AssetsPath.ic_attachment
+                    isImage
+                      ? { uri: `file://${document.uri}` }
+                      : AssetsPath.ic_attachment
                   }
                   tintColor={isImage ? undefined : themeColor}
                   style={documentStyle}

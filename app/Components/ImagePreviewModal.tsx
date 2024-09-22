@@ -50,7 +50,7 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
         <View style={{ width: width - 30, height: height }}>
           <Image
             resizeMode="contain"
-            source={{ uri: item }}
+            source={{ uri: `file://${item}` }}
             style={[styles.image, { width: "100%", height: "100%" }]}
           />
         </View>

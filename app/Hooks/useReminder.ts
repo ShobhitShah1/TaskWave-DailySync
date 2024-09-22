@@ -60,8 +60,13 @@ export const scheduleNotificationWithNotifee = async (
 
     const notifeeNotificationId = await notifee.createTriggerNotification(
       {
-        title: type === "gmail" ? subject : "New Message",
-        body: message,
+        title:
+          type === "gmail"
+            ? subject
+            : `Reminder: ${subject || "Upcoming Task"}`,
+        body:
+          message ||
+          `You have a new notification. Contact: ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}.`,
         android: {
           channelId,
           visibility: AndroidVisibility.PUBLIC,
@@ -221,8 +226,13 @@ const useReminder = () => {
       await notifee.createTriggerNotification(
         {
           id,
-          title: type === "gmail" ? subject : undefined,
-          body: message,
+          title:
+            type === "gmail"
+              ? subject
+              : `Reminder: ${subject || "Upcoming Task"}`,
+          body:
+            message ||
+            `You have a new notification. Contact: ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}.`,
           android: {
             channelId,
             visibility: AndroidVisibility.PUBLIC,

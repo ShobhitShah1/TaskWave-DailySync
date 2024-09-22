@@ -5,8 +5,8 @@ import { LogBox, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppProvider } from "./app/Contexts/ThemeProvider";
-import { handelNotificationPress } from "./app/Hooks/handelNotificationPress";
 import Routes from "./app/Routes/Routes";
+import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
 
 LogBox.ignoreAllLogs();
 
@@ -25,7 +25,7 @@ export default function App() {
         case EventType.DISMISSED:
           break;
         case EventType.PRESS:
-          handelNotificationPress(detail.notification?.data);
+          handleNotificationPress(detail.notification?.data);
           break;
         case EventType.DELIVERED:
           const data = detail.notification?.data;

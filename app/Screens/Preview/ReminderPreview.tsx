@@ -76,7 +76,9 @@ const ReminderPreview = () => {
                   <Image
                     resizeMode={isImage ? "cover" : "contain"}
                     source={
-                      isImage ? { uri: document.uri } : AssetsPath.ic_attachment
+                      isImage
+                        ? { uri: `file://${document.uri}` }
+                        : AssetsPath.ic_attachment
                     }
                     tintColor={isImage ? undefined : createViewColor}
                     style={documentStyle}

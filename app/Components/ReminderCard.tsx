@@ -99,16 +99,17 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
             </View>
           </View>
           <View style={styles.textContainer}>
-            {/* <Marquee spacing={5} speed={0.3}> */}
             <Text
               numberOfLines={1}
               style={[styles.senderName, { color: colors.text }]}
             >
               {notification.type === "gmail"
                 ? notification?.toMail?.[0]
-                : notification?.toContact?.map((res) => `${res.name}, `)}
+                : notification?.toContact?.map(
+                    (res) =>
+                      `${res.name}${notification?.toContact?.length >= 2 ? "," : ""} `
+                  )}
             </Text>
-            {/* </Marquee> */}
             <Text
               numberOfLines={3}
               style={{

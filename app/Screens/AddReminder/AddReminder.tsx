@@ -8,6 +8,7 @@ import {
   Keyboard,
   Pressable,
   Text,
+  ToastAndroid,
   View,
 } from "react-native";
 import Contacts from "react-native-contacts";
@@ -36,6 +37,9 @@ import AddScheduleFrequency, {
 import AttachFile from "./Components/AttachFile";
 import ContactListModal from "./Components/ContactListModal";
 import styles from "./styles";
+import RNBlobUtil from "react-native-blob-util";
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 type NotificationProps = {
   params: { notificationType: NotificationType; id?: string };
@@ -87,8 +91,8 @@ const AddReminder = () => {
 
   const [message, setMessage] = useState("");
 
-  const [to, setTo] = useState("");
-  const [subject, setSubject] = useState("");
+  const [to, setTo] = useState("shobhit942003@gmail.com");
+  const [subject, setSubject] = useState("Hello");
 
   const [selectedDocuments, setSelectedDocuments] = useState<
     DocumentPickerResponse[]
@@ -106,7 +110,7 @@ const AddReminder = () => {
   });
 
   const [scheduleFrequency, setScheduleFrequency] =
-    useState<FrequencyType | null>(null);
+    useState<FrequencyType | null>("Daily");
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -159,14 +163,72 @@ const AddReminder = () => {
     );
   };
 
+  const generateUniqueFileName = async (
+    directory: string,
+    fileName: string
+  ) => {
+    let uniqueFileName = fileName;
+    let counter = 1;
+
+    // Check if the file already exists in the directory
+    while (await RNBlobUtil.fs.exists(`${directory}/${uniqueFileName}`)) {
+      const fileParts = fileName.split(".");
+      const name = fileParts.slice(0, -1).join(".");
+      const extension = fileParts[fileParts.length - 1];
+
+      uniqueFileName = `${name}(${counter}).${extension}`;
+      counter++;
+    }
+
+    return uniqueFileName;
+  };
+
   const onHandelAttachmentClick = useCallback(async () => {
     try {
-      const result = await DocumentPicker.pickSingle({
+      const pickerResult = await DocumentPicker.pickSingle({
         type: [DocumentPicker.types.allFiles],
+        presentationStyle: "fullScreen",
+        copyTo: "cachesDirectory",
       });
 
-      setSelectedDocuments((prev) => [...prev, result]);
-    } catch (err) {}
+      if (
+        pickerResult &&
+        pickerResult.fileCopyUri &&
+        pickerResult.name &&
+        pickerResult.size &&
+        pickerResult.type &&
+        pickerResult.uri
+      ) {
+        if (pickerResult.size <= MAX_FILE_SIZE) {
+          const fileName = pickerResult.name;
+          const sourceUri = pickerResult.fileCopyUri;
+
+          const documentsDir = RNBlobUtil.fs.dirs.DocumentDir;
+
+          const uniqueFileName = await generateUniqueFileName(
+            documentsDir,
+            fileName
+          );
+          const localFilePath = `${documentsDir}/${uniqueFileName}`;
+
+          await RNBlobUtil.fs.cp(sourceUri, localFilePath);
+
+          const selectedDocumentInfo: DocumentPickerResponse = {
+            ...pickerResult,
+            name: uniqueFileName,
+            uri: localFilePath,
+          };
+
+          setSelectedDocuments((prev) => [...prev, selectedDocumentInfo]);
+        } else {
+          ToastAndroid.show("File size exceeds the limit", ToastAndroid.SHORT);
+        }
+      } else {
+        console.error("Invalid document format");
+      }
+    } catch (e) {
+      console.error("Error in Document Picker:", e);
+    }
   }, []);
 
   const onRemoveDocument = (index: number) => {

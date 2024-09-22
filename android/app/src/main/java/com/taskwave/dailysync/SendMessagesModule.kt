@@ -17,7 +17,8 @@ import java.io.File
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Promise
 
-class SendMessagesModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+class SendMessagesModule(reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
     override fun getName(): String {
         return "SendMessagesModule"
     }
@@ -25,12 +26,15 @@ class SendMessagesModule(reactContext: ReactApplicationContext) : ReactContextBa
     // Mail Module
     @ReactMethod
     fun sendMail(
-            recipients: String,
-            subject: String,
-            body: String,
-            attachmentPaths: String,
+        recipients: String,
+        subject: String,
+        body: String,
+        attachmentPaths: String,
     ) {
-        Log.d("Check Data", "${recipients ?: "null"} ${subject ?: "null"} ${body ?: "null"} ${attachmentPaths ?: "null"}")
+        Log.d(
+            "Check Data",
+            "${recipients ?: "null"} ${subject ?: "null"} ${body ?: "null"} ${attachmentPaths ?: "null"}"
+        )
 
         val emailIntent = Intent(Intent.ACTION_SEND)
 
@@ -43,12 +47,19 @@ class SendMessagesModule(reactContext: ReactApplicationContext) : ReactContextBa
             Log.d("attachment LOG", "sendMail: $attachment")
 
             if (attachment.exists()) {
-                val uri = FileProvider.getUriForFile(reactApplicationContext, "com.taskwave.dailysync.provider", attachment)
+                val uri = FileProvider.getUriForFile(
+                    reactApplicationContext, "com.taskwave.dailysync.provider", attachment
+                )
                 Log.d("uri LOG", "sendMail: $uri")
 
                 emailIntent.putExtra(Intent.EXTRA_STREAM, uri)
-                Log.d("MIME TYPE:", "sendMail: ${MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension)}")
-                emailIntent.type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension)
+                Log.d(
+                    "MIME TYPE:", "sendMail: ${
+                        MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension)
+                    }"
+                )
+                emailIntent.type =
+                    MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension)
 
                 emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 emailIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
@@ -110,25 +121,29 @@ class SendMessagesModule(reactContext: ReactApplicationContext) : ReactContextBa
     }
 
     @ReactMethod
-    fun sendWhatsapp(number: String, message: String, attachmentPaths: String, isWhatsapp: Boolean) {
+    fun sendWhatsapp(
+        number: String, message: String, attachmentPaths: String, isWhatsapp: Boolean
+    ) {
         Log.d("Check Data", "$number $message $attachmentPaths $isWhatsapp")
 
-//        val attachment = File(reactApplicationContext.filesDir, attachmentPaths)
         val whatsappIntent = Intent(Intent.ACTION_SEND)
 
         whatsappIntent.putExtra(Intent.EXTRA_TEXT, message)
-        whatsappIntent.putExtra("jid", "$number@s.whatsapp.net");
+        whatsappIntent.putExtra("jid", "$number@s.whatsapp.net")
 
         if (attachmentPaths.isNotEmpty()) {
             val attachment = File(reactApplicationContext.filesDir, attachmentPaths)
             Log.d("attachment LOG", "sendMail: $attachment")
 
             if (attachment.exists()) {
-                val uri = FileProvider.getUriForFile(reactApplicationContext, "com.taskwave.dailysync.provider", attachment)
+                val uri = FileProvider.getUriForFile(
+                    reactApplicationContext,
+                    "com.taskwave.dailysync.provider",
+                    attachment
+                )
                 Log.d("uri LOG", "sendMail: $uri")
 
                 whatsappIntent.putExtra(Intent.EXTRA_STREAM, uri)
-                Log.d("MIME TYPE:", "sendMail: ${MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension)}")
                 whatsappIntent.type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension)
 
                 whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -136,12 +151,13 @@ class SendMessagesModule(reactContext: ReactApplicationContext) : ReactContextBa
             } else {
                 Log.e("SendMail", "Attachment file does not exist.")
             }
-        }
-        else
+        } else {
             whatsappIntent.type = "text/plain"
+        }
 
-        if (isAppInstalled(if (isWhatsapp) "com.whatsapp" else "com.whatsapp.w4b")) {
-            whatsappIntent.setPackage(if (isWhatsapp) "com.whatsapp" else "com.whatsapp.w4b")
+        val packageName = if (isWhatsapp) "com.whatsapp" else "com.whatsapp.w4b"
+        if (isAppInstalled(packageName)) {
+            whatsappIntent.setPackage(packageName)
 
             try {
                 reactApplicationContext.currentActivity?.startActivity(whatsappIntent)
@@ -149,14 +165,17 @@ class SendMessagesModule(reactContext: ReactApplicationContext) : ReactContextBa
                 e.printStackTrace()
             }
         } else {
-            Log.d("TAG", if (isWhatsapp) "Whatsapp Nathe" else "Whatsapp Business Nathe")
+            Log.d("TAG", if (isWhatsapp) "WhatsApp not installed" else "WhatsApp Business not installed")
         }
     }
+
     @ReactMethod
     fun isAppInstalled(packageId: String): Boolean {
         return try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                reactApplicationContext.packageManager.getApplicationInfo(packageId, PackageManager.ApplicationInfoFlags.of(0))
+                reactApplicationContext.packageManager.getApplicationInfo(
+                    packageId, PackageManager.ApplicationInfoFlags.of(0)
+                )
             } else {
                 reactApplicationContext.packageManager.getApplicationInfo(packageId, 0)
             }
@@ -170,7 +189,9 @@ class SendMessagesModule(reactContext: ReactApplicationContext) : ReactContextBa
     fun CheckisAppInstalled(packageId: String, promise: Promise) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                reactApplicationContext.packageManager.getApplicationInfo(packageId, PackageManager.ApplicationInfoFlags.of(0))
+                reactApplicationContext.packageManager.getApplicationInfo(
+                    packageId, PackageManager.ApplicationInfoFlags.of(0)
+                )
             } else {
                 reactApplicationContext.packageManager.getApplicationInfo(packageId, 0)
             }

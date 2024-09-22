@@ -1,24 +1,27 @@
 import { Alert, Linking, NativeModules } from "react-native";
 import { Contact, Notification } from "../Types/Interface";
 
-export const handelNotificationPress = (notification: any) => {
+export const handleNotificationPress = (notification: any) => {
   try {
-    const { type, message, date, subject, toContact, toMail, attachments } =
+    const { type, message, subject, toContact, toMail, attachments } =
       notification as Notification;
-
     const { SendMessagesModule } = NativeModules;
 
     let numbers: string[] = [];
+    let emailMails: string = "";
+    let firstAttachment: string = "";
+    const globalMessage: string = String(message) || "";
+    const globalSubject: string = String(subject) || "";
+
     try {
       const contacts: Contact[] = JSON.parse(toContact as any);
-      if (Array.isArray(contacts)) {
-        numbers = contacts.map((contact: Contact) => contact.number);
-      }
+      numbers = Array.isArray(contacts)
+        ? contacts.map((contact: Contact) => contact.number)
+        : [];
     } catch (error) {
       console.error("Failed to parse toContact:", error);
     }
 
-    let emailMails: string = "";
     try {
       const emails: string[] = JSON.parse(toMail as any);
       emailMails = emails.filter((email) => email !== "").join(", ");
@@ -26,7 +29,18 @@ export const handelNotificationPress = (notification: any) => {
       console.error("Failed to parse toMail:", error);
     }
 
-    const filterNumber = Array.isArray(numbers) ? numbers?.[0] : numbers;
+    try {
+      const parsedAttachments =
+        typeof attachments === "string" ? JSON.parse(attachments) : attachments;
+      if (Array.isArray(parsedAttachments) && parsedAttachments[0]) {
+        firstAttachment =
+          parsedAttachments[0].name || parsedAttachments[0].uri || "";
+      }
+    } catch (error) {
+      console.error("Failed to parse attachments:", error);
+    }
+
+    const filterNumber = numbers?.[0] || "";
 
     switch (type) {
       case "phone":
@@ -36,41 +50,41 @@ export const handelNotificationPress = (notification: any) => {
         if (numbers.length > 0) {
           SendMessagesModule.sendWhatsapp(
             filterNumber,
-            message || "",
-            "",
+            globalMessage,
+            firstAttachment,
             true
           );
         } else {
           console.log("No valid contact found for WhatsApp.");
         }
         break;
-
       case "whatsappBusiness":
         if (numbers.length > 0) {
-          SendMessagesModule.sendWhatsapp(numbers, message || "", "", false);
+          SendMessagesModule.sendWhatsapp(
+            numbers,
+            globalMessage,
+            firstAttachment,
+            false
+          );
         } else {
           console.log("No valid contact found for WhatsApp Business.");
         }
         break;
-
       case "SMS":
         if (numbers.length > 0) {
-          const smsMessage = message;
-          SendMessagesModule.sendSms(numbers, smsMessage);
+          SendMessagesModule.sendSms(numbers, globalMessage, firstAttachment);
         } else {
           console.log("No valid phone numbers found for SMS.");
         }
         break;
-
       case "gmail":
         SendMessagesModule.sendMail(
           emailMails,
-          subject || "",
-          message || "",
-          ""
+          globalSubject,
+          globalMessage,
+          firstAttachment
         );
         break;
-
       default:
         console.log("Unsupported notification type.");
         break;
