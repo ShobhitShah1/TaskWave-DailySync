@@ -71,6 +71,13 @@ const categories: categoriesType[] = [
     description: "Let’s compose mail event",
     icon: AssetsPath.ic_gmail,
   },
+  {
+    id: "4",
+    type: "phone",
+    title: "Phone",
+    description: "Let’s create phone event",
+    icon: AssetsPath.ic_phone,
+  },
 ];
 
 const Bottom = createBottomTabNavigator();

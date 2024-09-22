@@ -49,7 +49,8 @@ export type NotificationType =
   | "whatsapp"
   | "whatsappBusiness"
   | "SMS"
-  | "gmail";
+  | "gmail"
+  | "phone";
 
 export interface Contact {
   name: string;

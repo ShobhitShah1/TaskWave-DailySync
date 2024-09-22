@@ -197,19 +197,28 @@ const ReminderPreview = () => {
               </Text>
             </View>
 
-            <View
-              style={[
-                style.reminderCard,
-                { backgroundColor: colors.reminderCardBackground },
-              ]}
-            >
-              <Text style={[style.reminderCardText, { color: colors.text }]}>
-                {notificationData.message || notificationData.subject}
-              </Text>
-            </View>
+            {(notificationData.message || notificationData.subject) && (
+              <View
+                style={[
+                  style.reminderCard,
+                  { backgroundColor: colors.reminderCardBackground },
+                ]}
+              >
+                <Text style={[style.reminderCardText, { color: colors.text }]}>
+                  {notificationData.message || notificationData.subject}
+                </Text>
+              </View>
+            )}
           </View>
 
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              marginTop: 15,
+              gap: 10,
+            }}
+          >
             {notificationData?.attachments?.length !== 0 && (
               <ScrollView
                 horizontal
@@ -365,7 +374,7 @@ const styles = () => {
     },
     reminderCard: {
       width: "100%",
-      marginVertical: 15,
+      marginTop: 15,
       borderRadius: 10,
       padding: 10,
     },

@@ -16,7 +16,7 @@ import AssetsPath from "../../../Global/AssetsPath";
 import useThemeColors from "../../../Theme/useThemeMode";
 import styles from "../styles";
 import RenderContactList from "./RenderContactList";
-import { Contact } from "../../../Types/Interface";
+import { Contact, NotificationType } from "../../../Types/Interface";
 
 const { height } = Dimensions.get("window");
 
@@ -26,6 +26,7 @@ interface ContactListModalProps {
   contacts: Contact[];
   selectedContacts: Contact[];
   setSelectedContacts: React.Dispatch<React.SetStateAction<Contact[]>>;
+  notificationType: NotificationType;
 }
 
 const ContactListModal: FC<ContactListModalProps> = ({
@@ -34,6 +35,7 @@ const ContactListModal: FC<ContactListModalProps> = ({
   contacts,
   selectedContacts,
   setSelectedContacts,
+  notificationType,
 }) => {
   const style = styles();
   const colors = useThemeColors();
@@ -49,15 +51,29 @@ const ContactListModal: FC<ContactListModalProps> = ({
     [contacts, searchText]
   );
 
-  const handleSelectContact = useCallback((contact: Contact) => {
-    setSelectedContacts((prevSelectedContacts) =>
-      prevSelectedContacts.some((c) => c.recordID === contact.recordID)
-        ? prevSelectedContacts.filter((c) => c.recordID !== contact.recordID)
-        : [...prevSelectedContacts, contact]
-    );
-  }, []);
-
-  const handleOnClose = useCallback(() => onClose(), [onClose]);
+  const handleSelectContact = useCallback(
+    (contact: Contact) => {
+      setSelectedContacts((prevSelectedContacts) => {
+        if (
+          notificationType === "whatsapp" ||
+          notificationType === "whatsappBusiness" ||
+          notificationType === "phone"
+        ) {
+          onClose();
+          return [contact];
+        } else {
+          return prevSelectedContacts.some(
+            (c) => c.recordID === contact.recordID
+          )
+            ? prevSelectedContacts.filter(
+                (c) => c.recordID !== contact.recordID
+              )
+            : [...prevSelectedContacts, contact];
+        }
+      });
+    },
+    [notificationType, setSelectedContacts]
+  );
 
   return (
     <Modal
@@ -70,7 +86,7 @@ const ContactListModal: FC<ContactListModalProps> = ({
       useNativeDriver={true}
       style={{ margin: 0, justifyContent: "flex-end" }}
       deviceHeight={height + (StatusBar.currentHeight || 30)}
-      onBackdropPress={handleOnClose}
+      onBackdropPress={onClose}
     >
       <View style={[style.contactModalContainer, { paddingTop: 50 }]}>
         <View style={style.contactHeaderContainer}>

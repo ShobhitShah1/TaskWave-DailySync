@@ -14,6 +14,7 @@ import { formatDate, formatTime } from "../../AddReminder/ReminderScheduled";
 
 export interface ReminderCardProps {
   notification: Notification;
+  deleteReminder: (id: string) => void;
 }
 
 export interface NotificationColor {
@@ -24,7 +25,7 @@ export interface NotificationColor {
 }
 
 const RenderHistoryList: React.FC<ReminderCardProps> = memo(
-  ({ notification }) => {
+  ({ notification, deleteReminder }) => {
     const colors = useThemeColors();
     const { theme } = useAppContext();
     const navigation = useNavigation();
@@ -55,6 +56,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
     const onEditPress = useCallback(() => {
       navigation.navigate("CreateReminder", {
         notificationType: notification.type,
+        id: notification?.id,
       });
     }, [notification]);
 
@@ -63,7 +65,11 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
         entering={FadeIn.duration(1 * Number(notification.id))}
         style={[styles.cardContainer, { borderColor: typeColor }]}
       >
-        <Pressable style={styles.pressableContainer} onPress={onCardPress}>
+        <Pressable
+          style={styles.pressableContainer}
+          onPress={onCardPress}
+          onLongPress={() => notification.id && deleteReminder(notification.id)}
+        >
           <View style={styles.rowContainer}>
             <View style={styles.textContainer}>
               <Text

@@ -11,6 +11,8 @@ export const getNotificationIcon = (type: NotificationType) => {
       return AssetsPath.ic_sms;
     case "gmail":
       return AssetsPath.ic_gmail;
+    case "phone":
+      return AssetsPath.ic_phone;
     default:
       return null;
   }

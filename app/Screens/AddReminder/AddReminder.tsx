@@ -222,7 +222,7 @@ const AddReminder = () => {
         return false;
       }
 
-      if (!message) {
+      if (!message && notificationType !== "phone") {
         Alert.alert("Validation Error", "'Message' field is required.");
         return false;
       }
@@ -394,7 +394,7 @@ const AddReminder = () => {
             />
           )}
 
-          {notificationType !== "gmail" && (
+          {notificationType !== "gmail" && notificationType !== "phone" && (
             <AddMessage
               message={message}
               setMessage={setMessage}
@@ -402,12 +402,14 @@ const AddReminder = () => {
             />
           )}
 
-          <AttachFile
-            themeColor={createViewColor}
-            onRemoveDocument={onRemoveDocument}
-            selectedDocuments={selectedDocuments}
-            onHandelAttachmentClick={onHandelAttachmentClick}
-          />
+          {notificationType !== "phone" && (
+            <AttachFile
+              themeColor={createViewColor}
+              onRemoveDocument={onRemoveDocument}
+              selectedDocuments={selectedDocuments}
+              onHandelAttachmentClick={onHandelAttachmentClick}
+            />
+          )}
 
           <AddScheduleFrequency
             themeColor={createViewColor}
@@ -481,6 +483,7 @@ const AddReminder = () => {
         onClose={() => setContactModalVisible(false)}
         setSelectedContacts={setSelectedContacts}
         selectedContacts={selectedContacts}
+        notificationType={notificationType}
       />
     </View>
   );

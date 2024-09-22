@@ -1,4 +1,4 @@
-import { Alert, NativeModules } from "react-native";
+import { Alert, Linking, NativeModules } from "react-native";
 import { Contact, Notification } from "../Types/Interface";
 
 export const handelNotificationPress = (notification: any) => {
@@ -21,22 +21,22 @@ export const handelNotificationPress = (notification: any) => {
     let emailMails: string = "";
     try {
       const emails: string[] = JSON.parse(toMail as any);
-      emailMails = emails.filter((email) => email !== "").join(", "); // Create a string of email addresses
+      emailMails = emails.filter((email) => email !== "").join(", ");
     } catch (error) {
       console.error("Failed to parse toMail:", error);
     }
 
+    const filterNumber = Array.isArray(numbers) ? numbers?.[0] : numbers;
+
     switch (type) {
+      case "phone":
+        Linking.openURL(`tel:${filterNumber}`);
+        break;
       case "whatsapp":
         if (numbers.length > 0) {
-          const filterNumber = Array.isArray(numbers) ? numbers?.[0] : numbers;
-          const whatsappMessage = message;
-          const whatsappAttachment =
-            attachments.length > 0 ? attachments[0] : "";
-
           SendMessagesModule.sendWhatsapp(
             filterNumber,
-            whatsappMessage,
+            message || "",
             "",
             true
           );
@@ -47,16 +47,7 @@ export const handelNotificationPress = (notification: any) => {
 
       case "whatsappBusiness":
         if (numbers.length > 0) {
-          const businessWhatsappMessage = message;
-          const businessWhatsappAttachment =
-            attachments.length > 0 ? attachments[0] : "";
-
-          SendMessagesModule.sendWhatsapp(
-            numbers,
-            businessWhatsappMessage,
-            businessWhatsappAttachment,
-            false
-          );
+          SendMessagesModule.sendWhatsapp(numbers, message || "", "", false);
         } else {
           console.log("No valid contact found for WhatsApp Business.");
         }
@@ -72,9 +63,12 @@ export const handelNotificationPress = (notification: any) => {
         break;
 
       case "gmail":
-        const emailSubject = subject || "";
-        const emailBody = message || "";
-        SendMessagesModule.sendMail(emailMails, emailSubject, emailBody, "");
+        SendMessagesModule.sendMail(
+          emailMails,
+          subject || "",
+          message || "",
+          ""
+        );
         break;
 
       default:

@@ -39,6 +39,13 @@ const useNotificationIconColors = (
         createViewColor: colors.gmailLightDark,
         icon: AssetsPath.ic_gmail,
       },
+      phone: {
+        backgroundColor: colors.smsBackground,
+        typeColor: colors.sms,
+        iconColor: colors.smsDark,
+        createViewColor: colors.smsDark,
+        icon: AssetsPath.ic_sms,
+      },
     };
   }, [colors]);
 

@@ -1,3 +1,4 @@
+import { useIsFocused } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
 import React, {
   useCallback,
@@ -8,6 +9,7 @@ import React, {
 } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
   Pressable,
@@ -15,18 +17,15 @@ import {
   Text,
   View,
 } from "react-native";
-import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
+import useReminder from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
+import { Notification } from "../../Types/Interface";
 import { countNotificationsByType } from "../../Utils/countNotificationsByType";
 import HomeHeader from "../Home/Components/HomeHeader";
 import RenderHistoryList from "./Components/RenderHistoryList";
-import { useIsFocused } from "@react-navigation/native";
-import useReminder from "../../Hooks/useReminder";
-import { Notification } from "../../Types/Interface";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const History = () => {
   const style = styles();
@@ -45,7 +44,7 @@ const History = () => {
     [notifications]
   );
 
-  const { getAllNotifications } = useReminder();
+  const { getAllNotifications, deleteNotification } = useReminder();
 
   const loadNotifications = async () => {
     try {
@@ -127,6 +126,27 @@ const History = () => {
     [filterTabData, notifications]
   );
 
+  const deleteReminder = useCallback(async (id?: string) => {
+    if (!id) {
+      Alert.alert("Error", "Invalid reminder ID");
+      return;
+    }
+
+    Alert.alert("Confirmation", "Are you sure you want to delete this?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        onPress: async () => {
+          await deleteNotification(id);
+          loadNotifications();
+        },
+      },
+    ]);
+  }, []);
+
   return (
     <View style={style.container}>
       <HomeHeader hideGrid={true} hideThemeButton={true} />
@@ -147,7 +167,12 @@ const History = () => {
             stickyHeaderHiddenOnScroll={true}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 120 }}
-            renderItem={({ item }) => <RenderHistoryList notification={item} />}
+            renderItem={({ item }) => (
+              <RenderHistoryList
+                notification={item}
+                deleteReminder={deleteReminder}
+              />
+            )}
             ListEmptyComponent={
               <Text
                 style={{
