@@ -88,3 +88,9 @@ export interface SimplifiedContact {
   hasThumbnail: boolean;
   thumbnailPath: string;
 }
+
+export interface DayItem {
+  date: number; // The day of the month (e.g., 1, 2, 3)
+  dayOfWeek: string; // Short name of the day (e.g., "Mon", "Tue")
+  formattedDate: string; // Formatted date string (e.g., "01-09-2023")
+}

@@ -91,8 +91,8 @@ const AddReminder = () => {
 
   const [message, setMessage] = useState("");
 
-  const [to, setTo] = useState("shobhit942003@gmail.com");
-  const [subject, setSubject] = useState("Hello");
+  const [to, setTo] = useState("");
+  const [subject, setSubject] = useState("");
 
   const [selectedDocuments, setSelectedDocuments] = useState<
     DocumentPickerResponse[]
@@ -110,7 +110,7 @@ const AddReminder = () => {
   });
 
   const [scheduleFrequency, setScheduleFrequency] =
-    useState<FrequencyType | null>("Daily");
+    useState<FrequencyType | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
 

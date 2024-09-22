@@ -48,10 +48,7 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
     }
   };
 
-  const contextValue: AppContextType = {
-    theme,
-    toggleTheme,
-  };
+  const contextValue: AppContextType = { theme, toggleTheme };
 
   return (
     <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>

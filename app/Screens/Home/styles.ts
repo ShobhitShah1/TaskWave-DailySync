@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { FONTS } from "../../Global/Theme";
+import { FONTS, SIZE } from "../../Global/Theme";
 import useThemeColors from "../../Theme/useThemeMode";
 
 const styles = () => {
@@ -9,6 +9,11 @@ const styles = () => {
     container: {
       flex: 1,
       backgroundColor: colors.background,
+    },
+    homeContainContainer: {
+      flex: 1,
+      alignSelf: "center",
+      width: SIZE.appContainWidth,
     },
     wrapper: {
       flexDirection: "row",
@@ -31,6 +36,7 @@ const styles = () => {
       fontFamily: FONTS.Medium,
     },
     statusContainer: {
+      gap: 10,
       flexDirection: "row",
       alignItems: "flex-end",
     },
@@ -38,13 +44,14 @@ const styles = () => {
       flexDirection: "row",
       justifyContent: "center",
       alignItems: "center",
-      marginRight: 5,
+      // marginRight: 5,
+      // gap: 10,
     },
     statusDot: {
       width: 10,
       height: 10,
       borderRadius: 500,
-      marginRight: 6,
+      marginRight: 5,
     },
     statusText: {
       color: colors.text,
@@ -78,11 +85,11 @@ const styles = () => {
       fontFamily: FONTS.Medium,
     },
     emptyArrowRocket: {
-      height: 380,
-      left: 30,
       top: 10,
+      left: 25,
+      height: 370,
       marginTop: 20,
-      marginVertical: 10,
+      marginVertical: 5,
       alignSelf: "flex-end",
     },
     listHeaderView: {
@@ -99,6 +106,32 @@ const styles = () => {
     fullScreenIcon: {
       width: 18,
       height: 18,
+    },
+
+    // Calender
+    calenderContainer: {
+      gap: 7,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    calenderWeekText: {
+      fontSize: 16,
+      color: colors.placeholderText,
+      fontFamily: FONTS.SemiBold,
+      textAlign: "center",
+    },
+    calenderDateTextView: {
+      width: 29,
+      height: 29,
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: 500,
+    },
+    calenderDayText: {
+      fontSize: 16,
+      color: colors.text,
+      fontFamily: FONTS.Medium,
+      textAlign: "center",
     },
   });
 };

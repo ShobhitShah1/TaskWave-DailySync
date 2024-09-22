@@ -28,16 +28,24 @@ export default function App() {
           handleNotificationPress(detail.notification?.data);
           break;
         case EventType.DELIVERED:
-          const data = detail.notification?.data;
-          if (data?.isRepeat === 1) {
-          } else {
-            // onDeleteEvent(id);
-            // onDeleteNotification(detail.notification?.id);
-          }
           break;
       }
     });
   }, []);
+
+  notifee.onBackgroundEvent(async ({ type, detail }) => {
+    const { notification } = detail;
+
+    switch (type) {
+      case EventType.DISMISSED:
+        break;
+      case EventType.PRESS:
+        handleNotificationPress(notification?.data);
+        break;
+      case EventType.DELIVERED:
+        break;
+    }
+  });
 
   if (!loaded) {
     return;

@@ -2,8 +2,8 @@ import { useIsFocused } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
+  FlatList,
   Image,
-  NativeModules,
   Pressable,
   RefreshControl,
   Text,
@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import Animated, {
+  Easing,
   FadeIn,
   FadeOut,
   LinearTransition,
@@ -19,20 +20,20 @@ import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
 import ReminderCard from "../../Components/ReminderCard";
 import AssetsPath from "../../Global/AssetsPath";
 import TextString from "../../Global/TextString";
-import { SIZE } from "../../Global/Theme";
+import useCalendar from "../../Hooks/useCalendar";
 import useNotificationPermission from "../../Hooks/useNotificationPermission";
 import useDatabase from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
-import { Notification } from "../../Types/Interface";
+import { DayItem, Notification } from "../../Types/Interface";
+import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
-import { formatDate } from "../AddReminder/ReminderScheduled";
 
 const Home = () => {
   const style = styles();
   const colors = useThemeColors();
   const isFocus = useIsFocused();
-  const { height, width } = useWindowDimensions();
+  const { height } = useWindowDimensions();
   const [fullScreenPreview, setFullScreenPreview] = useState(false);
 
   const { getAllNotifications, deleteNotification } = useDatabase();
@@ -44,6 +45,32 @@ const Home = () => {
   });
   const [refreshing, setRefreshing] = React.useState(false);
 
+  const { daysArray, flatListRef, handleDayClick, selectedDate } = useCalendar(
+    new Date()
+  );
+
+  const findSelectedIndex = () => {
+    return daysArray.findIndex((item) => item.formattedDate === selectedDate);
+  };
+
+  const scrollToIndex = async () => {
+    if (flatListRef.current && isFocus) {
+      const index = findSelectedIndex();
+      if (index !== -1) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        flatListRef.current.scrollToIndex({
+          animated: true,
+          index,
+          viewPosition: 0.5,
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    scrollToIndex();
+  }, [selectedDate, isFocus, notificationsState, daysArray]);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadNotifications();
@@ -54,14 +81,48 @@ const Home = () => {
     if (isFocus) {
       loadNotifications();
     }
-  }, [isFocus]);
+  }, [isFocus, selectedDate]);
 
   useEffect(() => {
-    console.log("permissionStatus:", permissionStatus);
     if (permissionStatus !== "granted") {
       requestPermission();
     }
   }, [permissionStatus]);
+
+  const renderCalenderView = ({
+    item,
+    index,
+  }: {
+    item: DayItem;
+    index: number;
+  }) => {
+    const isSelected = item.formattedDate === selectedDate;
+    const backgroundColor = isSelected
+      ? "rgba(38, 107, 235, 1)"
+      : "transparent";
+
+    return (
+      <Pressable
+        style={style.calenderContainer}
+        onPress={() => handleDayClick(item.formattedDate, index)}
+      >
+        <Text numberOfLines={1} style={style.calenderWeekText}>
+          {item.dayOfWeek}
+        </Text>
+        <View style={[style.calenderDateTextView, { backgroundColor }]}>
+          <Text
+            numberOfLines={1}
+            style={[
+              style.calenderDayText,
+              { color: isSelected ? colors.white : colors.text },
+            ]}
+          >
+            {item.date}
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
 
   const loadNotifications = async () => {
     try {
@@ -69,6 +130,7 @@ const Home = () => {
 
       if (allNotifications && allNotifications.length > 0) {
         const now = new Date();
+
         const active = allNotifications.filter(
           (notification) => new Date(notification.date) >= now
         );
@@ -76,9 +138,26 @@ const Home = () => {
           (notification) => new Date(notification.date) < now
         );
 
+        const [day, month, year] = selectedDate.split("-");
+        const selectedDateObj = new Date(`${year}-${month}-${day}`);
+
+        if (isNaN(selectedDateObj.getTime())) {
+          console.error("Invalid selectedDate:", selectedDate);
+          return;
+        }
+
+        const filteredByDate = active.filter((notification) => {
+          const notificationDate = new Date(
+            notification.date
+          ).toLocaleDateString();
+          const selected = selectedDateObj.toLocaleDateString();
+
+          return notificationDate === selected;
+        });
+
         setNotificationsState({
           all: allNotifications.reverse(),
-          active: active.reverse(),
+          active: filteredByDate.reverse(),
           inactive: inactive.reverse(),
         });
       } else {
@@ -114,9 +193,14 @@ const Home = () => {
     ]);
   }, []);
 
-  const renderEmptyView = () => {
+  const RenderEmptyView = () => {
     return (
-      <View style={[style.emptyViewContainer, { width, height: height - 180 }]}>
+      <Animated.View
+        style={[
+          style.emptyViewContainer,
+          { flexGrow: 1, justifyContent: "center" },
+        ]}
+      >
         <Image
           style={style.emptyDateTimeImage}
           source={AssetsPath.ic_emptyDateTime}
@@ -134,7 +218,7 @@ const Home = () => {
           resizeMode="contain"
           style={style.emptyArrowRocket}
         />
-      </View>
+      </Animated.View>
     );
   };
 
@@ -161,65 +245,77 @@ const Home = () => {
     <View style={style.container}>
       <HomeHeader hideGrid={notificationsState.active?.length === 0} />
 
-      <View
-        style={{ flex: 1, width: SIZE.appContainWidth, alignSelf: "center" }}
-      >
-        {notificationsState.active?.length !== 0 && (
-          <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>
-            <View style={style.dateContainer}>
-              <Text style={style.todayText}>Today</Text>
-              <Text style={style.dateText}>{formatDate(new Date())}</Text>
-            </View>
+      <View style={style.homeContainContainer}>
+        <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>
+          <View style={style.dateContainer}>
+            <Text style={style.todayText}>Today</Text>
+            <Text style={style.dateText}>{formatDate(new Date())}</Text>
+          </View>
 
-            <View style={style.statusContainer}>
-              <View style={style.statusItem}>
-                <View
-                  style={[style.statusDot, { backgroundColor: colors.green }]}
-                />
-                <Text style={style.statusText}>
-                  {notificationsState?.active.length}
-                </Text>
-              </View>
-              <View style={style.statusItem}>
-                <View style={[style.statusDot, { backgroundColor: "gray" }]} />
-                <Text style={style.statusText}>
-                  {notificationsState?.inactive.length}
-                </Text>
-              </View>
+          <View style={style.statusContainer}>
+            <View style={style.statusItem}>
+              <View
+                style={[style.statusDot, { backgroundColor: colors.green }]}
+              />
+              <Text style={style.statusText}>
+                {notificationsState?.active.length}
+              </Text>
             </View>
-          </Animated.View>
-        )}
+            <View style={style.statusItem}>
+              <View style={[style.statusDot, { backgroundColor: "gray" }]} />
+              <Text style={style.statusText}>
+                {notificationsState?.inactive.length}
+              </Text>
+            </View>
+          </View>
+        </Animated.View>
 
-        <Animated.View></Animated.View>
+        <Animated.View style={{ marginVertical: 5 }}>
+          <FlatList
+            horizontal
+            ref={flatListRef}
+            data={daysArray}
+            onLayout={() => scrollToIndex()}
+            onContentSizeChange={() => scrollToIndex()}
+            contentContainerStyle={{ gap: 20 }}
+            renderItem={renderCalenderView}
+            keyExtractor={(item, index) => index.toString()}
+            showsHorizontalScrollIndicator={false}
+          />
+        </Animated.View>
 
         {notificationsState.active?.length !== 0 && <RenderHeaderView />}
 
         <View style={{ flex: 1, height }}>
-          <Animated.FlatList
-            data={notificationsState?.active}
-            extraData={notificationsState?.active}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                progressBackgroundColor={colors.background}
-                colors={[colors.text]}
-                onRefresh={onRefresh}
-              />
-            }
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={renderEmptyView}
-            contentContainerStyle={{ paddingBottom: 30 }}
-            keyExtractor={(item, index) => index.toString()}
-            layout={LinearTransition.stiffness(200)}
-            entering={FadeIn}
-            exiting={FadeOut}
-            renderItem={({ item }) => (
-              <ReminderCard
-                notification={item}
-                deleteReminder={deleteReminder}
-              />
-            )}
-          />
+          {notificationsState.active?.length !== 0 ? (
+            <Animated.FlatList
+              data={notificationsState?.active}
+              extraData={notificationsState?.active}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  progressBackgroundColor={colors.background}
+                  colors={[colors.text]}
+                  onRefresh={onRefresh}
+                />
+              }
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={RenderEmptyView}
+              contentContainerStyle={{ paddingBottom: 30 }}
+              keyExtractor={(item, index) => index.toString()}
+              layout={LinearTransition.easing(Easing.linear)}
+              entering={FadeIn.easing(Easing.linear)}
+              exiting={FadeOut.easing(Easing.linear)}
+              renderItem={({ item }) => (
+                <ReminderCard
+                  notification={item}
+                  deleteReminder={deleteReminder}
+                />
+              )}
+            />
+          ) : (
+            <RenderEmptyView />
+          )}
         </View>
       </View>
 
