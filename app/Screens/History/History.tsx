@@ -52,101 +52,6 @@ const History = () => {
     new Date()
   );
 
-  const findSelectedIndex = () => {
-    return daysArray.findIndex((item) => item.formattedDate === selectedDate);
-  };
-
-  const scrollToIndex = async () => {
-    if (flatListRef.current && isFocus) {
-      const index = findSelectedIndex();
-      if (index !== -1) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        flatListRef.current.scrollToIndex({
-          animated: true,
-          index,
-          viewPosition: 0.5,
-        });
-      }
-    }
-  };
-
-  useEffect(() => {
-    scrollToIndex();
-  }, [selectedDate, isFocus, daysArray]);
-
-  const renderCalenderView = ({
-    item,
-    index,
-  }: {
-    item: DayItem;
-    index: number;
-  }) => {
-    const isSelected = item.formattedDate === selectedDate;
-    const backgroundColor = isSelected
-      ? "rgba(38, 107, 235, 1)"
-      : "transparent";
-
-    return (
-      <Pressable
-        style={style.calenderContainer}
-        onPress={() => handleDayClick(item.formattedDate, index)}
-      >
-        <Text numberOfLines={1} style={style.calenderWeekText}>
-          {item.dayOfWeek}
-        </Text>
-        <View style={[style.calenderDateTextView, { backgroundColor }]}>
-          <Text
-            numberOfLines={1}
-            style={[
-              style.calenderDayText,
-              { color: isSelected ? colors.white : colors.text },
-            ]}
-          >
-            {item.date}
-          </Text>
-        </View>
-      </Pressable>
-    );
-  };
-
-  const loadNotifications = async () => {
-    try {
-      const allNotifications = await getAllNotifications();
-
-      if (allNotifications && allNotifications.length > 0) {
-        const now = new Date();
-
-        const active = allNotifications.filter(
-          (notification) => new Date(notification.date) >= now
-        );
-        const [day, month, year] = selectedDate.split("-");
-        const selectedDateObj = new Date(`${year}-${month}-${day}`);
-
-        if (isNaN(selectedDateObj.getTime())) {
-          console.error("Invalid selectedDate:", selectedDate);
-          return;
-        }
-
-        const filteredByDate = active.filter((notification) => {
-          const notificationDate = new Date(
-            notification.date
-          ).toLocaleDateString();
-          const selected = selectedDateObj.toLocaleDateString();
-
-          return notificationDate === selected;
-        });
-
-        setNotifications(filteredByDate.reverse());
-      } else {
-        setNotifications([]);
-      }
-    } catch (error) {
-      console.error("Error loading notifications:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const filterTabData = useMemo(
     () => [
       {
@@ -183,35 +88,101 @@ const History = () => {
     [notificationCounts, notifications]
   );
 
+  const findSelectedIndex = () => {
+    return daysArray.findIndex((item) => item.formattedDate === selectedDate);
+  };
+
+  const scrollToIndex = async () => {
+    if (flatListRef.current && isFocus) {
+      const index = findSelectedIndex();
+      if (index !== -1) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        flatListRef.current.scrollToIndex({
+          animated: true,
+          index,
+          viewPosition: 0.5,
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    scrollToIndex();
+  }, [selectedDate, isFocus, daysArray]);
+
   useEffect(() => {
     setLoading(filteredNotifications?.length === 0);
     loadNotifications();
-  }, [isFocus, selectedDate]);
+  }, [isFocus, selectedDate, activeIndex]);
 
-  useEffect(() => {
-    if (notifications.length > 0) {
-      const selectedType = filterTabData[activeIndex].type;
-      setFilteredNotifications(
-        selectedType
-          ? notifications.filter(
-              (notification) => notification.type === selectedType
-            )
-          : notifications
-      );
+  const storeFilterData = useCallback(async () => {
+    const selectedType = filterTabData?.[activeIndex].type;
+
+    const data = selectedType
+      ? notifications.filter(
+          (notification) => notification.type === selectedType
+        )
+      : notifications;
+
+    setFilteredNotifications(data || []);
+  }, [notifications, activeIndex, selectedDate]);
+
+  const loadNotifications = async () => {
+    try {
+      const allNotifications = await getAllNotifications();
+      if (allNotifications && allNotifications.length > 0) {
+        const now = new Date();
+
+        const activeNotifications = allNotifications.filter(
+          (notification) => new Date(notification.date) >= now
+        );
+
+        const [day, month, year] = selectedDate.split("-");
+        const selectedDateObj = new Date(`${year}-${month}-${day}`);
+
+        if (isNaN(selectedDateObj.getTime())) {
+          console.error("Invalid selectedDate:", selectedDate);
+          return;
+        }
+
+        const filteredByDate = activeNotifications.filter((notification) => {
+          const notificationDate = new Date(
+            notification.date
+          ).toLocaleDateString();
+          const selected = selectedDateObj.toLocaleDateString();
+          return notificationDate === selected;
+        });
+
+        if (filteredByDate.length !== 0) {
+          setNotifications(filteredByDate.reverse());
+
+          const selectedType = filterTabData[activeIndex].type;
+
+          const data = selectedType
+            ? filteredByDate.filter(
+                (notification) => notification.type === selectedType
+              )
+            : filteredByDate;
+
+          setFilteredNotifications(data || []);
+        } else {
+          setNotifications([]);
+          setFilteredNotifications([]);
+        }
+      } else {
+        setNotifications([]);
+      }
+    } catch (error) {
+      console.error("Error loading notifications:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [notifications, activeIndex, filterTabData, selectedDate]);
+  };
 
   const handleTabPress = useCallback(
     (index: number) => {
       setActiveIndex(index);
-      const selectedType = filterTabData[index].type;
-      setFilteredNotifications(
-        selectedType
-          ? notifications.filter(
-              (notification) => notification.type === selectedType
-            )
-          : notifications
-      );
+      storeFilterData();
     },
     [filterTabData, notifications]
   );
@@ -236,6 +207,44 @@ const History = () => {
       },
     ]);
   }, []);
+
+  const renderCalenderView = ({
+    item,
+    index,
+  }: {
+    item: DayItem;
+    index: number;
+  }) => {
+    const isSelected = item.formattedDate === selectedDate;
+    const backgroundColor = isSelected
+      ? "rgba(38, 107, 235, 1)"
+      : "transparent";
+
+    return (
+      <Pressable
+        style={style.calenderContainer}
+        onPress={() => {
+          handleDayClick(item.formattedDate, index);
+          loadNotifications();
+        }}
+      >
+        <Text numberOfLines={1} style={style.calenderWeekText}>
+          {item.dayOfWeek}
+        </Text>
+        <View style={[style.calenderDateTextView, { backgroundColor }]}>
+          <Text
+            numberOfLines={1}
+            style={[
+              style.calenderDayText,
+              { color: isSelected ? colors.white : colors.text },
+            ]}
+          >
+            {item.date}
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
 
   return (
     <View style={style.container}>
@@ -287,24 +296,17 @@ const History = () => {
           </Animated.View>
 
           {!loading ? (
-            <FlashList
-              ref={flashListRef}
-              extraData={selectedDate || filteredNotifications || notifications}
-              estimatedItemSize={300}
-              data={filteredNotifications}
-              stickyHeaderHiddenOnScroll={true}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 120 }}
-              renderItem={({ item }) => (
-                <RenderHistoryList
-                  notification={item}
-                  deleteReminder={deleteReminder}
-                />
-              )}
-              ListEmptyComponent={
+            filteredNotifications?.length === 0 ? (
+              <View
+                style={{
+                  flex: 1,
+                  marginBottom: 80,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
                 <Text
                   style={{
-                    marginVertical: 25,
                     textAlign: "center",
                     color: colors.text,
                     fontFamily: FONTS.SemiBold,
@@ -313,8 +315,29 @@ const History = () => {
                 >
                   No Notifications Found
                 </Text>
-              }
-            />
+              </View>
+            ) : (
+              <FlashList
+                ref={flashListRef}
+                extraData={
+                  selectedDate ||
+                  activeIndex ||
+                  filteredNotifications ||
+                  notifications
+                }
+                estimatedItemSize={300}
+                data={filteredNotifications}
+                stickyHeaderHiddenOnScroll={true}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 120 }}
+                renderItem={({ item }) => (
+                  <RenderHistoryList
+                    notification={item}
+                    deleteReminder={deleteReminder}
+                  />
+                )}
+              />
+            )
           ) : (
             <View style={style.loaderView}>
               <ActivityIndicator color={colors.text} size="large" />
@@ -463,6 +486,7 @@ const styles = () => {
     },
     loaderView: {
       flex: 1,
+      marginBottom: 80,
       alignItems: "center",
       justifyContent: "center",
     },

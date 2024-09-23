@@ -5,7 +5,7 @@ import AssetsPath from "../../../Global/AssetsPath";
 import TextString from "../../../Global/TextString";
 import { FONTS, SIZE } from "../../../Global/Theme";
 import useThemeColors from "../../../Theme/useThemeMode";
-import { Contact, SimplifiedContact } from "../../../Types/Interface";
+import { Contact } from "../../../Types/Interface";
 
 interface AddContactProps {
   themeColor: string;
@@ -38,7 +38,10 @@ const AddContact: FC<AddContactProps> = ({
       ) : (
         <Animated.View style={style.contactListContainer}>
           {selectedContacts.map((contact: Contact, index) => (
-            <Animated.View layout={LinearTransition.springify().mass(0.5)}>
+            <Animated.View
+              key={index}
+              layout={LinearTransition.springify().mass(0.5)}
+            >
               <Pressable
                 key={contact.recordID || index}
                 style={[style.contactChip, { backgroundColor: themeColor }]}

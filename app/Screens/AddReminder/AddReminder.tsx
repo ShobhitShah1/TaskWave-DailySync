@@ -131,7 +131,7 @@ const AddReminder = () => {
 
       requestContactData();
     } catch (error: any) {
-      Alert.alert("Error", error?.message);
+      Alert.alert("Error", String(error?.message));
     }
   };
 
@@ -139,7 +139,7 @@ const AddReminder = () => {
     try {
       const contactsData = await Contacts.getAll();
       const simplifiedContacts: Contact[] = contactsData.map((contact) => ({
-        recordID: contact.recordID,
+        recordID: contact.recordID || "",
         name: contact.displayName,
         number: contact.phoneNumbers?.[0]?.number,
         hasThumbnail: contact.hasThumbnail,
@@ -148,10 +148,8 @@ const AddReminder = () => {
       setContacts(simplifiedContacts);
       setContactModalVisible(true);
     } catch (error: any) {
-      Alert.alert(
-        "Error",
-        String(error?.message) || "Failed to fetch contacts."
-      );
+      const message = String(error?.message) || "Failed to fetch contacts.";
+      Alert.alert("Error", message);
     }
   };
 
@@ -170,7 +168,6 @@ const AddReminder = () => {
     let uniqueFileName = fileName;
     let counter = 1;
 
-    // Check if the file already exists in the directory
     while (await RNBlobUtil.fs.exists(`${directory}/${uniqueFileName}`)) {
       const fileParts = fileName.split(".");
       const name = fileParts.slice(0, -1).join(".");
@@ -341,7 +338,7 @@ const AddReminder = () => {
           (contact) => ({
             name: contact.name,
             number: contact.number || "",
-            recordID: contact?.recordID,
+            recordID: contact?.recordID || "",
             thumbnailPath: contact?.thumbnailPath,
           })
         );
