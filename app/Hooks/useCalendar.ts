@@ -7,7 +7,6 @@ const useCalendar = (
 ) => {
   const [currentMonth, setCurrentMonth] = useState(initialDate);
 
-  // State for formatted selected date (as string)
   const [selectedDate, setSelectedDate] = useState(() => {
     return (
       initialSelectedDate ||
@@ -15,7 +14,6 @@ const useCalendar = (
     );
   });
 
-  // New state for selectedDate as a Date object
   const [selectedDateObject, setSelectedDateObject] = useState<Date>(
     () => initialDate
   );
@@ -53,12 +51,11 @@ const useCalendar = (
   }, [currentMonth]);
 
   const handleDayClick = useCallback((formattedDate: string, index: number) => {
-    // Parse the formatted date (DD-MM-YYYY)
     const [day, month, year] = formattedDate.split("-").map(Number);
-    const dateObject = new Date(year, month - 1, day); // Month is 0-indexed in Date
+    const dateObject = new Date(year, month - 1, day);
 
-    setSelectedDate(formattedDate); // Update the formatted date
-    setSelectedDateObject(dateObject); // Update the Date object state
+    setSelectedDate(formattedDate);
+    setSelectedDateObject(dateObject);
 
     flatListRef.current?.scrollToIndex({
       animated: true,
@@ -86,8 +83,8 @@ const useCalendar = (
   );
 
   return {
-    selectedDate, // Formatted date as string
-    selectedDateObject, // Date object
+    selectedDate,
+    selectedDateObject,
     currentMonth,
     daysArray,
     flatListRef,
@@ -95,7 +92,7 @@ const useCalendar = (
     goToPrevMonth,
     goToNextMonth,
     setSelectedDate,
-    setSelectedDateObject, // Allow updating Date object state
+    setSelectedDateObject,
   };
 };
 
