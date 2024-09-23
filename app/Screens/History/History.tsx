@@ -48,9 +48,15 @@ const History = () => {
   );
 
   const { getAllNotifications, deleteNotification } = useReminder();
-  const { daysArray, flatListRef, handleDayClick, selectedDate } = useCalendar(
-    new Date()
-  );
+  const {
+    daysArray,
+    flatListRef,
+    handleDayClick,
+    selectedDateObject,
+    selectedDate,
+    goToNextMonth,
+    goToPrevMonth,
+  } = useCalendar(new Date());
 
   const filterTabData = useMemo(
     () => [
@@ -255,10 +261,10 @@ const History = () => {
       >
         <View style={{ flex: 1 }}>
           <View style={style.headerContainer}>
-            <Text style={style.dateText}>{formatDate(new Date())}</Text>
+            <Text style={style.dateText}>{formatDate(selectedDateObject)}</Text>
             <View style={style.arrowContainer}>
               <Pressable
-                onPress={() => console.log("Left")}
+                onPress={() => goToPrevMonth(1)}
                 style={style.arrowButton}
               >
                 <Image
@@ -267,7 +273,7 @@ const History = () => {
                 />
               </Pressable>
               <Pressable
-                onPress={() => console.log("Right")}
+                onPress={() => goToNextMonth(1)}
                 style={style.arrowButton}
               >
                 <Image
@@ -297,24 +303,8 @@ const History = () => {
 
           {!loading ? (
             filteredNotifications?.length === 0 ? (
-              <View
-                style={{
-                  flex: 1,
-                  marginBottom: 80,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    textAlign: "center",
-                    color: colors.text,
-                    fontFamily: FONTS.SemiBold,
-                    fontSize: 20,
-                  }}
-                >
-                  No Notifications Found
-                </Text>
+              <View style={style.emptyListView}>
+                <Text style={style.emptyListText}>No Notifications Found</Text>
               </View>
             ) : (
               <FlashList
@@ -518,6 +508,18 @@ const styles = () => {
       width: "70%",
       height: "70%",
       resizeMode: "contain",
+    },
+    emptyListView: {
+      flex: 1,
+      marginBottom: 80,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    emptyListText: {
+      textAlign: "center",
+      color: colors.text,
+      fontFamily: FONTS.SemiBold,
+      fontSize: 20,
     },
 
     // Calender

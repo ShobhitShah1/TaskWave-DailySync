@@ -6,12 +6,20 @@ const useCalendar = (
   initialSelectedDate: string = ""
 ) => {
   const [currentMonth, setCurrentMonth] = useState(initialDate);
+
+  // State for formatted selected date (as string)
   const [selectedDate, setSelectedDate] = useState(() => {
     return (
       initialSelectedDate ||
       currentMonth.toLocaleDateString("en-GB").replace(/\//g, "-")
     );
   });
+
+  // New state for selectedDate as a Date object
+  const [selectedDateObject, setSelectedDateObject] = useState<Date>(
+    () => initialDate
+  );
+
   const flatListRef = useRef<FlatList>(null);
 
   const daysArray = useMemo(() => {
@@ -45,7 +53,13 @@ const useCalendar = (
   }, [currentMonth]);
 
   const handleDayClick = useCallback((formattedDate: string, index: number) => {
-    setSelectedDate(formattedDate);
+    // Parse the formatted date (DD-MM-YYYY)
+    const [day, month, year] = formattedDate.split("-").map(Number);
+    const dateObject = new Date(year, month - 1, day); // Month is 0-indexed in Date
+
+    setSelectedDate(formattedDate); // Update the formatted date
+    setSelectedDateObject(dateObject); // Update the Date object state
+
     flatListRef.current?.scrollToIndex({
       animated: true,
       index,
@@ -53,7 +67,16 @@ const useCalendar = (
     });
   }, []);
 
-  const goToPrevNextMonth = useCallback(
+  const goToPrevMonth = useCallback(
+    (modifier: number) => {
+      setCurrentMonth(
+        new Date(currentMonth.getFullYear(), currentMonth.getMonth() - modifier)
+      );
+    },
+    [currentMonth]
+  );
+
+  const goToNextMonth = useCallback(
     (modifier: number) => {
       setCurrentMonth(
         new Date(currentMonth.getFullYear(), currentMonth.getMonth() + modifier)
@@ -63,13 +86,16 @@ const useCalendar = (
   );
 
   return {
-    selectedDate,
+    selectedDate, // Formatted date as string
+    selectedDateObject, // Date object
     currentMonth,
     daysArray,
     flatListRef,
     handleDayClick,
-    goToPrevNextMonth,
+    goToPrevMonth,
+    goToNextMonth,
     setSelectedDate,
+    setSelectedDateObject, // Allow updating Date object state
   };
 };
 

@@ -95,7 +95,13 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
                 },
               ]}
             >
-              <Image source={icon} style={styles.logo} />
+              <Image
+                source={icon}
+                tintColor={
+                  notification?.type === "phone" ? colors.text : undefined
+                }
+                style={styles.logo}
+              />
             </View>
           </View>
           <View style={styles.textContainer}>
