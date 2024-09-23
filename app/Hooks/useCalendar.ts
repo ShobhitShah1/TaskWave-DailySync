@@ -93,6 +93,7 @@ const useCalendar = (
     goToNextMonth,
     setSelectedDate,
     setSelectedDateObject,
+    setCurrentMonth,
   };
 };
 

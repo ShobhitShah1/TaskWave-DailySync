@@ -22,6 +22,7 @@ export const LightThemeColors = {
   lightContact: "rgba(139, 142, 142, 1)",
   yellow: "rgba(246, 255, 0, 1)",
   blue: "rgba(48, 169, 255, 1)",
+  darkBlue: "rgba(64, 93, 240, 1)",
 
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",
@@ -61,6 +62,7 @@ export const DarkThemeColors = {
   lightContact: "rgba(139, 142, 142, 1)",
   yellow: "rgba(246, 255, 0, 1)",
   blue: "rgba(48, 169, 255, 1)",
+  darkBlue: "rgba(64, 93, 240, 1)",
 
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",

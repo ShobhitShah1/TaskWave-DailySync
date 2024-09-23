@@ -25,9 +25,12 @@ import useNotificationPermission from "../../Hooks/useNotificationPermission";
 import useDatabase from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
 import { DayItem, Notification } from "../../Types/Interface";
+import { fromNowText } from "../../Utils/isSameDat";
 import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
+import MonthPicker from "react-native-month-year-picker";
+import YearMonthPicker from "../../Components/YearMonthPicker";
 
 const Home = () => {
   const style = styles();
@@ -35,6 +38,7 @@ const Home = () => {
   const isFocus = useIsFocused();
   const { height } = useWindowDimensions();
   const [fullScreenPreview, setFullScreenPreview] = useState(false);
+  const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
 
   const { getAllNotifications, deleteNotification } = useDatabase();
   const { permissionStatus, requestPermission } = useNotificationPermission();
@@ -45,9 +49,16 @@ const Home = () => {
   });
   const [refreshing, setRefreshing] = React.useState(false);
 
-  const { daysArray, flatListRef, handleDayClick, selectedDate } = useCalendar(
-    new Date()
-  );
+  const {
+    daysArray,
+    flatListRef,
+    handleDayClick,
+    selectedDate,
+    selectedDateObject,
+    setSelectedDate,
+    setSelectedDateObject,
+    setCurrentMonth,
+  } = useCalendar(new Date());
 
   const findSelectedIndex = () => {
     return daysArray.findIndex((item) => item.formattedDate === selectedDate);
@@ -56,13 +67,16 @@ const Home = () => {
   const scrollToIndex = async () => {
     if (flatListRef.current && isFocus) {
       const index = findSelectedIndex();
-      if (index !== -1) {
+
+      if (index >= 0 && index < daysArray.length) {
         await new Promise((resolve) => setTimeout(resolve, 100));
         flatListRef.current.scrollToIndex({
           animated: true,
           index,
           viewPosition: 0.5,
         });
+      } else {
+        console.warn("Invalid index:", index);
       }
     }
   };
@@ -241,16 +255,36 @@ const Home = () => {
     );
   };
 
+  const handleDateChange = (year: number, month: number) => {
+    const currentDay = selectedDateObject.getDate();
+
+    const newDate = new Date(year, month - 1, currentDay);
+
+    const formattedDate = newDate
+      .toLocaleDateString("en-GB")
+      .replace(/\//g, "-");
+
+    setSelectedDate(formattedDate);
+    setSelectedDateObject(newDate);
+    setCurrentMonth(newDate);
+    setShowDateAndYearModal(false);
+  };
+
   return (
     <View style={style.container}>
       <HomeHeader hideGrid={notificationsState.active?.length === 0} />
 
       <View style={style.homeContainContainer}>
         <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>
-          <View style={style.dateContainer}>
-            <Text style={style.todayText}>Today</Text>
-            <Text style={style.dateText}>{formatDate(new Date())}</Text>
-          </View>
+          <Pressable
+            onPress={() => setShowDateAndYearModal(true)}
+            style={style.dateContainer}
+          >
+            <Text style={style.todayText}>
+              {fromNowText(selectedDateObject)}
+            </Text>
+            <Text style={style.dateText}>{formatDate(selectedDateObject)}</Text>
+          </Pressable>
 
           <View style={style.statusContainer}>
             <View style={style.statusItem}>
@@ -275,6 +309,7 @@ const Home = () => {
             horizontal
             ref={flatListRef}
             data={daysArray}
+            onScrollToIndexFailed={() => {}}
             onLayout={() => scrollToIndex()}
             onContentSizeChange={() => scrollToIndex()}
             contentContainerStyle={{ gap: 20 }}
@@ -324,6 +359,16 @@ const Home = () => {
         notifications={notificationsState?.active}
         onClose={() => setFullScreenPreview(false)}
       />
+
+      {showDateAndYearModal && (
+        <YearMonthPicker
+          isVisible={showDateAndYearModal}
+          selectedYear={selectedDateObject.getFullYear()}
+          selectedMonth={selectedDateObject.getMonth()}
+          onConfirm={handleDateChange}
+          onCancel={() => setShowDateAndYearModal(false)}
+        />
+      )}
     </View>
   );
 };

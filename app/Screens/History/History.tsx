@@ -29,6 +29,7 @@ import HomeHeader from "../Home/Components/HomeHeader";
 import RenderHistoryList from "./Components/RenderHistoryList";
 import useCalendar from "../../Hooks/useCalendar";
 import { formatDate } from "../AddReminder/ReminderScheduled";
+import YearMonthPicker from "../../Components/YearMonthPicker";
 
 const History = () => {
   const style = styles();
@@ -41,6 +42,7 @@ const History = () => {
   >([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
 
   const notificationCounts = useMemo(
     () => countNotificationsByType(notifications),
@@ -54,8 +56,9 @@ const History = () => {
     handleDayClick,
     selectedDateObject,
     selectedDate,
-    goToNextMonth,
-    goToPrevMonth,
+    setSelectedDate,
+    setSelectedDateObject,
+    setCurrentMonth,
   } = useCalendar(new Date());
 
   const filterTabData = useMemo(
@@ -252,6 +255,83 @@ const History = () => {
     );
   };
 
+  const handleDateChange = (year: number, month: number) => {
+    const currentDay = selectedDateObject.getDate();
+
+    const newDate = new Date(year, month - 1, currentDay);
+
+    const formattedDate = newDate
+      .toLocaleDateString("en-GB")
+      .replace(/\//g, "-");
+
+    setSelectedDate(formattedDate);
+    setSelectedDateObject(newDate);
+    setCurrentMonth(newDate);
+    setShowDateAndYearModal(false);
+  };
+
+  const goToPrevMonth = useCallback(() => {
+    const newDate = new Date(
+      selectedDateObject.getFullYear(),
+      selectedDateObject.getMonth() - 1
+    );
+    const currentDay = selectedDateObject.getDate();
+
+    // Get the last day of the new month
+    const lastDayOfNewMonth = new Date(
+      newDate.getFullYear(),
+      newDate.getMonth() + 1,
+      0
+    ).getDate();
+
+    // If the current day is greater than the last day of the new month, set it to the last day
+    const newSelectedDay =
+      currentDay > lastDayOfNewMonth ? lastDayOfNewMonth : currentDay;
+
+    // Update the state
+    setCurrentMonth(newDate);
+    const newSelectedDateObject = new Date(
+      newDate.getFullYear(),
+      newDate.getMonth(),
+      newSelectedDay
+    );
+    setSelectedDateObject(newSelectedDateObject);
+    setSelectedDate(
+      newSelectedDateObject.toLocaleDateString("en-GB").replace(/\//g, "-")
+    );
+  }, [selectedDateObject, selectedDateObject]);
+
+  const goToNextMonth = useCallback(() => {
+    const newDate = new Date(
+      selectedDateObject.getFullYear(),
+      selectedDateObject.getMonth() + 1
+    );
+    const currentDay = selectedDateObject.getDate();
+
+    // Get the last day of the new month
+    const lastDayOfNewMonth = new Date(
+      newDate.getFullYear(),
+      newDate.getMonth() + 1,
+      0
+    ).getDate();
+
+    // If the current day is greater than the last day of the new month, set it to the last day
+    const newSelectedDay =
+      currentDay > lastDayOfNewMonth ? lastDayOfNewMonth : currentDay;
+
+    // Update the state
+    setCurrentMonth(newDate);
+    const newSelectedDateObject = new Date(
+      newDate.getFullYear(),
+      newDate.getMonth(),
+      newSelectedDay
+    );
+    setSelectedDateObject(newSelectedDateObject);
+    setSelectedDate(
+      newSelectedDateObject.toLocaleDateString("en-GB").replace(/\//g, "-")
+    );
+  }, [selectedDateObject, selectedDateObject]);
+
   return (
     <View style={style.container}>
       <HomeHeader hideGrid={true} hideThemeButton={true} />
@@ -261,10 +341,14 @@ const History = () => {
       >
         <View style={{ flex: 1 }}>
           <View style={style.headerContainer}>
-            <Text style={style.dateText}>{formatDate(selectedDateObject)}</Text>
+            <Pressable onPress={() => setShowDateAndYearModal(true)}>
+              <Text style={style.dateText}>
+                {formatDate(selectedDateObject)}
+              </Text>
+            </Pressable>
             <View style={style.arrowContainer}>
               <Pressable
-                onPress={() => goToPrevMonth(1)}
+                onPress={() => goToPrevMonth()}
                 style={style.arrowButton}
               >
                 <Image
@@ -273,7 +357,7 @@ const History = () => {
                 />
               </Pressable>
               <Pressable
-                onPress={() => goToNextMonth(1)}
+                onPress={() => goToNextMonth()}
                 style={style.arrowButton}
               >
                 <Image
@@ -301,37 +385,35 @@ const History = () => {
             />
           </Animated.View>
 
-          {!loading ? (
-            filteredNotifications?.length === 0 ? (
-              <View style={style.emptyListView}>
-                <Text style={style.emptyListText}>No Notifications Found</Text>
-              </View>
-            ) : (
-              <FlashList
-                ref={flashListRef}
-                extraData={
-                  selectedDate ||
-                  activeIndex ||
-                  filteredNotifications ||
-                  notifications
-                }
-                estimatedItemSize={300}
-                data={filteredNotifications}
-                stickyHeaderHiddenOnScroll={true}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 120 }}
-                renderItem={({ item }) => (
-                  <RenderHistoryList
-                    notification={item}
-                    deleteReminder={deleteReminder}
-                  />
-                )}
-              />
-            )
-          ) : (
+          {loading ? (
             <View style={style.loaderView}>
               <ActivityIndicator color={colors.text} size="large" />
             </View>
+          ) : filteredNotifications?.length === 0 ? (
+            <View style={style.emptyListView}>
+              <Text style={style.emptyListText}>No Notifications Found</Text>
+            </View>
+          ) : (
+            <FlashList
+              ref={flashListRef}
+              extraData={
+                selectedDate ||
+                activeIndex ||
+                filteredNotifications ||
+                notifications
+              }
+              estimatedItemSize={300}
+              data={filteredNotifications}
+              stickyHeaderHiddenOnScroll={true}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 120 }}
+              renderItem={({ item }) => (
+                <RenderHistoryList
+                  notification={item}
+                  deleteReminder={deleteReminder}
+                />
+              )}
+            />
           )}
         </View>
 
@@ -400,6 +482,16 @@ const History = () => {
           })}
         </View>
       </View>
+
+      {showDateAndYearModal && (
+        <YearMonthPicker
+          isVisible={showDateAndYearModal}
+          selectedYear={selectedDateObject.getFullYear()}
+          selectedMonth={selectedDateObject.getMonth()}
+          onConfirm={handleDateChange}
+          onCancel={() => setShowDateAndYearModal(false)}
+        />
+      )}
     </View>
   );
 };

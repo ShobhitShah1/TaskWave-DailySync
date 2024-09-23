@@ -147,10 +147,10 @@ const BottomTab = () => {
   return (
     <React.Fragment>
       <Bottom.Navigator
-        screenOptions={({ route }) => ({
+        screenOptions={{
           headerShown: false,
           tabBarStyle: { borderTopWidth: 0, display: "none" },
-        })}
+        }}
         tabBar={(props) => (
           <CustomTabBar
             {...props}
