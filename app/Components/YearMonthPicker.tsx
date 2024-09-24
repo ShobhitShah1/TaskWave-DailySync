@@ -7,6 +7,8 @@ import {
   Dimensions,
   FlatList,
   Pressable,
+  useWindowDimensions,
+  StatusBar,
 } from "react-native";
 import Modal from "react-native-modal";
 import Animated, {
@@ -63,6 +65,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  const { height } = useWindowDimensions();
   const colors = useThemeColors();
 
   const years = useMemo(
@@ -105,7 +108,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       <Pressable
         style={[
           styles.pickerItem,
-          isSelected && { backgroundColor: colors.darkBlue },
+          isSelected && { backgroundColor: "rgba(209, 209, 209, 0.5)" },
         ]}
         onPress={() => {
           itemScale.value = withTiming(1.1, { duration: 100 }, () => {
@@ -121,7 +124,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
           <Text
             style={[
               styles.pickerItemText,
-              { color: isSelected ? colors.white : colors.text },
+              { color: isSelected ? colors.darkBlue : "rgba(48, 51, 52, 0.7)" },
               isSelected && styles.selectedItemText,
             ]}
           >
@@ -175,6 +178,8 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       backdropOpacity={0.5}
       animationIn="fadeIn"
       animationOut="fadeOut"
+      statusBarTranslucent
+      deviceWidth={height + ((StatusBar.currentHeight || 20) + 30)}
       useNativeDriver
       onModalShow={() => {
         animationProgress.value = withTiming(1, {
@@ -193,7 +198,10 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
         <Animated.View
           style={[
             styles.modalView,
-            { backgroundColor: colors.background },
+            {
+              backgroundColor: colors.white,
+              shadowColor: colors.darkBlue,
+            },
             animatedStyle,
           ]}
         >
@@ -209,8 +217,14 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
             )}
           </View>
           <View style={styles.buttonContainer}>
-            <Pressable style={[styles.button, {}]} onPress={onCancel}>
-              <Text style={[styles.buttonText, { color: colors.text }]}>
+            <Pressable
+              style={[
+                styles.button,
+                { backgroundColor: "rgba(217, 217, 217, 1)" },
+              ]}
+              onPress={onCancel}
+            >
+              <Text style={[styles.buttonText, { color: colors.black }]}>
                 Cancel
               </Text>
             </Pressable>
@@ -239,7 +253,6 @@ const styles = StyleSheet.create({
     borderRadius: SIZE.listBorderRadius,
     padding: 20,
     alignItems: "center",
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -247,6 +260,8 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH * 0.85,
   },
   pickerContainer: {
+    width: "100%",
+    justifyContent: "space-between",
     flexDirection: "row",
     height: ITEM_HEIGHT * VISIBLE_ITEMS,
   },
@@ -254,11 +269,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pickerItem: {
-    width: "95%",
+    width: "90%",
+    left: 8,
     height: ITEM_HEIGHT,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: SIZE.listBorderRadius / 2,
+    borderRadius: 20,
+    // borderRadius: SIZE.listBorderRadius / 2,
   },
   pickerItemText: {
     fontSize: 16,

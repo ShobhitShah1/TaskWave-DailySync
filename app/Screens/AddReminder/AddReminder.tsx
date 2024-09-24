@@ -188,6 +188,7 @@ const AddReminder = () => {
         copyTo: "cachesDirectory",
       });
 
+      console.log("pickerResult", pickerResult);
       if (
         pickerResult &&
         pickerResult.fileCopyUri &&
@@ -221,7 +222,10 @@ const AddReminder = () => {
           ToastAndroid.show("File size exceeds the limit", ToastAndroid.SHORT);
         }
       } else {
-        console.error("Invalid document format");
+        Alert.alert(
+          "Error",
+          String(pickerResult?.copyError) || "Invalid document format"
+        );
       }
     } catch (e) {
       console.error("Error in Document Picker:", e);
@@ -344,6 +348,7 @@ const AddReminder = () => {
         );
 
         const notificationData: Notification = {
+          id: "",
           type: notificationType,
           message: message || "",
           date: selectedDateTime,

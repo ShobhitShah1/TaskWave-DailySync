@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { memo, useCallback, useMemo } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
 import AssetsPath from "../../../Global/AssetsPath";
@@ -53,11 +53,22 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
       });
     }, [notification]);
 
-    const onEditPress = useCallback(() => {
-      navigation.navigate("CreateReminder", {
-        notificationType: notification.type,
-        id: notification?.id,
-      });
+    const onDeletePress = useCallback(() => {
+      Alert.alert(
+        "Delete Reminder",
+        "Are you sure you want to delete this reminder?",
+        [
+          {
+            text: "No",
+            style: "cancel",
+          },
+          {
+            text: "Yes",
+            style: "destructive",
+            onPress: () => deleteReminder(notification?.id),
+          },
+        ]
+      );
     }, [notification]);
 
     return (
@@ -79,7 +90,10 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                 To:{" "}
                 {notification.type === "gmail"
                   ? notification?.toMail?.[0]
-                  : notification?.toContact?.map((res) => `${res.name}, `)}
+                  : notification?.toContact?.map(
+                      (res) =>
+                        `${res.name}${notification?.toContact?.length >= 2 ? "," : ""} `
+                    )}
               </Text>
               <Text
                 style={[styles.descriptionText, { color: colors.grayTitle }]}
@@ -152,13 +166,6 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
             </View>
 
             <View style={styles.actionsContainer}>
-              <Pressable onPress={onEditPress}>
-                <Image
-                  tintColor={typeColor}
-                  source={AssetsPath.ic_edit}
-                  style={styles.actionIcon}
-                />
-              </Pressable>
               <Pressable onPress={onCardPress}>
                 <Image
                   tintColor={typeColor}
@@ -171,6 +178,13 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                   tintColor={typeColor}
                   source={AssetsPath.ic_duplicate}
                   style={styles.actionIcon}
+                />
+              </Pressable>
+              <Pressable onPress={onDeletePress}>
+                <Image
+                  tintColor={typeColor}
+                  source={AssetsPath.ic_delete}
+                  style={[styles.actionIcon, { height: 17, width: 17 }]}
                 />
               </Pressable>
             </View>
@@ -269,8 +283,9 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.Medium,
   },
   actionsContainer: {
-    flexDirection: "row",
     width: "25%",
+    alignItems: "center",
+    flexDirection: "row",
     justifyContent: "flex-end",
   },
   actionIcon: {

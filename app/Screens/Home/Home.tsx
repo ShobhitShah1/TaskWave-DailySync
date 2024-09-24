@@ -29,7 +29,6 @@ import { fromNowText } from "../../Utils/isSameDat";
 import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
-import MonthPicker from "react-native-month-year-picker";
 import YearMonthPicker from "../../Components/YearMonthPicker";
 
 const Home = () => {
@@ -270,6 +269,60 @@ const Home = () => {
     setShowDateAndYearModal(false);
   };
 
+  const [isLoadingMoreDays, setIsLoadingMoreDays] = useState(false);
+
+  // const handleOnEndReached = useCallback(async() => {
+  //   console.log("ON END CALL");
+  //   if (!isLoadingMoreDays) {
+  //     setIsLoadingMoreDays(true);
+  //     await addMoreDays();
+  //     setIsLoadingMoreDays(false);
+  //   }
+  // }, [isLoadingMoreDays]);
+
+  // const addMoreDays = useCallback(() => {
+  //   setCurrentMonth((prevMonth) => {
+  //     const nextMonth = new Date(
+  //       prevMonth.getFullYear(),
+  //       prevMonth.getMonth() + 1,
+  //       1
+  //     );
+  //     const daysInNextMonth = new Date(
+  //       nextMonth.getFullYear(),
+  //       nextMonth.getMonth() + 1,
+  //       0
+  //     ).getDate();
+
+  //     const newDaysArray = await Array.from(
+  //       { length: daysInNextMonth },
+  //       (_, index) => {
+  //         const day = index + 1;
+  //         const currentDate = new Date(
+  //           nextMonth.getFullYear(),
+  //           nextMonth.getMonth(),
+  //           day
+  //         );
+  //         const formattedDate = `${day.toString().padStart(2, "0")}-${(
+  //           nextMonth.getMonth() + 1
+  //         )
+  //           .toString()
+  //           .padStart(2, "0")}-${nextMonth.getFullYear()}`;
+
+  //         return {
+  //           date: day,
+  //           dayOfWeek: currentDate
+  //             .toLocaleDateString("en-US", { weekday: "short" })
+  //             .slice(0, 3),
+  //           formattedDate,
+  //         };
+  //       }
+  //     );
+
+  //     setIsLoadingMoreDays(false);
+  //     return nextMonth;
+  //   });
+  // }, [setCurrentMonth]);
+
   return (
     <View style={style.container}>
       <HomeHeader hideGrid={notificationsState.active?.length === 0} />
@@ -316,6 +369,9 @@ const Home = () => {
             renderItem={renderCalenderView}
             keyExtractor={(item, index) => index.toString()}
             showsHorizontalScrollIndicator={false}
+            // onEndReached={handleOnEndReached}
+            // onEndReachedThreshold={0.5}
+            // scrollEventThrottle={100}
           />
         </Animated.View>
 
@@ -360,15 +416,13 @@ const Home = () => {
         onClose={() => setFullScreenPreview(false)}
       />
 
-      {showDateAndYearModal && (
-        <YearMonthPicker
-          isVisible={showDateAndYearModal}
-          selectedYear={selectedDateObject.getFullYear()}
-          selectedMonth={selectedDateObject.getMonth()}
-          onConfirm={handleDateChange}
-          onCancel={() => setShowDateAndYearModal(false)}
-        />
-      )}
+      <YearMonthPicker
+        isVisible={showDateAndYearModal}
+        selectedYear={selectedDateObject.getFullYear()}
+        selectedMonth={selectedDateObject.getMonth()}
+        onConfirm={handleDateChange}
+        onCancel={() => setShowDateAndYearModal(false)}
+      />
     </View>
   );
 };

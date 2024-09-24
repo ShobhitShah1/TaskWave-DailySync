@@ -236,7 +236,7 @@ const BottomTab = () => {
               style={styles.sheetNextButton}
             >
               <Text
-                style={[styles.sheetNextButtonText, { color: colors.text }]}
+                style={[styles.sheetNextButtonText, { color: colors.white }]}
               >
                 {TextString.Next}
               </Text>

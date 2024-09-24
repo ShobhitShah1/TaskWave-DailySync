@@ -203,7 +203,7 @@ const ReminderPreview = () => {
               <View
                 style={[
                   style.reminderCard,
-                  { backgroundColor: colors.reminderCardBackground },
+                  { backgroundColor: colors.previewBackground },
                 ]}
               >
                 <Text style={[style.reminderCardText, { color: colors.text }]}>
@@ -381,13 +381,13 @@ const styles = () => {
       padding: 10,
     },
     reminderCardText: {
-      fontSize: 18,
+      fontSize: 17.5,
       lineHeight: 28,
       fontFamily: FONTS.Medium,
     },
     toContainer: {
       padding: 10,
-      backgroundColor: colors.reminderCardBackground,
+      backgroundColor: colors.previewBackground,
       borderRadius: 15,
     },
     toText: {

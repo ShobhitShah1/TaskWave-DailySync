@@ -106,10 +106,7 @@ const ReminderScheduled = () => {
 
         <View style={style.notificationWrapper}>
           <View
-            style={[
-              style.card,
-              { backgroundColor: colors.reminderCardBackground },
-            ]}
+            style={[style.card, { backgroundColor: colors.previewBackground }]}
           >
             <View style={style.cardHeader}>
               <View style={style.userInfo}>
@@ -118,16 +115,21 @@ const ReminderScheduled = () => {
                   source={AssetsPath.ic_appLogo}
                   style={style.userImage}
                 />
-                <Text style={[style.userName, { color: colors.white }]}>
+                <Text style={[style.userName, { color: colors.text }]}>
                   {TextString.TaskWave}
                 </Text>
               </View>
-              <Text style={[style.timeAgo, { color: colors.white08 }]}>
+              <Text style={[style.timeAgo, { color: colors.placeholderText }]}>
                 12m ago
               </Text>
             </View>
 
-            <Text style={[style.notificationText, { color: colors.white08 }]}>
+            <Text
+              style={[
+                style.notificationText,
+                { color: colors.placeholderText },
+              ]}
+            >
               {notificationData.message || "No Message Available"}
             </Text>
 

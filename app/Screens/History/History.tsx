@@ -597,8 +597,8 @@ const styles = () => {
       backgroundColor: colors.placeholderText,
     },
     arrowImage: {
-      width: "70%",
-      height: "70%",
+      width: "50%",
+      height: "50%",
       resizeMode: "contain",
     },
     emptyListView: {

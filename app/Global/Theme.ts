@@ -23,6 +23,7 @@ export const LightThemeColors = {
   yellow: "rgba(246, 255, 0, 1)",
   blue: "rgba(48, 169, 255, 1)",
   darkBlue: "rgba(64, 93, 240, 1)",
+  previewBackground: "rgba(236, 236, 236, 1)",
 
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",
@@ -63,6 +64,7 @@ export const DarkThemeColors = {
   yellow: "rgba(246, 255, 0, 1)",
   blue: "rgba(48, 169, 255, 1)",
   darkBlue: "rgba(64, 93, 240, 1)",
+  previewBackground: "rgba(63, 65, 69, 1)",
 
   whatsapp: "rgba(34, 200, 66, 1)",
   whatsappBackground: "rgba(34, 200, 66, 0.25)",

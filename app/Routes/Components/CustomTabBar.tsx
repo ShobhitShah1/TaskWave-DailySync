@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, { SlideInUp, SlideOutDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS } from "../../Global/Theme";
 import useThemeColors from "../../Theme/useThemeMode";
@@ -20,8 +20,6 @@ export const CustomTabBar = ({
 
   return (
     <Animated.View
-      entering={SlideInUp}
-      exiting={SlideOutDown}
       style={[
         styles.container,
         {
@@ -125,9 +123,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-
     paddingTop: 10,
-
     shadowRadius: 2,
     shadowOffset: { width: 0, height: -10 },
     shadowColor: "#000000",
