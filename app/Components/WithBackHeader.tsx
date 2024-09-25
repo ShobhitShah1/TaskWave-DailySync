@@ -22,14 +22,15 @@ const WithBackHeader = ({ title }: IHomeHeaderProps) => {
   useEffect(() => {
     const setValue = theme !== "dark";
     setIsSwitchOn(setValue);
-  }, [theme]);
+  }, [theme, isSwitchOn]);
 
   const handleToggle = useCallback(
     (state: boolean) => {
+      console.log("CICK");
       setIsSwitchOn(state);
       toggleTheme(state ? "light" : "dark");
     },
-    [toggleTheme]
+    [toggleTheme, isSwitchOn]
   );
 
   return (
@@ -51,8 +52,14 @@ const WithBackHeader = ({ title }: IHomeHeaderProps) => {
           </Text>
         </View>
         <View style={{ width: "18%", alignSelf: "flex-end" }}>
-          <View style={{ width: 70, height: 35 }}>
-            <CustomSwitch isOn={isSwitchOn} onToggle={handleToggle} />
+          <View style={{ width: 70, height: 35, zIndex: 9999 }}>
+            <CustomSwitch
+              isOn={isSwitchOn}
+              onToggle={(state: boolean) => {
+                console.log(state);
+                handleToggle(state);
+              }}
+            />
           </View>
         </View>
       </View>

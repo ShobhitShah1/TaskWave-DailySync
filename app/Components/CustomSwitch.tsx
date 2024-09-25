@@ -1,12 +1,9 @@
-import React, { memo, useState } from "react";
+import React, { memo, useEffect } from "react";
 import {
   View,
   StyleSheet,
   TouchableWithoutFeedback,
   Image,
-  StyleProp,
-  ViewStyle,
-  ImageStyle,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -38,11 +35,15 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
   const circleSize = height - 4;
   const translateX = useSharedValue(isOn ? width - circleSize - 2 : 2);
 
-  const toggleSwitch = () => {
-    const newValue = !isOn;
-    translateX.value = newValue
+  useEffect(() => {
+    translateX.value = isOn
       ? withTiming(width - circleSize - 2, { duration: 400 })
       : withTiming(2, { duration: 400 });
+  }, [isOn, translateX, width, circleSize]);
+
+  const toggleSwitch = () => {
+    const newValue = !isOn;
+    console.log(newValue);
     onToggle(newValue);
   };
 
@@ -51,19 +52,16 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
     backgroundColor: colors.primary,
   }));
 
+  const backgroundColor = useAnimatedStyle(() => ({
+    backgroundColor:
+      theme === "dark" ? colors.grayBackground : colors.lightGray,
+  }));
+
   const styles = getStyles(width, height, circleSize, iconSize);
 
   return (
     <TouchableWithoutFeedback onPress={toggleSwitch}>
-      <View
-        style={[
-          styles.switchContainer,
-          {
-            backgroundColor:
-              theme === "dark" ? colors.grayBackground : colors.lightGray,
-          },
-        ]}
-      >
+      <Animated.View style={[styles.switchContainer, backgroundColor]}>
         <View style={styles.iconContainer}>
           <Image
             source={AssetsPath.ic_darkTheme}
@@ -79,7 +77,7 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
             style={styles.iconStyle}
           />
         </View>
-      </View>
+      </Animated.View>
     </TouchableWithoutFeedback>
   );
 };

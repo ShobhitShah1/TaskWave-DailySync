@@ -1,6 +1,7 @@
 import { useIsFocused } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -38,6 +39,7 @@ const Home = () => {
   const { height } = useWindowDimensions();
   const [fullScreenPreview, setFullScreenPreview] = useState(false);
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { getAllNotifications, deleteNotification } = useDatabase();
   const { permissionStatus, requestPermission } = useNotificationPermission();
@@ -138,6 +140,8 @@ const Home = () => {
   };
 
   const loadNotifications = async () => {
+    setIsLoading(notificationsState?.active?.length === 0);
+
     try {
       const allNotifications = await getAllNotifications();
 
@@ -182,6 +186,8 @@ const Home = () => {
       }
     } catch (error) {
       console.error("Error loading notifications:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -378,7 +384,17 @@ const Home = () => {
         {notificationsState.active?.length !== 0 && <RenderHeaderView />}
 
         <View style={{ flex: 1, height }}>
-          {notificationsState.active?.length !== 0 ? (
+          {isLoading && notificationsState?.active?.length !== 0 ? (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <ActivityIndicator color={colors.text} size={"large"} />
+            </View>
+          ) : notificationsState.active?.length !== 0 ? (
             <Animated.FlatList
               data={notificationsState?.active}
               extraData={notificationsState?.active}
