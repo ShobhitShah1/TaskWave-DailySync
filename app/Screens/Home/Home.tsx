@@ -1,5 +1,5 @@
 import { useIsFocused } from "@react-navigation/native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -49,16 +49,16 @@ const Home = () => {
     inactive: [] as Notification[],
   });
   const [refreshing, setRefreshing] = React.useState(false);
-
+  const flatListRef = useRef<FlatList>(null);
   const {
     daysArray,
-    flatListRef,
     handleDayClick,
     selectedDate,
     selectedDateObject,
     setSelectedDate,
     setSelectedDateObject,
     setCurrentMonth,
+    setDaysArray,
   } = useCalendar(new Date());
 
   const findSelectedIndex = () => {
@@ -84,7 +84,7 @@ const Home = () => {
 
   useEffect(() => {
     scrollToIndex();
-  }, [selectedDate, isFocus, notificationsState, daysArray]);
+  }, [selectedDate, isFocus, notificationsState, flatListRef.current]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -104,40 +104,37 @@ const Home = () => {
     }
   }, [permissionStatus]);
 
-  const renderCalenderView = ({
-    item,
-    index,
-  }: {
-    item: DayItem;
-    index: number;
-  }) => {
-    const isSelected = item.formattedDate === selectedDate;
-    const backgroundColor = isSelected
-      ? "rgba(38, 107, 235, 1)"
-      : "transparent";
+  const RenderCalenderView = memo(
+    ({ item, index }: { item: DayItem; index: number }) => {
+      const isSelected = item.formattedDate === selectedDate;
+      const backgroundColor = isSelected
+        ? "rgba(38, 107, 235, 1)"
+        : "transparent";
 
-    return (
-      <Pressable
-        style={style.calenderContainer}
-        onPress={() => handleDayClick(item.formattedDate, index)}
-      >
-        <Text numberOfLines={1} style={style.calenderWeekText}>
-          {item.dayOfWeek}
-        </Text>
-        <View style={[style.calenderDateTextView, { backgroundColor }]}>
-          <Text
-            numberOfLines={1}
-            style={[
-              style.calenderDayText,
-              { color: isSelected ? colors.white : colors.text },
-            ]}
-          >
-            {item.date}
+      return (
+        <Pressable
+          key={index}
+          style={style.calenderContainer}
+          onPress={() => handleDayClick(item.formattedDate, index)}
+        >
+          <Text numberOfLines={1} style={style.calenderWeekText}>
+            {item.dayOfWeek}
           </Text>
-        </View>
-      </Pressable>
-    );
-  };
+          <View style={[style.calenderDateTextView, { backgroundColor }]}>
+            <Text
+              numberOfLines={1}
+              style={[
+                style.calenderDayText,
+                { color: isSelected ? colors.white : colors.text },
+              ]}
+            >
+              {item.date}
+            </Text>
+          </View>
+        </Pressable>
+      );
+    }
+  );
 
   const loadNotifications = async () => {
     setIsLoading(notificationsState?.active?.length === 0);
@@ -277,57 +274,59 @@ const Home = () => {
 
   const [isLoadingMoreDays, setIsLoadingMoreDays] = useState(false);
 
-  // const handleOnEndReached = useCallback(async() => {
-  //   console.log("ON END CALL");
-  //   if (!isLoadingMoreDays) {
-  //     setIsLoadingMoreDays(true);
-  //     await addMoreDays();
-  //     setIsLoadingMoreDays(false);
-  //   }
-  // }, [isLoadingMoreDays]);
+  const handleOnEndReached = useCallback(() => {
+    if (!isLoadingMoreDays) {
+      setIsLoadingMoreDays(true);
+      addMoreDays();
+    }
+  }, [isLoadingMoreDays]);
 
-  // const addMoreDays = useCallback(() => {
-  //   setCurrentMonth((prevMonth) => {
-  //     const nextMonth = new Date(
-  //       prevMonth.getFullYear(),
-  //       prevMonth.getMonth() + 1,
-  //       1
-  //     );
-  //     const daysInNextMonth = new Date(
-  //       nextMonth.getFullYear(),
-  //       nextMonth.getMonth() + 1,
-  //       0
-  //     ).getDate();
+  const addMoreDays = useCallback(() => {
+    console.log("Call Add More");
+    setCurrentMonth((prevMonth) => {
+      const nextMonth = new Date(
+        prevMonth.getFullYear(),
+        prevMonth.getMonth() + 1,
+        1
+      );
+      const daysInNextMonth = new Date(
+        nextMonth.getFullYear(),
+        nextMonth.getMonth() + 1,
+        0
+      ).getDate();
 
-  //     const newDaysArray = await Array.from(
-  //       { length: daysInNextMonth },
-  //       (_, index) => {
-  //         const day = index + 1;
-  //         const currentDate = new Date(
-  //           nextMonth.getFullYear(),
-  //           nextMonth.getMonth(),
-  //           day
-  //         );
-  //         const formattedDate = `${day.toString().padStart(2, "0")}-${(
-  //           nextMonth.getMonth() + 1
-  //         )
-  //           .toString()
-  //           .padStart(2, "0")}-${nextMonth.getFullYear()}`;
+      const newDays = Array.from({ length: daysInNextMonth }, (_, index) => {
+        const day = index + 1;
+        const currentDate = new Date(
+          nextMonth.getFullYear(),
+          nextMonth.getMonth(),
+          day
+        );
+        const formattedDate = `${day.toString().padStart(2, "0")}-${(
+          nextMonth.getMonth() + 1
+        )
+          .toString()
+          .padStart(2, "0")}-${nextMonth.getFullYear()}`;
 
-  //         return {
-  //           date: day,
-  //           dayOfWeek: currentDate
-  //             .toLocaleDateString("en-US", { weekday: "short" })
-  //             .slice(0, 3),
-  //           formattedDate,
-  //         };
-  //       }
-  //     );
+        return {
+          date: day,
+          dayOfWeek: currentDate
+            .toLocaleDateString("en-US", { weekday: "short" })
+            .slice(0, 3),
+          formattedDate,
+        };
+      });
 
-  //     setIsLoadingMoreDays(false);
-  //     return nextMonth;
-  //   });
-  // }, [setCurrentMonth]);
+      // Append new days to the existing daysArray
+      setDaysArray((prevDays) => [...prevDays, ...newDays]);
+
+      return nextMonth;
+    });
+
+    setTimeout(() => {
+      setIsLoadingMoreDays(false);
+    }, 200);
+  }, [setCurrentMonth]);
 
   return (
     <View style={style.container}>
@@ -369,15 +368,40 @@ const Home = () => {
             ref={flatListRef}
             data={daysArray}
             onScrollToIndexFailed={() => {}}
-            onLayout={() => scrollToIndex()}
-            onContentSizeChange={() => scrollToIndex()}
+            onLayout={scrollToIndex}
+            onContentSizeChange={scrollToIndex}
             contentContainerStyle={{ gap: 20 }}
-            renderItem={renderCalenderView}
+            renderItem={({ index, item }) => {
+              return <RenderCalenderView item={item} index={index} />;
+            }}
             keyExtractor={(item, index) => index.toString()}
             showsHorizontalScrollIndicator={false}
-            // onEndReached={handleOnEndReached}
-            // onEndReachedThreshold={0.5}
-            // scrollEventThrottle={100}
+            onEndReached={({ distanceFromEnd }) => {
+              console.log("distanceFromEnd", distanceFromEnd);
+              if (distanceFromEnd < 0) {
+                return;
+              }
+              handleOnEndReached();
+            }}
+            ListFooterComponent={
+              isLoadingMoreDays ? (
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <ActivityIndicator size={25} color={colors.text} />
+                </View>
+              ) : null
+            }
+            onEndReachedThreshold={0.5}
+            scrollEventThrottle={16}
+            maintainVisibleContentPosition={{
+              minIndexForVisible: 0,
+              autoscrollToTopThreshold: 10,
+            }}
           />
         </Animated.View>
 

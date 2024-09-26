@@ -44,8 +44,6 @@ const styles = () => {
       flexDirection: "row",
       justifyContent: "center",
       alignItems: "center",
-      // marginRight: 5,
-      // gap: 10,
     },
     statusDot: {
       width: 10,
@@ -60,6 +58,7 @@ const styles = () => {
     },
     emptyViewContainer: {
       flex: 1,
+      bottom: 15,
       justifyContent: "flex-end",
       alignItems: "center",
     },

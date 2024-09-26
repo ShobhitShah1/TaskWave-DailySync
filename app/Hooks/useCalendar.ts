@@ -7,20 +7,7 @@ const useCalendar = (
 ) => {
   const [currentMonth, setCurrentMonth] = useState(initialDate);
 
-  const [selectedDate, setSelectedDate] = useState(() => {
-    return (
-      initialSelectedDate ||
-      currentMonth.toLocaleDateString("en-GB").replace(/\//g, "-")
-    );
-  });
-
-  const [selectedDateObject, setSelectedDateObject] = useState<Date>(
-    () => initialDate
-  );
-
-  const flatListRef = useRef<FlatList>(null);
-
-  const daysArray = useMemo(() => {
+  const [daysArray, setDaysArray] = useState(() => {
     const daysInMonth = new Date(
       currentMonth.getFullYear(),
       currentMonth.getMonth() + 1,
@@ -48,7 +35,20 @@ const useCalendar = (
         formattedDate,
       };
     });
-  }, [currentMonth]);
+  });
+
+  const [selectedDate, setSelectedDate] = useState(() => {
+    return (
+      initialSelectedDate ||
+      currentMonth.toLocaleDateString("en-GB").replace(/\//g, "-")
+    );
+  });
+
+  const [selectedDateObject, setSelectedDateObject] = useState<Date>(
+    () => initialDate
+  );
+
+  const flatListRef = useRef<FlatList>(null);
 
   const handleDayClick = useCallback((formattedDate: string, index: number) => {
     const [day, month, year] = formattedDate.split("-").map(Number);
@@ -86,7 +86,8 @@ const useCalendar = (
     selectedDate,
     selectedDateObject,
     currentMonth,
-    daysArray,
+    daysArray, // Access the array of days
+    setDaysArray, // Added setDaysArray to update the daysArray
     flatListRef,
     handleDayClick,
     goToPrevMonth,
