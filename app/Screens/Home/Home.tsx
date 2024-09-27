@@ -58,7 +58,6 @@ const Home = () => {
     setSelectedDate,
     setSelectedDateObject,
     setCurrentMonth,
-    setDaysArray,
   } = useCalendar(new Date());
 
   const findSelectedIndex = () => {
@@ -272,62 +271,6 @@ const Home = () => {
     setShowDateAndYearModal(false);
   };
 
-  const [isLoadingMoreDays, setIsLoadingMoreDays] = useState(false);
-
-  const handleOnEndReached = useCallback(() => {
-    if (!isLoadingMoreDays) {
-      setIsLoadingMoreDays(true);
-      addMoreDays();
-    }
-  }, [isLoadingMoreDays]);
-
-  const addMoreDays = useCallback(() => {
-    console.log("Call Add More");
-    setCurrentMonth((prevMonth) => {
-      const nextMonth = new Date(
-        prevMonth.getFullYear(),
-        prevMonth.getMonth() + 1,
-        1
-      );
-      const daysInNextMonth = new Date(
-        nextMonth.getFullYear(),
-        nextMonth.getMonth() + 1,
-        0
-      ).getDate();
-
-      const newDays = Array.from({ length: daysInNextMonth }, (_, index) => {
-        const day = index + 1;
-        const currentDate = new Date(
-          nextMonth.getFullYear(),
-          nextMonth.getMonth(),
-          day
-        );
-        const formattedDate = `${day.toString().padStart(2, "0")}-${(
-          nextMonth.getMonth() + 1
-        )
-          .toString()
-          .padStart(2, "0")}-${nextMonth.getFullYear()}`;
-
-        return {
-          date: day,
-          dayOfWeek: currentDate
-            .toLocaleDateString("en-US", { weekday: "short" })
-            .slice(0, 3),
-          formattedDate,
-        };
-      });
-
-      // Append new days to the existing daysArray
-      setDaysArray((prevDays) => [...prevDays, ...newDays]);
-
-      return nextMonth;
-    });
-
-    setTimeout(() => {
-      setIsLoadingMoreDays(false);
-    }, 200);
-  }, [setCurrentMonth]);
-
   return (
     <View style={style.container}>
       <HomeHeader hideGrid={notificationsState.active?.length === 0} />
@@ -376,32 +319,6 @@ const Home = () => {
             }}
             keyExtractor={(item, index) => index.toString()}
             showsHorizontalScrollIndicator={false}
-            onEndReached={({ distanceFromEnd }) => {
-              console.log("distanceFromEnd", distanceFromEnd);
-              if (distanceFromEnd < 0) {
-                return;
-              }
-              handleOnEndReached();
-            }}
-            ListFooterComponent={
-              isLoadingMoreDays ? (
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <ActivityIndicator size={25} color={colors.text} />
-                </View>
-              ) : null
-            }
-            onEndReachedThreshold={0.5}
-            scrollEventThrottle={16}
-            maintainVisibleContentPosition={{
-              minIndexForVisible: 0,
-              autoscrollToTopThreshold: 10,
-            }}
           />
         </Animated.View>
 
