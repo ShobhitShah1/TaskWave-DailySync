@@ -10,7 +10,6 @@ import React, {
 import {
   ActivityIndicator,
   Alert,
-  Dimensions,
   FlatList,
   Image,
   Pressable,
@@ -19,17 +18,17 @@ import {
   View,
 } from "react-native";
 import Animated from "react-native-reanimated";
+import YearMonthPicker from "../../Components/YearMonthPicker";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
+import useCalendar from "../../Hooks/useCalendar";
 import useReminder from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
 import { DayItem, Notification } from "../../Types/Interface";
 import { countNotificationsByType } from "../../Utils/countNotificationsByType";
+import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "../Home/Components/HomeHeader";
 import RenderHistoryList from "./Components/RenderHistoryList";
-import useCalendar from "../../Hooks/useCalendar";
-import { formatDate } from "../AddReminder/ReminderScheduled";
-import YearMonthPicker from "../../Components/YearMonthPicker";
 
 const History = () => {
   const style = styles();

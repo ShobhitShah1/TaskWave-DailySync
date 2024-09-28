@@ -1,6 +1,7 @@
 import { FlashList } from "@shopify/flash-list";
 import React, { FC, memo, useCallback, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   Pressable,
@@ -12,34 +13,44 @@ import {
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import Modal from "react-native-modal";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import AssetsPath from "../../../Global/AssetsPath";
 import useThemeColors from "../../../Theme/useThemeMode";
+import { Contact, ContactListModalProps } from "../../../Types/Interface";
 import styles from "../styles";
 import RenderContactList from "./RenderContactList";
-import { Contact, NotificationType } from "../../../Types/Interface";
 
 const { height } = Dimensions.get("window");
 
-interface ContactListModalProps {
-  isVisible: boolean;
-  onClose: () => void;
-  contacts: Contact[];
-  selectedContacts: Contact[];
-  setSelectedContacts: React.Dispatch<React.SetStateAction<Contact[]>>;
-  notificationType: NotificationType;
-}
+const funMessages = [
+  "Rounding up your stellar contacts... 🌟",
+  "Polishing those digits to perfection... ✨",
+  "Alphabetizing with flair and panache... 🎩",
+  "Curating your social galaxy... 🌌",
+  "Decoding contact hieroglyphics... 🔍",
+  "Preparing your VIP list... 🎭",
+  "Organizing your digital tribe... 🏞️",
+  "Summoning your contact wizards... 🧙‍♂️",
+  "Dusting off the phonebook... 📚",
+  "Tuning up the contact symphony... 🎶",
+];
 
 const ContactListModal: FC<ContactListModalProps> = ({
   isVisible,
   onClose,
   contacts,
   selectedContacts,
-  setSelectedContacts,
+  isContactLoading,
   notificationType,
+  setSelectedContacts,
 }) => {
   const style = styles();
   const colors = useThemeColors();
   const [searchText, setSearchText] = useState("");
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+
+  // const opacity = useSharedValue(0);
+  // const translateY = useSharedValue(20);
 
   const filteredContacts = useMemo(
     () =>
@@ -75,6 +86,43 @@ const ContactListModal: FC<ContactListModalProps> = ({
     [notificationType, setSelectedContacts]
   );
 
+  // const animatedStyle = useAnimatedStyle(() => {
+  //   return {
+  //     opacity: opacity.value,
+  //     transform: [{ translateY: translateY.value }],
+  //   };
+  // });
+
+  // const cycleMessage = useCallback(() => {
+  //   setCurrentMessageIndex((prevIndex) => (prevIndex + 1) % funMessages.length);
+  // }, []);
+
+  // const animateMessage = useCallback(() => {
+  //   const duration = 500;
+  //   const easing = Easing.bezier(0.25, 0.1, 0.25, 1);
+
+  //   translateY.value = withSequence(
+  //     withTiming(0, { duration: duration / 2, easing }),
+  //     withTiming(10, { duration: duration / 2, easing })
+  //   );
+
+  //   opacity.value = withSequence(
+  //     withTiming(0, { duration: duration / 2, easing }),
+  //     withDelay(duration / 2, withTiming(1, { duration: duration / 2, easing }))
+  //   );
+
+  //   setTimeout(() => {
+  //     runOnJS(animateMessage)();
+  //     runOnJS(cycleMessage)();
+  //   }, 3000);
+  // }, [opacity, translateY, cycleMessage]);
+
+  // useEffect(() => {
+  //   if (isContactLoading) {
+  //     animateMessage();
+  //   }
+  // }, [isContactLoading, animateMessage]);
+
   return (
     <Modal
       isVisible={isVisible}
@@ -107,22 +155,49 @@ const ContactListModal: FC<ContactListModalProps> = ({
           onChangeText={setSearchText}
         />
 
-        <FlashList
-          data={filteredContacts}
-          extraData={selectedContacts}
-          estimatedItemSize={200}
-          keyExtractor={(item, index) => index.toString()}
-          style={style.contactListContainer}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 80 }}
-          renderItem={({ item }) => (
-            <RenderContactList
-              contacts={item}
-              selectedContacts={selectedContacts}
-              handleSelectContact={handleSelectContact}
-            />
-          )}
-        />
+        {isContactLoading ? (
+          <Animated.View
+            entering={FadeIn.springify().damping(200)}
+            exiting={FadeOut.springify().damping(200)}
+            style={style.contactLoadingContainer}
+          >
+            <ActivityIndicator size={"large"} color={colors.text} />
+            <Text
+              style={[style.loadingText, { color: colors.text, marginTop: 10 }]}
+            >
+              Loading contacts...
+            </Text>
+            {/* <Animated.View style={[style.loadingContent, animatedStyle]}>
+              <Text style={[style.loadingEmoji, { color: colors.text }]}>
+                {funMessages[currentMessageIndex].split(" ").pop()}
+              </Text>
+              <Animated.Text
+                style={[style.loadingText, { color: colors.text }]}
+              >
+                {funMessages[currentMessageIndex]
+                  .split(" ")
+                  .slice(0, -1)
+                  .join(" ")}
+              </Animated.Text>
+            </Animated.View> */}
+          </Animated.View>
+        ) : (
+          <FlashList
+            data={filteredContacts}
+            extraData={selectedContacts}
+            estimatedItemSize={200}
+            keyExtractor={(item, index) => index.toString()}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: 80 }}
+            renderItem={({ item }) => (
+              <RenderContactList
+                contacts={item}
+                selectedContacts={selectedContacts}
+                handleSelectContact={handleSelectContact}
+              />
+            )}
+          />
+        )}
 
         <LinearGradient
           start={{ x: 0, y: 1 }}

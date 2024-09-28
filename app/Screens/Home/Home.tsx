@@ -68,7 +68,7 @@ const Home = () => {
     if (flatListRef.current && isFocus) {
       const index = findSelectedIndex();
 
-      if (index >= 0 && index < daysArray.length) {
+      if (index >= 0 && index <= daysArray.length) {
         await new Promise((resolve) => setTimeout(resolve, 100));
         flatListRef.current.scrollToIndex({
           animated: true,

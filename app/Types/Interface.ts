@@ -94,3 +94,13 @@ export interface DayItem {
   dayOfWeek: string; // Short name of the day (e.g., "Mon", "Tue")
   formattedDate: string; // Formatted date string (e.g., "01-09-2023")
 }
+
+export interface ContactListModalProps {
+  isVisible: boolean;
+  onClose: () => void;
+  contacts: Contact[];
+  isContactLoading: boolean;
+  selectedContacts: Contact[];
+  setSelectedContacts: React.Dispatch<React.SetStateAction<Contact[]>>;
+  notificationType: NotificationType;
+}

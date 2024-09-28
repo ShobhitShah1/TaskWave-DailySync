@@ -84,10 +84,9 @@ const styles = () => {
       fontFamily: FONTS.Medium,
     },
     emptyArrowRocket: {
-      top: 10,
+      top: 5,
       left: 25,
-      height: 370,
-      marginTop: 20,
+      height: 350,
       marginVertical: 5,
       alignSelf: "flex-end",
     },

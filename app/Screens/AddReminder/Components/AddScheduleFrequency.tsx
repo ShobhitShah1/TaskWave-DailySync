@@ -1,6 +1,5 @@
 import React, { FC, memo } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
-import Animated from "react-native-reanimated";
 import { FONTS } from "../../../Global/Theme";
 import useThemeColors from "../../../Theme/useThemeMode";
 
@@ -33,31 +32,31 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
       <Text style={[styles.title, { color: colors.text }]}>Reminder:</Text>
       <View style={styles.checkboxContainer}>
         {frequencies.map((frequency) => (
-          <Animated.View key={frequency} style={styles.checkboxContainer}>
-            <Pressable
+          <Pressable
+            key={frequency}
+            style={styles.checkboxContainer}
+            onPress={() => toggleFrequency(frequency)}
+          >
+            <View
               style={[
                 styles.checkbox,
                 {
-                  borderColor:
-                    scheduleFrequency === frequency
-                      ? themeColor
-                      : colors.grayTitle,
+                  borderColor: themeColor,
                   backgroundColor:
                     scheduleFrequency === frequency
-                      ? colors.primary
+                      ? themeColor
                       : "transparent",
                 },
               ]}
-              onPress={() => toggleFrequency(frequency)}
             >
-              {scheduleFrequency?.includes(frequency) && (
+              {scheduleFrequency === frequency && (
                 <Text style={styles.checkmark}>✓</Text>
               )}
-            </Pressable>
+            </View>
             <Text style={[styles.label, { color: colors.text }]}>
               {frequency}
             </Text>
-          </Animated.View>
+          </Pressable>
         ))}
       </View>
     </View>
@@ -91,7 +90,7 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: "white",
-    fontSize: 12,
+    fontSize: 13,
   },
   label: {
     fontSize: 16,

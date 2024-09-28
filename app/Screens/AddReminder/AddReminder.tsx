@@ -11,6 +11,7 @@ import {
   ToastAndroid,
   View,
 } from "react-native";
+import RNBlobUtil from "react-native-blob-util";
 import Contacts from "react-native-contacts";
 import DocumentPicker, {
   DocumentPickerResponse,
@@ -25,7 +26,8 @@ import useDatabase, {
 import useThemeColors from "../../Theme/useThemeMode";
 import { Contact, Notification, NotificationType } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
-import { validateEmail } from "../../Utils/validateEmail";
+import { generateUniqueFileName } from "../../Utils/generateUniqueFileName";
+import { validateMultipleEmails } from "../../Utils/validateMultipleEmails";
 import AddContact from "./Components/AddContact";
 import AddDateAndTime from "./Components/AddDateAndTime";
 import AddMailSubject from "./Components/AddMailSubject";
@@ -37,7 +39,6 @@ import AddScheduleFrequency, {
 import AttachFile from "./Components/AttachFile";
 import ContactListModal from "./Components/ContactListModal";
 import styles from "./styles";
-import RNBlobUtil from "react-native-blob-util";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -113,11 +114,13 @@ const AddReminder = () => {
     useState<FrequencyType | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
-
+  const [isContactLoading, setIsContactLoading] = useState(false);
   const { createViewColor } = useNotificationIconColors(notificationType);
   const { requestPermission, checkPermissionStatus } = useContactPermission();
 
   const onHandelContactClick = async () => {
+    setIsContactLoading(true);
+
     try {
       const isPermissionEnable = await checkPermissionStatus();
 
@@ -129,6 +132,7 @@ const AddReminder = () => {
         return;
       }
 
+      setContactModalVisible(true);
       requestContactData();
     } catch (error: any) {
       Alert.alert("Error", String(error?.message));
@@ -146,10 +150,11 @@ const AddReminder = () => {
       }));
 
       setContacts(simplifiedContacts);
-      setContactModalVisible(true);
     } catch (error: any) {
       const message = String(error?.message) || "Failed to fetch contacts.";
       Alert.alert("Error", message);
+    } finally {
+      setIsContactLoading(false);
     }
   };
 
@@ -161,25 +166,6 @@ const AddReminder = () => {
     );
   };
 
-  const generateUniqueFileName = async (
-    directory: string,
-    fileName: string
-  ) => {
-    let uniqueFileName = fileName;
-    let counter = 1;
-
-    while (await RNBlobUtil.fs.exists(`${directory}/${uniqueFileName}`)) {
-      const fileParts = fileName.split(".");
-      const name = fileParts.slice(0, -1).join(".");
-      const extension = fileParts[fileParts.length - 1];
-
-      uniqueFileName = `${name}(${counter}).${extension}`;
-      counter++;
-    }
-
-    return uniqueFileName;
-  };
-
   const onHandelAttachmentClick = useCallback(async () => {
     try {
       const pickerResult = await DocumentPicker.pickSingle({
@@ -188,7 +174,6 @@ const AddReminder = () => {
         copyTo: "cachesDirectory",
       });
 
-      console.log("pickerResult", pickerResult);
       if (
         pickerResult &&
         pickerResult.fileCopyUri &&
@@ -238,16 +223,6 @@ const AddReminder = () => {
     );
 
     setSelectedDocuments(updatedDocuments);
-  };
-
-  const validateMultipleEmails = (emailString: string) => {
-    const emails = emailString.split(",").map((email) => email.trim());
-    for (let email of emails) {
-      if (!validateEmail(email)) {
-        return false;
-      }
-    }
-    return true;
   };
 
   const validateFields = () => {
@@ -544,10 +519,11 @@ const AddReminder = () => {
       <ContactListModal
         contacts={contacts}
         isVisible={contactModalVisible}
-        onClose={() => setContactModalVisible(false)}
-        setSelectedContacts={setSelectedContacts}
+        isContactLoading={isContactLoading}
         selectedContacts={selectedContacts}
         notificationType={notificationType}
+        setSelectedContacts={setSelectedContacts}
+        onClose={() => setContactModalVisible(false)}
       />
     </View>
   );

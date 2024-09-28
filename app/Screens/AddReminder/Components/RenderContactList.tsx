@@ -1,6 +1,8 @@
 import React, { memo, useEffect, useMemo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import Animated, {
+  FadeIn,
+  FadeOut,
   runOnUI,
   useAnimatedStyle,
   useSharedValue,

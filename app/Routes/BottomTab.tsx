@@ -5,11 +5,11 @@ import {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useRef, useState } from "react";
 import {
+  Animated,
   FlatList,
   Image,
   ImageSourcePropType,
@@ -18,8 +18,8 @@ import {
   Text,
   View,
 } from "react-native";
+import { CurvedBottomBar } from "react-native-curved-bottom-bar";
 import LinearGradient from "react-native-linear-gradient";
-import { useSharedValue, withTiming } from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import TextString from "../Global/TextString";
@@ -31,7 +31,7 @@ import Notification from "../Screens/Notification/Notification";
 import Setting from "../Screens/Setting/Setting";
 import useThemeColors from "../Theme/useThemeMode";
 import { NotificationType } from "../Types/Interface";
-import { CustomTabBar } from "./Components/CustomTabBar";
+import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
 
 export type categoriesType = {
@@ -80,8 +80,6 @@ const categories: categoriesType[] = [
   },
 ];
 
-const Bottom = createBottomTabNavigator();
-
 export const TabBarIcon = ({
   source,
   focused,
@@ -103,31 +101,41 @@ export const TabBarIcon = ({
 };
 
 const BottomTab = () => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [selectedCategory, setSelectedCategory] =
-    useState<NotificationType | null>("whatsapp");
-  const navigation = useNavigation();
-
-  const tabWidth = 80;
-  const indicatorPosition = useSharedValue(0);
-
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-
   const colors = useThemeColors();
   const { theme } = useAppContext();
+  const navigation = useNavigation();
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+
+  const [hideBottomTab, setHideBottomTab] = useState(true);
+  const [selectedCategory, setSelectedCategory] =
+    useState<NotificationType | null>("whatsapp");
 
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
 
-  useEffect(() => {
-    indicatorPosition.value = withTiming(selectedIndex * tabWidth + 20, {
-      duration: 500,
-    });
-  }, [selectedIndex]);
+  const renderTabBar = ({
+    routeName,
+    selectedTab,
+    navigate,
+  }: {
+    routeName: string;
+    selectedTab: string;
+    navigate: (routeName: string) => void;
+  }) => {
+    setHideBottomTab(selectedTab === "History" || selectedTab === "Setting");
 
-  const handleIndexChange = (index: number) => {
-    setSelectedIndex(index);
+    return (
+      <Pressable onPress={() => navigate(routeName)} style={styles.tabbarItem}>
+        <TabBarIcon
+          source={getIconSourceForBottomTabs(routeName)}
+          focused={routeName === selectedTab}
+        />
+        <Text style={[styles.tabLabel, { color: colors.white }]}>
+          {routeName}
+        </Text>
+      </Pressable>
+    );
   };
 
   const renderBackdrop = useCallback(
@@ -146,30 +154,52 @@ const BottomTab = () => {
 
   return (
     <React.Fragment>
-      <Bottom.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: { borderTopWidth: 0, display: "none" },
-        }}
-        tabBar={(props) => (
-          <CustomTabBar
-            {...props}
-            indicatorPosition={indicatorPosition}
-            onAddReminderPress={handlePresentModalPress}
-            onTabChange={handleIndexChange}
-            tabWidth={tabWidth}
-            shouldShowTabBar={
-              props.state.index !== 3 && props.state.index !== 4
-            }
-          />
+      <CurvedBottomBar.Navigator
+        type="DOWN"
+        style={[
+          styles.bottomBar,
+          { display: hideBottomTab ? "none" : undefined },
+        ]}
+        height={55}
+        circleWidth={50}
+        screenOptions={{ headerShown: false }}
+        bgColor={colors.bottomTab}
+        initialRouteName="Home"
+        borderTopLeftRight
+        renderCircle={() => (
+          <Animated.View style={styles.btnCircleUp}>
+            <Pressable
+              style={styles.addButton}
+              onPress={handlePresentModalPress}
+            >
+              <Text style={styles.addButtonText}>+</Text>
+            </Pressable>
+          </Animated.View>
         )}
+        tabBar={renderTabBar}
       >
-        <Bottom.Screen name="Home" component={Home} />
-        <Bottom.Screen name="Notification" component={Notification} />
-        <Bottom.Screen name="AddReminder" component={AddReminder} />
-        <Bottom.Screen name="History" component={History} />
-        <Bottom.Screen name="Setting" component={Setting} />
-      </Bottom.Navigator>
+        <CurvedBottomBar.Screen name="Home" component={Home} position="LEFT" />
+        <CurvedBottomBar.Screen
+          name="Notification"
+          component={Notification}
+          position="LEFT"
+        />
+        <CurvedBottomBar.Screen
+          name="AddReminder"
+          component={AddReminder}
+          position="CIRCLE"
+        />
+        <CurvedBottomBar.Screen
+          name="History"
+          component={History}
+          position="RIGHT"
+        />
+        <CurvedBottomBar.Screen
+          name="Setting"
+          component={Setting}
+          position="RIGHT"
+        />
+      </CurvedBottomBar.Navigator>
 
       <BottomSheetModalProvider>
         <BottomSheetModal
@@ -249,46 +279,53 @@ const BottomTab = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    shadowRadius: 2,
-    shadowOffset: { width: 0, height: -10 },
-    shadowColor: "#000000",
-    elevation: 4,
-    shadowOpacity: 1.0,
+  bottomBar: {
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
   },
-  tabBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  btnCircleUp: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: "center",
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    justifyContent: "center",
+    bottom: 30,
+    backgroundColor: "rgba(64, 93, 240, 1)",
+    shadowColor: "rgba(71, 134, 249, 1)",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.32,
+    shadowRadius: 5.46,
 
-    paddingTop: 10,
-
-    shadowRadius: 2,
-    shadowOffset: { width: 0, height: -10 },
-    shadowColor: "#000000",
-    elevation: 4,
-    shadowOpacity: 1.0,
+    elevation: 9,
   },
-  iconContainer: {
-    alignItems: "center",
-  },
-  icon: {
-    width: 24,
-    height: 24,
-  },
-  indicator: {
-    position: "absolute",
-    top: 0,
-    width: 35,
-    height: 2,
-    borderRadius: 2,
-  },
-
-  contentContainer: {
+  tabbarItem: {
     flex: 1,
+    marginTop: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tabLabel: {
+    fontSize: 12,
+    marginTop: 5,
+    fontFamily: FONTS.Medium,
+  },
+  addButton: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addButtonText: {
+    color: "white",
+    fontSize: 30,
+  },
+  modalBackground: {
+    backgroundColor: "white",
+  },
+  contentContainer: {
     padding: 16,
+  },
+  flatListContainer: {
+    rowGap: 15,
+    paddingBottom: 90,
   },
   sheetNextButtonContainer: {
     position: "absolute",
@@ -307,9 +344,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "rgba(64, 93, 240, 1)",
   },
-  sheetNextButtonText: {
-    fontFamily: FONTS.Medium,
-    fontSize: 17,
+  iconContainer: {
+    alignItems: "center",
+  },
+  icon: {
+    width: 24,
+    height: 24,
   },
   handleStyle: {
     borderTopRightRadius: 20,
@@ -320,6 +360,12 @@ const styles = StyleSheet.create({
     width: 35,
     marginTop: 10,
   },
+
+  sheetNextButtonText: {
+    fontFamily: FONTS.Medium,
+    fontSize: 17,
+    color: "white",
+  },
 });
 
-export default BottomTab;
+export default memo(BottomTab);

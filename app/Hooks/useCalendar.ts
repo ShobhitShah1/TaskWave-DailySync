@@ -86,8 +86,8 @@ const useCalendar = (
     selectedDate,
     selectedDateObject,
     currentMonth,
-    daysArray, // Access the array of days
-    setDaysArray, // Added setDaysArray to update the daysArray
+    daysArray,
+    setDaysArray,
     flatListRef,
     handleDayClick,
     goToPrevMonth,

@@ -128,6 +128,25 @@ const styles = () => {
       justifyContent: "center",
       backgroundColor: "rgba(64, 93, 240, 1)",
     },
+
+    contactLoadingContainer: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    loadingContent: {
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    loadingEmoji: {
+      fontSize: 48,
+      marginBottom: 10,
+    },
+    loadingText: {
+      fontSize: 18,
+      fontFamily: FONTS.Medium,
+      textAlign: "center",
+    },
   });
 };
 
