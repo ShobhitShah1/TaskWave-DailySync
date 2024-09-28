@@ -37,19 +37,11 @@ const Home = () => {
   const colors = useThemeColors();
   const isFocus = useIsFocused();
   const { height } = useWindowDimensions();
-  const [fullScreenPreview, setFullScreenPreview] = useState(false);
-  const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
 
   const { getAllNotifications, deleteNotification } = useDatabase();
   const { permissionStatus, requestPermission } = useNotificationPermission();
-  const [notificationsState, setNotificationsState] = useState({
-    all: [] as Notification[],
-    active: [] as Notification[],
-    inactive: [] as Notification[],
-  });
-  const [refreshing, setRefreshing] = React.useState(false);
-  const flatListRef = useRef<FlatList>(null);
+
   const {
     daysArray,
     handleDayClick,
@@ -59,6 +51,18 @@ const Home = () => {
     setSelectedDateObject,
     setCurrentMonth,
   } = useCalendar(new Date());
+
+  const [fullScreenPreview, setFullScreenPreview] = useState(false);
+  const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [notificationsState, setNotificationsState] = useState({
+    all: [] as Notification[],
+    allByDate: [] as Notification[],
+    active: [] as Notification[],
+    inactive: [] as Notification[],
+  });
+  const [refreshing, setRefreshing] = React.useState(false);
 
   const findSelectedIndex = () => {
     return daysArray.findIndex((item) => item.formattedDate === selectedDate);
@@ -86,9 +90,13 @@ const Home = () => {
   }, [selectedDate, isFocus, notificationsState, flatListRef.current]);
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadNotifications();
-    setRefreshing(false);
+    try {
+      setRefreshing(true);
+      await loadNotifications();
+      setRefreshing(false);
+    } catch (error) {
+      setRefreshing(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -136,7 +144,7 @@ const Home = () => {
   );
 
   const loadNotifications = async () => {
-    setIsLoading(notificationsState?.active?.length === 0);
+    setIsLoading(notificationsState?.allByDate?.length === 0);
 
     try {
       const allNotifications = await getAllNotifications();
@@ -168,14 +176,25 @@ const Home = () => {
           return notificationDate === selected;
         });
 
+        const filteredByDateAll = allNotifications.filter((notification) => {
+          const notificationDate = new Date(
+            notification.date
+          ).toLocaleDateString();
+          const selected = selectedDateObj.toLocaleDateString();
+
+          return notificationDate === selected;
+        });
+
         setNotificationsState({
           all: allNotifications.reverse(),
+          allByDate: filteredByDateAll.reverse(),
           active: filteredByDate.reverse(),
           inactive: inactive.reverse(),
         });
       } else {
         setNotificationsState({
           all: [],
+          allByDate: [],
           active: [],
           inactive: [],
         });
@@ -273,7 +292,7 @@ const Home = () => {
 
   return (
     <View style={style.container}>
-      <HomeHeader hideGrid={notificationsState.active?.length === 0} />
+      <HomeHeader hideGrid={notificationsState.allByDate?.length === 0} />
 
       <View style={style.homeContainContainer}>
         <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>
@@ -322,10 +341,10 @@ const Home = () => {
           />
         </Animated.View>
 
-        {notificationsState.active?.length !== 0 && <RenderHeaderView />}
+        {notificationsState.allByDate?.length !== 0 && <RenderHeaderView />}
 
         <View style={{ flex: 1, height }}>
-          {isLoading && notificationsState?.active?.length !== 0 ? (
+          {isLoading && notificationsState?.allByDate?.length !== 0 ? (
             <View
               style={{
                 flex: 1,
@@ -335,10 +354,10 @@ const Home = () => {
             >
               <ActivityIndicator color={colors.text} size={"large"} />
             </View>
-          ) : notificationsState.active?.length !== 0 ? (
+          ) : notificationsState.allByDate?.length !== 0 ? (
             <Animated.FlatList
-              data={notificationsState?.active}
-              extraData={notificationsState?.active}
+              data={notificationsState?.allByDate}
+              extraData={notificationsState?.allByDate}
               refreshControl={
                 <RefreshControl
                   refreshing={refreshing}
@@ -349,7 +368,7 @@ const Home = () => {
               }
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={RenderEmptyView}
-              contentContainerStyle={{ paddingBottom: 30 }}
+              contentContainerStyle={{ paddingBottom: 93 }}
               keyExtractor={(item, index) => index.toString()}
               layout={LinearTransition.easing(Easing.linear)}
               entering={FadeIn.easing(Easing.linear)}
@@ -369,7 +388,7 @@ const Home = () => {
 
       <FullScreenPreviewModal
         isVisible={fullScreenPreview}
-        notifications={notificationsState?.active}
+        notifications={notificationsState?.allByDate}
         onClose={() => setFullScreenPreview(false)}
       />
 

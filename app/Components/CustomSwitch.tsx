@@ -43,7 +43,6 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
 
   const toggleSwitch = () => {
     const newValue = !isOn;
-    console.log(newValue);
     onToggle(newValue);
   };
 

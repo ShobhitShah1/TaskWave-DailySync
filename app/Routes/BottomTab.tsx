@@ -126,7 +126,7 @@ const BottomTab = () => {
     setHideBottomTab(selectedTab === "History" || selectedTab === "Setting");
 
     return (
-      <Pressable onPress={() => navigate(routeName)} style={styles.tabbarItem}>
+      <Pressable onPress={() => navigate(routeName)} style={styles.tabBarItem}>
         <TabBarIcon
           source={getIconSourceForBottomTabs(routeName)}
           focused={routeName === selectedTab}
@@ -160,7 +160,7 @@ const BottomTab = () => {
           styles.bottomBar,
           { display: hideBottomTab ? "none" : undefined },
         ]}
-        height={55}
+        height={60}
         circleWidth={50}
         screenOptions={{ headerShown: false }}
         bgColor={colors.bottomTab}
@@ -292,15 +292,15 @@ const styles = StyleSheet.create({
     bottom: 30,
     backgroundColor: "rgba(64, 93, 240, 1)",
     shadowColor: "rgba(71, 134, 249, 1)",
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 10, height: 10 },
     shadowOpacity: 0.32,
     shadowRadius: 5.46,
 
-    elevation: 9,
+    elevation: 7,
   },
-  tabbarItem: {
+  tabBarItem: {
     flex: 1,
-    marginTop: 10,
+    // marginTop: 5,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -315,7 +315,8 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     color: "white",
-    fontSize: 30,
+    fontSize: 50,
+    fontFamily: FONTS.Regular,
   },
   modalBackground: {
     backgroundColor: "white",

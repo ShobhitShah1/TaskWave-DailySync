@@ -48,8 +48,10 @@ export const handleNotificationPress = (notification: any) => {
         break;
       case "whatsapp":
         if (numbers.length > 0) {
+          let number =
+            filterNumber.length === 10 ? `91${filterNumber}` : filterNumber;
           SendMessagesModule.sendWhatsapp(
-            filterNumber,
+            number,
             globalMessage,
             firstAttachment,
             true

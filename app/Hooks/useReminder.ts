@@ -28,8 +28,6 @@ export const scheduleNotificationWithNotifee = async (
       attachments,
     } = notification;
 
-    console.log("subject:", subject);
-
     await notifee.requestPermission();
 
     const channelId = await notifee.createChannel({

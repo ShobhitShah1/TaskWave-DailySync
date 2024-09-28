@@ -143,7 +143,12 @@ const ReminderPreview = () => {
           </Pressable>
         </View>
 
-        <View style={style.centeredContainer}>
+        <ScrollView
+          bounces={false}
+          style={style.centeredContainer}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={style.containContainer}
+        >
           <View
             style={[
               style.notificationIconContainer,
@@ -261,7 +266,7 @@ const ReminderPreview = () => {
                   </View>
                 ))}
           </View>
-        </View>
+        </ScrollView>
       </View>
 
       <View style={style.bottomButtons}>
@@ -296,6 +301,9 @@ const styles = () => {
     container: {
       flex: 1,
       backgroundColor: colors.background,
+    },
+    containContainer: {
+      paddingBottom: 120,
     },
     innerContainer: {
       width: SIZE.appContainWidth,
@@ -431,13 +439,13 @@ const styles = () => {
     },
 
     bottomButtons: {
-      position: "absolute",
       bottom: 0,
+      position: "absolute",
       flexDirection: "row",
       alignSelf: "center",
       justifyContent: "space-between",
       paddingVertical: 15,
-      backgroundColor: colors.background,
+      // backgroundColor: colors.background,
     },
     deleteButton: {
       width: "46%",

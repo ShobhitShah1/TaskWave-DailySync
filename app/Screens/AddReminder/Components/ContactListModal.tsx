@@ -54,11 +54,20 @@ const ContactListModal: FC<ContactListModalProps> = ({
 
   const filteredContacts = useMemo(
     () =>
-      contacts.filter(
-        (contact) =>
+      contacts.filter((contact) => {
+        const isValidNumber =
           contact.number &&
+          // Valid if it starts with +91 and has digits after that
+          (/^\+91\d{10}$/.test(contact.number) ||
+            // Valid if it starts with + and has digits after that
+            /^\+\d{1,3}\d{7,14}$/.test(contact.number) ||
+            // Valid if it starts with a non-zero digit and only contains digits
+            /^[1-9]\d{6,14}$/.test(contact.number));
+        return (
+          isValidNumber &&
           contact.name.toLowerCase().includes(searchText.toLowerCase())
-      ),
+        );
+      }),
     [contacts, searchText]
   );
 
@@ -132,9 +141,10 @@ const ContactListModal: FC<ContactListModalProps> = ({
       animationInTiming={600}
       animationOutTiming={300}
       useNativeDriver={true}
+      onBackdropPress={onClose}
+      onBackButtonPress={onClose}
       style={{ margin: 0, justifyContent: "flex-end" }}
       deviceHeight={height + (StatusBar.currentHeight || 30)}
-      onBackdropPress={onClose}
     >
       <View style={[style.contactModalContainer, { paddingTop: 50 }]}>
         <View style={style.contactHeaderContainer}>

@@ -21,13 +21,7 @@ const Settings = () => {
       title: "Share",
       icon: AssetsPath.ic_share,
       onPress: () => {
-        Share.open({ message: "Hello World!" })
-          .then((res) => {
-            console.log(res);
-          })
-          .catch((err) => {
-            err && console.log(err);
-          });
+        Share.open({ message: "Hello World!" }).catch((err) => {});
       },
     },
     {

@@ -26,7 +26,6 @@ const WithBackHeader = ({ title }: IHomeHeaderProps) => {
 
   const handleToggle = useCallback(
     (state: boolean) => {
-      console.log("CICK");
       setIsSwitchOn(state);
       toggleTheme(state ? "light" : "dark");
     },
@@ -56,7 +55,6 @@ const WithBackHeader = ({ title }: IHomeHeaderProps) => {
             <CustomSwitch
               isOn={isSwitchOn}
               onToggle={(state: boolean) => {
-                console.log(state);
                 handleToggle(state);
               }}
             />
