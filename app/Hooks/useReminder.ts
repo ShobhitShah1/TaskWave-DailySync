@@ -129,10 +129,10 @@ const useReminder = () => {
       return null;
     }
 
-    const notifeeNotificationId =
-      await scheduleNotificationWithNotifee(notification);
+    const { type, message, date, toContact, toMail, subject, attachments, id } =
+      notification;
 
-    if (!notifeeNotificationId) {
+    if (!id) {
       Alert.alert(
         "Error",
         "Failed to schedule notification. Please try again."
@@ -140,12 +140,9 @@ const useReminder = () => {
       return null;
     }
 
-    const { type, message, date, toContact, toMail, subject, attachments } =
-      notification;
-
     const insertNotificationSQL = `
     INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency)
-    VALUES ('${notifeeNotificationId}', '${type}', '${message}', '${date.toISOString()}', '${subject}', '${JSON.stringify(attachments)}', '${notification.scheduleFrequency}')
+    VALUES ('${id}', '${type}', '${message}', '${date.toISOString()}', '${subject}', '${JSON.stringify(attachments)}', '${notification.scheduleFrequency}')
   `;
 
     let insertContactsSQL = "";
@@ -155,7 +152,7 @@ const useReminder = () => {
         .map(
           (email) => `
         INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-        VALUES ('${notifeeNotificationId}', '${email}', null, '${email}', null)
+        VALUES ('${id}', '${email}', null, '${email}', null)
       `
         )
         .join(";");
@@ -164,7 +161,7 @@ const useReminder = () => {
         .map(
           (contact) => `
         INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-        VALUES ('${notifeeNotificationId}', '${contact.name}', '${contact.number ?? null}', '${contact.recordID}', '${contact.thumbnailPath ?? null}')
+        VALUES ('${id}', '${contact.name}', '${contact.number ?? null}', '${contact.recordID}', '${contact.thumbnailPath ?? null}')
       `
         )
         .join(";");
@@ -177,7 +174,7 @@ const useReminder = () => {
 
     try {
       await db.execAsync(transactionSQL);
-      return notifeeNotificationId;
+      return id;
     } catch (error: any) {
       console.error("Error creating notification in database:", error);
       Alert.alert(

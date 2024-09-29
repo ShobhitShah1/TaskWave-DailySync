@@ -16,6 +16,7 @@ import com.facebook.react.bridge.ReadableArray
 import java.io.File
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Promise
+import android.widget.Toast
 
 class SendMessagesModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -92,32 +93,50 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
 
     // SMS Module
     @ReactMethod
-    fun sendSms(numbers: ReadableArray, message: String) {
+    fun sendSms(numbers: ReadableArray, message: String, firstAttachment: String?) {
         val numbersList = mutableListOf<String>()
 
-        for (i in 0 until numbers.size()) {
-            val number = numbers.getString(i)
-            if (number.isNotEmpty()) {
-                numbersList.add(number)
+        try {
+            for (i in 0 until numbers.size()) {
+                val number = numbers.getString(i)
+                if (!number.isNullOrEmpty()) {
+                    Log.d("SMSModule", "Number added: $number")
+                    numbersList.add(number)
+                }
             }
+
+            if (numbersList.isEmpty()) {
+                Log.e("SMSModule", "No valid phone numbers provided.")
+                return
+            }
+
+            val smsUri = Uri.parse("smsto:${numbersList.joinToString(";")}")
+            val intent = Intent(Intent.ACTION_SENDTO, smsUri)
+
+            // Check if Google Messaging app is installed and log the status
+            if (isGoogleMessagingAppInstalled(reactApplicationContext)) {
+                Log.d("SMSModule", "Google Messaging App is installed, setting package.")
+                intent.setPackage("com.google.android.apps.messaging")
+            }
+
+            // Add message and firstAttachment to the intent and log it
+            intent.putExtra("sms_body", message)
+            Log.d("SMSModule", "SMS message set: $message")
+            Log.d("SMSModule", "Attachment: $firstAttachment")
+
+            // Check if current activity is available
+            val currentActivity = reactApplicationContext.currentActivity
+            if (currentActivity != null) {
+                currentActivity.startActivity(intent)
+                Log.d("SMSModule", "SMS intent sent successfully.")
+            } else {
+                Log.e("SMSModule", "Current activity is null, cannot send SMS.")
+            }
+
+        } catch (e: Exception) {
+            Log.e("SMSModule", "Error occurred while sending SMS: ${e.message}")
+            e.printStackTrace()
         }
-
-        if (numbersList.isEmpty()) {
-            return
-        }
-
-        val smsUri = Uri.parse("smsto:${numbersList.joinToString(";")}")
-
-        val intent = Intent(Intent.ACTION_SENDTO, smsUri)
-
-        // Check if Google Messaging app is installed
-        if (isGoogleMessagingAppInstalled(reactApplicationContext)) {
-            intent.setPackage("com.google.android.apps.messaging")
-        }
-
-        intent.putExtra("sms_body", message)
-
-        reactApplicationContext.currentActivity?.startActivity(intent)
     }
 
     @ReactMethod
@@ -132,7 +151,6 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
         val formattedNumber = number.replace("+", "").replace(" ", "")
         Log.d("Formated Number", "$formattedNumber")
         whatsappIntent.putExtra("jid", "$formattedNumber@s.whatsapp.net")
-//        whatsappIntent.putExtra("jid", "$number@s.whatsapp.net")
 
         if (attachmentPaths.isNotEmpty()) {
             val attachment = File(reactApplicationContext.filesDir, attachmentPaths)

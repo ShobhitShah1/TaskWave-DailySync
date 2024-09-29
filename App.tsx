@@ -21,6 +21,7 @@ export default function App() {
 
   useEffect(() => {
     return notifee.onForegroundEvent(({ type, detail }) => {
+      console.log("onForegroundEvent");
       switch (type) {
         case EventType.DISMISSED:
           break;
@@ -35,6 +36,7 @@ export default function App() {
 
   notifee.onBackgroundEvent(async ({ type, detail }) => {
     const { notification } = detail;
+    console.log("onBackgroundEvent");
 
     switch (type) {
       case EventType.DISMISSED:

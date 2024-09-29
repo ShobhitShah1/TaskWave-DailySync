@@ -307,7 +307,7 @@ const AddReminder = () => {
         if (selectedDateTime < tenSecondsFromNow) {
           Alert.alert(
             "Error",
-            "The notification must be scheduled at least 1 minute in the future."
+            "The notification must be scheduled at least 10 seconds in the future."
           );
           setIsLoading(false);
           return;

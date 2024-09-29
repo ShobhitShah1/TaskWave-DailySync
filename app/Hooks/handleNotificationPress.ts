@@ -74,6 +74,7 @@ export const handleNotificationPress = (notification: any) => {
         break;
       case "SMS":
         if (numbers.length > 0) {
+          console.log("SMS NUMBERS", numbers);
           SendMessagesModule.sendSms(numbers, globalMessage, firstAttachment);
         } else {
           console.log("No valid phone numbers found for SMS.");

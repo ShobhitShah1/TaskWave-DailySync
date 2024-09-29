@@ -3,6 +3,7 @@ import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Button,
   FlatList,
   Image,
   Pressable,
@@ -23,14 +24,23 @@ import AssetsPath from "../../Global/AssetsPath";
 import TextString from "../../Global/TextString";
 import useCalendar from "../../Hooks/useCalendar";
 import useNotificationPermission from "../../Hooks/useNotificationPermission";
-import useDatabase from "../../Hooks/useReminder";
+import useDatabase, {
+  scheduleNotificationWithNotifee,
+} from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
-import { DayItem, Notification } from "../../Types/Interface";
+import {
+  Contact,
+  DayItem,
+  Notification,
+  NotificationType,
+} from "../../Types/Interface";
 import { fromNowText } from "../../Utils/isSameDat";
 import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
 import YearMonthPicker from "../../Components/YearMonthPicker";
+import { DocumentPickerResponse } from "react-native-document-picker";
+import useReminder from "../../Hooks/useReminder";
 
 const Home = () => {
   const style = styles();
@@ -51,6 +61,8 @@ const Home = () => {
     setSelectedDateObject,
     setCurrentMonth,
   } = useCalendar(new Date());
+
+  const { createNotification } = useReminder();
 
   const [fullScreenPreview, setFullScreenPreview] = useState(false);
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
@@ -290,9 +302,60 @@ const Home = () => {
     setShowDateAndYearModal(false);
   };
 
+  // FAKE NOTIFICATION FOR TEST
+  const createFakeContacts = (count: number): Contact[] => {
+    return Array.from({ length: count }, (_, i) => ({
+      name: `Contact ${i + 1}`,
+      number: `123456789${i + 1}`,
+      recordID: `recID${i + 1}`,
+      thumbnailPath: `path/to/thumbnail/${i + 1}.png`,
+    }));
+  };
+
+  // Helper to create fake email list
+  const createFakeEmails = (count: number): string[] => {
+    return Array.from({ length: count }, (_, i) => `email${i + 1}@example.com`);
+  };
+
+  // Helper to create fake attachments
+  const createFakeAttachments = (count: number): DocumentPickerResponse[] => {
+    return Array.from({ length: count }, (_, i) => ({
+      uri: `file://path/to/document${i + 1}.pdf`,
+      name: `Document ${i + 1}`,
+      fileCopyUri: `file://copy/path/document${i + 1}.pdf`,
+      type: "application/pdf",
+      size: 1024 + i * 100, // Mock file sizes
+    }));
+  };
+
+  // Mock a fake notification
+  const createFakeNotification = (): Notification => {
+    return {
+      id: "notif123",
+      type: "gmail" as NotificationType,
+      message: "You have a new reminder.",
+      date: new Date(Date.now() + 60 * 1000), // 1 minute in the future
+      toContact: createFakeContacts(2),
+      toMail: createFakeEmails(2),
+      subject: "Important Task",
+      attachments: createFakeAttachments(2),
+      scheduleFrequency: "Daily", // Can change to 'Weekly', 'Monthly', etc.
+    };
+  };
+
+  // Example usage: schedule a fake notification
+  const testNotification = async () => {
+    const fakeNotification = createFakeNotification();
+    console.log("fakeNotification:", fakeNotification);
+    const result = await createNotification(fakeNotification);
+    console.log("Scheduled Notification ID:", result);
+  };
+
   return (
     <View style={style.container}>
       <HomeHeader hideGrid={notificationsState.allByDate?.length === 0} />
+
+      <Button title="Schedule Fake Notification" onPress={testNotification} />
 
       <View style={style.homeContainContainer}>
         <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>
