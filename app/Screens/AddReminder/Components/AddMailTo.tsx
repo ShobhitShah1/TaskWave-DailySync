@@ -30,12 +30,12 @@ const AddMailTo: FC<AddMailToProps> = ({ themeColor, to, setTo }) => {
       <TextInput
         multiline
         spellCheck
-        scrollEnabled
         value={to}
-        onChangeText={onChangeText}
-        textAlignVertical="top"
-        selectionColor={themeColor}
+        scrollEnabled
         placeholder="To:"
+        textAlignVertical="top"
+        onChangeText={onChangeText}
+        selectionColor={themeColor}
         placeholderTextColor={colors.text}
         style={[style.textInputStyle, { color: colors.text }]}
       />
@@ -49,7 +49,8 @@ const styles = () => {
   return StyleSheet.create({
     container: {
       width: "100%",
-      height: 50,
+      minHeight: 50,
+      maxHeight: 200,
       paddingHorizontal: 15,
       flexDirection: "row",
       justifyContent: "space-between",
@@ -59,7 +60,7 @@ const styles = () => {
     textInputStyle: {
       flex: 1,
       fontSize: 18,
-      paddingVertical: 15,
+      paddingVertical: 5,
       fontFamily: FONTS.Medium,
     },
   });

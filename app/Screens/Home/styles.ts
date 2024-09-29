@@ -105,32 +105,6 @@ const styles = () => {
       width: 18,
       height: 18,
     },
-
-    // Calender
-    calenderContainer: {
-      gap: 7,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    calenderWeekText: {
-      fontSize: 16,
-      color: colors.placeholderText,
-      fontFamily: FONTS.SemiBold,
-      textAlign: "center",
-    },
-    calenderDateTextView: {
-      width: 29,
-      height: 29,
-      justifyContent: "center",
-      alignItems: "center",
-      borderRadius: 500,
-    },
-    calenderDayText: {
-      fontSize: 16,
-      color: colors.text,
-      fontFamily: FONTS.Medium,
-      textAlign: "center",
-    },
   });
 };
 

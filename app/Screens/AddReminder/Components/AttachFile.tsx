@@ -31,6 +31,8 @@ const AttachFile: FC<AttachFileProps> = ({
   onHandelAttachmentClick,
   onRemoveDocument,
 }) => {
+  let imageIndexCounter = 0; // Counter to track only image indices starting from 0
+
   const colors = useThemeColors();
   const [showFilePreview, setShowFilePreview] = useState({
     isVisible: false,
@@ -58,9 +60,11 @@ const AttachFile: FC<AttachFileProps> = ({
           ? styles.fullImage
           : styles.attachmentIconSmall;
 
+        const imageIndex: number | null = isImage ? imageIndexCounter++ : null;
+
         const onPressDoc = () => {
-          if (document.type?.startsWith("image")) {
-            setShowFilePreview({ isVisible: true, index });
+          if (document.type?.startsWith("image") && imageIndex != null) {
+            setShowFilePreview({ isVisible: true, index: imageIndex });
           }
         };
 

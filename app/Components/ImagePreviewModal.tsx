@@ -28,7 +28,11 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
   images,
   initialIndex = 0,
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  useEffect(() => {
+    console.log("initialIndex:", initialIndex);
+  }, [initialIndex]);
+
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const flatListRef = useRef<FlatList>(null);
   const colors = useThemeColors();
   const styles = useStyles();
@@ -37,6 +41,7 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
     if (isVisible) {
       const validIndex = Math.min(Math.max(initialIndex, 0), images.length - 1);
       setCurrentIndex(validIndex);
+
       flatListRef.current?.scrollToIndex({
         index: validIndex,
         animated: false,
@@ -56,11 +61,6 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
         </View>
       </View>
     ),
-    []
-  );
-
-  const keyExtractor = useCallback(
-    (item: string, index: number) => index.toString(),
     []
   );
 
@@ -100,6 +100,8 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
       onBackButtonPress={onClose}
       style={styles.modalContainer}
       useNativeDriver
+      swipeDirection="down"
+      propagateSwipe
     >
       <View style={styles.listHeaderView}>
         <Pressable onPress={onClose} style={{ zIndex: 99999 }}>
@@ -112,12 +114,12 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
         </Pressable>
       </View>
       <FlatList
+        horizontal
+        pagingEnabled
         ref={flatListRef}
         data={images}
         renderItem={renderImageItem}
-        keyExtractor={keyExtractor}
-        horizontal
-        pagingEnabled
+        keyExtractor={(item, index) => index.toString()}
         showsHorizontalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
@@ -218,7 +220,6 @@ const useStyles = () => {
       justifyContent: "center",
       top: 20,
       left: 5,
-      //   position: "absolute",
     },
     backButtonImage: {
       width: 20,

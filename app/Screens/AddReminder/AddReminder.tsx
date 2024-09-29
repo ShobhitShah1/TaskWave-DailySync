@@ -325,7 +325,7 @@ const AddReminder = () => {
         const notificationData: Notification = {
           id: "",
           type: notificationType,
-          message: message || "",
+          message: message.toString() || "",
           date: selectedDateTime,
           subject: notificationType === "gmail" ? subject : "",
           toContact: extractedContacts,
@@ -342,6 +342,7 @@ const AddReminder = () => {
             notificationScheduleId = id;
           } else {
             Alert.alert("Error", "Failed to update notification.");
+            setIsLoading(false);
             return;
           }
         } else {
@@ -357,10 +358,12 @@ const AddReminder = () => {
 
             if (!created) {
               Alert.alert("Error", String(created));
+              setIsLoading(false);
               return;
             }
           } else {
             Alert.alert("Error", "Failed to schedule notification.");
+            setIsLoading(false);
             return;
           }
         }
@@ -409,7 +412,6 @@ const AddReminder = () => {
         <Animated.ScrollView
           style={style.itemsContainer}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 50 }}
           showsVerticalScrollIndicator={false}
         >
           {notificationType === "gmail" && (

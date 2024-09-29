@@ -19,6 +19,30 @@ export default function App() {
     "ClashGrotesk-Semibold": require("./assets/Fonts/ClashGrotesk-Semibold.otf"),
   });
 
+  async function bootstrap() {
+    const initialNotification = await notifee.getInitialNotification();
+
+    if (initialNotification) {
+      console.log(
+        "Notification caused application to open",
+        initialNotification.notification.data
+      );
+      if (initialNotification.notification.data) {
+        handleNotificationPress(initialNotification.notification.data);
+      }
+      console.log(
+        "Press action used to open the app",
+        initialNotification.pressAction
+      );
+    }
+  }
+
+  useEffect(() => {
+    bootstrap()
+      .then(() => {})
+      .catch(console.error);
+  }, []);
+
   useEffect(() => {
     return notifee.onForegroundEvent(({ type, detail }) => {
       switch (type) {
@@ -35,6 +59,8 @@ export default function App() {
 
   notifee.onBackgroundEvent(async ({ type, detail }) => {
     const { notification } = detail;
+
+    console.log("Background Notification:", notification);
 
     switch (type) {
       case EventType.DISMISSED:

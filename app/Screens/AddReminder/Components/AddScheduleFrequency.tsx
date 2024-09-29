@@ -1,7 +1,13 @@
-import React, { FC, memo } from "react";
+import React, { FC, memo, useEffect } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import { FONTS } from "../../../Global/Theme";
 import useThemeColors from "../../../Theme/useThemeMode";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 
 export const frequencies = ["Daily", "Weekly", "Monthly", "Yearly"];
 
@@ -14,6 +20,60 @@ interface AddScheduleFrequencyProps {
     React.SetStateAction<FrequencyType | null>
   >;
 }
+
+interface FrequencyItemProps {
+  frequency: string;
+  themeColor: string;
+  scheduleFrequency: FrequencyType | null;
+  toggleFrequency: (frequency: string) => void;
+}
+
+const FrequencyItem: FC<FrequencyItemProps> = ({
+  frequency,
+  themeColor,
+  scheduleFrequency,
+  toggleFrequency,
+}) => {
+  const isSelected = scheduleFrequency === frequency;
+
+  const opacity = useSharedValue(0);
+  const backgroundColor = useSharedValue("transparent");
+
+  useEffect(() => {
+    backgroundColor.value = withTiming(
+      isSelected ? themeColor : "transparent",
+      { duration: 300 }
+    );
+  }, [isSelected]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: backgroundColor.value,
+    };
+  });
+
+  return (
+    <Pressable
+      style={styles.checkboxContainer}
+      onPress={() => toggleFrequency(frequency)}
+    >
+      <Animated.View
+        style={[
+          styles.checkbox,
+          {
+            borderColor: themeColor,
+          },
+          animatedStyle,
+        ]}
+      >
+        {isSelected && <Text style={styles.checkmark}>✓</Text>}
+      </Animated.View>
+      <Text style={[styles.label, { color: useThemeColors().text }]}>
+        {frequency}
+      </Text>
+    </Pressable>
+  );
+};
 
 const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
   themeColor,
@@ -32,31 +92,13 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
       <Text style={[styles.title, { color: colors.text }]}>Reminder:</Text>
       <View style={styles.checkboxContainer}>
         {frequencies.map((frequency) => (
-          <Pressable
+          <FrequencyItem
             key={frequency}
-            style={styles.checkboxContainer}
-            onPress={() => toggleFrequency(frequency)}
-          >
-            <View
-              style={[
-                styles.checkbox,
-                {
-                  borderColor: themeColor,
-                  backgroundColor:
-                    scheduleFrequency === frequency
-                      ? themeColor
-                      : "transparent",
-                },
-              ]}
-            >
-              {scheduleFrequency === frequency && (
-                <Text style={styles.checkmark}>✓</Text>
-              )}
-            </View>
-            <Text style={[styles.label, { color: colors.text }]}>
-              {frequency}
-            </Text>
-          </Pressable>
+            frequency={frequency}
+            themeColor={themeColor}
+            scheduleFrequency={scheduleFrequency}
+            toggleFrequency={toggleFrequency}
+          />
         ))}
       </View>
     </View>

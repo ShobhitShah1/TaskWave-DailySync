@@ -63,7 +63,7 @@ export const scheduleNotificationWithNotifee = async (
             ? subject
             : `Reminder: ${subject || "Upcoming Task"}`,
         body:
-          message ||
+          message.toString() ||
           `You have a new notification. Contact: ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}.`,
         android: {
           channelId,
@@ -142,7 +142,7 @@ const useReminder = () => {
 
     const insertNotificationSQL = `
     INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency)
-    VALUES ('${id}', '${type}', '${message}', '${date.toISOString()}', '${subject}', '${JSON.stringify(attachments)}', '${notification.scheduleFrequency}')
+    VALUES ('${id}', '${type}', '${message.toString()}', '${date.toISOString()}', '${subject}', '${JSON.stringify(attachments)}', '${notification.scheduleFrequency}')
   `;
 
     let insertContactsSQL = "";
@@ -226,7 +226,7 @@ const useReminder = () => {
               ? subject
               : `Reminder: ${subject || "Upcoming Task"}`,
           body:
-            message ||
+            message.toString() ||
             `You have a new notification. Contact: ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}.`,
           android: {
             channelId,
@@ -245,12 +245,13 @@ const useReminder = () => {
 
     const updateNotificationSQL = `
     UPDATE notifications
-    SET type = '${type}', message = '${message}', date = '${date.toISOString()}',
+    SET type = '${type}', message = '${message.toString()}', date = '${date.toISOString()}',
         subject = '${subject}', attachments = '${JSON.stringify(attachments)}',
         scheduleFrequency = '${notification.scheduleFrequency}'
     WHERE id = '${id}'
   `;
 
+    console.log("updateNotificationSQL:", updateNotificationSQL);
     const deleteContactsSQL = `
     DELETE FROM contacts WHERE notification_id = '${id}'
   `;

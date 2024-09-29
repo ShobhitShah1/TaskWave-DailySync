@@ -129,6 +129,7 @@ const ReminderScheduled = () => {
                 style.notificationText,
                 { color: colors.placeholderText },
               ]}
+              numberOfLines={20}
             >
               {notificationData.message || "No Message Available"}
             </Text>

@@ -11,10 +11,10 @@ const styles = () => {
       backgroundColor: colors.background,
     },
     contentContainer: {
-      width: SIZE.appContainWidth,
       flex: 1,
       alignSelf: "center",
       marginVertical: 10,
+      width: SIZE.appContainWidth,
     },
     headerContainer: {
       flexDirection: "row",
@@ -34,7 +34,7 @@ const styles = () => {
     },
     createButton: {
       position: "absolute",
-      bottom: 0,
+      bottom: 1,
       width: "100%",
       height: 43,
       borderRadius: 10,

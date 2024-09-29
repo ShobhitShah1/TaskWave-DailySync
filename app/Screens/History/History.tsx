@@ -29,6 +29,9 @@ import { countNotificationsByType } from "../../Utils/countNotificationsByType";
 import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "../Home/Components/HomeHeader";
 import RenderHistoryList from "./Components/RenderHistoryList";
+import { generateDaysArray } from "../../Utils/generateDaysArray";
+import RenderCalenderView from "../../Components/RenderCalenderView";
+import RenderFilterTabData from "./Components/RenderFilterTabData";
 
 const History = () => {
   const style = styles();
@@ -50,15 +53,40 @@ const History = () => {
 
   const { getAllNotifications, deleteNotification } = useReminder();
   const {
-    daysArray,
-    flatListRef,
     handleDayClick,
     selectedDateObject,
     selectedDate,
     setSelectedDate,
     setSelectedDateObject,
     setCurrentMonth,
+    currentMonth,
   } = useCalendar(new Date());
+
+  const flatListRef = useRef<FlatList>(null);
+
+  const [daysArray, setDaysArray] = useState(() =>
+    generateDaysArray(new Date())
+  );
+
+  useEffect(() => {
+    setDaysArray(generateDaysArray(currentMonth));
+  }, [currentMonth]);
+
+  const goToPrevMonth = useCallback(() => {
+    const newDate = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() - 1
+    );
+    setCurrentMonth(newDate);
+  }, [currentMonth]);
+
+  const goToNextMonth = useCallback(() => {
+    const newDate = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() + 1
+    );
+    setCurrentMonth(newDate);
+  }, [currentMonth]);
 
   const filterTabData = useMemo(
     () => [
@@ -138,12 +166,14 @@ const History = () => {
   const loadNotifications = async () => {
     try {
       const allNotifications = await getAllNotifications();
-      if (allNotifications && allNotifications.length > 0) {
-        const now = new Date();
+      console.log("allNotifications:", allNotifications?.length);
 
-        const activeNotifications = allNotifications.filter(
-          (notification) => new Date(notification.date) >= now
-        );
+      if (allNotifications && allNotifications.length > 0) {
+        // const now = new Date();
+
+        // const activeNotifications = allNotifications.filter(
+        //   (notification) => new Date(notification.date) >= now
+        // );
 
         const [day, month, year] = selectedDate.split("-");
         const selectedDateObj = new Date(`${year}-${month}-${day}`);
@@ -153,13 +183,15 @@ const History = () => {
           return;
         }
 
-        const filteredByDate = activeNotifications.filter((notification) => {
+        const filteredByDate = allNotifications.filter((notification) => {
           const notificationDate = new Date(
             notification.date
           ).toLocaleDateString();
           const selected = selectedDateObj.toLocaleDateString();
           return notificationDate === selected;
         });
+
+        setNotifications(filteredByDate.reverse());
 
         if (filteredByDate.length !== 0) {
           setNotifications(filteredByDate.reverse());
@@ -216,44 +248,6 @@ const History = () => {
     ]);
   }, []);
 
-  const renderCalenderView = ({
-    item,
-    index,
-  }: {
-    item: DayItem;
-    index: number;
-  }) => {
-    const isSelected = item.formattedDate === selectedDate;
-    const backgroundColor = isSelected
-      ? "rgba(38, 107, 235, 1)"
-      : "transparent";
-
-    return (
-      <Pressable
-        style={style.calenderContainer}
-        onPress={() => {
-          handleDayClick(item.formattedDate, index);
-          loadNotifications();
-        }}
-      >
-        <Text numberOfLines={1} style={style.calenderWeekText}>
-          {item.dayOfWeek}
-        </Text>
-        <View style={[style.calenderDateTextView, { backgroundColor }]}>
-          <Text
-            numberOfLines={1}
-            style={[
-              style.calenderDayText,
-              { color: isSelected ? colors.white : colors.text },
-            ]}
-          >
-            {item.date}
-          </Text>
-        </View>
-      </Pressable>
-    );
-  };
-
   const handleDateChange = (year: number, month: number) => {
     const currentDay = selectedDateObject.getDate();
 
@@ -268,68 +262,6 @@ const History = () => {
     setCurrentMonth(newDate);
     setShowDateAndYearModal(false);
   };
-
-  const goToPrevMonth = useCallback(() => {
-    const newDate = new Date(
-      selectedDateObject.getFullYear(),
-      selectedDateObject.getMonth() - 1
-    );
-    const currentDay = selectedDateObject.getDate();
-
-    // Get the last day of the new month
-    const lastDayOfNewMonth = new Date(
-      newDate.getFullYear(),
-      newDate.getMonth() + 1,
-      0
-    ).getDate();
-
-    // If the current day is greater than the last day of the new month, set it to the last day
-    const newSelectedDay =
-      currentDay > lastDayOfNewMonth ? lastDayOfNewMonth : currentDay;
-
-    // Update the state
-    setCurrentMonth(newDate);
-    const newSelectedDateObject = new Date(
-      newDate.getFullYear(),
-      newDate.getMonth(),
-      newSelectedDay
-    );
-    setSelectedDateObject(newSelectedDateObject);
-    setSelectedDate(
-      newSelectedDateObject.toLocaleDateString("en-GB").replace(/\//g, "-")
-    );
-  }, [selectedDateObject, selectedDateObject]);
-
-  const goToNextMonth = useCallback(() => {
-    const newDate = new Date(
-      selectedDateObject.getFullYear(),
-      selectedDateObject.getMonth() + 1
-    );
-    const currentDay = selectedDateObject.getDate();
-
-    // Get the last day of the new month
-    const lastDayOfNewMonth = new Date(
-      newDate.getFullYear(),
-      newDate.getMonth() + 1,
-      0
-    ).getDate();
-
-    // If the current day is greater than the last day of the new month, set it to the last day
-    const newSelectedDay =
-      currentDay > lastDayOfNewMonth ? lastDayOfNewMonth : currentDay;
-
-    // Update the state
-    setCurrentMonth(newDate);
-    const newSelectedDateObject = new Date(
-      newDate.getFullYear(),
-      newDate.getMonth(),
-      newSelectedDay
-    );
-    setSelectedDateObject(newSelectedDateObject);
-    setSelectedDate(
-      newSelectedDateObject.toLocaleDateString("en-GB").replace(/\//g, "-")
-    );
-  }, [selectedDateObject, selectedDateObject]);
 
   return (
     <View style={style.container}>
@@ -377,8 +309,17 @@ const History = () => {
               data={daysArray}
               onLayout={() => scrollToIndex()}
               onContentSizeChange={() => scrollToIndex()}
-              contentContainerStyle={{ gap: 20 }}
-              renderItem={renderCalenderView}
+              contentContainerStyle={{ gap: 22 }}
+              renderItem={({ index, item }) => {
+                return (
+                  <RenderCalenderView
+                    item={item}
+                    index={index}
+                    handleDayClick={handleDayClick}
+                    selectedDate={selectedDate}
+                  />
+                );
+              }}
               keyExtractor={(item, index) => index.toString()}
               showsHorizontalScrollIndicator={false}
             />
@@ -434,49 +375,12 @@ const History = () => {
             };
 
             return (
-              <Pressable
-                key={index}
-                onPress={onTabPress}
-                style={[style.tabButton, { width: "100%" }]}
-              >
-                <Animated.View
-                  style={[style.tabContainer, isActive && style.activeTab]}
-                >
-                  {res.icon && (
-                    <Image
-                      resizeMode="contain"
-                      tintColor={colors.grayTitle}
-                      source={res.icon}
-                      style={style.iconStyle}
-                    />
-                  )}
-                  <Text
-                    style={[
-                      style.tabTitle,
-                      {
-                        fontSize: !res.icon ? 18 : 12,
-                        color: isActive ? colors.white : colors.grayTitle,
-                      },
-                    ]}
-                  >
-                    {res.title}
-                  </Text>
-                  {res.reminders > 0 && (
-                    <View
-                      style={[
-                        style.badgeContainer,
-                        {
-                          backgroundColor: isActive
-                            ? colors.yellow
-                            : colors.grayTitle,
-                        },
-                      ]}
-                    >
-                      <Text style={style.badgeText}>{res.reminders}</Text>
-                    </View>
-                  )}
-                </Animated.View>
-              </Pressable>
+              <RenderFilterTabData
+                index={index}
+                isActive={isActive}
+                onTabPress={onTabPress}
+                res={res}
+              />
             );
           })}
         </View>
@@ -611,31 +515,6 @@ const styles = () => {
       color: colors.text,
       fontFamily: FONTS.SemiBold,
       fontSize: 20,
-    },
-
-    // Calender
-    calenderContainer: {
-      gap: 7,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    calenderWeekText: {
-      fontSize: 16,
-      color: colors.placeholderText,
-      fontFamily: FONTS.SemiBold,
-      textAlign: "center",
-    },
-    calenderDateTextView: {
-      width: 29,
-      height: 29,
-      justifyContent: "center",
-      alignItems: "center",
-      borderRadius: 500,
-    },
-    calenderDayText: {
-      fontSize: 16,
-      fontFamily: FONTS.Medium,
-      textAlign: "center",
     },
   });
 };

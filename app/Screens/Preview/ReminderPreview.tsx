@@ -1,5 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Alert,
   Image,
@@ -18,22 +18,34 @@ import { Notification } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 import { formatDate, formatTime } from "../AddReminder/ReminderScheduled";
 import Animated, {
+  Easing,
   FadeIn,
   FadeOut,
   LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 import { DocumentPickerResponse } from "react-native-document-picker";
 import useReminder from "../../Hooks/useReminder";
+import ImagePreviewModal from "../../Components/ImagePreviewModal";
+import { BlurView } from "expo-blur";
 
 type NotificationProps = {
   params: { notificationData: Notification };
 };
 
 const ReminderPreview = () => {
+  let imageIndexCounter = 0; // Counter to track only image indices starting from 0
   const style = styles();
   const navigation = useNavigation();
   const colors = useThemeColors();
   const { params } = useRoute<RouteProp<NotificationProps, "params">>();
+
+  const [showFilePreview, setShowFilePreview] = useState({
+    isVisible: false,
+    index: -1,
+  });
 
   const notificationData = useMemo(() => {
     return params.notificationData;
@@ -54,13 +66,17 @@ const ReminderPreview = () => {
       notificationData?.attachments?.map(
         (document: DocumentPickerResponse, index) => {
           const isImage = document.type?.startsWith("image");
+          const imageIndex: number | null = isImage
+            ? imageIndexCounter++
+            : null;
+
           const documentStyle = isImage
             ? style.fullImage
             : style.attachmentIconSmall;
 
           const onPressDoc = () => {
-            if (document.type?.startsWith("image")) {
-              //  setShowFilePreview({ isVisible: true, index });
+            if (document.type?.startsWith("image") && imageIndex != null) {
+              setShowFilePreview({ isVisible: true, index: imageIndex });
             }
           };
 
@@ -127,6 +143,28 @@ const ReminderPreview = () => {
     );
   }, [notificationData]);
 
+  const imageUrls = useMemo(() => {
+    return (
+      notificationData.attachments &&
+      notificationData.attachments
+        .filter((doc) => doc.type?.startsWith("image") && doc.uri)
+        .map((doc) => doc.uri)
+    );
+  }, [notificationData]);
+
+  const scrollY = useSharedValue(0);
+
+  const timerStyle = useAnimatedStyle(() => {
+    const shouldHide = scrollY.value > 175;
+
+    return {
+      opacity: withTiming(shouldHide ? 1 : 0, {
+        duration: 300,
+        easing: Easing.linear,
+      }),
+    };
+  });
+
   return (
     <View style={style.container}>
       <View style={style.innerContainer}>
@@ -141,6 +179,64 @@ const ReminderPreview = () => {
               style={style.menuIcon}
             />
           </Pressable>
+
+          <View>
+            <Animated.View style={[style.timeContainer, timerStyle]}>
+              <Text
+                style={[
+                  style.timeText,
+                  { color: createViewColor, fontSize: 25 },
+                ]}
+              >
+                {hours.split("Hrs")[0]}
+                <Text style={[style.timeLabelText, { color: colors.text }]}>
+                  Hrs
+                </Text>
+              </Text>
+              <Text
+                style={[
+                  style.timeSeparator,
+                  { color: createViewColor, fontSize: 25 },
+                ]}
+              >
+                {" "}
+                :{" "}
+              </Text>
+              <Text
+                style={[
+                  style.timeText,
+                  { color: createViewColor, fontSize: 25 },
+                ]}
+              >
+                {minutes.split("Min")[0]}
+                <Text style={[style.timeLabelText, { color: colors.text }]}>
+                  Min
+                </Text>
+              </Text>
+              <Text
+                style={[
+                  style.timeSeparator,
+                  { color: createViewColor, fontSize: 25 },
+                ]}
+              >
+                {" "}
+                :{" "}
+              </Text>
+              <Text
+                style={[
+                  style.timeText,
+                  { color: createViewColor, fontSize: 25 },
+                ]}
+              >
+                {seconds.split("Sec")[0]}
+                <Text style={[style.timeLabelText, { color: colors.text }]}>
+                  Sec
+                </Text>
+              </Text>
+            </Animated.View>
+          </View>
+
+          <View />
         </View>
 
         <ScrollView
@@ -148,6 +244,9 @@ const ReminderPreview = () => {
           style={style.centeredContainer}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={style.containContainer}
+          onScroll={(event) => {
+            scrollY.value = event.nativeEvent.contentOffset.y;
+          }}
         >
           <View
             style={[
@@ -288,6 +387,13 @@ const ReminderPreview = () => {
           <Text style={style.buttonText}>Edit</Text>
         </Pressable>
       </View>
+
+      <ImagePreviewModal
+        isVisible={showFilePreview.isVisible}
+        onClose={() => setShowFilePreview({ isVisible: false, index: -1 })}
+        images={imageUrls}
+        initialIndex={showFilePreview.index}
+      />
     </View>
   );
 };
@@ -303,7 +409,7 @@ const styles = () => {
       backgroundColor: colors.background,
     },
     containContainer: {
-      paddingBottom: 120,
+      paddingBottom: 135,
     },
     innerContainer: {
       width: SIZE.appContainWidth,
@@ -311,7 +417,8 @@ const styles = () => {
     },
     backView: {
       width: "100%",
-      paddingVertical: 10,
+      paddingTop: 10,
+      paddingBottom: 5,
       alignSelf: "center",
       flexDirection: "row",
       alignItems: "center",

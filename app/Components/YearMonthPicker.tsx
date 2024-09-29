@@ -18,6 +18,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { FONTS, SIZE } from "../Global/Theme";
 import useThemeColors from "../Theme/useThemeMode";
+import { BlurView } from "expo-blur";
 
 interface YearMonthPickerProps {
   isVisible: boolean;
@@ -79,7 +80,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
     initialSelectedMonth || new Date().getMonth()
   );
 
-  const animationProgress = useSharedValue(0);
+  const animationProgress = useSharedValue(1);
   const modalScale = useSharedValue(1);
 
   const handleConfirm = useCallback(() => {
@@ -174,9 +175,21 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       isVisible={isVisible}
       onBackdropPress={onCancel}
       onBackButtonPress={onCancel}
-      backdropOpacity={0.5}
+      backdropOpacity={1}
       animationIn="fadeIn"
       animationOut="fadeOut"
+      customBackdrop={
+        <View style={{ flex: 1, height: height }}>
+          <BlurView
+            tint="dark"
+            intensity={20}
+            style={{ flex: 1, height: height }}
+            experimentalBlurMethod="dimezisBlurView"
+          />
+        </View>
+      }
+      hasBackdrop
+      useNativeDriverForBackdrop
       statusBarTranslucent
       deviceHeight={height + ((StatusBar.currentHeight || 30) + 50)}
       useNativeDriver
@@ -188,7 +201,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       }}
       onModalWillHide={() => {
         animationProgress.value = withTiming(0, {
-          duration: 300,
+          duration: 400,
           easing: Easing.in(Easing.cubic),
         });
       }}
