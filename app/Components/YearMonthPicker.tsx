@@ -1,24 +1,23 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
   Dimensions,
   FlatList,
   Pressable,
-  useWindowDimensions,
   StatusBar,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
 } from "react-native";
 import Modal from "react-native-modal";
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
   Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
-import useThemeColors from "../Theme/useThemeMode";
 import { FONTS, SIZE } from "../Global/Theme";
+import useThemeColors from "../Theme/useThemeMode";
 
 interface YearMonthPickerProps {
   isVisible: boolean;
@@ -179,11 +178,11 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       animationIn="fadeIn"
       animationOut="fadeOut"
       statusBarTranslucent
-      deviceWidth={height + ((StatusBar.currentHeight || 20) + 30)}
+      deviceHeight={height + ((StatusBar.currentHeight || 30) + 50)}
       useNativeDriver
       onModalShow={() => {
         animationProgress.value = withTiming(1, {
-          duration: 300,
+          duration: 200,
           easing: Easing.out(Easing.cubic),
         });
       }}
@@ -275,7 +274,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 20,
-    // borderRadius: SIZE.listBorderRadius / 2,
   },
   pickerItemText: {
     fontSize: 16,
