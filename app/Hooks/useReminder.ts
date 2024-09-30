@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import * as SQLite from "expo-sqlite";
 import notifee, {
+  AlarmType,
   AndroidImportance,
   AndroidVisibility,
   RepeatFrequency,
@@ -46,6 +47,9 @@ export const scheduleNotificationWithNotifee = async (
           : scheduleFrequency === "Weekly"
             ? RepeatFrequency.WEEKLY
             : undefined,
+      alarmManager: {
+        type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
+      },
     };
 
     const notificationData = {
@@ -69,6 +73,9 @@ export const scheduleNotificationWithNotifee = async (
           channelId,
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
+          pressAction: {
+            id: "default",
+          },
         },
         data: notificationData as any,
       },
@@ -207,6 +214,9 @@ const useReminder = () => {
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
       timestamp: date.getTime(),
+      alarmManager: {
+        type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
+      },
     };
 
     const notificationData = {
@@ -232,6 +242,9 @@ const useReminder = () => {
             channelId,
             visibility: AndroidVisibility.PUBLIC,
             importance: AndroidImportance.HIGH,
+            pressAction: {
+              id: "default",
+            },
           },
           data: notificationData as any,
         },

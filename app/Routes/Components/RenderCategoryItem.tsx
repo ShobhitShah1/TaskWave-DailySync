@@ -13,6 +13,7 @@ import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useThemeColors from "../../Theme/useThemeMode";
 import { NotificationType } from "../../Types/Interface";
 import { categoriesType } from "../BottomTab";
+import { useAppContext } from "../../Contexts/ThemeProvider";
 
 interface CategoryItemType {
   item: categoriesType;
@@ -25,8 +26,10 @@ const RenderCategoryItem = ({
   selectedCategory,
   setSelectedCategory,
 }: CategoryItemType) => {
-  const { typeColor, createViewColor } = useNotificationIconColors(item.type);
   const colors = useThemeColors();
+  const { theme } = useAppContext();
+  const { typeColor, createViewColor, backgroundColor } =
+    useNotificationIconColors(item.type);
 
   const isSelected = useMemo(
     () =>
@@ -55,17 +58,19 @@ const RenderCategoryItem = ({
     >
       <ImageBackground
         resizeMode="cover"
-        tintColor={isSelected ? typeColor : undefined}
+        tintColor={
+          isSelected ? typeColor : theme === "light" ? "#8B8E8E" : undefined
+        }
         source={AssetsPath.ic_categoryFrame}
         style={styles.imageBackground}
       >
         <View style={styles.innerContainer}>
           <View style={styles.iconContainer}>
             <Image
-              resizeMode="contain"
-              tintColor={item.type === "gmail" ? undefined : typeColor}
               source={item.icon}
               style={styles.icon}
+              resizeMode="contain"
+              tintColor={item.type === "gmail" ? undefined : typeColor}
             />
           </View>
 
@@ -88,7 +93,7 @@ const styles = StyleSheet.create({
     width: "48%",
     height: 180,
     borderRadius: 10,
-    borderWidth: 0.5,
+    borderWidth: 1,
   },
   imageBackground: {
     width: "100%",

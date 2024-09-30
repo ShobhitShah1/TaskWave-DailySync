@@ -10,6 +10,22 @@ import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
 
 LogBox.ignoreAllLogs();
 
+notifee.onBackgroundEvent(async ({ type, detail }) => {
+  const { notification } = detail;
+
+  console.log("Background Notification:", notification);
+
+  switch (type) {
+    case EventType.DISMISSED:
+      break;
+    case EventType.PRESS:
+      handleNotificationPress(notification?.data);
+      break;
+    case EventType.DELIVERED:
+      break;
+  }
+});
+
 export default function App() {
   const [loaded, error] = useFonts({
     "ClashGrotesk-Bold": require("./assets/Fonts/ClashGrotesk-Bold.otf"),
@@ -56,22 +72,6 @@ export default function App() {
       }
     });
   }, []);
-
-  notifee.onBackgroundEvent(async ({ type, detail }) => {
-    const { notification } = detail;
-
-    console.log("Background Notification:", notification);
-
-    switch (type) {
-      case EventType.DISMISSED:
-        break;
-      case EventType.PRESS:
-        handleNotificationPress(notification?.data);
-        break;
-      case EventType.DELIVERED:
-        break;
-    }
-  });
 
   if (!loaded) {
     return;

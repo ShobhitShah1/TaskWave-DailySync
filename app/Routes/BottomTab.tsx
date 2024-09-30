@@ -338,8 +338,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   sheetNextButton: {
-    width: 110,
-    height: 35,
+    width: 120,
+    height: 38,
     borderRadius: 40,
     alignItems: "center",
     justifyContent: "center",
