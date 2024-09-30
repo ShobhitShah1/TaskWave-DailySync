@@ -119,21 +119,24 @@ const AddReminder = () => {
   const { requestPermission, checkPermissionStatus } = useContactPermission();
 
   const onHandelContactClick = async () => {
-    setIsContactLoading(true);
-
     try {
-      const isPermissionEnable = await checkPermissionStatus();
+      console.log("contacts.length:", contacts.length);
+      if (contacts.length === 0) {
+        setIsContactLoading(true);
 
-      if (!isPermissionEnable) {
-        await requestPermission().then((res) => {
-          if (res) requestContactData();
-        });
+        const isPermissionEnable = await checkPermissionStatus();
 
-        return;
+        if (!isPermissionEnable) {
+          await requestPermission().then((res) => {
+            if (res) requestContactData();
+          });
+
+          return;
+        }
+        requestContactData();
       }
-
+      setIsContactLoading(false);
       setContactModalVisible(true);
-      requestContactData();
     } catch (error: any) {
       Alert.alert("Error", String(error?.message));
     }
@@ -435,11 +438,12 @@ const AddReminder = () => {
             />
           )}
 
-          {notificationType !== "gmail" && notificationType !== "phone" && (
+          {notificationType !== "gmail" && (
             <AddMessage
               message={message}
               setMessage={setMessage}
               themeColor={createViewColor}
+              title={notificationType === "phone" ? "Note" : "Message"}
             />
           )}
 

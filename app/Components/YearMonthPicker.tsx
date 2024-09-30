@@ -179,19 +179,19 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       animationIn="fadeIn"
       animationOut="fadeOut"
       customBackdrop={
-        <View style={{ flex: 1, height: height }}>
+        <Pressable onPress={onCancel} style={{ flex: 1, height: height }}>
           <BlurView
             tint="dark"
-            intensity={20}
+            intensity={15}
             style={{ flex: 1, height: height }}
             experimentalBlurMethod="dimezisBlurView"
           />
-        </View>
+        </Pressable>
       }
       hasBackdrop
       useNativeDriverForBackdrop
-      statusBarTranslucent
-      deviceHeight={height + ((StatusBar.currentHeight || 30) + 50)}
+      // statusBarTranslucent
+      // deviceHeight={height + ((StatusBar.currentHeight || 30) + 50)}
       useNativeDriver
       onModalShow={() => {
         animationProgress.value = withTiming(1, {
@@ -201,7 +201,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       }}
       onModalWillHide={() => {
         animationProgress.value = withTiming(0, {
-          duration: 400,
+          duration: 200,
           easing: Easing.in(Easing.cubic),
         });
       }}
@@ -212,7 +212,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
             styles.modalView,
             {
               backgroundColor: colors.white,
-              shadowColor: colors.darkBlue,
+              // shadowColor: colors.darkBlue,
             },
             animatedStyle,
           ]}
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5,
+    // elevation: 5,
     width: SCREEN_WIDTH * 0.85,
   },
   pickerContainer: {
