@@ -30,6 +30,7 @@ import { DocumentPickerResponse } from "react-native-document-picker";
 import useReminder from "../../Hooks/useReminder";
 import ImagePreviewModal from "../../Components/ImagePreviewModal";
 import { BlurView } from "expo-blur";
+import { showMessage } from "react-native-flash-message";
 
 type NotificationProps = {
   params: { notificationData: Notification };
@@ -110,7 +111,10 @@ const ReminderPreview = () => {
 
   const onDeleteClick = useCallback(async () => {
     if (!notificationData?.id) {
-      Alert.alert("Error", "Notification ID not found.");
+      showMessage({
+        message: "Invalid reminder ID",
+        type: "danger",
+      });
       return;
     }
 
@@ -123,14 +127,20 @@ const ReminderPreview = () => {
           onPress: async () => {
             try {
               if (!notificationData?.id) {
-                Alert.alert("Error", "Invalid reminder ID");
+                showMessage({
+                  message: "Invalid reminder ID",
+                  type: "danger",
+                });
                 return;
               }
 
               await deleteNotification(notificationData?.id);
               navigation.goBack();
             } catch (error: any) {
-              Alert.alert("Error", String(error?.message));
+              showMessage({
+                message: String(error?.message || error),
+                type: "danger",
+              });
             }
           },
           style: "destructive",

@@ -32,6 +32,7 @@ import RenderHistoryList from "./Components/RenderHistoryList";
 import { generateDaysArray } from "../../Utils/generateDaysArray";
 import RenderCalenderView from "../../Components/RenderCalenderView";
 import RenderFilterTabData from "./Components/RenderFilterTabData";
+import { showMessage } from "react-native-flash-message";
 
 const History = () => {
   const style = styles();
@@ -229,7 +230,10 @@ const History = () => {
 
   const deleteReminder = useCallback(async (id?: string) => {
     if (!id) {
-      Alert.alert("Error", "Invalid reminder ID");
+      showMessage({
+        message: "Invalid reminder ID",
+        type: "danger",
+      });
       return;
     }
 

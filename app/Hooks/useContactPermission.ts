@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Alert, Linking, Platform } from "react-native";
+import { showMessage } from "react-native-flash-message";
 import {
   check,
   PERMISSIONS,
@@ -33,10 +34,11 @@ const useContactPermission = () => {
   const handlePermissionStatus = async (status: PermissionStatus) => {
     switch (status) {
       case RESULTS.UNAVAILABLE:
-        Alert.alert(
-          "Contacts Unavailable",
-          "This feature is not available on your device."
-        );
+        showMessage({
+          description: "This feature is not available on your device.",
+          message: "Contacts Unavailable",
+          type: "danger",
+        });
         return false;
       case RESULTS.DENIED:
         // Automatically request permission if it's denied

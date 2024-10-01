@@ -32,6 +32,7 @@ import { fromNowText } from "../../Utils/isSameDat";
 import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
+import { showMessage } from "react-native-flash-message";
 
 const Home = () => {
   const style = styles();
@@ -176,7 +177,10 @@ const Home = () => {
 
   const deleteReminder = useCallback(async (id?: string) => {
     if (!id) {
-      Alert.alert("Error", "Invalid reminder ID");
+      showMessage({
+        message: "Invalid reminder ID",
+        type: "danger",
+      });
       return;
     }
 

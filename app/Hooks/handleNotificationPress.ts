@@ -1,5 +1,6 @@
 import { Alert, Linking, NativeModules } from "react-native";
 import { Contact, Notification } from "../Types/Interface";
+import { showMessage } from "react-native-flash-message";
 
 export const handleNotificationPress = (notification: any) => {
   try {
@@ -18,15 +19,21 @@ export const handleNotificationPress = (notification: any) => {
       numbers = Array.isArray(contacts)
         ? contacts.map((contact: Contact) => contact.number)
         : [];
-    } catch (error) {
-      console.error("Failed to parse toContact:", error);
+    } catch (error: any) {
+      showMessage({
+        message: `Failed to parse toContact: ${error.message || error}`,
+        type: "danger",
+      });
     }
 
     try {
       const emails: string[] = JSON.parse(toMail as any);
       emailMails = emails.filter((email) => email !== "").join(", ");
-    } catch (error) {
-      console.error("Failed to parse toMail:", error);
+    } catch (error: any) {
+      showMessage({
+        message: `Failed to parse toMail: ${error.message || error}`,
+        type: "danger",
+      });
     }
 
     try {
@@ -36,8 +43,11 @@ export const handleNotificationPress = (notification: any) => {
         firstAttachment =
           parsedAttachments[0].name || parsedAttachments[0].uri || "";
       }
-    } catch (error) {
-      console.error("Failed to parse attachments:", error);
+    } catch (error: any) {
+      showMessage({
+        message: `Failed to parse attachments: ${error.message || error}`,
+        type: "danger",
+      });
     }
 
     const filterNumber = numbers?.[0] || "";
@@ -57,7 +67,10 @@ export const handleNotificationPress = (notification: any) => {
             true
           );
         } else {
-          console.log("No valid contact found for WhatsApp.");
+          showMessage({
+            message: "No valid contact found for WhatsApp.",
+            type: "danger",
+          });
         }
         break;
       case "whatsappBusiness":
@@ -69,30 +82,48 @@ export const handleNotificationPress = (notification: any) => {
             false
           );
         } else {
-          console.log("No valid contact found for WhatsApp Business.");
+          showMessage({
+            message: "No valid contact found for WhatsApp Business.",
+            type: "danger",
+          });
         }
         break;
       case "SMS":
         if (numbers.length > 0) {
-          console.log("SMS NUMBERS", numbers);
           SendMessagesModule.sendSms(numbers, globalMessage, firstAttachment);
         } else {
-          console.log("No valid phone numbers found for SMS.");
+          showMessage({
+            message: "No valid phone numbers found for SMS.",
+            type: "danger",
+          });
         }
         break;
       case "gmail":
-        SendMessagesModule.sendMail(
-          emailMails,
-          globalSubject,
-          globalMessage,
-          firstAttachment
-        );
+        try {
+          SendMessagesModule.sendMail(
+            emailMails,
+            globalSubject,
+            globalMessage,
+            firstAttachment
+          );
+        } catch (error: any) {
+          showMessage({
+            message: String(error.message || error),
+            type: "danger",
+          });
+        }
         break;
       default:
-        console.log("Unsupported notification type.");
+        showMessage({
+          message: "Unsupported notification type.",
+          type: "danger",
+        });
         break;
     }
   } catch (error: any) {
-    Alert.alert("Error", String(error?.message));
+    showMessage({
+      message: String(error?.message || error),
+      type: "danger",
+    });
   }
 };

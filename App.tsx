@@ -89,6 +89,7 @@ export default function App() {
           <Routes />
           <FlashMessage
             position="top"
+            floating={true}
             titleStyle={styles.flashTextStyle}
             textStyle={[styles.flashTextStyle, { fontSize: 13.5 }]}
             statusBarHeight={StatusBar.currentHeight}

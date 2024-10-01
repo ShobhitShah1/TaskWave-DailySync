@@ -39,6 +39,7 @@ import AddScheduleFrequency, {
 import AttachFile from "./Components/AttachFile";
 import ContactListModal from "./Components/ContactListModal";
 import styles from "./styles";
+import { showMessage } from "react-native-flash-message";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -138,7 +139,10 @@ const AddReminder = () => {
       setIsContactLoading(false);
       setContactModalVisible(true);
     } catch (error: any) {
-      Alert.alert("Error", String(error?.message));
+      showMessage({
+        message: String(error?.message || error),
+        type: "danger",
+      });
     }
   };
 
@@ -155,7 +159,10 @@ const AddReminder = () => {
       setContacts(simplifiedContacts);
     } catch (error: any) {
       const message = String(error?.message) || "Failed to fetch contacts.";
-      Alert.alert("Error", message);
+      showMessage({
+        message: message,
+        type: "danger",
+      });
     } finally {
       setIsContactLoading(false);
     }
@@ -210,10 +217,10 @@ const AddReminder = () => {
           ToastAndroid.show("File size exceeds the limit", ToastAndroid.SHORT);
         }
       } else {
-        Alert.alert(
-          "Error",
-          String(pickerResult?.copyError) || "Invalid document format"
-        );
+        showMessage({
+          message: String(pickerResult?.copyError) || "Invalid document format",
+          type: "danger",
+        });
       }
     } catch (e) {
       console.error("Error in Document Picker:", e);
@@ -231,50 +238,74 @@ const AddReminder = () => {
   const validateFields = () => {
     if (notificationType === "gmail") {
       if (!to) {
-        Alert.alert("Validation Error", "'To' field is required.");
+        showMessage({
+          message: "'To' field is required.",
+          type: "danger",
+        });
         return false;
       }
 
       if (!validateMultipleEmails(to)) {
-        Alert.alert(
-          "Validation Error",
-          "Invalid email address(es) in 'To' field."
-        );
+        showMessage({
+          message: "Invalid email address(es) in 'To' field.",
+          type: "danger",
+        });
         return false;
       }
 
       if (!subject) {
-        Alert.alert("Validation Error", "'Subject' field is required.");
+        showMessage({
+          message: "'Subject' field is required.",
+          type: "danger",
+        });
         return false;
       }
 
       if (!selectedDateAndTime?.date) {
-        Alert.alert("Validation Error", "'Date' field is required.");
+        showMessage({
+          message: "'Date' field is required.",
+          type: "danger",
+        });
         return false;
       }
 
       if (!selectedDateAndTime?.time) {
-        Alert.alert("Validation Error", "'Time' field is required.");
+        showMessage({
+          message: "'Time' field is required.",
+          type: "danger",
+        });
         return false;
       }
     } else {
       if (!selectedContacts?.length) {
-        Alert.alert("Validation Error", "'Contact(s)' field is required.");
+        showMessage({
+          message: "'Contact(s)' field is required.",
+          type: "danger",
+        });
         return false;
       }
 
       if (!message && notificationType !== "phone") {
-        Alert.alert("Validation Error", "'Message' field is required.");
+        showMessage({
+          message: "'Message' field is required.",
+          type: "danger",
+        });
         return false;
       }
 
       if (!selectedDateAndTime?.date) {
-        Alert.alert("Validation Error", "'Date' field is required.");
+        showMessage({
+          message: "'Date' field is required.",
+          type: "danger",
+        });
         return false;
       }
 
       if (!selectedDateAndTime?.time) {
-        Alert.alert("Validation Error", "'Time' field is required.");
+        showMessage({
+          message: "'Time' field is required.",
+          type: "danger",
+        });
         return false;
       }
     }
@@ -299,19 +330,20 @@ const AddReminder = () => {
         const tenSecondsFromNow = new Date(now.getTime() + 10 * 1000); // 10 seconds from now
 
         if (selectedDateTime < now) {
-          Alert.alert(
-            "Error",
-            "The selected date and time cannot be in the past."
-          );
+          showMessage({
+            message: "The selected date and time cannot be in the past.",
+            type: "danger",
+          });
           setIsLoading(false);
           return;
         }
 
         if (selectedDateTime < tenSecondsFromNow) {
-          Alert.alert(
-            "Error",
-            "The notification must be scheduled at least 10 seconds in the future."
-          );
+          showMessage({
+            message:
+              "The notification must be scheduled at least 10 seconds in the future.",
+            type: "danger",
+          });
           setIsLoading(false);
           return;
         }
@@ -344,7 +376,10 @@ const AddReminder = () => {
           if (updated) {
             notificationScheduleId = id;
           } else {
-            Alert.alert("Error", "Failed to update notification.");
+            showMessage({
+              message: "Failed to update notification.",
+              type: "danger",
+            });
             setIsLoading(false);
             return;
           }
@@ -360,12 +395,18 @@ const AddReminder = () => {
             const created = await createNotification(data);
 
             if (!created) {
-              Alert.alert("Error", String(created));
+              showMessage({
+                message: String(created),
+                type: "danger",
+              });
               setIsLoading(false);
               return;
             }
           } else {
-            Alert.alert("Error", "Failed to schedule notification.");
+            showMessage({
+              message: "Failed to schedule notification.",
+              type: "danger",
+            });
             setIsLoading(false);
             return;
           }
@@ -378,7 +419,10 @@ const AddReminder = () => {
         });
       }
     } catch (error: any) {
-      Alert.alert("Error", String(error?.message));
+      showMessage({
+        message: String(error?.message || error),
+        type: "danger",
+      });
       setIsLoading(false);
     }
   };

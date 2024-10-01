@@ -10,6 +10,7 @@ import notifee, {
 } from "@notifee/react-native";
 import { Contact, Notification } from "../Types/Interface";
 import { Alert } from "react-native";
+import { showMessage } from "react-native-flash-message";
 
 let CHANNEL_ID = "reminder";
 let CHANNEL_NAME = "Reminder";
@@ -132,7 +133,10 @@ const useReminder = () => {
     await openDatabase();
 
     if (!db) {
-      Alert.alert("Error", "Database connection error. Please try again.");
+      showMessage({
+        message: "Database connection error. Please try again.",
+        type: "danger",
+      });
       return null;
     }
 
@@ -140,10 +144,10 @@ const useReminder = () => {
       notification;
 
     if (!id) {
-      Alert.alert(
-        "Error",
-        "Failed to schedule notification. Please try again."
-      );
+      showMessage({
+        message: "Failed to schedule notification. Please try again.",
+        type: "danger",
+      });
       return null;
     }
 
@@ -183,12 +187,12 @@ const useReminder = () => {
       await db.execAsync(transactionSQL);
       return id;
     } catch (error: any) {
-      console.error("Error creating notification in database:", error);
-      Alert.alert(
-        "Error",
-        error?.message ||
-          "Failed to create notification in the database. Please try again."
-      );
+      showMessage({
+        message:
+          error?.message ||
+          "Failed to create notification in the database. Please try again.",
+        type: "danger",
+      });
       return null;
     }
   };
@@ -197,7 +201,10 @@ const useReminder = () => {
     notification: Notification
   ): Promise<boolean> => {
     if (!db) {
-      Alert.alert("Error", "Database connection error. Please try again.");
+      showMessage({
+        message: "Database connection error. Please try again.",
+        type: "danger",
+      });
       return false;
     }
 
@@ -252,7 +259,10 @@ const useReminder = () => {
       );
     } catch (error) {
       console.error("Error updating notification in Notifee:", error);
-      Alert.alert("Error", "Failed to update notification. Please try again.");
+      showMessage({
+        message: "Failed to update notification. Please try again.",
+        type: "danger",
+      });
       return false;
     }
 
@@ -301,11 +311,11 @@ const useReminder = () => {
       await db.execAsync(transactionSQL);
       return true;
     } catch (error) {
-      console.error("Error updating notification in the database:", error);
-      Alert.alert(
-        "Error",
-        "Failed to update notification in the database. Please try again."
-      );
+      showMessage({
+        message:
+          "Failed to update notification in the database. Please try again.",
+        type: "danger",
+      });
       return false;
     }
   };
@@ -314,7 +324,10 @@ const useReminder = () => {
     const database = await openDatabase();
 
     if (!database) {
-      Alert.alert("Error", "Database connection error. Please try again.");
+      showMessage({
+        message: "Database connection error. Please try again.",
+        type: "danger",
+      });
       return false;
     }
 
@@ -323,8 +336,10 @@ const useReminder = () => {
       await database.execAsync(`DELETE FROM notifications WHERE id = '${id}'`);
       return true;
     } catch (error) {
-      console.error("Error deleting notification:", error);
-      Alert.alert("Error", "Failed to delete notification. Please try again.");
+      showMessage({
+        message: "Failed to delete notification. Please try again.",
+        type: "danger",
+      });
       return false;
     }
   };
@@ -333,7 +348,10 @@ const useReminder = () => {
     const database = await openDatabase();
 
     if (!database) {
-      Alert.alert("Error", "Database connection error. Please try again.");
+      showMessage({
+        message: "Database connection error. Please try again.",
+        type: "danger",
+      });
       return [];
     }
 
@@ -362,11 +380,10 @@ const useReminder = () => {
 
       return result;
     } catch (error) {
-      console.error("Error retrieving notifications from database:", error);
-      Alert.alert(
-        "Error",
-        "Failed to retrieve notifications. Please try again."
-      );
+      showMessage({
+        message: "Failed to retrieve notifications. Please try again.",
+        type: "danger",
+      });
       return [];
     }
   };
@@ -377,7 +394,10 @@ const useReminder = () => {
     const database = await openDatabase();
 
     if (!database) {
-      Alert.alert("Error", "Database connection error. Please try again.");
+      showMessage({
+        message: "Database connection error. Please try again.",
+        type: "danger",
+      });
       return null;
     }
 
@@ -409,14 +429,10 @@ const useReminder = () => {
 
       return result;
     } catch (error) {
-      console.error(
-        "Error retrieving notification by ID from database:",
-        error
-      );
-      Alert.alert(
-        "Error",
-        "Failed to retrieve notification. Please try again."
-      );
+      showMessage({
+        message: "Failed to retrieve notification. Please try again.",
+        type: "danger",
+      });
       return null;
     }
   };

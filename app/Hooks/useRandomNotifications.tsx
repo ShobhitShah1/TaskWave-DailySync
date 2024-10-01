@@ -1,5 +1,5 @@
-import { Alert } from "react-native";
 import { DocumentPickerResponse } from "react-native-document-picker";
+import { showMessage } from "react-native-flash-message";
 import { FrequencyType } from "../Screens/AddReminder/Components/AddScheduleFrequency";
 import { Contact, Notification, NotificationType } from "../Types/Interface";
 import useReminder, { scheduleNotificationWithNotifee } from "./useReminder";
@@ -122,7 +122,11 @@ export const useRandomNotifications = () => {
       console.log(notif);
       const id = await scheduleNotificationWithNotifee(notif); // Replace with actual scheduling logic
       if (!id) {
-        Alert.alert("Error", `Failed to schedule notification: ${notif.id}`);
+        showMessage({
+          message: `Failed to schedule notification: ${notif.id}`,
+          type: "danger",
+        });
+
         continue;
       }
 
@@ -133,10 +137,10 @@ export const useRandomNotifications = () => {
       console.log(`Scheduled Notification ID: ${notif.id}`, result);
     }
 
-    Alert.alert(
-      "Notification Scheduled",
-      `${notifications.length} notifications have been scheduled!`
-    );
+    showMessage({
+      message: `${notifications.length} notifications have been scheduled!`,
+      type: "danger",
+    });
   };
 
   return { generateNotifications };
