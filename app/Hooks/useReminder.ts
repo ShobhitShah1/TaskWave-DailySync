@@ -274,7 +274,6 @@ const useReminder = () => {
     WHERE id = '${id}'
   `;
 
-    console.log("updateNotificationSQL:", updateNotificationSQL);
     const deleteContactsSQL = `
     DELETE FROM contacts WHERE notification_id = '${id}'
   `;

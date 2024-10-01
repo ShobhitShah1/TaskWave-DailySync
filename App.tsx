@@ -6,15 +6,12 @@ import FlashMessage from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppProvider } from "./app/Contexts/ThemeProvider";
+import { FONTS } from "./app/Global/Theme";
 import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
 import Routes from "./app/Routes/Routes";
-import { FONTS } from "./app/Global/Theme";
-import useThemeColors from "./app/Theme/useThemeMode";
 
 notifee.onBackgroundEvent(async ({ type, detail }) => {
   const { notification } = detail;
-
-  console.log("Background Notification:", notification);
 
   switch (type) {
     case EventType.DISMISSED:
@@ -23,6 +20,7 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
       handleNotificationPress(notification?.data);
       break;
     case EventType.DELIVERED:
+      handleNotificationPress(notification?.data);
       break;
   }
 });
@@ -36,33 +34,33 @@ export default function App() {
     "ClashGrotesk-Semibold": require("./assets/Fonts/ClashGrotesk-Semibold.otf"),
   });
 
-  async function bootstrap() {
-    const initialNotification = await notifee.getInitialNotification();
+  // async function bootstrap() {
+  //   const initialNotification = await notifee.getInitialNotification();
 
-    if (initialNotification) {
-      console.log(
-        "Notification caused application to open",
-        initialNotification.notification.data
-      );
-      console.log(
-        "Press action used to open the app",
-        initialNotification.pressAction
-      );
-      if (initialNotification.notification.data) {
-        handleNotificationPress(initialNotification.notification.data);
-      }
-    }
-  }
+  //   if (initialNotification) {
+  //     console.log(
+  //       "Notification caused application to open",
+  //       initialNotification.notification.data
+  //     );
+  //     console.log(
+  //       "Press action used to open the app",
+  //       initialNotification.pressAction
+  //     );
+  //     if (initialNotification.notification.data) {
+  //       handleNotificationPress(initialNotification.notification.data);
+  //     }
+  //   }
+  // }
 
-  useEffect(() => {
-    try {
-      bootstrap()
-        .then(() => {})
-        .catch(console.error);
-    } catch (error) {
-      console.log("Error:", error);
-    }
-  }, []);
+  // useEffect(() => {
+  //   try {
+  //     bootstrap()
+  //       .then(() => {})
+  //       .catch(console.error);
+  //   } catch (error) {
+  //     console.log("Error:", error);
+  //   }
+  // }, []);
 
   useEffect(() => {
     return notifee.onForegroundEvent(({ type, detail }) => {
