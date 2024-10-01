@@ -65,10 +65,10 @@ export const scheduleNotificationWithNotifee = async (
         title:
           type === "gmail"
             ? subject
-            : `Reminder: ${subject || "Upcoming Task"}`,
+            : `Reminder: ${subject || "You have an upcoming task"}`,
         body:
           message.toString() ||
-          `You have a new notification. Contact: ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}.`,
+          `Don't forget! You have a task with ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}. Please check details or contact them if needed.`,
         android: {
           channelId,
           visibility: AndroidVisibility.PUBLIC,
@@ -234,10 +234,10 @@ const useReminder = () => {
           title:
             type === "gmail"
               ? subject
-              : `Reminder: ${subject || "Upcoming Task"}`,
+              : `Reminder: ${subject || "You have an upcoming task"}`,
           body:
             message.toString() ||
-            `You have a new notification. Contact: ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}.`,
+            `Don't forget! You have a task with ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}. Please check details or contact them if needed.`,
           android: {
             channelId,
             visibility: AndroidVisibility.PUBLIC,
