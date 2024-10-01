@@ -214,7 +214,10 @@ const AddReminder = () => {
 
           setSelectedDocuments((prev) => [...prev, selectedDocumentInfo]);
         } else {
-          ToastAndroid.show("File size exceeds the limit", ToastAndroid.SHORT);
+          showMessage({
+            message: `File size exceeds the limit of ${MAX_FILE_SIZE}MB`,
+            type: "danger",
+          });
         }
       } else {
         showMessage({
@@ -222,8 +225,11 @@ const AddReminder = () => {
           type: "danger",
         });
       }
-    } catch (e) {
-      console.error("Error in Document Picker:", e);
+    } catch (e: any) {
+      showMessage({
+        message: String(e?.message) || "Failed to pick document",
+        type: "danger",
+      });
     }
   }, []);
 

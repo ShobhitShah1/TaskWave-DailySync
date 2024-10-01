@@ -208,7 +208,6 @@ const BottomTab = () => {
       } catch (error) {
         showMessage({
           message: errorMessage,
-          description: "Please try again later.",
           type: "danger",
         });
         console.error("Error checking app installation:", error);

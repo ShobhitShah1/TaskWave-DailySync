@@ -90,6 +90,7 @@ export default function App() {
           <FlashMessage
             position="top"
             floating={true}
+            duration={3500}
             titleStyle={styles.flashTextStyle}
             textStyle={[styles.flashTextStyle, { fontSize: 13.5 }]}
             statusBarHeight={StatusBar.currentHeight}

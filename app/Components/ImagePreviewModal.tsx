@@ -100,8 +100,6 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
       onBackButtonPress={onClose}
       style={styles.modalContainer}
       useNativeDriver
-      swipeDirection="down"
-      propagateSwipe
     >
       <View style={styles.listHeaderView}>
         <Pressable onPress={onClose} style={{ zIndex: 99999 }}>
