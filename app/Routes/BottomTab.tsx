@@ -13,9 +13,13 @@ import {
   FlatList,
   Image,
   ImageSourcePropType,
+  Linking,
+  NativeModules,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
+  ToastAndroid,
   View,
 } from "react-native";
 import { CurvedBottomBar } from "react-native-curved-bottom-bar";
@@ -33,6 +37,13 @@ import useThemeColors from "../Theme/useThemeMode";
 import { NotificationType } from "../Types/Interface";
 import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
+import { showMessage } from "react-native-flash-message";
+
+interface RenderTabBarProps {
+  routeName: string;
+  selectedTab: string;
+  navigate: (routeName: string) => void;
+}
 
 export type categoriesType = {
   id: string;
@@ -106,37 +117,44 @@ const BottomTab = () => {
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-  const [hideBottomTab, setHideBottomTab] = useState(true);
+  const [hideBottomTab, setHideBottomTab] = useState(false);
   const [selectedCategory, setSelectedCategory] =
-    useState<NotificationType | null>("whatsapp");
+    useState<NotificationType>("whatsapp");
+
+  const handleTabChange = useCallback(
+    (selectedTab: string) => {
+      const shouldHide = selectedTab === "History" || selectedTab === "Setting";
+      if (hideBottomTab !== shouldHide) {
+        setHideBottomTab(shouldHide);
+      }
+    },
+    [hideBottomTab]
+  );
 
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
 
-  const renderTabBar = ({
-    routeName,
-    selectedTab,
-    navigate,
-  }: {
-    routeName: string;
-    selectedTab: string;
-    navigate: (routeName: string) => void;
-  }) => {
-    setHideBottomTab(selectedTab === "History" || selectedTab === "Setting");
-
-    return (
-      <Pressable onPress={() => navigate(routeName)} style={styles.tabBarItem}>
-        <TabBarIcon
+  const renderTabBar = useCallback(
+    ({ routeName, selectedTab, navigate }: RenderTabBarProps) => (
+      <Pressable
+        onPress={() => {
+          handleTabChange(selectedTab);
+          navigate(routeName);
+        }}
+        style={styles.tabBarItem}
+      >
+        <Image
           source={getIconSourceForBottomTabs(routeName)}
-          focused={routeName === selectedTab}
+          style={styles.icon}
         />
         <Text style={[styles.tabLabel, { color: colors.white }]}>
           {routeName}
         </Text>
       </Pressable>
-    );
-  };
+    ),
+    [colors.white, handleTabChange]
+  );
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -151,6 +169,84 @@ const BottomTab = () => {
     ),
     []
   );
+
+  const onCloseSheet = useCallback(() => {
+    if (bottomSheetModalRef.current) {
+      bottomSheetModalRef.current.dismiss();
+    }
+  }, [bottomSheetModalRef]);
+
+  const { SendMessagesModule } = NativeModules;
+
+  const checkAppAndNavigate = useCallback(
+    async (packageName: string, appStoreUrl: string, errorMessage: string) => {
+      try {
+        const result =
+          await SendMessagesModule.CheckisAppInstalled(packageName);
+        if (result) {
+          onCloseSheet();
+          setTimeout(() => {
+            navigation.navigate("CreateReminder", {
+              notificationType: selectedCategory,
+            });
+          }, 200);
+        } else {
+          showMessage({
+            message: errorMessage,
+            description: "Click here to install",
+            type: "warning",
+
+            onPress: () => {
+              Linking.openURL(appStoreUrl).catch((err) =>
+                console.error("An error occurred", err)
+              );
+            },
+            duration: 5000,
+            floating: true,
+          });
+        }
+      } catch (error) {
+        showMessage({
+          message: errorMessage,
+          description: "Please try again later.",
+          type: "danger",
+        });
+        console.error("Error checking app installation:", error);
+      }
+    },
+    [SendMessagesModule, navigation, selectedCategory]
+  );
+
+  const onPressNext = useCallback(() => {
+    switch (selectedCategory) {
+      case "whatsapp":
+        checkAppAndNavigate(
+          "com.whatsapp",
+          Platform.OS === "android"
+            ? "https://play.google.com/store/apps/details?id=com.whatsapp"
+            : "https://apps.apple.com/app/whatsapp-messenger/id310633997",
+          "WhatsApp is not installed"
+        );
+        break;
+      case "whatsappBusiness":
+        checkAppAndNavigate(
+          "com.whatsapp.w4b",
+          Platform.OS === "android"
+            ? "https://play.google.com/store/apps/details?id=com.whatsapp.w4b"
+            : "https://apps.apple.com/app/whatsapp-business/id1386412985",
+          "WhatsApp Business is not installed"
+        );
+        break;
+      default:
+        onCloseSheet();
+        setTimeout(() => {
+          navigation.navigate("CreateReminder", {
+            notificationType: selectedCategory,
+          });
+        }, 200);
+        break;
+    }
+  }, [checkAppAndNavigate, selectedCategory, navigation]);
 
   return (
     <React.Fragment>
@@ -177,6 +273,21 @@ const BottomTab = () => {
           </Animated.View>
         )}
         tabBar={renderTabBar}
+        screenListeners={{
+          state: (e) => {
+            const currentIndex = e.data.state.index;
+            const currentRouteName = e.data.state.routeNames?.[currentIndex];
+
+            if (
+              currentRouteName === "History" ||
+              currentRouteName === "Setting"
+            ) {
+              setHideBottomTab(true);
+            } else {
+              setHideBottomTab(false);
+            }
+          },
+        }}
       >
         <CurvedBottomBar.Screen name="Home" component={Home} position="LEFT" />
         <CurvedBottomBar.Screen
@@ -254,15 +365,7 @@ const BottomTab = () => {
           >
             <Pressable
               disabled={selectedCategory?.length === 0}
-              onPress={() => {
-                if (selectedCategory && bottomSheetModalRef) {
-                  bottomSheetModalRef.current?.dismiss();
-
-                  navigation.navigate("CreateReminder", {
-                    notificationType: selectedCategory,
-                  });
-                }
-              }}
+              onPress={onPressNext}
               style={styles.sheetNextButton}
             >
               <Text

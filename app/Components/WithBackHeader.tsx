@@ -33,32 +33,28 @@ const WithBackHeader = ({ title }: IHomeHeaderProps) => {
   );
 
   return (
-    <Animated.View entering={FadeIn.duration(400)}>
-      <View style={styles.container}>
-        <Pressable
-          onPress={() => navigation.navigate("BottomTab", { screen: "Home" })}
-          style={[styles.menuIconView]}
-        >
-          <Image
-            tintColor={colors.text}
-            source={AssetsPath.ic_leftArrow}
-            style={styles.menuIcon}
+    <Animated.View style={styles.container} entering={FadeIn.duration(400)}>
+      <Pressable
+        onPress={() => navigation.navigate("BottomTab", { screen: "Home" })}
+        style={[styles.menuIconView]}
+      >
+        <Image
+          tintColor={colors.text}
+          source={AssetsPath.ic_leftArrow}
+          style={styles.menuIcon}
+        />
+      </Pressable>
+      <View style={{ width: "71%" }}>
+        <Text style={[styles.titleText, { color: colors.text }]}>{title}</Text>
+      </View>
+      <View style={{ width: "18%", alignSelf: "flex-end" }}>
+        <View style={{ width: 70, height: 35, zIndex: 9999 }}>
+          <CustomSwitch
+            isOn={isSwitchOn}
+            onToggle={(state: boolean) => {
+              handleToggle(state);
+            }}
           />
-        </Pressable>
-        <View style={{ width: "71%" }}>
-          <Text style={[styles.titleText, { color: colors.text }]}>
-            {title}
-          </Text>
-        </View>
-        <View style={{ width: "18%", alignSelf: "flex-end" }}>
-          <View style={{ width: 70, height: 35, zIndex: 9999 }}>
-            <CustomSwitch
-              isOn={isSwitchOn}
-              onToggle={(state: boolean) => {
-                handleToggle(state);
-              }}
-            />
-          </View>
         </View>
       </View>
     </Animated.View>

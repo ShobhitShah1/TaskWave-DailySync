@@ -1,13 +1,21 @@
-import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import React, { memo, useState } from "react";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import WithBackHeader from "../../Components/WithBackHeader";
 import AssetsPath from "../../Global/AssetsPath";
-import { SIZE } from "../../Global/Theme";
+import { FONTS, SIZE } from "../../Global/Theme";
 import useThemeColors from "../../Theme/useThemeMode";
 import SettingItem from "./Components/SettingItem";
 import Share from "react-native-share";
 import RateUsModal from "../../Components/RateUsModal";
 import { useNavigation } from "@react-navigation/native";
+import CustomSwitch from "../../Components/CustomSwitch";
 
 const Settings = () => {
   const style = styles();
@@ -73,6 +81,8 @@ const Settings = () => {
   );
 };
 
+export default memo(Settings);
+
 const styles = () => {
   const colors = useThemeColors();
 
@@ -83,4 +93,3 @@ const styles = () => {
     },
   });
 };
-export default Settings;

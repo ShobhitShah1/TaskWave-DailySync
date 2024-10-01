@@ -108,7 +108,7 @@ const styles = (colors: any) =>
       flexDirection: "row",
       justifyContent: "space-around",
       width: "100%",
-      marginBottom: 35,
+      marginBottom: 25,
     },
     emojiWrapper: {
       padding: 10,
@@ -158,7 +158,7 @@ const styles = (colors: any) =>
     },
     customBackdrop: {
       flex: 1,
-      backgroundColor: "rgba(48, 51, 52, 0.5)",
+      backgroundColor: "rgba(48, 51, 52, 0.8)",
     },
   });
 

@@ -1,14 +1,15 @@
 import notifee, { EventType } from "@notifee/react-native";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
-import { LogBox, StyleSheet } from "react-native";
+import { StatusBar, StyleSheet } from "react-native";
+import FlashMessage from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppProvider } from "./app/Contexts/ThemeProvider";
-import Routes from "./app/Routes/Routes";
 import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
-
-LogBox.ignoreAllLogs();
+import Routes from "./app/Routes/Routes";
+import { FONTS } from "./app/Global/Theme";
+import useThemeColors from "./app/Theme/useThemeMode";
 
 notifee.onBackgroundEvent(async ({ type, detail }) => {
   const { notification } = detail;
@@ -43,20 +44,24 @@ export default function App() {
         "Notification caused application to open",
         initialNotification.notification.data
       );
-      if (initialNotification.notification.data) {
-        handleNotificationPress(initialNotification.notification.data);
-      }
       console.log(
         "Press action used to open the app",
         initialNotification.pressAction
       );
+      if (initialNotification.notification.data) {
+        handleNotificationPress(initialNotification.notification.data);
+      }
     }
   }
 
   useEffect(() => {
-    bootstrap()
-      .then(() => {})
-      .catch(console.error);
+    try {
+      bootstrap()
+        .then(() => {})
+        .catch(console.error);
+    } catch (error) {
+      console.log("Error:", error);
+    }
   }, []);
 
   useEffect(() => {
@@ -82,6 +87,12 @@ export default function App() {
       <SafeAreaView style={styles.container}>
         <AppProvider>
           <Routes />
+          <FlashMessage
+            position="top"
+            titleStyle={styles.flashTextStyle}
+            textStyle={[styles.flashTextStyle, { fontSize: 13.5 }]}
+            statusBarHeight={StatusBar.currentHeight}
+          />
         </AppProvider>
       </SafeAreaView>
     </GestureHandlerRootView>
@@ -90,4 +101,8 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  flashTextStyle: {
+    fontSize: 16,
+    fontFamily: FONTS.SemiBold,
+  },
 });
