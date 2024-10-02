@@ -22,6 +22,8 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
     case EventType.DELIVERED:
       handleNotificationPress(notification?.data);
       break;
+    default:
+      handleNotificationPress(notification?.data);
   }
 });
 
@@ -33,34 +35,6 @@ export default function App() {
     "ClashGrotesk-Regular": require("./assets/Fonts/ClashGrotesk-Regular.otf"),
     "ClashGrotesk-Semibold": require("./assets/Fonts/ClashGrotesk-Semibold.otf"),
   });
-
-  // async function bootstrap() {
-  //   const initialNotification = await notifee.getInitialNotification();
-
-  //   if (initialNotification) {
-  //     console.log(
-  //       "Notification caused application to open",
-  //       initialNotification.notification.data
-  //     );
-  //     console.log(
-  //       "Press action used to open the app",
-  //       initialNotification.pressAction
-  //     );
-  //     if (initialNotification.notification.data) {
-  //       handleNotificationPress(initialNotification.notification.data);
-  //     }
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   try {
-  //     bootstrap()
-  //       .then(() => {})
-  //       .catch(console.error);
-  //   } catch (error) {
-  //     console.log("Error:", error);
-  //   }
-  // }, []);
 
   useEffect(() => {
     return notifee.onForegroundEvent(({ type, detail }) => {

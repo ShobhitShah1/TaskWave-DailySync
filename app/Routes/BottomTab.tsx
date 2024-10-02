@@ -7,7 +7,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import React, { memo, useCallback, useRef, useState } from "react";
+import React, { memo, useCallback, useMemo, useRef, useState } from "react";
 import {
   Animated,
   FlatList,
@@ -38,6 +38,7 @@ import { NotificationType } from "../Types/Interface";
 import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
 import { showMessage } from "react-native-flash-message";
+import useNotificationIconColors from "../Hooks/useNotificationIconColors";
 
 interface RenderTabBarProps {
   routeName: string;
@@ -46,50 +47,13 @@ interface RenderTabBarProps {
 }
 
 export type categoriesType = {
-  id: string;
+  id: number;
   type: NotificationType;
   title: string;
   description: string;
   icon: ImageSourcePropType;
+  color: string;
 };
-
-const categories: categoriesType[] = [
-  {
-    id: "1",
-    type: "whatsapp",
-    title: "Whatsapp",
-    description: "Let’s create whatsapp event",
-    icon: AssetsPath.ic_whatsapp,
-  },
-  {
-    id: "2",
-    type: "SMS",
-    title: "SMS",
-    description: "Let’s create text messages event",
-    icon: AssetsPath.ic_sms,
-  },
-  {
-    id: "3",
-    type: "whatsappBusiness",
-    title: "WA Business",
-    description: "Let’s create business event",
-    icon: AssetsPath.ic_whatsappBusiness,
-  },
-  {
-    id: "4",
-    type: "gmail",
-    title: "Email",
-    description: "Let’s compose mail event",
-    icon: AssetsPath.ic_gmail,
-  },
-  {
-    id: "4",
-    type: "phone",
-    title: "Phone",
-    description: "Let’s create phone event",
-    icon: AssetsPath.ic_phone,
-  },
-];
 
 export const TabBarIcon = ({
   source,
@@ -120,6 +84,49 @@ const BottomTab = () => {
   const [hideBottomTab, setHideBottomTab] = useState(false);
   const [selectedCategory, setSelectedCategory] =
     useState<NotificationType>("whatsapp");
+
+  const categories: categoriesType[] = [
+    {
+      id: 1,
+      type: "whatsapp",
+      title: "Whatsapp",
+      description: "Let’s create whatsapp event",
+      icon: AssetsPath.ic_whatsapp,
+      color: colors.whatsapp,
+    },
+    {
+      id: 2,
+      type: "SMS",
+      title: "SMS",
+      description: "Let’s create text messages event",
+      icon: AssetsPath.ic_sms,
+      color: colors.sms,
+    },
+    {
+      id: 3,
+      type: "whatsappBusiness",
+      title: "WA Business",
+      description: "Let’s create business event",
+      icon: AssetsPath.ic_whatsappBusiness,
+      color: colors.whatsappBusiness,
+    },
+    {
+      id: 4,
+      type: "gmail",
+      title: "Email",
+      description: "Let’s compose mail event",
+      icon: AssetsPath.ic_gmail,
+      color: colors.gmail,
+    },
+    {
+      id: 5,
+      type: "phone",
+      title: "Phone",
+      description: "Let’s create phone event",
+      icon: AssetsPath.ic_phone,
+      color: colors.sms,
+    },
+  ];
 
   const handleTabChange = useCallback(
     (selectedTab: string) => {
@@ -325,13 +332,14 @@ const BottomTab = () => {
             { backgroundColor: colors.text },
           ]}
           ref={bottomSheetModalRef}
-          snapPoints={["50%"]}
+          snapPoints={["75%"]}
         >
           <BottomSheetScrollView
             style={[
               styles.contentContainer,
               { backgroundColor: colors.background },
             ]}
+            showsVerticalScrollIndicator={false}
           >
             <View>
               <StatusBar
@@ -339,6 +347,35 @@ const BottomTab = () => {
                 backgroundColor={colors.background}
                 style={theme === "dark" ? "light" : "dark"}
               />
+              <View style={styles.sheetSuggestionView}>
+                {categories?.map((res) => {
+                  const isSelected = res.type === selectedCategory;
+                  return (
+                    <Pressable
+                      onPress={() => setSelectedCategory(res?.type)}
+                      key={res.id}
+                      style={[
+                        styles.sheetSuggestionImageView,
+                        {
+                          backgroundColor: isSelected
+                            ? res.color
+                            : "rgba(209, 209, 209, 0.6)",
+                        },
+                      ]}
+                    >
+                      <Image
+                        source={res.icon}
+                        tintColor={
+                          isSelected && res.type === "gmail"
+                            ? undefined
+                            : colors.white
+                        }
+                        style={styles.sheetSuggestionImage}
+                      />
+                    </Pressable>
+                  );
+                })}
+              </View>
               <FlatList
                 numColumns={2}
                 data={categories}
@@ -463,11 +500,33 @@ const styles = StyleSheet.create({
     width: 35,
     marginTop: 10,
   },
-
   sheetNextButtonText: {
     fontFamily: FONTS.Medium,
     fontSize: 17,
     color: "white",
+  },
+  sheetSuggestionView: {
+    alignSelf: "center",
+    marginBottom: 20,
+    gap: 15,
+    flexDirection: "row",
+    overflow: "hidden",
+  },
+  sheetSuggestionImageView: {
+    width: 35,
+    height: 35,
+    elevation: 5,
+    shadowColor: "rgba(0, 0, 0, 0.1)",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 3,
+    borderRadius: 500,
+    justifyContent: "center",
+  },
+  sheetSuggestionImage: {
+    width: "55%",
+    height: "55%",
+    alignSelf: "center",
   },
 });
 
