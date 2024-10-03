@@ -1,7 +1,7 @@
 import notifee, { EventType } from "@notifee/react-native";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
-import { StatusBar, StyleSheet } from "react-native";
+import { LogBox, StatusBar, StyleSheet, Text, TextInput } from "react-native";
 import FlashMessage from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,6 +9,17 @@ import { AppProvider } from "./app/Contexts/ThemeProvider";
 import { FONTS } from "./app/Global/Theme";
 import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
 import Routes from "./app/Routes/Routes";
+
+interface TextWithDefaultProps extends Text {
+  defaultProps?: { allowFontScaling?: boolean };
+}
+
+(Text as unknown as TextWithDefaultProps).defaultProps = {
+  ...((Text as unknown as TextWithDefaultProps).defaultProps || {}),
+  allowFontScaling: false,
+};
+
+LogBox.ignoreAllLogs();
 
 notifee.onBackgroundEvent(async ({ type, detail }) => {
   const { notification } = detail;

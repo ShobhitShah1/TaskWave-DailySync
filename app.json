@@ -19,6 +19,15 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font", "react-native-bootsplash"]
+    "plugins": [
+      "expo-font",
+      "react-native-bootsplash",
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow to access your microphone."
+        }
+      ]
+    ]
   }
 }

@@ -54,7 +54,7 @@ const Settings = () => {
 
   return (
     <View style={style.container}>
-      <WithBackHeader title={"Setting"} />
+      {/* <WithBackHeader title={"Setting"} /> */}
 
       <View
         style={{

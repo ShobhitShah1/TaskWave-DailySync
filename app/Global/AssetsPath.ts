@@ -44,6 +44,9 @@ const ic_sad = require("../../assets/Icons/ic_sad.png");
 const ic_happy = require("../../assets/Icons/ic_happy.png");
 const ic_mid = require("../../assets/Icons/ic_mid.png");
 
+const ic_recordMic = require("../../assets/Icons/ic_recordMic.png");
+const ic_play = require("../../assets/Icons/ic_play.png");
+
 const ic_appLogo = require("../../assets/Icons/ic_appLogo.png");
 const ic_delete = require("../../assets/Icons/ic_delete.png");
 
@@ -94,6 +97,8 @@ export default {
   ic_mid,
   ic_appLogo,
   ic_delete,
+  ic_recordMic,
+  ic_play,
 
   //* Images
   ob_Email,

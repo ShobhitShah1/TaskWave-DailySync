@@ -3,12 +3,10 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Keyboard,
   Pressable,
   Text,
-  ToastAndroid,
   View,
 } from "react-native";
 import RNBlobUtil from "react-native-blob-util";
@@ -16,7 +14,10 @@ import Contacts from "react-native-contacts";
 import DocumentPicker, {
   DocumentPickerResponse,
 } from "react-native-document-picker";
+import { showMessage } from "react-native-flash-message";
+import { PERMISSIONS, request } from "react-native-permissions";
 import Animated from "react-native-reanimated";
+import RecordAudio from "../../Components/RecordAudio";
 import AssetsPath from "../../Global/AssetsPath";
 import useContactPermission from "../../Hooks/useContactPermission";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
@@ -39,7 +40,6 @@ import AddScheduleFrequency, {
 import AttachFile from "./Components/AttachFile";
 import ContactListModal from "./Components/ContactListModal";
 import styles from "./styles";
-import { showMessage } from "react-native-flash-message";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -68,6 +68,12 @@ const AddReminder = () => {
       getExistingNotificationData();
     }
   }, [id]);
+
+  useEffect(() => {
+    request(PERMISSIONS.ANDROID.RECORD_AUDIO)
+      .then((res) => console.log(res))
+      .catch((error) => console.log(error));
+  }, []);
 
   const getExistingNotificationData = async () => {
     const response = await getNotificationById(id);
@@ -122,20 +128,20 @@ const AddReminder = () => {
   const onHandelContactClick = async () => {
     try {
       console.log("contacts.length:", contacts.length);
-      if (contacts.length === 0) {
-        setIsContactLoading(true);
+      // if (contacts.length === 0) {
+      setIsContactLoading(true);
 
-        const isPermissionEnable = await checkPermissionStatus();
+      const isPermissionEnable = await checkPermissionStatus();
 
-        if (!isPermissionEnable) {
-          await requestPermission().then((res) => {
-            if (res) requestContactData();
-          });
+      if (!isPermissionEnable) {
+        await requestPermission().then((res) => {
+          if (res) requestContactData();
+        });
 
-          return;
-        }
-        requestContactData();
+        return;
       }
+      requestContactData();
+      // }
       setIsContactLoading(false);
       setContactModalVisible(true);
     } catch (error: any) {
@@ -505,6 +511,9 @@ const AddReminder = () => {
               onHandelAttachmentClick={onHandelAttachmentClick}
             />
           )}
+
+          {(notificationType === "whatsapp" ||
+            notificationType === "whatsappBusiness") && <RecordAudio />}
 
           <AddScheduleFrequency
             themeColor={createViewColor}

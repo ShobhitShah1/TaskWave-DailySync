@@ -10,6 +10,7 @@ import useThemeColors from "../Theme/useThemeMode";
 import { Notification } from "../Types/Interface";
 import { formatNotificationType } from "../Utils/formatNotificationType";
 import { getNotificationIcon } from "../Utils/getNotificationIcon";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 const LOGO_SIZE = 65;
 
@@ -76,7 +77,9 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   }, [notification]);
 
   return (
-    <View
+    <Animated.View
+      entering={FadeIn}
+      exiting={FadeOut}
       style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}
     >
       <Pressable
@@ -184,7 +187,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           </View>
         </View>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 };
 

@@ -1,11 +1,17 @@
 import React, { FC, memo, useEffect } from "react";
-import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+} from "react-native";
 import { FONTS } from "../../../Global/Theme";
 import useThemeColors from "../../../Theme/useThemeMode";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from "react-native-reanimated";
 
@@ -35,8 +41,6 @@ const FrequencyItem: FC<FrequencyItemProps> = ({
   toggleFrequency,
 }) => {
   const isSelected = scheduleFrequency === frequency;
-
-  const opacity = useSharedValue(0);
   const backgroundColor = useSharedValue("transparent");
 
   useEffect(() => {
@@ -46,11 +50,9 @@ const FrequencyItem: FC<FrequencyItemProps> = ({
     );
   }, [isSelected]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      backgroundColor: backgroundColor.value,
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    backgroundColor: backgroundColor.value,
+  }));
 
   return (
     <Pressable
@@ -58,13 +60,7 @@ const FrequencyItem: FC<FrequencyItemProps> = ({
       onPress={() => toggleFrequency(frequency)}
     >
       <Animated.View
-        style={[
-          styles.checkbox,
-          {
-            borderColor: themeColor,
-          },
-          animatedStyle,
-        ]}
+        style={[styles.checkbox, { borderColor: themeColor }, animatedStyle]}
       >
         {isSelected && <Text style={styles.checkmark}>✓</Text>}
       </Animated.View>
@@ -88,9 +84,9 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={[styles.title, { color: colors.text }]}>Reminder:</Text>
-      <View style={styles.checkboxContainer}>
+      <View style={styles.frequencyContainer}>
         {frequencies.map((frequency) => (
           <FrequencyItem
             key={frequency}
@@ -101,7 +97,7 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
           />
         ))}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -109,17 +105,26 @@ export default memo(AddScheduleFrequency);
 
 const styles = StyleSheet.create({
   container: {
+    flexGrow: 1,
     width: "100%",
-    marginBottom: 20,
+    paddingBottom: 20,
   },
   title: {
     fontFamily: FONTS.Medium,
     fontSize: 19,
     marginBottom: 18,
   },
+  frequencyContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+    alignItems: "center",
+  },
   checkboxContainer: {
     flexDirection: "row",
     alignItems: "center",
+    marginRight: 16,
+    marginBottom: 12,
   },
   checkbox: {
     width: 22,
@@ -136,6 +141,5 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    marginRight: 20,
   },
 });

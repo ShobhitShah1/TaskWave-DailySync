@@ -52,6 +52,7 @@ const ContactListModal: FC<ContactListModalProps> = ({
   // const opacity = useSharedValue(0);
   // const translateY = useSharedValue(20);
 
+  console.log("contacts", contacts.length);
   const filteredContacts = useMemo(
     () =>
       contacts.filter((contact) => {

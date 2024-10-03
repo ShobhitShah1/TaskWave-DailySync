@@ -202,10 +202,7 @@ const Home = () => {
   const RenderEmptyView = () => {
     return (
       <Animated.View
-        style={[
-          style.emptyViewContainer,
-          { flexGrow: 1, justifyContent: "center" },
-        ]}
+        style={[style.emptyViewContainer, { justifyContent: "center" }]}
       >
         <Image
           style={style.emptyDateTimeImage}
@@ -346,10 +343,9 @@ const Home = () => {
                 />
               }
               showsVerticalScrollIndicator={false}
-              ListEmptyComponent={RenderEmptyView}
               contentContainerStyle={{ paddingBottom: 93 }}
               keyExtractor={(item, index) => index.toString()}
-              layout={LinearTransition.easing(Easing.linear)}
+              layout={LinearTransition.stiffness(400)}
               entering={FadeIn.easing(Easing.linear)}
               exiting={FadeOut.easing(Easing.linear)}
               renderItem={({ item }) => (
