@@ -4,7 +4,6 @@ import { showMessage } from "react-native-flash-message";
 
 export const handleNotificationPress = (notification: any) => {
   try {
-    console.log("INSIDE HANDEL NOTIFICATION");
     const { type, message, subject, toContact, toMail, attachments } =
       notification as Notification;
     const { SendMessagesModule } = NativeModules;

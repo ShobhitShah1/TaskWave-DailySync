@@ -167,7 +167,6 @@ const History = () => {
   const loadNotifications = async () => {
     try {
       const allNotifications = await getAllNotifications();
-      console.log("allNotifications:", allNotifications?.length);
 
       if (allNotifications && allNotifications.length > 0) {
         // const now = new Date();

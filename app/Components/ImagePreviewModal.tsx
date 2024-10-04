@@ -9,9 +9,9 @@ import {
   ViewToken,
 } from "react-native";
 import ReactNativeModal from "react-native-modal";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import AssetsPath from "../Global/AssetsPath";
 import useThemeColors from "../Theme/useThemeMode";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 interface ImagePreviewModalProps {
   isVisible: boolean;
@@ -28,10 +28,6 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
   images,
   initialIndex = 0,
 }) => {
-  useEffect(() => {
-    console.log("initialIndex:", initialIndex);
-  }, [initialIndex]);
-
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const flatListRef = useRef<FlatList>(null);
   const colors = useThemeColors();

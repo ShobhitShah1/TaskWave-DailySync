@@ -490,6 +490,7 @@ const styles = StyleSheet.create({
   icon: {
     width: 24,
     height: 24,
+    resizeMode: "contain",
   },
   handleStyle: {
     borderTopRightRadius: 20,

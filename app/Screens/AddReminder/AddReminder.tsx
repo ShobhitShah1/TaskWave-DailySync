@@ -70,9 +70,7 @@ const AddReminder = () => {
   }, [id]);
 
   useEffect(() => {
-    request(PERMISSIONS.ANDROID.RECORD_AUDIO)
-      .then((res) => console.log(res))
-      .catch((error) => console.log(error));
+    request(PERMISSIONS.ANDROID.RECORD_AUDIO);
   }, []);
 
   const getExistingNotificationData = async () => {
@@ -127,7 +125,6 @@ const AddReminder = () => {
 
   const onHandelContactClick = async () => {
     try {
-      console.log("contacts.length:", contacts.length);
       // if (contacts.length === 0) {
       setIsContactLoading(true);
 
