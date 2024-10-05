@@ -252,6 +252,9 @@ const BottomTab = () => {
         }, 200);
         break;
     }
+    navigation.navigate("CreateReminder", {
+      notificationType: selectedCategory,
+    });
   }, [checkAppAndNavigate, selectedCategory, navigation]);
 
   return (

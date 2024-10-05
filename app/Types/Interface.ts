@@ -69,6 +69,7 @@ export interface Notification {
   subject: string | undefined;
   attachments: DocumentPickerResponse[];
   scheduleFrequency: FrequencyType | null;
+  audioMemos?: Memo[];
 }
 
 export interface SimplifiedContact {
@@ -104,3 +105,8 @@ export interface ContactListModalProps {
   setSelectedContacts: React.Dispatch<React.SetStateAction<Contact[]>>;
   notificationType: NotificationType;
 }
+
+export type Memo = {
+  uri: string;
+  metering: number[];
+};

@@ -1,8 +1,11 @@
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { Audio } from "expo-av";
+import { Recording } from "expo-av/build/Audio";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
   Image,
   Keyboard,
   Pressable,
@@ -16,8 +19,13 @@ import DocumentPicker, {
 } from "react-native-document-picker";
 import { showMessage } from "react-native-flash-message";
 import { PERMISSIONS, request } from "react-native-permissions";
-import Animated from "react-native-reanimated";
-import RecordAudio from "../../Components/RecordAudio";
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import MemoListItem from "../../Components/MemoListItem";
 import AssetsPath from "../../Global/AssetsPath";
 import useContactPermission from "../../Hooks/useContactPermission";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
@@ -25,7 +33,12 @@ import useDatabase, {
   scheduleNotificationWithNotifee,
 } from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
-import { Contact, Notification, NotificationType } from "../../Types/Interface";
+import {
+  Contact,
+  Notification,
+  NotificationType,
+  Memo,
+} from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 import { generateUniqueFileName } from "../../Utils/generateUniqueFileName";
 import { validateMultipleEmails } from "../../Utils/validateMultipleEmails";
@@ -118,10 +131,95 @@ const AddReminder = () => {
   const [scheduleFrequency, setScheduleFrequency] =
     useState<FrequencyType | null>(null);
 
+  const [recording, setRecording] = useState<Recording | undefined>();
+  const [memos, setMemos] = useState<Memo[]>([]);
+  const [audioMetering, setAudioMetering] = useState<number[]>([]);
+
+  useEffect(() => {
+    console.log("recording:", recording);
+    console.log("audioMetering:", audioMetering);
+    console.log("memos:", memos);
+  }, [recording, audioMetering, memos]);
+
+  const metering = useSharedValue(-100);
+
   const [isLoading, setIsLoading] = useState(false);
   const [isContactLoading, setIsContactLoading] = useState(false);
   const { createViewColor } = useNotificationIconColors(notificationType);
   const { requestPermission, checkPermissionStatus } = useContactPermission();
+
+  const startRecording = useCallback(async () => {
+    try {
+      setAudioMetering([]);
+
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY,
+        undefined,
+        100
+      );
+      setRecording(recording);
+
+      recording.setOnRecordingStatusUpdate((status) => {
+        if (status.metering) {
+          metering.value = status.metering;
+          setAudioMetering((curVal) => [...curVal, status.metering || -100]);
+        }
+      });
+    } catch (err) {
+      console.error("Failed to start recording", err);
+    }
+  }, []);
+
+  const stopRecording = useCallback(async () => {
+    if (!recording) {
+      return;
+    }
+
+    console.log("Stopping recording..");
+    setRecording(undefined);
+    await recording.stopAndUnloadAsync();
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+    });
+    const uri = recording.getURI();
+    console.log("Recording stopped and stored at", uri);
+    if (uri) {
+      metering.value = -100;
+      setMemos((existingMemos) => [
+        { uri, metering: audioMetering },
+        ...existingMemos,
+      ]);
+    }
+  }, [recording, audioMetering]);
+
+  const animatedRedCircle = useAnimatedStyle(() => ({
+    width: withTiming(recording ? "60%" : "100%"),
+    borderRadius: withTiming(recording ? 5 : 35),
+  }));
+
+  const animatedRecordWave = useAnimatedStyle(() => {
+    const size = withTiming(
+      interpolate(metering.value, [-160, -60, 0], [0, 0, -30]),
+      { duration: 100 }
+    );
+    return {
+      top: size,
+      bottom: size,
+      left: size,
+      right: size,
+      backgroundColor: `rgba(255, 45, 0, ${interpolate(
+        metering.value,
+        [-160, -60, -10],
+        [0.7, 0.3, 0.7]
+      )})`,
+    };
+  });
 
   const onHandelContactClick = async () => {
     try {
@@ -510,7 +608,40 @@ const AddReminder = () => {
           )}
 
           {(notificationType === "whatsapp" ||
-            notificationType === "whatsappBusiness") && <RecordAudio />}
+            notificationType === "whatsappBusiness") && (
+            <View style={style.recorderContainer}>
+              <MemoListItem memo={memos?.[0]} themeColor={createViewColor} />
+
+              {/* {memos.length > 0 && (
+                <FlatList
+                  data={memos}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({ item }) => (
+                    <MemoListItem memo={item} themeColor={createViewColor} />
+                  )}
+                  />
+                )} */}
+              {/* <View style={style.recorderFooter}>
+                <View>
+                  <Animated.View
+                    style={[style.recorderRecordWave, animatedRecordWave]}
+                  />
+                  <Pressable
+                    style={style.recorderRecordButton}
+                    onPress={recording ? stopRecording : startRecording}
+                  >
+                    <Animated.View
+                      style={[
+                        style.recorderRedCircle,
+                        { backgroundColor: createViewColor },
+                        animatedRedCircle,
+                      ]}
+                    />
+                  </Pressable>
+                </View>
+              </View> */}
+            </View>
+          )}
 
           <AddScheduleFrequency
             themeColor={createViewColor}

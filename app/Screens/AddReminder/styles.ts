@@ -147,6 +147,40 @@ const styles = () => {
       fontFamily: FONTS.Medium,
       textAlign: "center",
     },
+
+    // recorder
+    recorderContainer: {
+      justifyContent: "center",
+      marginBottom: 20,
+    },
+    recorderFooter: {
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    recorderRecordButton: {
+      width: 35,
+      height: 35,
+      borderRadius: 35,
+
+      borderWidth: 3,
+      borderColor: "gray",
+      padding: 3,
+
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "white",
+    },
+    recorderRecordWave: {
+      position: "absolute",
+      top: -20,
+      bottom: -20,
+      left: -20,
+      right: -20,
+      borderRadius: 1000,
+    },
+    recorderRedCircle: {
+      aspectRatio: 1,
+    },
   });
 };
 

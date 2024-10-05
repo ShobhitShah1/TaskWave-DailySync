@@ -1,9 +1,11 @@
 import { StyleSheet } from "react-native";
 import { FONTS, SIZE } from "../../Global/Theme";
 import useThemeColors from "../../Theme/useThemeMode";
+import { useAppContext } from "../../Contexts/ThemeProvider";
 
 const styles = () => {
   const colors = useThemeColors();
+  const { theme } = useAppContext();
 
   return StyleSheet.create({
     container: {
@@ -80,14 +82,16 @@ const styles = () => {
     emptyListText: {
       fontSize: 17,
       marginTop: 5,
-      color: colors.text,
+      color:
+        theme === "dark"
+          ? "rgba(255, 255, 255, 0.6)"
+          : "rgba(139, 142, 142, 1)",
       fontFamily: FONTS.Medium,
     },
     emptyArrowRocket: {
-      top: 5,
       left: 25,
-      height: 350,
-      marginVertical: 5,
+      height: 340,
+      marginVertical: 10,
       alignSelf: "flex-end",
     },
     listHeaderView: {

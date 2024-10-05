@@ -1,24 +1,27 @@
 import { AVPlaybackStatus, Audio } from "expo-av";
 import { Sound } from "expo-av/build/Audio";
 import { useCallback, useEffect, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, {
-  Extrapolate,
+import { Image, Pressable, StyleSheet, View } from "react-native";
+import {
   Extrapolation,
   interpolate,
   useAnimatedStyle,
 } from "react-native-reanimated";
+import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import { SIZE } from "../Global/Theme";
 import useThemeColors from "../Theme/useThemeMode";
+import { Memo } from "../Types/Interface";
 
-export type Memo = {
-  uri: string;
-  metering: number[];
-};
-
-const MemoListItem = ({ memo }: { memo: Memo }) => {
+const MemoListItem = ({
+  memo,
+  themeColor,
+}: {
+  memo: Memo;
+  themeColor: string;
+}) => {
   const colors = useThemeColors();
+  const { theme } = useAppContext();
 
   const [sound, setSound] = useState<Sound>();
   const [status, setStatus] = useState<AVPlaybackStatus>();
@@ -96,12 +99,12 @@ const MemoListItem = ({ memo }: { memo: Memo }) => {
   let lines = [];
 
   for (let i = 0; i < numLines; i++) {
-    const meteringIndex = Math.floor((i * memo.metering.length) / numLines);
+    const meteringIndex = Math.floor((i * memo?.metering?.length) / numLines);
     const nextMeteringIndex = Math.ceil(
-      ((i + 1) * memo.metering.length) / numLines
+      ((i + 1) * memo?.metering?.length) / numLines
     );
-    const values = memo.metering.slice(meteringIndex, nextMeteringIndex);
-    const average = values.reduce((sum, a) => sum + a, 0) / values.length;
+    const values = memo?.metering?.slice(meteringIndex, nextMeteringIndex);
+    const average = values?.reduce((sum, a) => sum + a, 0) / values?.length;
     // lines.push(memo.metering[meteringIndex]);
     lines.push(average);
   }
@@ -110,38 +113,49 @@ const MemoListItem = ({ memo }: { memo: Memo }) => {
     <View
       style={[
         styles.container,
-        { backgroundColor: colors.reminderCardBackground },
+        { backgroundColor: colors.scheduleReminderCardBackground },
       ]}
     >
-      <Pressable onPress={playSound}>
-        <Image
-          tintColor={"rgba(255, 255, 255, 0.7)"}
-          resizeMode="contain"
-          source={isPlaying ? AssetsPath.ic_play : AssetsPath.ic_play}
-          style={{ width: 20, height: 20 }}
-        />
+      <Pressable disabled={lines?.length !== 0} onPress={playSound}>
+        {lines?.length !== 0 && (
+          <Image
+            tintColor={
+              theme === "dark"
+                ? "rgba(255, 255, 255, 0.7)"
+                : "rgba(91, 87, 87, 0.7)"
+            }
+            resizeMode="contain"
+            source={isPlaying ? AssetsPath.ic_play : AssetsPath.ic_play}
+            style={{ width: 20, height: 20 }}
+          />
+        )}
       </Pressable>
 
       <View style={styles.playbackContainer}>
         <View style={styles.wave}>
-          {lines.map((db, index) => (
-            <View
-              key={index}
-              style={[
-                styles.waveLine,
-                {
-                  height: interpolate(
-                    db,
-                    [-60, 0],
-                    [5, 50],
-                    Extrapolation.CLAMP
-                  ),
-                  backgroundColor:
-                    progress > index / lines.length ? "royalblue" : "gainsboro",
-                },
-              ]}
-            />
-          ))}
+          {lines?.length !== 0 &&
+            lines.map((db, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.waveLine,
+                  {
+                    height: interpolate(
+                      db,
+                      [-50, 0],
+                      [5, 40],
+                      Extrapolation.CLAMP
+                    ),
+                    backgroundColor:
+                      progress > index / lines.length
+                        ? themeColor
+                        : theme === "dark"
+                          ? "rgba(255, 255, 255, 0.7)"
+                          : "rgba(91, 87, 87, 0.7)",
+                  },
+                ]}
+              />
+            ))}
         </View>
 
         {/* <Animated.View
@@ -158,16 +172,16 @@ const MemoListItem = ({ memo }: { memo: Memo }) => {
             fontSize: 12,
           }}
         >
-          {formatMillis(position || 0)} / {formatMillis(duration || 0)}
+        {formatMillis(position || 0)} / {formatMillis(duration || 0)}
         </Text> */}
       </View>
 
       <Pressable onPress={playSound}>
         <Image
           resizeMode="contain"
-          // tintColor={}
+          tintColor={themeColor}
           source={AssetsPath.ic_recordMic}
-          style={{ width: 25, height: 25 }}
+          style={{ width: 30, height: 30 }}
         />
       </Pressable>
     </View>
@@ -178,13 +192,12 @@ const styles = StyleSheet.create({
   container: {
     gap: 15,
     padding: 10,
+    height: 60,
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 5,
     alignSelf: "center",
     borderRadius: SIZE.listBorderRadius,
   },
-
   playbackContainer: {
     flex: 1,
     paddingVertical: 20,
@@ -202,7 +215,6 @@ const styles = StyleSheet.create({
     backgroundColor: "royalblue",
     position: "absolute",
   },
-
   wave: {
     flexDirection: "row",
     alignItems: "center",

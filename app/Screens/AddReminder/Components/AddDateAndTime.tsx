@@ -43,7 +43,14 @@ const AddDateAndTime: FC<AddDateAndTimeProps> = ({
             />
             <Text
               numberOfLines={1}
-              style={[styles.valueText, { color: colors.text }]}
+              style={[
+                styles.valueText,
+                {
+                  color: selectedDateAndTime?.date
+                    ? colors.text
+                    : colors.placeholderText,
+                },
+              ]}
             >
               {selectedDateAndTime?.date
                 ? new Date(selectedDateAndTime.date).toLocaleDateString()
@@ -68,7 +75,14 @@ const AddDateAndTime: FC<AddDateAndTimeProps> = ({
             />
             <Text
               numberOfLines={1}
-              style={[styles.valueText, { color: colors.text }]}
+              style={[
+                styles.valueText,
+                {
+                  color: selectedDateAndTime?.time
+                    ? colors.text
+                    : colors.placeholderText,
+                },
+              ]}
             >
               {selectedDateAndTime?.time
                 ? new Date(selectedDateAndTime.time).toLocaleTimeString()

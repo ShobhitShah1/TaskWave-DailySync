@@ -79,6 +79,11 @@ const AddMessage: FC<AddMessageProps> = ({
             style={style.fullScreen}
           >
             <Image
+              tintColor={
+                theme === "dark"
+                  ? "rgba(255, 255, 255, 1)"
+                  : "rgba(173, 175, 176, 1)"
+              }
               source={AssetsPath.ic_fullScreen}
               style={{ width: 15, height: 15 }}
             />
