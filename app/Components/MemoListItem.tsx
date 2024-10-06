@@ -1,190 +1,180 @@
 import { AVPlaybackStatus, Audio } from "expo-av";
 import { Sound } from "expo-av/build/Audio";
-import { useCallback, useEffect, useState } from "react";
-import { Image, Pressable, StyleSheet, View } from "react-native";
-import {
+import React, { useCallback, useEffect, useState } from "react";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, {
   Extrapolation,
   interpolate,
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
-import { SIZE } from "../Global/Theme";
+import { FONTS, SIZE } from "../Global/Theme";
 import useThemeColors from "../Theme/useThemeMode";
 import { Memo } from "../Types/Interface";
 
-const MemoListItem = ({
+const AudioMemoItem = ({
   memo,
   themeColor,
+  renderRightIcon,
 }: {
   memo: Memo;
   themeColor: string;
+  renderRightIcon: React.ReactNode;
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
-
   const [sound, setSound] = useState<Sound>();
   const [status, setStatus] = useState<AVPlaybackStatus>();
 
-  async function loadSound() {
-    const { sound } = await Audio.Sound.createAsync(
-      { uri: memo.uri },
-      { progressUpdateIntervalMillis: 1000 / 60 },
-      onPlaybackStatusUpdate
-    );
-    setSound(sound);
-  }
+  useEffect(() => {
+    const loadSound = async () => {
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: memo.uri },
+        { progressUpdateIntervalMillis: 1000 / 60 },
+        onPlaybackStatusUpdate
+      );
+      setSound(sound);
+    };
+
+    if (memo.uri) {
+      loadSound();
+    }
+
+    return () => {
+      if (sound) {
+        console.log("Unloading Sound");
+        sound.unloadAsync();
+      }
+    };
+  }, [memo]);
 
   const onPlaybackStatusUpdate = useCallback(
     async (newStatus: AVPlaybackStatus) => {
       setStatus(newStatus);
-
-      if (!newStatus.isLoaded || !sound) {
-        return;
-      }
-
-      if (newStatus.didJustFinish) {
-        await sound?.setPositionAsync(0);
+      if (newStatus.isLoaded && sound && newStatus.didJustFinish) {
+        await sound.setPositionAsync(0);
       }
     },
     [sound]
   );
 
-  useEffect(() => {
-    loadSound();
-  }, [memo]);
+  const playSound = async () => {
+    if (!sound) return;
 
-  async function playSound() {
-    if (!sound) {
-      return;
-    }
-    if (status?.isLoaded && status.isPlaying) {
-      await sound.pauseAsync();
-    } else {
-      await sound.replayAsync();
-    }
-  }
-
-  useEffect(() => {
-    return sound
-      ? () => {
-          console.log("Unloading Sound");
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
+    status?.isLoaded && status.isPlaying
+      ? await sound.pauseAsync()
+      : await sound.replayAsync();
+  };
 
   const formatMillis = (millis: number) => {
     const minutes = Math.floor(millis / (1000 * 60));
     const seconds = Math.floor((millis % (1000 * 60)) / 1000);
-
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  const calculateWaveformData = (metering: number[]) => {
+    const numLines = 50;
+    const lines = [];
+    for (let i = 0; i < numLines; i++) {
+      const meteringIndex = Math.floor((i * metering.length) / numLines);
+      const nextMeteringIndex = Math.ceil(
+        ((i + 1) * metering.length) / numLines
+      );
+      const values = metering.slice(meteringIndex, nextMeteringIndex);
+      const average = values.reduce((sum, a) => sum + a, 0) / values.length;
+      lines.push(average);
+    }
+    return lines;
   };
 
   const isPlaying = status?.isLoaded ? status.isPlaying : false;
   const position = status?.isLoaded ? status.positionMillis : 0;
   const duration = status?.isLoaded ? status.durationMillis : 1;
 
-  const progress = position / (duration || 0);
+  const progress = position / (duration || 1);
+  const waveformData = memo.metering
+    ? calculateWaveformData(memo.metering)
+    : [];
 
   const animatedIndicatorStyle = useAnimatedStyle(() => ({
     left: `${progress * 100}%`,
-    // withTiming(`${progress * 100}%`, {
-    //   duration:
-    //     (status?.isLoaded && status.progressUpdateIntervalMillis) || 100,
-    // }),
   }));
 
-  let numLines = 50;
-  let lines = [];
-
-  for (let i = 0; i < numLines; i++) {
-    const meteringIndex = Math.floor((i * memo?.metering?.length) / numLines);
-    const nextMeteringIndex = Math.ceil(
-      ((i + 1) * memo?.metering?.length) / numLines
-    );
-    const values = memo?.metering?.slice(meteringIndex, nextMeteringIndex);
-    const average = values?.reduce((sum, a) => sum + a, 0) / values?.length;
-    // lines.push(memo.metering[meteringIndex]);
-    lines.push(average);
-  }
-
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: colors.scheduleReminderCardBackground },
-      ]}
-    >
-      <Pressable disabled={lines?.length !== 0} onPress={playSound}>
-        {lines?.length !== 0 && (
-          <Image
-            tintColor={
-              theme === "dark"
-                ? "rgba(255, 255, 255, 0.7)"
-                : "rgba(91, 87, 87, 0.7)"
-            }
-            resizeMode="contain"
-            source={isPlaying ? AssetsPath.ic_play : AssetsPath.ic_play}
-            style={{ width: 20, height: 20 }}
-          />
+    <>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: colors.scheduleReminderCardBackground },
+        ]}
+      >
+        {memo.uri && (
+          <Pressable onPress={playSound}>
+            <Image
+              tintColor={
+                theme === "dark"
+                  ? "rgba(255, 255, 255, 0.7)"
+                  : "rgba(91, 87, 87, 0.7)"
+              }
+              resizeMode="contain"
+              source={isPlaying ? AssetsPath.ic_pause : AssetsPath.ic_play}
+              style={{ width: 20, height: 20 }}
+            />
+          </Pressable>
         )}
-      </Pressable>
 
-      <View style={styles.playbackContainer}>
-        <View style={styles.wave}>
-          {lines?.length !== 0 &&
-            lines.map((db, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.waveLine,
-                  {
-                    height: interpolate(
-                      db,
-                      [-50, 0],
-                      [5, 40],
-                      Extrapolation.CLAMP
-                    ),
-                    backgroundColor:
-                      progress > index / lines.length
-                        ? themeColor
-                        : theme === "dark"
-                          ? "rgba(255, 255, 255, 0.7)"
-                          : "rgba(91, 87, 87, 0.7)",
-                  },
-                ]}
-              />
-            ))}
+        <View style={styles.playbackContainer}>
+          {memo.uri && (
+            <View style={styles.wave}>
+              {waveformData.map((db, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.waveLine,
+                    {
+                      height: interpolate(
+                        db,
+                        [-50, 0],
+                        [5, 40],
+                        Extrapolation.CLAMP
+                      ),
+                      backgroundColor:
+                        progress > index / waveformData.length
+                          ? themeColor
+                          : theme === "dark"
+                            ? "rgba(255, 255, 255, 0.7)"
+                            : "rgba(91, 87, 87, 0.7)",
+                    },
+                  ]}
+                />
+              ))}
+            </View>
+          )}
+          {memo.uri && (
+            <Animated.View
+              style={[
+                styles.playbackIndicator,
+                { backgroundColor: themeColor },
+                animatedIndicatorStyle,
+              ]}
+            />
+          )}
         </View>
-
-        {/* <Animated.View
-          style={[styles.playbackIndicator, animatedIndicatorStyle]}
-        /> */}
-
-        {/* <Text
-          style={{
-            position: "absolute",
-            right: 0,
-            bottom: 0,
-            color: "gray",
-            fontFamily: "Inter",
-            fontSize: 12,
-          }}
-        >
-        {formatMillis(position || 0)} / {formatMillis(duration || 0)}
-        </Text> */}
+        <View>{renderRightIcon}</View>
       </View>
-
-      <Pressable onPress={playSound}>
-        <Image
-          resizeMode="contain"
-          tintColor={themeColor}
-          source={AssetsPath.ic_recordMic}
-          style={{ width: 30, height: 30 }}
-        />
-      </Pressable>
-    </View>
+      <Text
+        style={{
+          marginTop: 10,
+          fontFamily: FONTS.Medium,
+          textAlign: "right",
+          color: colors.text,
+          fontSize: 12,
+        }}
+      >
+        {formatMillis(position || 0)} / {formatMillis(duration || 0)}
+      </Text>
+    </>
   );
 };
 
@@ -212,7 +202,6 @@ const styles = StyleSheet.create({
     width: 10,
     aspectRatio: 1,
     borderRadius: 10,
-    backgroundColor: "royalblue",
     position: "absolute",
   },
   wave: {
@@ -228,4 +217,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MemoListItem;
+export default AudioMemoItem;

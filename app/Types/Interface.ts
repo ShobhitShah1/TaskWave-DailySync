@@ -69,7 +69,7 @@ export interface Notification {
   subject: string | undefined;
   attachments: DocumentPickerResponse[];
   scheduleFrequency: FrequencyType | null;
-  audioMemos?: Memo[];
+  memo?: Memo[];
 }
 
 export interface SimplifiedContact {

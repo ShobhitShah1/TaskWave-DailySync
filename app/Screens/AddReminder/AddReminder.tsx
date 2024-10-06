@@ -5,7 +5,6 @@ import { Recording } from "expo-av/build/Audio";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  FlatList,
   Image,
   Keyboard,
   Pressable,
@@ -25,7 +24,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import MemoListItem from "../../Components/MemoListItem";
+import AudioMemoItem from "../../Components/MemoListItem";
 import AssetsPath from "../../Global/AssetsPath";
 import useContactPermission from "../../Hooks/useContactPermission";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
@@ -35,9 +34,9 @@ import useDatabase, {
 import useThemeColors from "../../Theme/useThemeMode";
 import {
   Contact,
+  Memo,
   Notification,
   NotificationType,
-  Memo,
 } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 import { generateUniqueFileName } from "../../Utils/generateUniqueFileName";
@@ -199,25 +198,31 @@ const AddReminder = () => {
   }, [recording, audioMetering]);
 
   const animatedRedCircle = useAnimatedStyle(() => ({
-    width: withTiming(recording ? "60%" : "100%"),
-    borderRadius: withTiming(recording ? 5 : 35),
+    borderWidth: withTiming(recording ? 3 : 0, { duration: 100 }),
+    borderColor: withTiming(recording ? createViewColor : "transparent", {
+      duration: 100,
+    }),
   }));
 
   const animatedRecordWave = useAnimatedStyle(() => {
     const size = withTiming(
-      interpolate(metering.value, [-160, -60, 0], [0, 0, -30]),
-      { duration: 100 }
+      recording ? interpolate(metering.value, [-160, -60, 0], [0, 0, -30]) : 0,
+      { duration: 300 }
     );
+
+    const opacity = withTiming(recording ? 1 : 0, { duration: 300 });
+
     return {
       top: size,
       bottom: size,
       left: size,
       right: size,
-      backgroundColor: `rgba(255, 45, 0, ${interpolate(
+      backgroundColor: `rgba(34, 200, 66, ${interpolate(
         metering.value,
         [-160, -60, -10],
         [0.7, 0.3, 0.7]
       )})`,
+      opacity,
     };
   });
 
@@ -610,36 +615,34 @@ const AddReminder = () => {
           {(notificationType === "whatsapp" ||
             notificationType === "whatsappBusiness") && (
             <View style={style.recorderContainer}>
-              <MemoListItem memo={memos?.[0]} themeColor={createViewColor} />
+              <AudioMemoItem
+                memo={memos?.[0] || []}
+                themeColor={createViewColor}
+                renderRightIcon={
+                  <View>
+                    {recording && (
+                      <Animated.View
+                        style={[style.recorderRecordWave, animatedRecordWave]}
+                      />
+                    )}
 
-              {/* {memos.length > 0 && (
-                <FlatList
-                  data={memos}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item }) => (
-                    <MemoListItem memo={item} themeColor={createViewColor} />
-                  )}
-                  />
-                )} */}
-              {/* <View style={style.recorderFooter}>
-                <View>
-                  <Animated.View
-                    style={[style.recorderRecordWave, animatedRecordWave]}
-                  />
-                  <Pressable
-                    style={style.recorderRecordButton}
-                    onPress={recording ? stopRecording : startRecording}
-                  >
-                    <Animated.View
-                      style={[
-                        style.recorderRedCircle,
-                        { backgroundColor: createViewColor },
-                        animatedRedCircle,
-                      ]}
-                    />
-                  </Pressable>
-                </View>
-              </View> */}
+                    <Pressable
+                      style={style.recorderRecordButton}
+                      onPress={recording ? stopRecording : startRecording}
+                    >
+                      <Animated.Image
+                        resizeMode="contain"
+                        tintColor={createViewColor}
+                        source={AssetsPath.ic_recordMic}
+                        style={[
+                          { width: "100%", height: "100%" },
+                          // animatedRedCircle,
+                        ]}
+                      />
+                    </Pressable>
+                  </View>
+                }
+              />
             </View>
           )}
 

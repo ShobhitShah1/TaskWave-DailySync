@@ -8,12 +8,14 @@ const styles = () => {
   return StyleSheet.create({
     container: {
       flex: 1,
+      overflow: "visible",
       backgroundColor: colors.background,
     },
     contentContainer: {
       flex: 1,
       alignSelf: "center",
       marginVertical: 10,
+      overflow: "visible",
       width: SIZE.appContainWidth,
     },
     headerContainer: {
@@ -152,6 +154,7 @@ const styles = () => {
     recorderContainer: {
       justifyContent: "center",
       marginBottom: 20,
+      overflow: "visible",
     },
     recorderFooter: {
       alignItems: "center",
@@ -160,15 +163,10 @@ const styles = () => {
     recorderRecordButton: {
       width: 35,
       height: 35,
-      borderRadius: 35,
-
-      borderWidth: 3,
-      borderColor: "gray",
       padding: 3,
-
+      borderRadius: 35,
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: "white",
     },
     recorderRecordWave: {
       position: "absolute",
