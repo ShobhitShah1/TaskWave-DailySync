@@ -1,4 +1,3 @@
-//* Icons
 const ic_fillHome = require("../../assets/Icons/ic_fillHome.png");
 const ic_unFillHistory = require("../../assets/Icons/ic_unFillHistory.png");
 const ic_unFillNotification = require("../../assets/Icons/ic_unFillNotification.png");
@@ -51,14 +50,13 @@ const ic_pause = require("../../assets/Icons/ic_pause.png");
 const ic_appLogo = require("../../assets/Icons/ic_appLogo.png");
 const ic_delete = require("../../assets/Icons/ic_delete.png");
 
-//* Images
+// Images
 const ob_Email = require("../../assets/Images/ob_Email.png");
 const ob_TextMessage = require("../../assets/Images/ob_TextMessage.png");
 const ob_Whatsapp = require("../../assets/Images/ob_Whatsapp.png");
 const ob_WhatsappBusiness = require("../../assets/Images/ob_WhatsappBusiness.png");
 
 export default {
-  //* Icons
   ic_fillHome,
   ic_unFillHistory,
   ic_unFillNotification,
@@ -102,7 +100,7 @@ export default {
   ic_play,
   ic_pause,
 
-  //* Images
+  // Images
   ob_Email,
   ob_TextMessage,
   ob_Whatsapp,
