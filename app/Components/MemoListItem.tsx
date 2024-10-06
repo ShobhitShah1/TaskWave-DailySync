@@ -163,17 +163,19 @@ const AudioMemoItem = ({
         </View>
         <View>{renderRightIcon}</View>
       </View>
-      <Text
-        style={{
-          marginTop: 10,
-          fontFamily: FONTS.Medium,
-          textAlign: "right",
-          color: colors.text,
-          fontSize: 12,
-        }}
-      >
-        {formatMillis(position || 0)} / {formatMillis(duration || 0)}
-      </Text>
+      {memo.uri && (
+        <Text
+          style={{
+            marginTop: 10,
+            fontFamily: FONTS.Medium,
+            textAlign: "right",
+            color: colors.text,
+            fontSize: 12,
+          }}
+        >
+          {formatMillis(position || 0)} / {formatMillis(duration || 0)}
+        </Text>
+      )}
     </>
   );
 };
