@@ -425,7 +425,7 @@ const styles = () => {
       shadowOpacity: 0.3,
       shadowRadius: 3.84,
       justifyContent: "space-around",
-      backgroundColor: colors.bottomTab,
+      backgroundColor: colors.scheduleReminderCardBackground,
       shadowOffset: { width: 0, height: 2 },
     },
     tabButton: {

@@ -9,14 +9,8 @@ import {
   Text,
   View,
 } from "react-native";
-import AssetsPath from "../../Global/AssetsPath";
-import { FONTS, SIZE } from "../../Global/Theme";
-import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
-import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
-import useThemeColors from "../../Theme/useThemeMode";
-import { Notification } from "../../Types/Interface";
-import { formatNotificationType } from "../../Utils/formatNotificationType";
-import { formatDate, formatTime } from "../AddReminder/ReminderScheduled";
+import { DocumentPickerResponse } from "react-native-document-picker";
+import { showMessage } from "react-native-flash-message";
 import Animated, {
   Easing,
   FadeIn,
@@ -26,18 +20,23 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { DocumentPickerResponse } from "react-native-document-picker";
-import useReminder from "../../Hooks/useReminder";
 import ImagePreviewModal from "../../Components/ImagePreviewModal";
-import { BlurView } from "expo-blur";
-import { showMessage } from "react-native-flash-message";
+import AssetsPath from "../../Global/AssetsPath";
+import { FONTS, SIZE } from "../../Global/Theme";
+import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
+import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
+import useReminder from "../../Hooks/useReminder";
+import useThemeColors from "../../Theme/useThemeMode";
+import { Notification } from "../../Types/Interface";
+import { formatNotificationType } from "../../Utils/formatNotificationType";
+import { formatDate, formatTime } from "../AddReminder/ReminderScheduled";
 
 type NotificationProps = {
   params: { notificationData: Notification };
 };
 
 const ReminderPreview = () => {
-  let imageIndexCounter = 0; // Counter to track only image indices starting from 0
+  let imageIndexCounter = 0;
   const style = styles();
   const navigation = useNavigation();
   const colors = useThemeColors();

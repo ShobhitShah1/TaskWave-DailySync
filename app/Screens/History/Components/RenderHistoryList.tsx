@@ -9,7 +9,6 @@ import useNotificationIconColors from "../../../Hooks/useNotificationIconColors"
 import useThemeColors from "../../../Theme/useThemeMode";
 import { Notification } from "../../../Types/Interface";
 import { getNotificationIcon } from "../../../Utils/getNotificationIcon";
-import { Marquee } from "@animatereactnative/marquee";
 import { formatDate, formatTime } from "../../AddReminder/ReminderScheduled";
 
 export interface ReminderCardProps {

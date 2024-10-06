@@ -7,7 +7,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import React, { memo, useCallback, useMemo, useRef, useState } from "react";
+import React, { memo, useCallback, useRef, useState } from "react";
 import {
   Animated,
   FlatList,
@@ -19,10 +19,10 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  ToastAndroid,
   View,
 } from "react-native";
 import { CurvedBottomBar } from "react-native-curved-bottom-bar";
+import { showMessage } from "react-native-flash-message";
 import LinearGradient from "react-native-linear-gradient";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
@@ -37,8 +37,6 @@ import useThemeColors from "../Theme/useThemeMode";
 import { NotificationType } from "../Types/Interface";
 import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
-import { showMessage } from "react-native-flash-message";
-import useNotificationIconColors from "../Hooks/useNotificationIconColors";
 
 interface RenderTabBarProps {
   routeName: string;
@@ -252,9 +250,6 @@ const BottomTab = () => {
         }, 200);
         break;
     }
-    navigation.navigate("CreateReminder", {
-      notificationType: selectedCategory,
-    });
   }, [checkAppAndNavigate, selectedCategory, navigation]);
 
   return (
