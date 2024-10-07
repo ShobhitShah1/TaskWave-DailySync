@@ -134,12 +134,6 @@ const AddReminder = () => {
   const [memos, setMemos] = useState<Memo[]>([]);
   const [audioMetering, setAudioMetering] = useState<number[]>([]);
 
-  useEffect(() => {
-    console.log("recording:", recording);
-    console.log("audioMetering:", audioMetering);
-    console.log("memos:", memos);
-  }, [recording, audioMetering, memos]);
-
   const metering = useSharedValue(-100);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -498,7 +492,7 @@ const AddReminder = () => {
         } else {
           notificationScheduleId =
             await scheduleNotificationWithNotifee(notificationData);
-
+          console.log("notificationScheduleId: " + notificationScheduleId);
           if (notificationScheduleId?.trim()) {
             const data = {
               ...notificationData,

@@ -48,10 +48,14 @@ const FrequencyItem: FC<FrequencyItemProps> = ({
       isSelected ? themeColor : "transparent",
       { duration: 300 }
     );
-  }, [isSelected]);
+  }, [isSelected, scheduleFrequency]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     backgroundColor: backgroundColor.value,
+  }));
+
+  const opacity = useAnimatedStyle(() => ({
+    opacity: withTiming(isSelected ? 1 : 0, { duration: 300 }),
   }));
 
   return (
@@ -62,7 +66,7 @@ const FrequencyItem: FC<FrequencyItemProps> = ({
       <Animated.View
         style={[styles.checkbox, { borderColor: themeColor }, animatedStyle]}
       >
-        {isSelected && <Text style={styles.checkmark}>✓</Text>}
+        <Animated.Text style={[styles.checkmark, opacity]}>✓</Animated.Text>
       </Animated.View>
       <Text style={[styles.label, { color: useThemeColors().text }]}>
         {frequency}
@@ -79,8 +83,9 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
   const colors = useThemeColors();
 
   const toggleFrequency = (frequency: string) => {
+    console.log("frequency", frequency);
     Keyboard.dismiss();
-    setScheduleFrequency(frequency);
+    setScheduleFrequency(frequency === scheduleFrequency ? "" : frequency);
   };
 
   return (
@@ -89,7 +94,6 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
       <View style={styles.frequencyContainer}>
         {frequencies.map((frequency) => (
           <FrequencyItem
-            key={frequency}
             frequency={frequency}
             themeColor={themeColor}
             scheduleFrequency={scheduleFrequency}

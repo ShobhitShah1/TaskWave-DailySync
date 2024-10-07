@@ -22,19 +22,6 @@ import RenderContactList from "./RenderContactList";
 
 const { height } = Dimensions.get("window");
 
-const funMessages = [
-  "Rounding up your stellar contacts... 🌟",
-  "Polishing those digits to perfection... ✨",
-  "Alphabetizing with flair and panache... 🎩",
-  "Curating your social galaxy... 🌌",
-  "Decoding contact hieroglyphics... 🔍",
-  "Preparing your VIP list... 🎭",
-  "Organizing your digital tribe... 🏞️",
-  "Summoning your contact wizards... 🧙‍♂️",
-  "Dusting off the phonebook... 📚",
-  "Tuning up the contact symphony... 🎶",
-];
-
 const ContactListModal: FC<ContactListModalProps> = ({
   isVisible,
   onClose,
@@ -47,12 +34,7 @@ const ContactListModal: FC<ContactListModalProps> = ({
   const style = styles();
   const colors = useThemeColors();
   const [searchText, setSearchText] = useState("");
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
-  // const opacity = useSharedValue(0);
-  // const translateY = useSharedValue(20);
-
-  console.log("contacts", contacts.length);
   const filteredContacts = useMemo(
     () =>
       contacts.filter((contact) => {
@@ -95,43 +77,6 @@ const ContactListModal: FC<ContactListModalProps> = ({
     },
     [notificationType, setSelectedContacts]
   );
-
-  // const animatedStyle = useAnimatedStyle(() => {
-  //   return {
-  //     opacity: opacity.value,
-  //     transform: [{ translateY: translateY.value }],
-  //   };
-  // });
-
-  // const cycleMessage = useCallback(() => {
-  //   setCurrentMessageIndex((prevIndex) => (prevIndex + 1) % funMessages.length);
-  // }, []);
-
-  // const animateMessage = useCallback(() => {
-  //   const duration = 500;
-  //   const easing = Easing.bezier(0.25, 0.1, 0.25, 1);
-
-  //   translateY.value = withSequence(
-  //     withTiming(0, { duration: duration / 2, easing }),
-  //     withTiming(10, { duration: duration / 2, easing })
-  //   );
-
-  //   opacity.value = withSequence(
-  //     withTiming(0, { duration: duration / 2, easing }),
-  //     withDelay(duration / 2, withTiming(1, { duration: duration / 2, easing }))
-  //   );
-
-  //   setTimeout(() => {
-  //     runOnJS(animateMessage)();
-  //     runOnJS(cycleMessage)();
-  //   }, 3000);
-  // }, [opacity, translateY, cycleMessage]);
-
-  // useEffect(() => {
-  //   if (isContactLoading) {
-  //     animateMessage();
-  //   }
-  // }, [isContactLoading, animateMessage]);
 
   return (
     <Modal
@@ -178,19 +123,6 @@ const ContactListModal: FC<ContactListModalProps> = ({
             >
               Loading contacts...
             </Text>
-            {/* <Animated.View style={[style.loadingContent, animatedStyle]}>
-              <Text style={[style.loadingEmoji, { color: colors.text }]}>
-                {funMessages[currentMessageIndex].split(" ").pop()}
-              </Text>
-              <Animated.Text
-                style={[style.loadingText, { color: colors.text }]}
-              >
-                {funMessages[currentMessageIndex]
-                  .split(" ")
-                  .slice(0, -1)
-                  .join(" ")}
-              </Animated.Text>
-            </Animated.View> */}
           </Animated.View>
         ) : (
           <FlashList

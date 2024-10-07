@@ -14,6 +14,7 @@ import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useThemeColors from "../../Theme/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import TextString from "../../Global/TextString";
+import LottieView from "lottie-react-native";
 
 type ReminderScheduledProps = {
   params: { themeColor: string; notification: Notification };
@@ -64,9 +65,7 @@ const ReminderScheduled = () => {
   const { width } = useWindowDimensions();
   const { params } = useRoute<RouteProp<ReminderScheduledProps, "params">>();
 
-  const { formattedTimeLeft, timeLeft } = useCountdownTimer(
-    params?.notification?.date
-  );
+  const { formattedTimeLeft } = useCountdownTimer(params?.notification?.date);
 
   const themeColor = useMemo(() => {
     return params?.themeColor;
@@ -81,73 +80,105 @@ const ReminderScheduled = () => {
   return (
     <View style={style.container}>
       <View style={style.contentWrapper}>
-        <View style={style.timeContainer}>
-          <Text style={[style.timeText, { color: themeColor }]}>
-            {hours.split("Hrs")[0]}
-            <Text style={[style.timeLabelText, { color: colors.text }]}>
-              Hrs
-            </Text>
-          </Text>
-          <Text style={[style.timeSeparator, { color: themeColor }]}> : </Text>
-          <Text style={[style.timeText, { color: themeColor }]}>
-            {minutes.split("Min")[0]}
-            <Text style={[style.timeLabelText, { color: colors.text }]}>
-              Min
-            </Text>
-          </Text>
-          <Text style={[style.timeSeparator, { color: themeColor }]}> : </Text>
-          <Text style={[style.timeText, { color: themeColor }]}>
-            {seconds.split("Sec")[0]}
-            <Text style={[style.timeLabelText, { color: colors.text }]}>
-              Sec
-            </Text>
-          </Text>
+        <View
+          style={{ height: "60%", width: "100%", justifyContent: "flex-end" }}
+        >
+          <LottieView
+            source={AssetsPath.success_animation}
+            style={{ width: "100%", height: "80%" }}
+            autoPlay
+            loop
+          />
         </View>
 
-        <View style={style.notificationWrapper}>
-          <View
-            style={[style.card, { backgroundColor: colors.previewBackground }]}
-          >
-            <View style={style.cardHeader}>
-              <View style={style.userInfo}>
-                <Image
-                  resizeMode="cover"
-                  source={AssetsPath.ic_appLogo}
-                  style={style.userImage}
-                />
-                <Text style={[style.userName, { color: colors.text }]}>
-                  {TextString.TaskWave}
+        <View
+          style={{
+            height: "40%",
+            alignItems: "center",
+            width: "100%",
+            justifyContent: "flex-end",
+          }}
+        >
+          <View style={style.timeContainer}>
+            <Text style={[style.timeText, { color: themeColor }]}>
+              {hours.split("Hrs")[0]}
+              <Text style={[style.timeLabelText, { color: colors.text }]}>
+                Hrs
+              </Text>
+            </Text>
+            <Text style={[style.timeSeparator, { color: themeColor }]}>
+              {" "}
+              :{" "}
+            </Text>
+            <Text style={[style.timeText, { color: themeColor }]}>
+              {minutes.split("Min")[0]}
+              <Text style={[style.timeLabelText, { color: colors.text }]}>
+                Min
+              </Text>
+            </Text>
+            <Text style={[style.timeSeparator, { color: themeColor }]}>
+              {" "}
+              :{" "}
+            </Text>
+            <Text style={[style.timeText, { color: themeColor }]}>
+              {seconds.split("Sec")[0]}
+              <Text style={[style.timeLabelText, { color: colors.text }]}>
+                Sec
+              </Text>
+            </Text>
+          </View>
+
+          <View style={style.notificationWrapper}>
+            <View
+              style={[
+                style.card,
+                { backgroundColor: colors.previewBackground },
+              ]}
+            >
+              <View style={style.cardHeader}>
+                <View style={style.userInfo}>
+                  <Image
+                    resizeMode="cover"
+                    source={AssetsPath.ic_appLogo}
+                    style={style.userImage}
+                  />
+                  <Text style={[style.userName, { color: colors.text }]}>
+                    {TextString.TaskWave}
+                  </Text>
+                </View>
+                <Text
+                  style={[style.timeAgo, { color: colors.placeholderText }]}
+                >
+                  12m ago
                 </Text>
               </View>
-              <Text style={[style.timeAgo, { color: colors.placeholderText }]}>
-                12m ago
+
+              <Text
+                style={[
+                  style.notificationText,
+                  { color: colors.placeholderText },
+                ]}
+                numberOfLines={3}
+              >
+                {notificationData.message || "No Message Available"}
               </Text>
+
+              <Image
+                resizeMode="contain"
+                source={AssetsPath.ic_hand}
+                style={[style.handImage, { left: width / 2.2 }]}
+              />
             </View>
 
             <Text
-              style={[
-                style.notificationText,
-                { color: colors.placeholderText },
-              ]}
-              numberOfLines={20}
+              style={[style.receivedNotificationText, { color: colors.text }]}
             >
-              {notificationData.message || "No Message Available"}
+              {`You have received a notification at ${formatDateTime(notificationData.date)}, tap on it.`}
             </Text>
-
-            <Image
-              resizeMode="contain"
-              source={AssetsPath.ic_hand}
-              style={[style.handImage, { left: width / 2.2 }]}
-            />
           </View>
-
-          <Text
-            style={[style.receivedNotificationText, { color: colors.text }]}
-          >
-            {`You have received a notification at ${formatDateTime(notificationData.date)}, tap on it.`}
-          </Text>
         </View>
       </View>
+
       <Pressable
         onPress={() => navigation.navigate("Home")}
         style={style.contactDoneButtonView}

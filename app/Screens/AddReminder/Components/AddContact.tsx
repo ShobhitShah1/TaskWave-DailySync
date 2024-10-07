@@ -105,13 +105,13 @@ const styles = () => {
     },
     contactName: {
       color: colors.white,
-      fontFamily: FONTS.Regular,
-      fontSize: 16,
+      fontFamily: FONTS.Medium,
+      fontSize: 15.5,
       marginRight: 5,
     },
     removeIcon: {
-      color: colors.white,
       fontSize: 14,
+      color: colors.white,
       fontFamily: FONTS.Bold,
     },
   });

@@ -56,6 +56,9 @@ const ob_TextMessage = require("../../assets/Images/ob_TextMessage.png");
 const ob_Whatsapp = require("../../assets/Images/ob_Whatsapp.png");
 const ob_WhatsappBusiness = require("../../assets/Images/ob_WhatsappBusiness.png");
 
+// Animation
+const success_animation = require("../../assets/Animations/success_animation.json");
+
 export default {
   ic_fillHome,
   ic_unFillHistory,
@@ -105,4 +108,7 @@ export default {
   ob_TextMessage,
   ob_Whatsapp,
   ob_WhatsappBusiness,
+
+  // Animation
+  success_animation,
 };

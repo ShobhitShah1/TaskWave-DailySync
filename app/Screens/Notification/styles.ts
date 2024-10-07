@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import useThemeColors from "../../Theme/useThemeMode";
+import { FONTS } from "../../Global/Theme";
 
 const styles = () => {
   const colors = useThemeColors();
@@ -14,6 +15,7 @@ const styles = () => {
     text: {
       color: colors.text,
       fontSize: 18,
+      fontFamily: FONTS.Medium,
     },
     button: {
       backgroundColor: colors.primary,
