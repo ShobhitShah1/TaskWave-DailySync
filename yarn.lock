@@ -1296,10 +1296,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@notifee/react-native@^9.0.2":
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/@notifee/react-native/-/react-native-9.1.0.tgz#bf4e02655db349bfdc4c06ce3bcdcdf450650d50"
-  integrity sha512-Jq/ze2PBDEIMOpy4JQpJkTefZEe2NHm07ud97gyLUWQw8iyR+B8HhjsKhc50U8PG196QoZXmOorEF9MmO8laBA==
+"@notifee/react-native@^9.1.1":
+  version "9.1.1"
+  resolved "https://registry.yarnpkg.com/@notifee/react-native/-/react-native-9.1.1.tgz#81f81570442c27fcd7f968692912f39d8d1bec54"
+  integrity sha512-d9UdnT7TIJKal+RSCcl81beveWXjBpNZZ+8rqzcfd8DcAlkl7WGvvIAhUfkb83aOfc/zHpZJrJwu4fxwI6GCCg==
 
 "@npmcli/fs@^3.1.0":
   version "3.1.1"
@@ -5754,10 +5754,10 @@ react-native-calendars@^1.1306.0:
   optionalDependencies:
     moment "^2.29.4"
 
-react-native-contacts@^7.0.8:
-  version "7.0.8"
-  resolved "https://registry.yarnpkg.com/react-native-contacts/-/react-native-contacts-7.0.8.tgz#485ba7a77653b30205c76f96494808d07b8e57b9"
-  integrity sha512-Zfkdpw1uQVRb8v1m+ogknzjyfEs9k63o2sPAYvxZ8ZJff31D45G8+uZb6VcM4tIe3ELH9EDvh93nd515kFvRYQ==
+react-native-contacts@^8.0.1:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/react-native-contacts/-/react-native-contacts-8.0.1.tgz#a72328986068fe4795b3e16a81165f2758e46c2d"
+  integrity sha512-UWjtWaBUcaVoTNveVbH8v+q5iWNPm1F881gTDBsxelwZeSBD6KCa1MKynJnCNO1dOaIlMbZx+oF6Cc/44UrA5A==
 
 react-native-curved-bottom-bar@^3.3.1:
   version "3.3.1"
