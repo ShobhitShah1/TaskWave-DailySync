@@ -21,6 +21,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import ImagePreviewModal from "../../Components/ImagePreviewModal";
+import AudioMemoItem from "../../Components/MemoListItem";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
@@ -326,14 +327,17 @@ const ReminderPreview = () => {
             )}
           </View>
 
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              marginTop: 15,
-              gap: 10,
-            }}
-          >
+          {notificationData?.memo && notificationData?.memo?.length !== 0 && (
+            <View style={style.recorderContainer}>
+              <AudioMemoItem
+                memo={notificationData?.memo?.[0]}
+                themeColor={createViewColor}
+                renderRightIcon={<></>}
+              />
+            </View>
+          )}
+
+          <View style={style.attachmentContainer}>
             {notificationData?.attachments?.length !== 0 && (
               <ScrollView
                 horizontal
@@ -347,7 +351,7 @@ const ReminderPreview = () => {
             )}
           </View>
 
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+          <View style={style.contactOrMailContainer}>
             {notificationData?.type === "gmail"
               ? notificationData?.toMail?.map((item, index) =>
                   item.split(",").map((email, emailIndex) => (
@@ -509,6 +513,11 @@ const styles = () => {
       lineHeight: 28,
       fontFamily: FONTS.Medium,
     },
+    contactOrMailContainer: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+    },
     toContainer: {
       padding: 10,
       backgroundColor: colors.previewBackground,
@@ -519,7 +528,12 @@ const styles = () => {
       fontFamily: FONTS.Medium,
       fontSize: 16,
     },
-
+    attachmentContainer: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      marginTop: 15,
+      gap: 10,
+    },
     previewContainer: {
       flexDirection: "row",
       flexWrap: "wrap",
@@ -561,7 +575,6 @@ const styles = () => {
       alignSelf: "center",
       justifyContent: "space-between",
       paddingVertical: 15,
-      // backgroundColor: colors.background,
     },
     deleteButton: {
       width: "46%",
@@ -594,6 +607,11 @@ const styles = () => {
       color: "white",
       fontSize: 19,
       fontFamily: FONTS.Medium,
+    },
+    recorderContainer: {
+      marginTop: 15,
+      justifyContent: "center",
+      overflow: "visible",
     },
   });
 };

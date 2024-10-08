@@ -153,7 +153,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
             <View style={[styles.separator, { borderColor: typeColor }]} />
             <View style={styles.countdownContainer}>
               <Image
-                tintColor={typeColor}
+                tintColor={colors.text}
                 source={AssetsPath.ic_timerClock}
                 style={styles.timerIcon}
               />

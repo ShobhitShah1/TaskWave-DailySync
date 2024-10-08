@@ -167,21 +167,21 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
             <View style={styles.actionsContainer}>
               <Pressable onPress={onCardPress}>
                 <Image
-                  tintColor={typeColor}
+                  tintColor={theme === "dark" ? colors.white : typeColor}
                   source={AssetsPath.ic_view}
                   style={styles.actionIcon}
                 />
               </Pressable>
               <Pressable onPress={() => console.log("duplicate")}>
                 <Image
-                  tintColor={typeColor}
+                  tintColor={theme === "dark" ? colors.white : typeColor}
                   source={AssetsPath.ic_duplicate}
                   style={styles.actionIcon}
                 />
               </Pressable>
               <Pressable onPress={onDeletePress}>
                 <Image
-                  tintColor={typeColor}
+                  tintColor={theme === "dark" ? colors.white : typeColor}
                   source={AssetsPath.ic_delete}
                   style={[styles.actionIcon, { height: 17, width: 17 }]}
                 />

@@ -100,7 +100,7 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
           <Pressable onPress={onClose}>
             <Image
               resizeMode="contain"
-              tintColor={colors.sms}
+              tintColor={theme === "light" ? colors.sms : colors.white}
               source={AssetsPath.ic_minimize}
               style={style.fullScreenIcon}
             />
