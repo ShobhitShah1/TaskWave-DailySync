@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { AppState } from "react-native";
 
 interface AppContextProps {
   children: ReactNode;
@@ -26,8 +27,26 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    storeTheme();
+    const unSubscribe = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        console.log("Call Theme");
+        setThemeBasedOnTime();
+        // storeTheme();
+      }
+    });
+
+    return () => unSubscribe.remove();
   }, []);
+
+  const setThemeBasedOnTime = () => {
+    const currentHour = new Date().getHours();
+
+    const currentTheme: Theme =
+      currentHour >= 6 && currentHour < 18 ? "light" : "dark";
+    setTheme(currentTheme);
+
+    storage.set("themeMode", currentTheme);
+  };
 
   const storeTheme = async () => {
     try {

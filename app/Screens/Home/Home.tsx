@@ -301,7 +301,7 @@ const Home = () => {
             onScrollToIndexFailed={() => {}}
             onLayout={scrollToIndex}
             onContentSizeChange={scrollToIndex}
-            contentContainerStyle={{ gap: 22 }}
+            contentContainerStyle={{ gap: 20 }}
             renderItem={({ index, item }) => {
               return (
                 <RenderCalenderView

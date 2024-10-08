@@ -32,8 +32,8 @@ const HomeHeader = ({
 
   const handleToggle = useCallback(
     (state: boolean) => {
-      setIsSwitchOn(state);
-      toggleTheme(state ? "light" : "dark");
+      // setIsSwitchOn(state);
+      // toggleTheme(state ? "light" : "dark");
     },
     [toggleTheme]
   );
