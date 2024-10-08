@@ -1,5 +1,3 @@
-import { useState, useEffect } from "react";
-import * as SQLite from "expo-sqlite";
 import notifee, {
   AlarmType,
   AndroidImportance,
@@ -8,9 +6,10 @@ import notifee, {
   TimestampTrigger,
   TriggerType,
 } from "@notifee/react-native";
-import { Contact, Notification } from "../Types/Interface";
-import { Alert } from "react-native";
+import * as SQLite from "expo-sqlite";
+import { memo, useEffect, useState } from "react";
 import { showMessage } from "react-native-flash-message";
+import { Contact, Notification } from "../Types/Interface";
 
 let CHANNEL_ID = "reminder";
 let CHANNEL_NAME = "Reminder";
@@ -28,6 +27,7 @@ export const scheduleNotificationWithNotifee = async (
       toContact,
       toMail,
       attachments,
+      memo,
     } = notification;
 
     await notifee.requestPermission();
@@ -59,6 +59,7 @@ export const scheduleNotificationWithNotifee = async (
       toContact: JSON.stringify(toContact),
       toMail: JSON.stringify(toMail),
       attachments: JSON.stringify(attachments),
+      memo: JSON.stringify(memo),
     };
 
     const notifeeNotificationId = await notifee.createTriggerNotification(
@@ -113,7 +114,8 @@ const useReminder = () => {
         date TEXT NOT NULL,
         subject TEXT,
         attachments TEXT,
-        scheduleFrequency TEXT
+        scheduleFrequency TEXT,
+        memo TEXT
       );
       CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -140,8 +142,17 @@ const useReminder = () => {
       return null;
     }
 
-    const { type, message, date, toContact, toMail, subject, attachments, id } =
-      notification;
+    const {
+      type,
+      message,
+      date,
+      toContact,
+      toMail,
+      subject,
+      attachments,
+      id,
+      memo,
+    } = notification;
 
     if (!id) {
       showMessage({
@@ -152,8 +163,8 @@ const useReminder = () => {
     }
 
     const insertNotificationSQL = `
-    INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency)
-    VALUES ('${id}', '${type}', '${message.toString()}', '${date.toISOString()}', '${subject}', '${JSON.stringify(attachments)}', '${notification.scheduleFrequency}')
+    INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo)
+    VALUES ('${id}', '${type}', '${message.toString()}', '${date.toISOString()}', '${subject}', '${JSON.stringify(attachments)}', '${notification.scheduleFrequency}', '${JSON.stringify(memo)}')
   `;
 
     let insertContactsSQL = "";
@@ -187,6 +198,7 @@ const useReminder = () => {
       await db.execAsync(transactionSQL);
       return id;
     } catch (error: any) {
+      console.log("error?.message", error?.message);
       showMessage({
         message:
           error?.message ||
@@ -208,8 +220,17 @@ const useReminder = () => {
       return false;
     }
 
-    const { id, type, message, date, toContact, toMail, subject, attachments } =
-      notification;
+    const {
+      id,
+      type,
+      message,
+      date,
+      toContact,
+      toMail,
+      subject,
+      attachments,
+      memo,
+    } = notification;
 
     const channelId = await notifee.createChannel({
       id: CHANNEL_ID,
@@ -232,6 +253,7 @@ const useReminder = () => {
       toContact: JSON.stringify(toContact),
       toMail: JSON.stringify(toMail),
       attachments: JSON.stringify(attachments),
+      memo: JSON.stringify(memo),
     };
 
     try {
@@ -270,7 +292,7 @@ const useReminder = () => {
     UPDATE notifications
     SET type = '${type}', message = '${message.toString()}', date = '${date.toISOString()}',
         subject = '${subject}', attachments = '${JSON.stringify(attachments)}',
-        scheduleFrequency = '${notification.scheduleFrequency}'
+        scheduleFrequency = '${notification.scheduleFrequency}', memo = '${JSON.stringify(memo)}'
     WHERE id = '${id}'
   `;
 
@@ -374,6 +396,7 @@ const useReminder = () => {
             .filter((contact) => contact.number === null)
             .map((contact) => contact.name),
           attachments: JSON.parse(notification.attachments),
+          memo: JSON.parse(notification.memo),
         });
       }
 
@@ -424,6 +447,7 @@ const useReminder = () => {
           .filter((contact) => contact.number === null)
           .map((contact) => contact.name),
         attachments: JSON.parse(notification.attachments),
+        memo: JSON.parse(notification.memo),
       };
 
       return result;

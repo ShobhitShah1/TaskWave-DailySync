@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Image,
   Keyboard,
+  Linking,
   Pressable,
   Text,
   View,
@@ -17,7 +18,7 @@ import DocumentPicker, {
   DocumentPickerResponse,
 } from "react-native-document-picker";
 import { showMessage } from "react-native-flash-message";
-import { PERMISSIONS, request } from "react-native-permissions";
+import { check, PERMISSIONS, request } from "react-native-permissions";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -81,10 +82,6 @@ const AddReminder = () => {
     }
   }, [id]);
 
-  useEffect(() => {
-    request(PERMISSIONS.ANDROID.RECORD_AUDIO);
-  }, []);
-
   const getExistingNotificationData = async () => {
     const response = await getNotificationById(id);
 
@@ -100,6 +97,7 @@ const AddReminder = () => {
       setSelectedDocuments(response?.attachments);
       setContacts(response?.toContact);
       setSelectedContacts(response?.toContact);
+      setMemos(response?.memo || []);
     }
   };
 
@@ -140,6 +138,43 @@ const AddReminder = () => {
   const [isContactLoading, setIsContactLoading] = useState(false);
   const { createViewColor } = useNotificationIconColors(notificationType);
   const { requestPermission, checkPermissionStatus } = useContactPermission();
+
+  const onRecordingPress = async () => {
+    const isPermissionGranted = await check(PERMISSIONS.ANDROID.RECORD_AUDIO);
+
+    if (
+      isPermissionGranted === "blocked" ||
+      isPermissionGranted === "unavailable"
+    ) {
+      showMessage({
+        message:
+          "Permission to record audio is required for audio recording. Please grant permission to continue. Click the here to open the settings.",
+        type: "warning",
+        onPress: () => Linking.openSettings(),
+      });
+      return;
+    }
+
+    if (isPermissionGranted !== "granted") {
+      request(PERMISSIONS.ANDROID.RECORD_AUDIO).then((response) => {
+        if (response === "granted") {
+          handelRecording();
+          return;
+        }
+      });
+      return;
+    }
+
+    handelRecording();
+  };
+
+  const handelRecording = () => {
+    if (recording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
 
   const startRecording = useCallback(async () => {
     try {
@@ -210,6 +245,14 @@ const AddReminder = () => {
         [0.7, 0.3, 0.7]
       )})`,
       opacity,
+    };
+  });
+
+  const animateRecordIconColor = useAnimatedStyle(() => {
+    return {
+      tintColor: withTiming(recording ? colors.white : createViewColor, {
+        duration: 300,
+      }),
     };
   });
 
@@ -466,6 +509,7 @@ const AddReminder = () => {
           toMail: [to],
           attachments: selectedDocuments,
           scheduleFrequency: scheduleFrequency || "",
+          memo: memos || [],
         };
 
         let notificationScheduleId;
@@ -615,15 +659,14 @@ const AddReminder = () => {
 
                     <Pressable
                       style={style.recorderRecordButton}
-                      onPress={recording ? stopRecording : startRecording}
+                      onPress={onRecordingPress}
                     >
                       <Animated.Image
                         resizeMode="contain"
-                        tintColor={createViewColor}
                         source={AssetsPath.ic_recordMic}
                         style={[
                           { width: "100%", height: "100%" },
-                          // animatedRedCircle,
+                          animateRecordIconColor,
                         ]}
                       />
                     </Pressable>
