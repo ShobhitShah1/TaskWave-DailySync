@@ -1468,10 +1468,10 @@
     prompts "^2.4.2"
     semver "^7.5.2"
 
-"@react-native-community/datetimepicker@^8.2.0":
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/datetimepicker/-/datetimepicker-8.2.0.tgz#f62ac4fc12bd527fbbe93934e6c1cfbb7ba570f3"
-  integrity sha512-qrUPhiBvKGuG9Y+vOqsc56RPFcHa1SU2qbAMT0hfGkoFIj3FodE0VuPVrEa8fgy7kcD5NQmkZIKgHOBLV0+hWg==
+"@react-native-community/datetimepicker@8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@react-native-community/datetimepicker/-/datetimepicker-8.0.1.tgz#047f27566fb21b5095fa54f558bffd8ab6472b46"
+  integrity sha512-4BO0t3geMNNw9cIIm9p9FNUzwMXexdzD4pAH0AaUAycs3BS71HLrX8jHbrI7nzq/+8O7cLAXn5Gudte+YpTV8Q==
   dependencies:
     invariant "^2.2.4"
 
@@ -4591,10 +4591,10 @@ loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.4.0:
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
 
-lottie-react-native@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/lottie-react-native/-/lottie-react-native-7.0.0.tgz#045a30432b75ef33ae2f36a67c9fa3b44abebf5a"
-  integrity sha512-RnwacxdB1MKDS/WSX8XFyXw5nxEKF+aLYRzbkQBQY0pZTRF2XYg8zd25D1su1M0TEP0sgWutwN5rweSeCsf8qQ==
+lottie-react-native@6.7.0:
+  version "6.7.0"
+  resolved "https://registry.yarnpkg.com/lottie-react-native/-/lottie-react-native-6.7.0.tgz#ef783af4224dcb4bc88a96de688e13d41104f511"
+  integrity sha512-doiF/36LaKkzo0XkgUIK8egxALNY6jGjCI4szpRuwop15LTW3DFtIA2L3pusNdaH7oM797aSH5UylIJw2k+Hgw==
 
 lru-cache@^10.0.1, lru-cache@^10.2.0:
   version "10.4.3"
@@ -5858,14 +5858,13 @@ react-native-size-scaling@^0.5.1:
   resolved "https://registry.yarnpkg.com/react-native-size-scaling/-/react-native-size-scaling-0.5.1.tgz#a1a7f91905e11fc6bba0a5178dc308aca7a76ec8"
   integrity sha512-OVRox11fjpwUR7DQIPH/4RAhwkqm/r7lKYl5w0dEogFZ3Rz9CK7Bua7oaPLmVP2QnWP0rc0bpgkMc/Rl8ik1yw==
 
-react-native-svg@^15.6.0:
-  version "15.7.1"
-  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-15.7.1.tgz#299bf5ff21fb355a0f4bedd4cb8f9f520725c4fe"
-  integrity sha512-Xc11L4t6/DtmUwrQqHR7S45Qy3cIWpcfGlmEatVeZ9c1N8eAK79heJmGRgCOVrXESrrLEHfP/AYGf0BGyrvV6A==
+react-native-svg@15.2.0:
+  version "15.2.0"
+  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-15.2.0.tgz#9561a6b3bd6b44689f437ba13182afee33bd5557"
+  integrity sha512-R0E6IhcJfVLsL0lRmnUSm72QO+mTqcAOM5Jb8FVGxJqX3NfJMlMP0YyvcajZiaRR8CqQUpEoqrY25eyZb006kw==
   dependencies:
     css-select "^5.1.0"
     css-tree "^1.1.3"
-    warn-once "0.1.1"
 
 react-native-swipe-gestures@^1.0.5:
   version "1.0.5"
@@ -7030,10 +7029,10 @@ typedarray.prototype.slice@^1.0.3:
     typed-array-buffer "^1.0.2"
     typed-array-byte-offset "^1.0.2"
 
-typescript@^5.1.3:
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.6.2.tgz#d1de67b6bef77c41823f822df8f0b3bcff60a5a0"
-  integrity sha512-NW8ByodCSNCwZeghjN3o+JX5OFH0Ojg6sadjEKY4huZ52TqbJTJnDo5+Tw98lSy63NZvi4n+ez5m2u5d4PkZyw==
+typescript@~5.3.3:
+  version "5.3.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.3.3.tgz#b3ce6ba258e72e6305ba66f5c9b452aaee3ffe37"
+  integrity sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==
 
 ua-parser-js@^1.0.35:
   version "1.0.39"
@@ -7198,7 +7197,7 @@ walker@^1.0.7:
   dependencies:
     makeerror "1.0.12"
 
-warn-once@0.1.1, warn-once@^0.1.0:
+warn-once@^0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/warn-once/-/warn-once-0.1.1.tgz#952088f4fb56896e73fd4e6a3767272a3fccce43"
   integrity sha512-VkQZJbO8zVImzYFteBXvBOZEl1qL175WH8VmZcxF2fZAoudNhNDvHi+doCaAEdU2l2vtcIwa2zn0QK5+I1HQ3Q==

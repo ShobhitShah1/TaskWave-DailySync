@@ -174,7 +174,6 @@ const AddReminder = () => {
       return;
     }
 
-    console.log("Stopping recording..");
     setRecording(undefined);
     await recording.stopAndUnloadAsync();
     await Audio.setAudioModeAsync({
@@ -182,6 +181,7 @@ const AddReminder = () => {
     });
     const uri = recording.getURI();
     console.log("Recording stopped and stored at", uri);
+
     if (uri) {
       metering.value = -100;
       setMemos((existingMemos) => [
@@ -190,13 +190,6 @@ const AddReminder = () => {
       ]);
     }
   }, [recording, audioMetering]);
-
-  const animatedRedCircle = useAnimatedStyle(() => ({
-    borderWidth: withTiming(recording ? 3 : 0, { duration: 100 }),
-    borderColor: withTiming(recording ? createViewColor : "transparent", {
-      duration: 100,
-    }),
-  }));
 
   const animatedRecordWave = useAnimatedStyle(() => {
     const size = withTiming(

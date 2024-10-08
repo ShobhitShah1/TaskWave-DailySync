@@ -42,7 +42,7 @@ export const LightThemeColors = {
 };
 
 export const DarkThemeColors = {
-  background: "rgba(48, 51, 52, 1)",
+  background: "rgba(48, 51, 52, 1)", // #303334
   text: "#ffffff",
   grayBackground: "rgba(255, 255, 255, 0.21)",
   black: "#000",
