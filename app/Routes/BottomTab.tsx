@@ -275,7 +275,7 @@ const BottomTab = () => {
         style={[
           styles.bottomBar,
           { display: hideBottomTab ? "none" : undefined },
-          { zIndex: hideBottomTab ? -1 : 1 },
+          { zIndex: hideBottomTab ? -1 : undefined },
         ]}
         height={60}
         circleWidth={50}
