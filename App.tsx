@@ -9,6 +9,7 @@ import { AppProvider } from "./app/Contexts/ThemeProvider";
 import { FONTS } from "./app/Global/Theme";
 import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
 import Routes from "./app/Routes/Routes";
+import Header from "./app/Components/Header";
 
 interface TextWithDefaultProps extends Text {
   defaultProps?: { allowFontScaling?: boolean };

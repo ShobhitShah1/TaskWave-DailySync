@@ -13,12 +13,14 @@ import {
   FlatList,
   Image,
   ImageSourcePropType,
+  LayoutAnimation,
   Linking,
   NativeModules,
   Platform,
   Pressable,
   StyleSheet,
   Text,
+  UIManager,
   View,
 } from "react-native";
 import { CurvedBottomBar } from "react-native-curved-bottom-bar";
@@ -37,6 +39,13 @@ import useThemeColors from "../Theme/useThemeMode";
 import { NotificationType } from "../Types/Interface";
 import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
+
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 interface RenderTabBarProps {
   routeName: string;
@@ -129,7 +138,14 @@ const BottomTab = () => {
   const handleTabChange = useCallback(
     (selectedTab: string) => {
       const shouldHide = selectedTab === "History" || selectedTab === "Setting";
+
       if (hideBottomTab !== shouldHide) {
+        LayoutAnimation.configureNext({
+          duration: 500,
+          create: { type: "easeInEaseOut", property: "opacity" },
+          update: { type: "spring", springDamping: 0.4 },
+          delete: { type: "easeInEaseOut", property: "opacity" },
+        });
         setHideBottomTab(shouldHide);
       }
     },
@@ -259,6 +275,7 @@ const BottomTab = () => {
         style={[
           styles.bottomBar,
           { display: hideBottomTab ? "none" : undefined },
+          { zIndex: hideBottomTab ? -1 : 1 },
         ]}
         height={60}
         circleWidth={50}

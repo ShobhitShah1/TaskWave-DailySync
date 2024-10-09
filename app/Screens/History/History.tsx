@@ -1,4 +1,4 @@
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
 import React, {
   useCallback,
@@ -17,28 +17,31 @@ import {
   Text,
   View,
 } from "react-native";
+import { showMessage } from "react-native-flash-message";
 import Animated from "react-native-reanimated";
+import RenderCalenderView from "../../Components/RenderCalenderView";
 import YearMonthPicker from "../../Components/YearMonthPicker";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
 import useCalendar from "../../Hooks/useCalendar";
 import useReminder from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
-import { DayItem, Notification } from "../../Types/Interface";
+import { Notification } from "../../Types/Interface";
 import { countNotificationsByType } from "../../Utils/countNotificationsByType";
+import { generateDaysArray } from "../../Utils/generateDaysArray";
 import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "../Home/Components/HomeHeader";
-import RenderHistoryList from "./Components/RenderHistoryList";
-import { generateDaysArray } from "../../Utils/generateDaysArray";
-import RenderCalenderView from "../../Components/RenderCalenderView";
 import RenderFilterTabData from "./Components/RenderFilterTabData";
-import { showMessage } from "react-native-flash-message";
+import RenderHistoryList from "./Components/RenderHistoryList";
+import Header from "../../Components/Header";
 
 const History = () => {
   const style = styles();
   const colors = useThemeColors();
   const flashListRef = useRef<any>(null);
   const isFocus = useIsFocused();
+  const navigation = useNavigation();
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filteredNotifications, setFilteredNotifications] = useState<
     Notification[]

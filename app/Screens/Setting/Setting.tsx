@@ -1,21 +1,13 @@
+import { useNavigation } from "@react-navigation/native";
 import React, { memo, useState } from "react";
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import WithBackHeader from "../../Components/WithBackHeader";
-import AssetsPath from "../../Global/AssetsPath";
-import { FONTS, SIZE } from "../../Global/Theme";
-import useThemeColors from "../../Theme/useThemeMode";
-import SettingItem from "./Components/SettingItem";
+import { StyleSheet, View } from "react-native";
 import Share from "react-native-share";
 import RateUsModal from "../../Components/RateUsModal";
-import { useNavigation } from "@react-navigation/native";
-import CustomSwitch from "../../Components/CustomSwitch";
+import WithBackHeader from "../../Components/WithBackHeader";
+import AssetsPath from "../../Global/AssetsPath";
+import { SIZE } from "../../Global/Theme";
+import useThemeColors from "../../Theme/useThemeMode";
+import SettingItem from "./Components/SettingItem";
 
 const Settings = () => {
   const style = styles();
@@ -54,7 +46,7 @@ const Settings = () => {
 
   return (
     <View style={style.container}>
-      {/* <WithBackHeader title={"Setting"} /> */}
+      <WithBackHeader title={"Setting"} />
 
       <View
         style={{
