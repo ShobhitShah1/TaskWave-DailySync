@@ -24,13 +24,13 @@ export const storage = new MMKV();
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
     const unSubscribe = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "active") {
         console.log("Call Theme");
-        setThemeBasedOnTime();
+        // setThemeBasedOnTime();
         // storeTheme();
       }
     });

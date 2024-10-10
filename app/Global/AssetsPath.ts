@@ -55,6 +55,8 @@ const ob_Email = require("../../assets/Images/ob_Email.png");
 const ob_TextMessage = require("../../assets/Images/ob_TextMessage.png");
 const ob_Whatsapp = require("../../assets/Images/ob_Whatsapp.png");
 const ob_WhatsappBusiness = require("../../assets/Images/ob_WhatsappBusiness.png");
+const appLogoRound = require("../../assets/Images/Dailysync_round.png");
+const appLogoSquare = require("../../assets/Images/Dailysync_square.png");
 
 // Animation
 const success_animation = require("../../assets/Animations/success_animation.json");
@@ -108,6 +110,8 @@ export default {
   ob_TextMessage,
   ob_Whatsapp,
   ob_WhatsappBusiness,
+  appLogoRound,
+  appLogoSquare,
 
   // Animation
   success_animation,

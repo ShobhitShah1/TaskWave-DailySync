@@ -1,16 +1,21 @@
-import { Alert, Linking, NativeModules } from "react-native";
-import { Contact, Notification } from "../Types/Interface";
+import { Linking, NativeModules } from "react-native";
 import { showMessage } from "react-native-flash-message";
+import { Contact, Notification } from "../Types/Interface";
 
 export const handleNotificationPress = (notification: any) => {
   try {
-    const { type, message, subject, toContact, toMail, attachments } =
-      notification as Notification;
     const { SendMessagesModule } = NativeModules;
+
+    const { type, message, subject, toContact, toMail, attachments, memo } =
+      notification as Notification;
+
+    console.log("notification:", notification);
 
     let numbers: string[] = [];
     let emailMails: string = "";
     let firstAttachment: string = "";
+    let firstAudio: string = "";
+
     const globalMessage: string = String(message) || "";
     const globalSubject: string = String(subject) || "";
 
@@ -50,6 +55,18 @@ export const handleNotificationPress = (notification: any) => {
       });
     }
 
+    try {
+      const parsedMemo = typeof memo === "string" ? JSON.parse(memo) : memo;
+      if (Array.isArray(parsedMemo) && parsedMemo[0]?.uri) {
+        firstAudio = parsedMemo[0].uri;
+      }
+    } catch (error: any) {
+      showMessage({
+        message: `Failed to parse memo (audio): ${error.message || error}`,
+        type: "danger",
+      });
+    }
+
     const filterNumber = numbers?.[0] || "";
 
     switch (type) {
@@ -64,6 +81,7 @@ export const handleNotificationPress = (notification: any) => {
             number,
             globalMessage,
             firstAttachment,
+            firstAudio,
             true
           );
         } else {

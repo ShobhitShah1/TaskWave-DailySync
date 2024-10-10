@@ -139,7 +139,7 @@ const ReminderScheduled = () => {
                 <View style={style.userInfo}>
                   <Image
                     resizeMode="cover"
-                    source={AssetsPath.ic_appLogo}
+                    source={AssetsPath.appLogoRound}
                     style={style.userImage}
                   />
                   <Text style={[style.userName, { color: colors.text }]}>

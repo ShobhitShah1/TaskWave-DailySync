@@ -33,14 +33,16 @@ import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
 import { showMessage } from "react-native-flash-message";
+import { useAppContext } from "../../Contexts/ThemeProvider";
 
 const Home = () => {
   const style = styles();
   const colors = useThemeColors();
   const isFocus = useIsFocused();
   const { height } = useWindowDimensions();
-  const flatListRef = useRef<FlatList>(null);
+  const { theme } = useAppContext();
 
+  const flatListRef = useRef<FlatList>(null);
   const { getAllNotifications, deleteNotification } = useDatabase();
   const { permissionStatus, requestPermission } = useNotificationPermission();
 
@@ -234,7 +236,7 @@ const Home = () => {
           <Pressable onPress={() => setFullScreenPreview(true)}>
             <Image
               resizeMode="contain"
-              tintColor={colors.text}
+              tintColor={theme === "light" ? colors.sms : colors.text}
               source={AssetsPath.ic_fullScreen}
               style={style.fullScreenIcon}
             />

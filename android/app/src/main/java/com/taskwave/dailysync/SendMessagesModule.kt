@@ -141,20 +141,28 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun sendWhatsapp(
-        number: String, message: String, attachmentPaths: String, isWhatsapp: Boolean
+        number: String,
+        message: String,
+        attachmentPaths: String,
+        audioPath: String,
+        isWhatsapp: Boolean
     ) {
-        Log.d("Check Data", "Number: $number, Message: $message, Attachment Paths: $attachmentPaths, isWhatsApp: $isWhatsapp")
+        Log.d("SendMessagesModule", "sendWhatsapp: Start")
+        Log.d(
+            "SendMessagesModule",
+            "Number: $number, Message: $message, AttachmentPaths: $attachmentPaths, AudioPath: $audioPath, isWhatsapp: $isWhatsapp"
+        )
 
         val whatsappIntent = Intent(Intent.ACTION_SEND)
 
         whatsappIntent.putExtra(Intent.EXTRA_TEXT, message)
         val formattedNumber = number.replace("+", "").replace(" ", "")
-        Log.d("Formated Number", "$formattedNumber")
         whatsappIntent.putExtra("jid", "$formattedNumber@s.whatsapp.net")
 
+        // Handle image attachments
         if (attachmentPaths.isNotEmpty()) {
             val attachment = File(reactApplicationContext.filesDir, attachmentPaths)
-            Log.d("Attachment LOG", "Attachment Path: $attachment")
+            Log.d("SendMessagesModule", "Attachment: $attachment")
 
             if (attachment.exists()) {
                 val uri = FileProvider.getUriForFile(
@@ -162,36 +170,65 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
                     "com.taskwave.dailysync.provider",
                     attachment
                 )
-                Log.d("URI LOG", "Attachment URI: $uri")
+                Log.d("SendMessagesModule", "Image Attachment URI: $uri")
 
                 whatsappIntent.putExtra(Intent.EXTRA_STREAM, uri)
-                val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension)
-                whatsappIntent.type = mimeType ?: "application/octet-stream"  // Fallback MIME type
-                Log.d("MIME Type LOG", "MIME Type: $mimeType")
-
+                whatsappIntent.type =
+                    MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension)
                 whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                whatsappIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             } else {
-                Log.e("SendMail", "Attachment file does not exist: $attachment")
+                Log.e("SendMessagesModule", "Image attachment does not exist: $attachment")
             }
-        } else {
-            whatsappIntent.type = "text/plain"
+        }
+
+        // Handle audio attachments
+        if (audioPath.isNotEmpty()) {
+            // Log the incoming audioPath to check its format
+            Log.d("SendMessagesModule", "Received audioPath: $audioPath")
+
+            // Remove any "file:" prefix if it exists and trim whitespaces
+            val cleanedAudioPath = audioPath.replace("file:", "").trim().replace("/data/user/0/", "/data/data/")
+
+            // Create the audio file object from the cleaned path
+            val audioFile = File(cleanedAudioPath)
+
+            // Log the absolute path of the audio file
+            Log.d("SendMessagesModule", "Audio file absolute path: ${audioFile.absolutePath}")
+
+            // Check if the file exists
+            if (audioFile.exists()) {
+                val uri = FileProvider.getUriForFile(
+                    reactApplicationContext,
+                    "com.taskwave.dailysync.provider",
+                    audioFile
+                )
+                Log.d("SendMessagesModule", "Audio Attachment URI: $uri")
+
+                whatsappIntent.putExtra(Intent.EXTRA_STREAM, uri)
+                whatsappIntent.type = "audio/m4a"
+                whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } else {
+                Log.e("SendMessagesModule", "Audio attachment does not exist: ${audioFile.absolutePath}")
+            }
         }
 
         val packageName = if (isWhatsapp) "com.whatsapp" else "com.whatsapp.w4b"
-        Log.d("Package Name LOG", "WhatsApp Package: $packageName")
+        Log.d("SendMessagesModule", "WhatsApp Package: $packageName")
 
         if (isAppInstalled(packageName)) {
             whatsappIntent.setPackage(packageName)
 
             try {
-                Log.d("WhatsApp Intent LOG", "Starting WhatsApp with Intent: $whatsappIntent")
                 reactApplicationContext.currentActivity?.startActivity(whatsappIntent)
+                Log.d("SendMessagesModule", "WhatsApp intent sent successfully")
             } catch (e: Exception) {
-                Log.e("SendWhatsApp", "Error starting WhatsApp Intent", e)
+                Log.e("SendMessagesModule", "Error starting WhatsApp Intent", e)
             }
         } else {
-            Log.d("TAG", if (isWhatsapp) "WhatsApp not installed" else "WhatsApp Business not installed")
+            Log.d(
+                "SendMessagesModule",
+                if (isWhatsapp) "WhatsApp not installed" else "WhatsApp Business not installed"
+            )
         }
     }
 

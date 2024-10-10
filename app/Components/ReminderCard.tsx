@@ -11,6 +11,7 @@ import { Notification } from "../Types/Interface";
 import { formatNotificationType } from "../Utils/formatNotificationType";
 import { getNotificationIcon } from "../Utils/getNotificationIcon";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { formatTime } from "../Screens/AddReminder/ReminderScheduled";
 
 const LOGO_SIZE = 65;
 
@@ -144,11 +145,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
         <View style={styles.footerContainer}>
           <View style={styles.timeContainer}>
             <Text style={[styles.timeText, { color: typeColor }]}>
-              {new Date(notification.date).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
+              {formatTime(notification.date)}
             </Text>
             <View style={[styles.separator, { borderColor: typeColor }]} />
             <View style={styles.countdownContainer}>
@@ -286,6 +283,7 @@ const styles = StyleSheet.create({
   },
   countdownText: {
     fontSize: 16,
+    letterSpacing: 1.5,
     fontFamily: FONTS.Medium,
   },
   actionsContainer: {
@@ -297,6 +295,6 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     resizeMode: "contain",
-    marginLeft: 8,
+    marginLeft: 13,
   },
 });

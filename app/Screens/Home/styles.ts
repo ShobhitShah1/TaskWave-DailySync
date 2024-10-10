@@ -95,6 +95,7 @@ const styles = () => {
       alignSelf: "flex-end",
     },
     listHeaderView: {
+      marginTop: 15,
       marginVertical: 10,
       flexDirection: "row",
       justifyContent: "space-between",
