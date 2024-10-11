@@ -153,49 +153,42 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
             "Number: $number, Message: $message, AttachmentPaths: $attachmentPaths, AudioPath: $audioPath, isWhatsapp: $isWhatsapp"
         )
 
-        val whatsappIntent = Intent(Intent.ACTION_SEND)
-
+        val whatsappIntent = Intent(Intent.ACTION_SEND_MULTIPLE)
         whatsappIntent.putExtra(Intent.EXTRA_TEXT, message)
         val formattedNumber = number.replace("+", "").replace(" ", "")
         whatsappIntent.putExtra("jid", "$formattedNumber@s.whatsapp.net")
 
+        val files = ArrayList<Uri>()
+        var mimeType = "*/*"
+
         // Handle image attachments
         if (attachmentPaths.isNotEmpty()) {
-            val attachment = File(reactApplicationContext.filesDir, attachmentPaths)
-            Log.d("SendMessagesModule", "Attachment: $attachment")
+            val attachments = attachmentPaths.split(",")
+            for (path in attachments) {
+                val attachment = File(reactApplicationContext.filesDir, path.trim())
+                Log.d("SendMessagesModule", "Attachment: $attachment")
 
-            if (attachment.exists()) {
-                val uri = FileProvider.getUriForFile(
-                    reactApplicationContext,
-                    "com.taskwave.dailysync.provider",
-                    attachment
-                )
-                Log.d("SendMessagesModule", "Image Attachment URI: $uri")
+                if (attachment.exists()) {
+                    val uri = FileProvider.getUriForFile(
+                        reactApplicationContext,
+                        "com.taskwave.dailysync.provider",
+                        attachment
+                    )
+                    Log.d("SendMessagesModule", "Attachment URI: $uri")
 
-                whatsappIntent.putExtra(Intent.EXTRA_STREAM, uri)
-                whatsappIntent.type =
-                    MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension)
-                whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            } else {
-                Log.e("SendMessagesModule", "Image attachment does not exist: $attachment")
+                    files.add(uri)
+                    mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension) ?: "*/*"
+                } else {
+                    Log.e("SendMessagesModule", "Attachment does not exist: $attachment")
+                }
             }
         }
 
-        // Handle audio attachments
+        // Handle audio attachment
         if (audioPath.isNotEmpty()) {
-            // Log the incoming audioPath to check its format
-            Log.d("SendMessagesModule", "Received audioPath: $audioPath")
-
-            // Remove any "file:" prefix if it exists and trim whitespaces
             val cleanedAudioPath = audioPath.replace("file:", "").trim().replace("/data/user/0/", "/data/data/")
-
-            // Create the audio file object from the cleaned path
             val audioFile = File(cleanedAudioPath)
 
-            // Log the absolute path of the audio file
-            Log.d("SendMessagesModule", "Audio file absolute path: ${audioFile.absolutePath}")
-
-            // Check if the file exists
             if (audioFile.exists()) {
                 val uri = FileProvider.getUriForFile(
                     reactApplicationContext,
@@ -204,13 +197,16 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
                 )
                 Log.d("SendMessagesModule", "Audio Attachment URI: $uri")
 
-                whatsappIntent.putExtra(Intent.EXTRA_STREAM, uri)
-                whatsappIntent.type = "audio/m4a"
-                whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                files.add(uri)
+                mimeType = "audio/m4a"
             } else {
                 Log.e("SendMessagesModule", "Audio attachment does not exist: ${audioFile.absolutePath}")
             }
         }
+
+        whatsappIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, files)
+        whatsappIntent.type = mimeType
+        whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
         val packageName = if (isWhatsapp) "com.whatsapp" else "com.whatsapp.w4b"
         Log.d("SendMessagesModule", "WhatsApp Package: $packageName")
