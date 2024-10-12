@@ -52,7 +52,7 @@ const WithBackHeader = ({ title }: IHomeHeaderProps) => {
           <CustomSwitch
             isOn={isSwitchOn}
             onToggle={(state: boolean) => {
-              handleToggle(state);
+              // handleToggle(state);
             }}
           />
         </View>

@@ -5,16 +5,14 @@ import { Contact, Notification } from "../Types/Interface";
 export const handleNotificationPress = (notification: any) => {
   try {
     const { SendMessagesModule } = NativeModules;
-
     const { type, message, subject, toContact, toMail, attachments, memo } =
       notification as Notification;
-
     console.log("notification:", notification);
 
     let numbers: string[] = [];
     let emailMails: string = "";
-    let firstAttachment: string = "";
-    let firstAudio: string = "";
+    let attachmentPaths: string[] = [];
+    let audioPath: string = "";
 
     const globalMessage: string = String(message) || "";
     const globalSubject: string = String(subject) || "";
@@ -44,9 +42,10 @@ export const handleNotificationPress = (notification: any) => {
     try {
       const parsedAttachments =
         typeof attachments === "string" ? JSON.parse(attachments) : attachments;
-      if (Array.isArray(parsedAttachments) && parsedAttachments[0]) {
-        firstAttachment =
-          parsedAttachments[0].name || parsedAttachments[0].uri || "";
+      if (Array.isArray(parsedAttachments)) {
+        attachmentPaths = parsedAttachments.map(
+          (attachment) => attachment.uri || ""
+        );
       }
     } catch (error: any) {
       showMessage({
@@ -57,58 +56,38 @@ export const handleNotificationPress = (notification: any) => {
 
     try {
       const parsedMemo = typeof memo === "string" ? JSON.parse(memo) : memo;
-      if (Array.isArray(parsedMemo) && parsedMemo[0]?.uri) {
-        firstAudio = parsedMemo[0].uri;
+      if (Array.isArray(parsedMemo) && parsedMemo.length > 0) {
+        audioPath = parsedMemo[0].uri || "";
       }
-    } catch (error: any) {
-      showMessage({
-        message: `Failed to parse memo (audio): ${error.message || error}`,
-        type: "danger",
-      });
+    } catch (error) {
+      console.error("Failed to parse memo (audio):", error);
     }
 
-    const filterNumber = numbers?.[0] || "";
-
     switch (type) {
-      case "phone":
-        Linking.openURL(`tel:${filterNumber}`);
-        break;
       case "whatsapp":
-        if (numbers.length > 0) {
-          let number =
-            filterNumber.length === 10 ? `91${filterNumber}` : filterNumber;
-          SendMessagesModule.sendWhatsapp(
-            number,
-            globalMessage,
-            firstAttachment,
-            firstAudio,
-            true
-          );
-        } else {
-          showMessage({
-            message: "No valid contact found for WhatsApp.",
-            type: "danger",
-          });
-        }
-        break;
       case "whatsappBusiness":
         if (numbers.length > 0) {
           SendMessagesModule.sendWhatsapp(
-            numbers,
+            numbers.join(","),
             globalMessage,
-            firstAttachment,
-            false
+            attachmentPaths.join(","),
+            audioPath,
+            type === "whatsapp"
           );
         } else {
           showMessage({
-            message: "No valid contact found for WhatsApp Business.",
+            message: `No valid contact found for ${type === "whatsapp" ? "WhatsApp" : "WhatsApp Business"}.`,
             type: "danger",
           });
         }
         break;
       case "SMS":
         if (numbers.length > 0) {
-          SendMessagesModule.sendSms(numbers, globalMessage, firstAttachment);
+          SendMessagesModule.sendSms(
+            numbers,
+            globalMessage,
+            attachmentPaths.join(",")
+          );
         } else {
           showMessage({
             message: "No valid phone numbers found for SMS.",
@@ -122,7 +101,7 @@ export const handleNotificationPress = (notification: any) => {
             emailMails,
             globalSubject,
             globalMessage,
-            firstAttachment
+            attachmentPaths.join(",")
           );
         } catch (error: any) {
           showMessage({

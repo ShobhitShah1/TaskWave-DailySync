@@ -24,7 +24,6 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
         return "SendMessagesModule"
     }
 
-    // Mail Module
     @ReactMethod
     fun sendMail(
         recipients: String,
@@ -37,52 +36,49 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
             "${recipients ?: "null"} ${subject ?: "null"} ${body ?: "null"} ${attachmentPaths ?: "null"}"
         )
 
-        val emailIntent = Intent(Intent.ACTION_SEND)
+        val emailIntent = Intent(Intent.ACTION_SEND_MULTIPLE)
+        emailIntent.type = "message/rfc822"
 
         emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(recipients))
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject)
         emailIntent.putExtra(Intent.EXTRA_TEXT, body)
 
         if (attachmentPaths.isNotEmpty()) {
-            val attachment = File(reactApplicationContext.filesDir, attachmentPaths)
-            Log.d("attachment LOG", "sendMail: $attachment")
+            val attachmentUris = ArrayList<Uri>()
+            val paths = attachmentPaths.split(",")
 
-            if (attachment.exists()) {
-                val uri = FileProvider.getUriForFile(
-                    reactApplicationContext, "com.taskwave.dailysync.provider", attachment
-                )
-                Log.d("uri LOG", "sendMail: $uri")
+            for (path in paths) {
+                val attachment = File(path.trim())
+                Log.d("attachment LOG", "sendMail: $attachment")
 
-                emailIntent.putExtra(Intent.EXTRA_STREAM, uri)
-                Log.d(
-                    "MIME TYPE:", "sendMail: ${
-                        MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension)
-                    }"
-                )
-                emailIntent.type =
-                    MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension)
-
-                emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                emailIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-            } else {
-                Log.e("SendMail", "Attachment file does not exist.")
+                if (attachment.exists()) {
+                    val uri = FileProvider.getUriForFile(
+                        reactApplicationContext,
+                        "com.taskwave.dailysync.provider",
+                        attachment
+                    )
+                    Log.d("uri LOG", "sendMail: $uri")
+                    attachmentUris.add(uri)
+                } else {
+                    Log.e("SendMail", "Attachment file does not exist: $path")
+                }
             }
-        } else {
-            emailIntent.action = Intent.ACTION_SENDTO
-            emailIntent.data = Uri.parse("mailto:")
+
+            if (attachmentUris.isNotEmpty()) {
+                emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, attachmentUris)
+                emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
         }
 
         if (isAppInstalled("com.google.android.gm")) {
             Log.d("isAppInstalled LOG", "sendMail: ${isAppInstalled("com.google.android.gm")}")
-
             emailIntent.setPackage("com.google.android.gm")
         } else {
             Log.d("isAppInstalledFALSE", "sendMail: NOT AppInstalled")
-            emailIntent.setType("message/rfc32")
         }
 
         try {
-            reactApplicationContext.currentActivity?.startActivity(emailIntent)
+            reactApplicationContext.currentActivity?.startActivity(Intent.createChooser(emailIntent, "Send email..."))
         } catch (e: ActivityNotFoundException) {
             e.printStackTrace()
             Log.e("SendMail", "No activity found to handle email intent.")
@@ -140,32 +136,48 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun isAppInstalled(packageId: String): Boolean {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                reactApplicationContext.packageManager.getApplicationInfo(
+                    packageId, PackageManager.ApplicationInfoFlags.of(0)
+                )
+            } else {
+                reactApplicationContext.packageManager.getApplicationInfo(packageId, 0)
+            }
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
+    @ReactMethod
     fun sendWhatsapp(
-        number: String,
+        numbers: String,
         message: String,
         attachmentPaths: String,
-        audioPath: String,
+        audioPaths: String,
         isWhatsapp: Boolean
     ) {
         Log.d("SendMessagesModule", "sendWhatsapp: Start")
         Log.d(
             "SendMessagesModule",
-            "Number: $number, Message: $message, AttachmentPaths: $attachmentPaths, AudioPath: $audioPath, isWhatsapp: $isWhatsapp"
+            "Numbers: $numbers, Message: $message, AttachmentPaths: $attachmentPaths, AudioPaths: $audioPaths, isWhatsapp: $isWhatsapp"
         )
 
         val whatsappIntent = Intent(Intent.ACTION_SEND_MULTIPLE)
+        whatsappIntent.type = "image/*"
         whatsappIntent.putExtra(Intent.EXTRA_TEXT, message)
-        val formattedNumber = number.replace("+", "").replace(" ", "")
-        whatsappIntent.putExtra("jid", "$formattedNumber@s.whatsapp.net")
 
-        val files = ArrayList<Uri>()
-        var mimeType = "*/*"
+        val formattedNumbers = numbers.split(",").map { it.replace("+", "").replace(" ", "") }
+        whatsappIntent.putExtra("jid", "${formattedNumbers.first()}@s.whatsapp.net")
 
-        // Handle image attachments
+        val uris = ArrayList<Uri>()
+
         if (attachmentPaths.isNotEmpty()) {
             val attachments = attachmentPaths.split(",")
             for (path in attachments) {
-                val attachment = File(reactApplicationContext.filesDir, path.trim())
+                val attachment = File(path.trim())
                 Log.d("SendMessagesModule", "Attachment: $attachment")
 
                 if (attachment.exists()) {
@@ -174,20 +186,16 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
                         "com.taskwave.dailysync.provider",
                         attachment
                     )
-                    Log.d("SendMessagesModule", "Attachment URI: $uri")
-
-                    files.add(uri)
-                    mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(attachment.extension) ?: "*/*"
+                    uris.add(uri)
                 } else {
                     Log.e("SendMessagesModule", "Attachment does not exist: $attachment")
                 }
             }
         }
 
-        // Handle audio attachment
-        if (audioPath.isNotEmpty()) {
-            val cleanedAudioPath = audioPath.replace("file:", "").trim().replace("/data/user/0/", "/data/data/")
-            val audioFile = File(cleanedAudioPath)
+        if (audioPaths.isNotEmpty()) {
+            val audioPath = audioPaths.trim().replace("file://", "")
+            val audioFile = File(audioPath)
 
             if (audioFile.exists()) {
                 val uri = FileProvider.getUriForFile(
@@ -195,17 +203,16 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
                     "com.taskwave.dailysync.provider",
                     audioFile
                 )
-                Log.d("SendMessagesModule", "Audio Attachment URI: $uri")
-
-                files.add(uri)
-                mimeType = "audio/m4a"
+                Log.d("sendMessageModule", "AudioURI: $uri")
+                uris.add(uri)
             } else {
                 Log.e("SendMessagesModule", "Audio attachment does not exist: ${audioFile.absolutePath}")
             }
         }
 
-        whatsappIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, files)
-        whatsappIntent.type = mimeType
+        Log.d("SendMessagesModule", "URIS: $uris")
+
+        whatsappIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
         whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
         val packageName = if (isWhatsapp) "com.whatsapp" else "com.whatsapp.w4b"
@@ -225,22 +232,6 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
                 "SendMessagesModule",
                 if (isWhatsapp) "WhatsApp not installed" else "WhatsApp Business not installed"
             )
-        }
-    }
-
-    @ReactMethod
-    fun isAppInstalled(packageId: String): Boolean {
-        return try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                reactApplicationContext.packageManager.getApplicationInfo(
-                    packageId, PackageManager.ApplicationInfoFlags.of(0)
-                )
-            } else {
-                reactApplicationContext.packageManager.getApplicationInfo(packageId, 0)
-            }
-            true
-        } catch (e: PackageManager.NameNotFoundException) {
-            false
         }
     }
 

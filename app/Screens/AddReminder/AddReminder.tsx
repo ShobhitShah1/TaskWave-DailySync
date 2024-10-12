@@ -733,7 +733,7 @@ const AddReminder = () => {
           style={[style.createButton, { backgroundColor: createViewColor }]}
         >
           {isLoading ? (
-            <ActivityIndicator size="small" color={colors.text} />
+            <ActivityIndicator size="small" color={colors.white} />
           ) : (
             <Text style={style.createButtonText}>
               {id ? "Update" : "Create"}
