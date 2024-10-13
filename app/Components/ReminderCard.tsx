@@ -229,8 +229,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   senderName: {
+    fontSize: 20,
     fontFamily: FONTS.SemiBold,
-    fontSize: 21,
   },
   typeContainer: {
     width: "20%",

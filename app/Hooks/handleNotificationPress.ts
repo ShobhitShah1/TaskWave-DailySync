@@ -110,6 +110,9 @@ export const handleNotificationPress = (notification: any) => {
           });
         }
         break;
+      case "phone":
+        Linking.openURL(`tel:${numbers}`);
+        break;
       default:
         showMessage({
           message: "Unsupported notification type.",

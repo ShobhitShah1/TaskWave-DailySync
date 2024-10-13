@@ -509,6 +509,7 @@ const styles = () => {
       width: "50%",
       height: "50%",
       resizeMode: "contain",
+      tintColor: colors.black,
     },
     emptyListView: {
       flex: 1,

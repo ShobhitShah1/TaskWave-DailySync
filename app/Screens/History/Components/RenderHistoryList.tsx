@@ -41,6 +41,14 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
       notificationColors.typeColor,
     ]);
 
+    const gmailBorder = useMemo(
+      () =>
+        notification.type === "gmail"
+          ? notificationColors.iconColor
+          : typeColor,
+      [notificationColors]
+    );
+
     const icon = useMemo(
       () => getNotificationIcon(notification.type),
       [notification.type]
@@ -73,7 +81,13 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
     return (
       <Animated.View
         entering={FadeIn.duration(1 * Number(notification.id))}
-        style={[styles.cardContainer, { borderColor: typeColor }]}
+        style={[
+          styles.cardContainer,
+          {
+            borderColor:
+              notification.type === "gmail" ? gmailBorder : typeColor,
+          },
+        ]}
       >
         <Pressable
           style={styles.pressableContainer}
@@ -218,7 +232,7 @@ const styles = StyleSheet.create({
     width: "85%",
   },
   titleText: {
-    fontSize: 22,
+    fontSize: 20,
     marginBottom: 5,
     fontFamily: FONTS.Medium,
   },

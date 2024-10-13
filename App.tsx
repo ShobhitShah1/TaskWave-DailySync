@@ -1,7 +1,7 @@
 import notifee, { EventType } from "@notifee/react-native";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
-import { LogBox, StatusBar, StyleSheet, Text, TextInput } from "react-native";
+import { LogBox, StatusBar, StyleSheet, Text } from "react-native";
 import FlashMessage from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,7 +9,7 @@ import { AppProvider } from "./app/Contexts/ThemeProvider";
 import { FONTS } from "./app/Global/Theme";
 import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
 import Routes from "./app/Routes/Routes";
-import Header from "./app/Components/Header";
+import updateToNextDate from "./app/Hooks/updateToNextDate";
 
 interface TextWithDefaultProps extends Text {
   defaultProps?: { allowFontScaling?: boolean };
@@ -24,6 +24,10 @@ LogBox.ignoreAllLogs();
 
 notifee.onBackgroundEvent(async ({ type, detail }) => {
   const { notification } = detail;
+
+  if (notification) {
+    updateToNextDate(notification);
+  }
 
   switch (type) {
     case EventType.DISMISSED:
@@ -62,7 +66,7 @@ export default function App() {
     });
   }, []);
 
-  if (!loaded) {
+  if (!loaded || error) {
     return;
   }
 
@@ -77,7 +81,7 @@ export default function App() {
             duration={3500}
             titleStyle={styles.flashTextStyle}
             textStyle={[styles.flashTextStyle, { fontSize: 13.5 }]}
-            statusBarHeight={StatusBar.currentHeight}
+            statusBarHeight={(StatusBar.currentHeight || 20) + 5}
           />
         </AppProvider>
       </SafeAreaView>
@@ -88,7 +92,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   flashTextStyle: {
-    fontSize: 16,
+    fontSize: 17,
     fontFamily: FONTS.SemiBold,
   },
 });

@@ -7,9 +7,10 @@ import {
 } from "@gorhom/bottom-sheet";
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import React, { memo, useCallback, useRef, useState } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
+  BackHandler,
   FlatList,
   Image,
   ImageSourcePropType,
@@ -91,6 +92,20 @@ const BottomTab = () => {
   const [hideBottomTab, setHideBottomTab] = useState(false);
   const [selectedCategory, setSelectedCategory] =
     useState<NotificationType>("whatsapp");
+
+  const onBackPress = () => {
+    if (bottomSheetModalRef !== null) {
+      bottomSheetModalRef.current?.close();
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener("hardwareBackPress", onBackPress);
+
+    return () =>
+      BackHandler.removeEventListener("hardwareBackPress", onBackPress);
+  }, []);
 
   const categories: categoriesType[] = [
     {
@@ -216,7 +231,6 @@ const BottomTab = () => {
             message: errorMessage,
             description: "Click here to install",
             type: "warning",
-
             onPress: () => {
               Linking.openURL(appStoreUrl).catch((err) =>
                 console.error("An error occurred", err)
@@ -460,7 +474,7 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 12,
-    marginTop: 5,
+    marginTop: 6,
     fontFamily: FONTS.Medium,
   },
   addButton: {
@@ -503,8 +517,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   icon: {
-    width: 24,
-    height: 24,
+    width: 22,
+    height: 22,
     resizeMode: "contain",
   },
   handleStyle: {
