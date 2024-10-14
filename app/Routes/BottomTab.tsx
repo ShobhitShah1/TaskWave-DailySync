@@ -7,10 +7,9 @@ import {
 } from "@gorhom/bottom-sheet";
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useRef, useState } from "react";
 import {
   Animated,
-  BackHandler,
   FlatList,
   Image,
   ImageSourcePropType,
@@ -31,6 +30,7 @@ import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import TextString from "../Global/TextString";
 import { FONTS } from "../Global/Theme";
+import { useBottomSheetBackHandler } from "../Hooks/useBottomSheetBackHandler";
 import AddReminder from "../Screens/AddReminder/AddReminder";
 import History from "../Screens/History/History";
 import Home from "../Screens/Home/Home";
@@ -40,7 +40,6 @@ import useThemeColors from "../Theme/useThemeMode";
 import { NotificationType } from "../Types/Interface";
 import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
-import { useBottomSheetBackHandler } from "../Hooks/useBottomSheetBackHandler";
 
 if (
   Platform.OS === "android" &&

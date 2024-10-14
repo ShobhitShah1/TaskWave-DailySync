@@ -232,6 +232,9 @@ const useReminder = () => {
       memo,
     } = notification;
 
+    const toContactArray = Array.isArray(toContact) ? toContact : [];
+    const toMailArray = Array.isArray(toMail) ? toMail : [];
+
     const channelId = await notifee.createChannel({
       id: CHANNEL_ID,
       name: CHANNEL_NAME,
@@ -250,8 +253,8 @@ const useReminder = () => {
     const notificationData = {
       ...notification,
       subject: subject || "",
-      toContact: JSON.stringify(toContact),
-      toMail: JSON.stringify(toMail),
+      toContact: JSON.stringify(toContactArray),
+      toMail: JSON.stringify(toMailArray),
       attachments: JSON.stringify(attachments),
       memo: JSON.stringify(memo),
     };
@@ -266,7 +269,10 @@ const useReminder = () => {
               : `Reminder: ${subject || "You have an upcoming task"}`,
           body:
             message.toString() ||
-            `Don't forget! You have a task with ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}. Please check details or contact them if needed.`,
+            `Don't forget! You have a task with ${
+              toContactArray.map((contact) => contact.name).join(", ") ||
+              toMailArray.join(", ")
+            }. Please check details or contact them if needed.`,
           android: {
             channelId,
             visibility: AndroidVisibility.PUBLIC,
@@ -288,48 +294,22 @@ const useReminder = () => {
       return false;
     }
 
-    const updateNotificationSQL = `
-    UPDATE notifications
-    SET type = '${type}', message = '${message.toString()}', date = '${date.toISOString()}',
-        subject = '${subject}', attachments = '${JSON.stringify(attachments)}',
-        scheduleFrequency = '${notification.scheduleFrequency}', memo = '${JSON.stringify(memo)}'
-    WHERE id = '${id}'
-  `;
+    const updateNotificationSQL = `UPDATE notifications SET type = '${type}', message = '${message.toString()}', date = '${date.toISOString()}', subject = '${subject}', attachments = '${JSON.stringify(attachments)}', scheduleFrequency = '${notification.scheduleFrequency}', memo = '${JSON.stringify(memo)}' WHERE id = '${id}'`;
 
-    const deleteContactsSQL = `
-    DELETE FROM contacts WHERE notification_id = '${id}'
-  `;
+    const deleteContactsSQL = `DELETE FROM contacts WHERE notification_id = '${id}'`;
 
-    let insertContactsSQL = "";
+    const insertContactsSQL = toContactArray
+      .map(
+        (contact) =>
+          `INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath) VALUES ('${id}', '${contact.name}', '${contact.number ?? null}', '${contact.recordID}', '${contact.thumbnailPath ?? null}')`
+      )
+      .join(";");
 
-    if (type === "gmail") {
-      insertContactsSQL = toMail
-        .map(
-          (email) => `
-        INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-        VALUES ('${id}', '${email}', null, '${email}', null)
-      `
-        )
-        .join(";");
-    } else {
-      insertContactsSQL = toContact
-        .map(
-          (contact) => `
-        INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-        VALUES ('${id}', '${contact.name}', '${contact.number ?? null}', '${contact.recordID}', '${contact.thumbnailPath ?? null}')
-      `
-        )
-        .join(";");
-    }
-
-    const transactionSQL = `
-    ${updateNotificationSQL};
-    ${deleteContactsSQL};
-    ${insertContactsSQL}
-  `;
+    const transactionSQL = `${updateNotificationSQL}; ${deleteContactsSQL}; ${insertContactsSQL}`;
 
     try {
-      await db.execAsync(transactionSQL);
+      const response = await db.execAsync(transactionSQL);
+      console.log("response:", response);
       return true;
     } catch (error) {
       showMessage({

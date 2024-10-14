@@ -1,11 +1,15 @@
 import moment from "moment";
 import { Notification } from "../Types/Interface";
 
-const updateToNextDate = (notification: Notification | any) => {
+const updateToNextDate = async (
+  notification: Notification
+): Promise<{
+  updatedNotification: Notification | null;
+}> => {
   const { scheduleFrequency, date } = notification;
 
   if (!scheduleFrequency) {
-    return notification;
+    return { updatedNotification: notification };
   }
 
   let nextDate: Date;
@@ -24,13 +28,15 @@ const updateToNextDate = (notification: Notification | any) => {
       nextDate = moment(date).add(1, "year").toDate();
       break;
     default:
-      return notification;
+      return { updatedNotification: notification };
   }
 
-  return {
+  const updatedNotification = {
     ...notification,
     date: nextDate,
   };
+
+  return { updatedNotification: updatedNotification };
 };
 
 export default updateToNextDate;
