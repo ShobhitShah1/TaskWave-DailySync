@@ -40,6 +40,7 @@ import useThemeColors from "../Theme/useThemeMode";
 import { NotificationType } from "../Types/Interface";
 import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
+import { useBottomSheetBackHandler } from "../Hooks/useBottomSheetBackHandler";
 
 if (
   Platform.OS === "android" &&
@@ -88,24 +89,12 @@ const BottomTab = () => {
   const { theme } = useAppContext();
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const { handleSheetPositionChange } =
+    useBottomSheetBackHandler(bottomSheetModalRef);
 
   const [hideBottomTab, setHideBottomTab] = useState(false);
   const [selectedCategory, setSelectedCategory] =
     useState<NotificationType>("whatsapp");
-
-  const onBackPress = () => {
-    if (bottomSheetModalRef !== null) {
-      bottomSheetModalRef.current?.close();
-    }
-    return true;
-  };
-
-  useEffect(() => {
-    BackHandler.addEventListener("hardwareBackPress", onBackPress);
-
-    return () =>
-      BackHandler.removeEventListener("hardwareBackPress", onBackPress);
-  }, []);
 
   const categories: categoriesType[] = [
     {
@@ -362,6 +351,7 @@ const BottomTab = () => {
           ]}
           ref={bottomSheetModalRef}
           snapPoints={["75%"]}
+          onChange={handleSheetPositionChange}
         >
           <BottomSheetScrollView
             style={[
@@ -460,15 +450,13 @@ const styles = StyleSheet.create({
     bottom: 30,
     backgroundColor: "rgba(64, 93, 240, 1)",
     shadowColor: "rgba(71, 134, 249, 1)",
-    shadowOffset: { width: 10, height: 10 },
+    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.32,
     shadowRadius: 5.46,
-
-    elevation: 7,
+    elevation: 5,
   },
   tabBarItem: {
     flex: 1,
-    // marginTop: 5,
     alignItems: "center",
     justifyContent: "center",
   },

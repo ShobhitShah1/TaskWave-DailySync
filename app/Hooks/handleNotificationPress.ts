@@ -7,7 +7,6 @@ export const handleNotificationPress = (notification: any) => {
     const { SendMessagesModule } = NativeModules;
     const { type, message, subject, toContact, toMail, attachments, memo } =
       notification as Notification;
-    console.log("notification:", notification);
 
     let numbers: string[] = [];
     let emailMails: string = "";
