@@ -19,6 +19,7 @@ export const scheduleNotificationWithNotifee = async (
 ): Promise<string | null> => {
   try {
     const {
+      id,
       date,
       type,
       message,
@@ -41,7 +42,8 @@ export const scheduleNotificationWithNotifee = async (
 
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
-      timestamp: date.getTime(),
+      timestamp:
+        date instanceof Date ? date.getTime() : new Date(date).getTime(),
       repeatFrequency:
         scheduleFrequency === "Daily"
           ? RepeatFrequency.DAILY
@@ -55,6 +57,10 @@ export const scheduleNotificationWithNotifee = async (
 
     const notificationData = {
       ...notification,
+      id: id || "",
+      type,
+      message,
+      date: date.toISOString(),
       subject: subject || "",
       toContact: JSON.stringify(toContact),
       toMail: JSON.stringify(toMail),
@@ -80,6 +86,32 @@ export const scheduleNotificationWithNotifee = async (
           },
         },
         data: notificationData as any,
+      },
+      trigger
+    );
+
+    await notifee.createTriggerNotification(
+      {
+        id: notifeeNotificationId,
+        title:
+          type === "gmail"
+            ? subject
+            : `Reminder: ${subject || "You have an upcoming task"}`,
+        body:
+          message.toString() ||
+          `Don't forget! You have a task with ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}. Please check details or contact them if needed.`,
+        android: {
+          channelId,
+          visibility: AndroidVisibility.PUBLIC,
+          importance: AndroidImportance.HIGH,
+          pressAction: {
+            id: "default",
+          },
+        },
+        data: {
+          ...notificationData,
+          id: notifeeNotificationId,
+        } as any,
       },
       trigger
     );
@@ -244,7 +276,8 @@ const useReminder = () => {
 
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
-      timestamp: date.getTime(),
+      timestamp:
+        date instanceof Date ? date.getTime() : new Date(date).getTime(),
       alarmManager: {
         type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
       },
@@ -312,6 +345,7 @@ const useReminder = () => {
       console.log("response:", response);
       return true;
     } catch (error) {
+      console.log("error:", error);
       showMessage({
         message:
           "Failed to update notification in the database. Please try again.",

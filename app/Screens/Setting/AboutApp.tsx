@@ -3,6 +3,7 @@ import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { FONTS, SIZE } from "../../Global/Theme";
 import useThemeColors from "../../Theme/useThemeMode";
 import HomeHeader from "../Home/Components/HomeHeader";
+import { useAppContext } from "../../Contexts/ThemeProvider";
 
 const AboutApp = () => {
   const style = styles();
@@ -60,6 +61,7 @@ export default AboutApp;
 
 const styles = () => {
   const colors = useThemeColors();
+  const { theme } = useAppContext();
 
   return StyleSheet.create({
     container: {
@@ -75,7 +77,10 @@ const styles = () => {
       flex: 1,
     },
     section: {
-      borderBottomColor: "rgba(255, 255, 255, 0.2)",
+      borderBottomColor:
+        theme === "light"
+          ? "rgba(173, 175, 176, 1)"
+          : "rgba(255, 255, 255, 0.2)",
       borderBottomWidth: 1,
       paddingVertical: 30,
     },
@@ -106,7 +111,7 @@ const styles = () => {
       textAlign: "center",
       fontFamily: FONTS.Regular,
       lineHeight: 27,
-      color: "rgba(255, 255, 255, 1)",
+      color: theme === "dark" ? colors.white : "rgba(48, 51, 52, 0.7)",
     },
     subtitle: {
       fontSize: 22,
@@ -122,7 +127,7 @@ const styles = () => {
       alignSelf: "center",
       textAlign: "center",
       fontFamily: FONTS.Medium,
-      color: "rgba(255, 255, 255, 1)",
+      color: colors.text,
     },
     productText: {
       fontSize: 18,
@@ -131,7 +136,7 @@ const styles = () => {
       textAlign: "center",
       fontFamily: FONTS.Medium,
       lineHeight: 23,
-      color: "rgba(255, 255, 255, 1)",
+      color: colors.text,
     },
     productSubText: {
       fontFamily: FONTS.Regular,
@@ -143,8 +148,8 @@ const styles = () => {
       right: 0,
       justifyContent: "center",
       textAlign: "center",
-      fontFamily: FONTS.Regular,
-      color: "rgba(255, 255, 255, 0.8)",
+      fontFamily: FONTS.Medium,
+      color: colors.text,
       fontSize: 15,
     },
   });

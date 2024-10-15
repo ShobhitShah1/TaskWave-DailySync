@@ -8,11 +8,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppProvider } from "./app/Contexts/ThemeProvider";
 import { FONTS } from "./app/Global/Theme";
 import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
-import Routes from "./app/Routes/Routes";
 import updateToNextDate from "./app/Hooks/updateToNextDate";
-import useReminder, {
-  scheduleNotificationWithNotifee,
-} from "./app/Hooks/useReminder";
+import useReminder from "./app/Hooks/useReminder";
+import Routes from "./app/Routes/Routes";
 import { Notification } from "./app/Types/Interface";
 
 interface TextWithDefaultProps extends Text {
@@ -29,21 +27,6 @@ LogBox.ignoreAllLogs();
 notifee.onBackgroundEvent(async ({ type, detail }) => {
   const { notification } = detail;
 
-  if (notification) {
-    const { updatedNotification, isUpdated } = await updateToNextDate(
-      notification as Notification,
-      useReminder()?.updateNotification
-    );
-
-    if (isUpdated && updatedNotification) {
-      console.log("newNotification:", updatedNotification);
-      console.log(
-        "newNotification:",
-        new Date(updatedNotification?.date).toString()
-      );
-    }
-  }
-
   switch (type) {
     case EventType.DISMISSED:
       break;
@@ -59,21 +42,7 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
 });
 
 export default function App() {
-  const { getAllNotifications, updateNotification, deleteNotification } =
-    useReminder();
-
-  useEffect(() => {
-    getAllNotifications().then((res) => {
-      console.log(res?.length);
-      console.log(res?.map((res) => res.date));
-    });
-
-    notifee.getTriggerNotifications().then((res) => {
-      res.map((res) => {
-        console.log("NOTIFEE:", new Date(res.trigger?.timestamp)?.toString());
-      });
-    });
-  }, []);
+  const { updateNotification } = useReminder();
 
   const [loaded, error] = useFonts({
     "ClashGrotesk-Bold": require("./assets/Fonts/ClashGrotesk-Bold.otf"),
@@ -86,8 +55,6 @@ export default function App() {
   useEffect(() => {
     return notifee.onForegroundEvent(async ({ type, detail }) => {
       const notification: Notification = detail.notification?.data as any;
-
-      console.log("type:", type);
 
       switch (type) {
         case EventType.DISMISSED:
@@ -103,22 +70,7 @@ export default function App() {
 
               if (updatedNotification) {
                 console.log("newNotification:", updatedNotification);
-
-                // Schedule the new notification
-                const newNotificationId =
-                  await scheduleNotificationWithNotifee(updatedNotification);
-
-                if (newNotificationId) {
-                  console.log(
-                    "New notification scheduled with ID:",
-                    newNotificationId
-                  );
-
-                  await updateNotification({
-                    ...updatedNotification,
-                    id: newNotificationId,
-                  });
-                }
+                await updateNotification(updatedNotification);
               }
             } catch (error) {
               console.error("Error handling notification update:", error);
