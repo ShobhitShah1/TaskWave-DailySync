@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { showMessage } from "react-native-flash-message";
 import Animated, {
   Easing,
   FadeIn,
@@ -21,19 +22,19 @@ import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
 import ReminderCard from "../../Components/ReminderCard";
 import RenderCalenderView from "../../Components/RenderCalenderView";
 import YearMonthPicker from "../../Components/YearMonthPicker";
+import { useAppContext } from "../../Contexts/ThemeProvider";
 import AssetsPath from "../../Global/AssetsPath";
 import TextString from "../../Global/TextString";
 import useCalendar from "../../Hooks/useCalendar";
+import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useNotificationPermission from "../../Hooks/useNotificationPermission";
 import { default as useDatabase } from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
-import { Notification } from "../../Types/Interface";
+import { Notification, NotificationType } from "../../Types/Interface";
 import { fromNowText } from "../../Utils/isSameDat";
 import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "./Components/HomeHeader";
 import styles from "./styles";
-import { showMessage } from "react-native-flash-message";
-import { useAppContext } from "../../Contexts/ThemeProvider";
 
 const Home = () => {
   const style = styles();
@@ -67,6 +68,9 @@ const Home = () => {
     inactive: [] as Notification[],
   });
   const [refreshing, setRefreshing] = React.useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<
+    NotificationType | "all"
+  >("all");
 
   const findSelectedIndex = () => {
     return daysArray.findIndex((item) => item.formattedDate === selectedDate);
@@ -93,6 +97,19 @@ const Home = () => {
     scrollToIndex();
   }, [selectedDate, isFocus, notificationsState, flatListRef.current]);
 
+  useEffect(() => {
+    if (isFocus) {
+      setIsLoading(notificationsState?.allByDate?.length === 0);
+      loadNotifications();
+    }
+  }, [isFocus, selectedDate, selectedFilter]);
+
+  useEffect(() => {
+    if (permissionStatus !== "granted") {
+      requestPermission();
+    }
+  }, [permissionStatus]);
+
   const onRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
@@ -103,73 +120,81 @@ const Home = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (isFocus) {
-      setIsLoading(notificationsState?.allByDate?.length === 0);
-      loadNotifications();
-    }
-  }, [isFocus, selectedDate]);
-
-  useEffect(() => {
-    if (permissionStatus !== "granted") {
-      requestPermission();
-    }
-  }, [permissionStatus]);
+  const categories = [
+    {
+      id: 1,
+      type: "whatsapp",
+      icon: AssetsPath.ic_whatsapp,
+      color: colors.whatsapp,
+    },
+    {
+      id: 2,
+      type: "SMS",
+      icon: AssetsPath.ic_sms,
+      color: colors.sms,
+    },
+    {
+      id: 3,
+      type: "whatsappBusiness",
+      icon: AssetsPath.ic_whatsappBusiness,
+      color: colors.whatsappBusiness,
+    },
+    {
+      id: 4,
+      type: "gmail",
+      icon: AssetsPath.ic_gmail,
+      color: colors.gmail,
+    },
+    {
+      id: 5,
+      type: "phone",
+      icon: AssetsPath.ic_phone,
+      color: colors.sms,
+    },
+  ];
 
   const loadNotifications = async () => {
     try {
       const allNotifications = await getAllNotifications();
+      const now = new Date();
 
-      if (allNotifications && allNotifications.length > 0) {
-        const now = new Date();
+      const active = allNotifications.filter(
+        (notification) => new Date(notification.date) >= now
+      );
+      const inactive = allNotifications.filter(
+        (notification) => new Date(notification.date) < now
+      );
 
-        const active = allNotifications.filter(
-          (notification) => new Date(notification.date) >= now
-        );
-        const inactive = allNotifications.filter(
-          (notification) => new Date(notification.date) < now
-        );
+      const [day, month, year] = selectedDate.split("-");
+      const selectedDateObj = new Date(`${year}-${month}-${day}`);
 
-        const [day, month, year] = selectedDate.split("-");
-        const selectedDateObj = new Date(`${year}-${month}-${day}`);
-
-        if (isNaN(selectedDateObj.getTime())) {
-          console.error("Invalid selectedDate:", selectedDate);
-          return;
-        }
-
-        const filteredByDate = active.filter((notification) => {
-          const notificationDate = new Date(
-            notification.date
-          ).toLocaleDateString();
-          const selected = selectedDateObj.toLocaleDateString();
-
-          return notificationDate === selected;
-        });
-
-        const filteredByDateAll = allNotifications.filter((notification) => {
-          const notificationDate = new Date(
-            notification.date
-          ).toLocaleDateString();
-          const selected = selectedDateObj.toLocaleDateString();
-
-          return notificationDate === selected;
-        });
-
-        setNotificationsState({
-          all: allNotifications.reverse(),
-          allByDate: filteredByDateAll.reverse(),
-          active: filteredByDate.reverse(),
-          inactive: inactive.reverse(),
-        });
-      } else {
-        setNotificationsState({
-          all: [],
-          allByDate: [],
-          active: [],
-          inactive: [],
-        });
+      if (isNaN(selectedDateObj.getTime())) {
+        console.error("Invalid selectedDate:", selectedDate);
+        return;
       }
+
+      const filteredByType =
+        selectedFilter === "all"
+          ? active
+          : active.filter(
+              (notification) => notification.type === selectedFilter
+            );
+
+      const filteredByDate = filteredByType.filter((notification) => {
+        const notificationDate = new Date(
+          notification.date
+        ).toLocaleDateString();
+        const selected = selectedDateObj.toLocaleDateString();
+
+        return notificationDate === selected;
+      });
+
+      setNotificationsState({
+        all: allNotifications.reverse(),
+        allByDate: filteredByDate.reverse(),
+        active: filteredByDate.reverse(),
+        inactive: inactive.reverse(),
+      });
     } catch (error) {
       console.error("Error loading notifications:", error);
     } finally {
@@ -231,9 +256,46 @@ const Home = () => {
     return (
       <View style={style.listHeaderView}>
         <Text style={style.headerScheduleText}>Schedule</Text>
-        <View>
-          <View></View>
-          <Pressable onPress={() => setFullScreenPreview(true)}>
+        <View style={style.filterOptionContainer}>
+          <View style={style.filterButtonsFlex}>
+            <Pressable
+              style={style.filterAllBtn}
+              onPress={() => setSelectedFilter("all")}
+            >
+              <Text style={style.filterAllText}>All</Text>
+            </Pressable>
+            {categories.map((res) => {
+              const getColor = useNotificationIconColors(
+                res.type as NotificationType
+              );
+              return (
+                <Pressable
+                  key={res.id}
+                  style={[
+                    style.filterBtn,
+                    { backgroundColor: getColor.backgroundColor },
+                  ]}
+                  onPress={() =>
+                    setSelectedFilter(res.type as NotificationType)
+                  }
+                >
+                  <Image
+                    source={res.icon}
+                    tintColor={res.type === "gmail" ? undefined : res.color}
+                    style={style.filterIcon}
+                  />
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Pressable
+            onPress={() => {
+              if (notificationsState.allByDate.length > 0) {
+                setFullScreenPreview(true);
+              }
+            }}
+          >
             <Image
               resizeMode="contain"
               tintColor={theme === "light" ? colors.sms : colors.text}
@@ -319,7 +381,7 @@ const Home = () => {
           />
         </Animated.View>
 
-        {notificationsState.allByDate?.length !== 0 && <RenderHeaderView />}
+        <RenderHeaderView />
 
         <View style={{ flex: 1, height }}>
           {isLoading && notificationsState?.allByDate?.length !== 0 ? (

@@ -4,8 +4,8 @@ export const getIconSourceForBottomTabs = (routeName: string) => {
   switch (routeName) {
     case "Home":
       return AssetsPath.ic_fillHome;
-    case "Notification":
-      return AssetsPath.ic_unFillNotification;
+    case "Coming Soon":
+      return AssetsPath.ic_unFillComingSoon;
     case "History":
       return AssetsPath.ic_unFillHistory;
     case "Setting":

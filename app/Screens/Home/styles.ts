@@ -60,13 +60,13 @@ const styles = () => {
     },
     emptyViewContainer: {
       flex: 1,
-      bottom: 15,
+      bottom: 20,
       justifyContent: "flex-end",
       alignItems: "center",
     },
     emptyDateTimeImage: {
-      width: 90,
-      height: 90,
+      width: 85,
+      height: 85,
       justifyContent: "center",
     },
     emptyTextContainer: {
@@ -90,7 +90,7 @@ const styles = () => {
     },
     emptyArrowRocket: {
       left: 25,
-      height: 340,
+      height: 325,
       marginVertical: 10,
       alignSelf: "flex-end",
     },
@@ -109,6 +109,44 @@ const styles = () => {
     fullScreenIcon: {
       width: 18,
       height: 18,
+    },
+
+    filterOptionContainer: {
+      flexDirection: "row",
+      gap: 13,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    filterButtonsFlex: {
+      flexDirection: "row",
+      gap: 5,
+    },
+    filterAllBtn: {
+      justifyContent: "center",
+      alignItems: "center",
+      width: 26,
+      height: 26,
+      borderRadius: 500,
+      overflow: "hidden",
+      backgroundColor: "rgba(255, 255, 255, 0.2)",
+    },
+    filterAllText: {
+      color: colors.grayTitle,
+      fontFamily: FONTS.Medium,
+      textAlign: "center",
+      fontSize: 15,
+    },
+    filterBtn: {
+      width: 26,
+      height: 26,
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: 500,
+      overflow: "hidden",
+    },
+    filterIcon: {
+      width: "50%",
+      height: "50%",
     },
   });
 };

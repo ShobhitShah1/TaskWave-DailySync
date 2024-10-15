@@ -314,7 +314,7 @@ const BottomTab = () => {
       >
         <CurvedBottomBar.Screen name="Home" component={Home} position="LEFT" />
         <CurvedBottomBar.Screen
-          name="Notification"
+          name="Coming Soon"
           component={Notification}
           position="LEFT"
         />
