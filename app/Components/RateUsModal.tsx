@@ -4,6 +4,7 @@ import ReactNativeModal from "react-native-modal";
 import AssetsPath from "../Global/AssetsPath";
 import { FONTS } from "../Global/Theme";
 import useThemeColors from "../Theme/useThemeMode";
+import { BlurView } from "expo-blur";
 
 interface RateUsModalProps {
   isVisible: boolean;
@@ -30,14 +31,23 @@ const RateUsModal: FC<RateUsModalProps> = ({ isVisible, onClose }) => {
       hideModalContentWhileAnimating
       animationOut="fadeOut"
       customBackdrop={
-        <Pressable style={style.customBackdrop} onPress={onClose} />
+        <Pressable style={style.customBackdrop} onPress={onClose}>
+          <BlurView
+            style={style.customBackdrop}
+            intensity={15}
+            tint="dark"
+            experimentalBlurMethod="dimezisBlurView"
+          />
+        </Pressable>
       }
       hasBackdrop
       useNativeDriver={true}
       onBackButtonPress={onClose}
       onBackdropPress={onClose}
       style={style.modalContainer}
-      backdropOpacity={0.5}
+      backdropOpacity={1}
+      useNativeDriverForBackdrop
+      removeClippedSubviews
     >
       <View style={style.mainContainer}>
         <View style={style.rateUsViewContainer}>
@@ -85,6 +95,15 @@ const styles = (colors: any) =>
       backgroundColor: colors.white,
       borderRadius: 10,
       padding: 20,
+
+      // shadowColor: "rgba(64, 93, 240, 1)",
+      // shadowOffset: {
+      //   width: 0,
+      //   height: -20,
+      // },
+      // shadowOpacity: 1,
+      // shadowRadius: 4,
+      // elevation: 15,
     },
     rateUsViewContainer: {
       alignItems: "center",
@@ -128,6 +147,7 @@ const styles = (colors: any) =>
       justifyContent: "space-between",
       width: "100%",
       marginBottom: 10,
+      marginTop: 15,
     },
     cancelButton: {
       backgroundColor: "rgba(217, 217, 217, 0.5)",
@@ -148,7 +168,7 @@ const styles = (colors: any) =>
     buttonText: {
       fontSize: 17.5,
       color: colors.white,
-      fontFamily: FONTS.Medium,
+      fontFamily: FONTS.SemiBold,
     },
     noThanks: {
       color: "rgba(106, 107, 107, 1)",

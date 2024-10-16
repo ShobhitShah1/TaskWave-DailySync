@@ -13,12 +13,14 @@ interface IHomeHeaderProps {
   hideGrid?: boolean;
   title?: string;
   hideThemeButton?: boolean;
+  onBackPress?: () => void;
 }
 
 const HomeHeader = ({
   hideGrid,
   title,
   hideThemeButton = false,
+  onBackPress,
 }: IHomeHeaderProps) => {
   const colors = useThemeColors();
   const navigation = useNavigation();
@@ -55,7 +57,9 @@ const HomeHeader = ({
           {hideGrid && hideThemeButton && (
             <Pressable
               onPress={() =>
-                navigation.navigate("BottomTab", { screen: "Home" })
+                onBackPress
+                  ? onBackPress()
+                  : navigation.navigate("BottomTab", { screen: "Home" })
               }
               style={styles.backButton}
             >

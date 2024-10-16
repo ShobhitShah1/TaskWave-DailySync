@@ -6,6 +6,9 @@ import {
   StyleSheet,
   Text,
   View,
+  LayoutAnimation,
+  UIManager,
+  Platform,
 } from "react-native";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS } from "../../Global/Theme";
@@ -19,17 +22,27 @@ interface CategoryItemType {
   item: categoriesType;
   setSelectedCategory: (category: NotificationType) => void;
   selectedCategory: NotificationType | null | undefined;
+  categories: categoriesType[];
+  setCategories: (categories: categoriesType[]) => void;
+}
+
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 const RenderCategoryItem = ({
   item,
   selectedCategory,
   setSelectedCategory,
+  categories,
+  setCategories,
 }: CategoryItemType) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
-  const { typeColor, createViewColor, backgroundColor } =
-    useNotificationIconColors(item.type);
+  const { typeColor, createViewColor } = useNotificationIconColors(item.type);
 
   const isSelected = useMemo(
     () =>
@@ -39,19 +52,22 @@ const RenderCategoryItem = ({
   );
 
   const onCategoryClick = useCallback(() => {
+    // Animate the layout change
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+    // Move the selected category to the first position
+    const newCategories = categories.filter((cat) => cat.type !== item.type);
+    setCategories([item, ...newCategories]);
+
     setSelectedCategory(item.type);
-  }, [item]);
+  }, [item, categories]);
 
   return (
     <Pressable
       style={[
         styles.pressableContainer,
         {
-          borderColor: isSelected
-            ? selectedCategory === "gmail"
-              ? createViewColor
-              : typeColor
-            : colors.borderColor,
+          borderColor: isSelected ? createViewColor : colors.borderColor,
         },
       ]}
       onPress={onCategoryClick}

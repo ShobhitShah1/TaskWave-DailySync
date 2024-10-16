@@ -33,13 +33,10 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
     const typeColor = useMemo(() => {
       return notification.type === "gmail" && theme === "light"
         ? colors.gmailText
-        : notificationColors.typeColor;
-    }, [
-      notification.type,
-      theme,
-      colors.gmailText,
-      notificationColors.typeColor,
-    ]);
+        : notification.type === "whatsappBusiness"
+          ? notificationColors.createViewColor
+          : notificationColors.typeColor;
+    }, [notification.type, theme, colors.gmailText, notificationColors]);
 
     const gmailBorder = useMemo(
       () =>

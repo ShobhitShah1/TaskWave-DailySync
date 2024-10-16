@@ -51,13 +51,10 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   const typeColor = useMemo(() => {
     return notification.type === "gmail" && theme === "light"
       ? colors.gmailText
-      : notificationColors.typeColor;
-  }, [
-    notification.type,
-    theme,
-    colors.gmailText,
-    notificationColors.typeColor,
-  ]);
+      : notification.type === "whatsappBusiness"
+        ? notificationColors.createViewColor
+        : notificationColors.typeColor;
+  }, [notification.type, theme, colors.gmailText, notificationColors]);
 
   const icon = useMemo(
     () => getNotificationIcon(notification.type),

@@ -90,7 +90,7 @@ const styles = () => {
     },
     emptyArrowRocket: {
       left: 25,
-      height: 325,
+      height: 320,
       marginVertical: 10,
       alignSelf: "flex-end",
     },

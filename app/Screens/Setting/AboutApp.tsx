@@ -4,13 +4,20 @@ import { FONTS, SIZE } from "../../Global/Theme";
 import useThemeColors from "../../Theme/useThemeMode";
 import HomeHeader from "../Home/Components/HomeHeader";
 import { useAppContext } from "../../Contexts/ThemeProvider";
+import { useNavigation } from "@react-navigation/native";
 
 const AboutApp = () => {
   const style = styles();
+  const navigation = useNavigation();
 
   return (
     <View style={style.container}>
-      <HomeHeader title="About App" hideGrid={true} hideThemeButton={true} />
+      <HomeHeader
+        onBackPress={() => navigation.goBack()}
+        title="About App"
+        hideGrid={true}
+        hideThemeButton={true}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}

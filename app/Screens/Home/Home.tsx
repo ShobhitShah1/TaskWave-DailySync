@@ -259,7 +259,16 @@ const Home = () => {
         <View style={style.filterOptionContainer}>
           <View style={style.filterButtonsFlex}>
             <Pressable
-              style={style.filterAllBtn}
+              style={[
+                style.filterAllBtn,
+                selectedFilter === "all" && {
+                  shadowColor: "gray",
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 1,
+                  shadowRadius: 10,
+                  elevation: 5,
+                },
+              ]}
               onPress={() => setSelectedFilter("all")}
             >
               <Text style={style.filterAllText}>All</Text>
@@ -274,6 +283,13 @@ const Home = () => {
                   style={[
                     style.filterBtn,
                     { backgroundColor: getColor.backgroundColor },
+                    selectedFilter === res.type && {
+                      shadowColor: "gray",
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: 1,
+                      shadowRadius: 10,
+                      elevation: 5,
+                    },
                   ]}
                   onPress={() =>
                     setSelectedFilter(res.type as NotificationType)

@@ -54,9 +54,11 @@ const styles = () => {
       fontFamily: FONTS.Medium,
     },
     arrow: {
-      fontSize: 18,
+      bottom: 5,
+      fontSize: 23,
       color: colors.white,
       fontFamily: FONTS.Medium,
+      includeFontPadding: false,
     },
   });
 };

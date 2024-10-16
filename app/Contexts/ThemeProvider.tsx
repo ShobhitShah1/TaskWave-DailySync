@@ -29,7 +29,7 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
   useEffect(() => {
     const unSubscribe = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "active") {
-        // setThemeBasedOnTime();
+        setThemeBasedOnTime();
         // storeTheme();
       }
     });

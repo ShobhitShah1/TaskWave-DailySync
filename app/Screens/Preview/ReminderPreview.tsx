@@ -31,6 +31,7 @@ import useThemeColors from "../../Theme/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 import { formatDate, formatTime } from "../AddReminder/ReminderScheduled";
+import { useAppContext } from "../../Contexts/ThemeProvider";
 
 type NotificationProps = {
   params: { notificationData: Notification };
@@ -41,6 +42,7 @@ const ReminderPreview = () => {
   const style = styles();
   const navigation = useNavigation();
   const colors = useThemeColors();
+  const { theme } = useAppContext();
   const { params } = useRoute<RouteProp<NotificationProps, "params">>();
 
   const [showFilePreview, setShowFilePreview] = useState({
@@ -305,10 +307,30 @@ const ReminderPreview = () => {
 
           <View style={style.reminderDetails}>
             <View style={style.reminderDateTime}>
-              <Text style={[style.dateTimeText, { color: colors.text }]}>
+              <Text
+                style={[
+                  style.dateTimeText,
+                  {
+                    color:
+                      theme === "dark"
+                        ? "rgba(255, 255, 255, 0.8)"
+                        : "rgba(48, 51, 52, 1)",
+                  },
+                ]}
+              >
                 {formatDate(notificationData.date)}
               </Text>
-              <Text style={[style.dateTimeText, { color: colors.text }]}>
+              <Text
+                style={[
+                  style.dateTimeText,
+                  {
+                    color:
+                      theme === "dark"
+                        ? "rgba(255, 255, 255, 0.8)"
+                        : "rgba(48, 51, 52, 1)",
+                  },
+                ]}
+              >
                 {formatTime(notificationData.date)}
               </Text>
             </View>
@@ -500,7 +522,7 @@ const styles = () => {
     },
     dateTimeText: {
       fontSize: 19,
-      fontFamily: FONTS.Medium,
+      fontFamily: FONTS.SemiBold,
     },
     reminderCard: {
       width: "100%",

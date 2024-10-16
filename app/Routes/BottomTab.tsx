@@ -9,8 +9,6 @@ import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import React, { memo, useCallback, useRef, useState } from "react";
 import {
-  Animated,
-  FlatList,
   Image,
   ImageSourcePropType,
   LayoutAnimation,
@@ -18,6 +16,7 @@ import {
   NativeModules,
   Platform,
   Pressable,
+  Animated as RNAnimated,
   StyleSheet,
   Text,
   UIManager,
@@ -40,6 +39,11 @@ import useThemeColors from "../Theme/useThemeMode";
 import { NotificationType } from "../Types/Interface";
 import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 
 if (
   Platform.OS === "android" &&
@@ -95,7 +99,7 @@ const BottomTab = () => {
   const [selectedCategory, setSelectedCategory] =
     useState<NotificationType>("whatsapp");
 
-  const categories: categoriesType[] = [
+  const initialCategories: categoriesType[] = [
     {
       id: 1,
       type: "whatsapp",
@@ -118,7 +122,7 @@ const BottomTab = () => {
       title: "WA Business",
       description: "Let’s create business event",
       icon: AssetsPath.ic_whatsappBusiness,
-      color: colors.whatsappBusiness,
+      color: colors.whatsappBusinessDark,
     },
     {
       id: 4,
@@ -137,6 +141,8 @@ const BottomTab = () => {
       color: colors.sms,
     },
   ];
+
+  const [categories, setCategories] = useState(initialCategories);
 
   const handleTabChange = useCallback(
     (selectedTab: string) => {
@@ -170,6 +176,7 @@ const BottomTab = () => {
       >
         <Image
           source={getIconSourceForBottomTabs(routeName)}
+          tintColor={selectedTab === routeName ? colors.white : undefined}
           style={styles.icon}
         />
         <Text style={[styles.tabLabel, { color: colors.white }]}>
@@ -286,14 +293,14 @@ const BottomTab = () => {
         initialRouteName="Home"
         borderTopLeftRight
         renderCircle={() => (
-          <Animated.View style={styles.btnCircleUp}>
+          <RNAnimated.View style={styles.btnCircleUp}>
             <Pressable
               style={styles.addButton}
               onPress={handlePresentModalPress}
             >
               <Text style={styles.addButtonText}>+</Text>
             </Pressable>
-          </Animated.View>
+          </RNAnimated.View>
         )}
         tabBar={renderTabBar}
         screenListeners={{
@@ -366,7 +373,7 @@ const BottomTab = () => {
                 style={theme === "dark" ? "light" : "dark"}
               />
               <View style={styles.sheetSuggestionView}>
-                {categories?.map((res) => {
+                {initialCategories?.map((res) => {
                   const isSelected = res.type === selectedCategory;
                   return (
                     <Pressable
@@ -394,14 +401,19 @@ const BottomTab = () => {
                   );
                 })}
               </View>
-              <FlatList
+              <Animated.FlatList
                 numColumns={2}
                 data={categories}
+                exiting={FadeOut}
+                entering={FadeIn}
+                layout={LinearTransition.stiffness(200).damping(100)}
                 renderItem={({ item }) => (
                   <RenderCategoryItem
                     item={item}
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
+                    categories={categories}
+                    setCategories={setCategories}
                   />
                 )}
                 keyExtractor={(item, index) => index.toString()}
@@ -449,10 +461,10 @@ const styles = StyleSheet.create({
     bottom: 30,
     backgroundColor: "rgba(64, 93, 240, 1)",
     shadowColor: "rgba(71, 134, 249, 1)",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.32,
-    shadowRadius: 5.46,
-    elevation: 5,
+    shadowOffset: { width: 0, height: -5 },
+    shadowOpacity: 1,
+    shadowRadius: 5,
+    elevation: 4,
   },
   tabBarItem: {
     flex: 1,
