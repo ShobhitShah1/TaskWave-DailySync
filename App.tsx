@@ -95,7 +95,7 @@ export default function App() {
         <AppProvider>
           <Routes />
           <FlashMessage
-            position="bottom"
+            position="top"
             floating={true}
             duration={3500}
             titleStyle={styles.flashTextStyle}
