@@ -14,7 +14,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.taskwave.dailysync"
+      "package": "com.taskwave.dailysync",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -28,6 +32,11 @@
           "microphonePermission": "Allow to access your microphone."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a3b0f09f-94c3-4b22-8934-9cc8e78fc1e4"
+      }
+    }
   }
 }
