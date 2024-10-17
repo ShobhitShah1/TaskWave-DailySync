@@ -18,6 +18,7 @@ const LOGO_SIZE = 65;
 export interface ReminderCardProps {
   notification: Notification;
   deleteReminder: (id?: string) => void;
+  onRefreshData?: () => void;
 }
 
 export interface NotificationColor {
@@ -31,12 +32,19 @@ export interface NotificationColor {
 const ReminderCard: React.FC<ReminderCardProps> = ({
   notification,
   deleteReminder,
+  onRefreshData,
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
   const navigation = useNavigation();
-  const { timeLeft } = useCountdownTimer(notification.date);
+  const { timeLeft, timeIsOver } = useCountdownTimer(notification.date);
   const notificationColors = useNotificationIconColors(notification.type);
+
+  useEffect(() => {
+    if (timeIsOver && onRefreshData) {
+      onRefreshData();
+    }
+  }, [timeIsOver, timeLeft]);
 
   const cardBackgroundColor = useMemo(() => {
     return theme === "dark"

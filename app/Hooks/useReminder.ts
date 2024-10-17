@@ -232,9 +232,7 @@ const useReminder = () => {
     } catch (error: any) {
       console.log("error?.message", error?.message);
       showMessage({
-        message:
-          error?.message ||
-          "Failed to create notification in the database. Please try again.",
+        message: String(error?.message || error),
         type: "danger",
       });
       return null;
@@ -244,7 +242,9 @@ const useReminder = () => {
   const updateNotification = async (
     notification: Notification
   ): Promise<boolean> => {
-    if (!db) {
+    const database = await openDatabase();
+
+    if (!database) {
       showMessage({
         message: "Database connection error. Please try again.",
         type: "danger",
@@ -318,10 +318,10 @@ const useReminder = () => {
         },
         trigger
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating notification in Notifee:", error);
       showMessage({
-        message: "Failed to update notification. Please try again.",
+        message: String(error?.message || error),
         type: "danger",
       });
       return false;
@@ -341,14 +341,12 @@ const useReminder = () => {
     const transactionSQL = `${updateNotificationSQL}; ${deleteContactsSQL}; ${insertContactsSQL}`;
 
     try {
-      const response = await db.execAsync(transactionSQL);
+      const response = await database.execAsync(transactionSQL);
       console.log("response:", response);
       return true;
-    } catch (error) {
-      console.log("error:", error);
+    } catch (error: any) {
       showMessage({
-        message:
-          "Failed to update notification in the database. Please try again.",
+        message: String(error?.message || error),
         type: "danger",
       });
       return false;
@@ -370,9 +368,9 @@ const useReminder = () => {
       await notifee.cancelNotification(id);
       await database.execAsync(`DELETE FROM notifications WHERE id = '${id}'`);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       showMessage({
-        message: "Failed to delete notification. Please try again.",
+        message: String(error?.message || error),
         type: "danger",
       });
       return false;
@@ -415,9 +413,9 @@ const useReminder = () => {
       }
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       showMessage({
-        message: "Failed to retrieve notifications. Please try again.",
+        message: String(error?.message || error),
         type: "danger",
       });
       return [];
@@ -465,9 +463,9 @@ const useReminder = () => {
       };
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       showMessage({
-        message: "Failed to retrieve notification. Please try again.",
+        message: String(error?.message || error),
         type: "danger",
       });
       return null;

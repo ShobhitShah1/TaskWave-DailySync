@@ -8,12 +8,10 @@ const updateToNextDate = async (
 }> => {
   const { scheduleFrequency, date } = notification;
 
-  console.log("Inside:", notification);
   if (!scheduleFrequency) {
     return { updatedNotification: notification };
   }
 
-  // Convert the date string to a Date object
   const currentDate = moment(date).toDate();
 
   let nextDate: Date;

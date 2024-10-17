@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { memo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Linking, StyleSheet, View } from "react-native";
 import Share from "react-native-share";
 import RateUsModal from "../../Components/RateUsModal";
 import WithBackHeader from "../../Components/WithBackHeader";
@@ -16,6 +16,7 @@ const Settings = () => {
   const [modalStatus, setModalStatus] = useState({
     rateUs: false,
   });
+
   const settingsData = [
     {
       title: "Share",
@@ -35,7 +36,13 @@ const Settings = () => {
       onPress: () =>
         setModalStatus({ ...modalStatus, rateUs: !modalStatus.rateUs }),
     },
-    { title: "Contact us", icon: AssetsPath.ic_contact, onPress: () => {} },
+    {
+      title: "Contact us",
+      icon: AssetsPath.ic_contact,
+      onPress: () => {
+        Linking.openURL("mailto:test@gmail.com");
+      },
+    },
     {
       title: "About app",
       icon: AssetsPath.ic_info,
@@ -46,7 +53,7 @@ const Settings = () => {
 
   return (
     <View style={style.container}>
-      {/* <WithBackHeader title={"Setting"} /> */}
+      <WithBackHeader title={"Setting"} />
 
       <View
         style={{

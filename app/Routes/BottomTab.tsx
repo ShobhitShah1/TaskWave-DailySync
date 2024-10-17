@@ -356,7 +356,7 @@ const BottomTab = () => {
             { backgroundColor: colors.text },
           ]}
           ref={bottomSheetModalRef}
-          snapPoints={["75%"]}
+          snapPoints={["80%"]}
           onChange={handleSheetPositionChange}
         >
           <BottomSheetScrollView

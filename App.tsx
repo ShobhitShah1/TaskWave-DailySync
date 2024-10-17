@@ -69,13 +69,11 @@ export default function App() {
                 await updateToNextDate(notification);
 
               if (updatedNotification) {
-                console.log("newNotification:", updatedNotification);
                 await updateNotification(updatedNotification);
               }
-            } catch (error) {
-              console.error("Error handling notification update:", error);
+            } catch (error: any) {
               showMessage({
-                message: "Failed to update and reschedule notification.",
+                message: String(error?.message || error),
                 type: "danger",
               });
             }

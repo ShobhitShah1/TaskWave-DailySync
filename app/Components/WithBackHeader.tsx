@@ -67,7 +67,6 @@ const styles = StyleSheet.create({
   container: {
     width: SIZE.appContainWidth,
     paddingVertical: 10,
-    overflow: "hidden",
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",

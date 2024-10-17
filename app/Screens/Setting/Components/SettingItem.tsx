@@ -54,7 +54,6 @@ const styles = () => {
       fontFamily: FONTS.Medium,
     },
     arrow: {
-      bottom: 5,
       fontSize: 23,
       color: colors.white,
       fontFamily: FONTS.Medium,

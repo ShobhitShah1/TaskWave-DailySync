@@ -273,13 +273,13 @@ const Home = () => {
             >
               <Text style={style.filterAllText}>All</Text>
             </Pressable>
-            {categories.map((res) => {
+            {categories.map((res, index) => {
               const getColor = useNotificationIconColors(
                 res.type as NotificationType
               );
               return (
                 <Pressable
-                  key={res.id}
+                  key={index}
                   style={[
                     style.filterBtn,
                     { backgroundColor: getColor.backgroundColor },
@@ -431,6 +431,7 @@ const Home = () => {
               renderItem={({ item }) => (
                 <ReminderCard
                   notification={item}
+                  onRefreshData={loadNotifications}
                   deleteReminder={deleteReminder}
                 />
               )}
