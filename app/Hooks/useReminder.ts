@@ -7,7 +7,7 @@ import notifee, {
   TriggerType,
 } from "@notifee/react-native";
 import * as SQLite from "expo-sqlite";
-import { memo, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { showMessage } from "react-native-flash-message";
 import { Contact, Notification } from "../Types/Interface";
 
@@ -295,7 +295,7 @@ const useReminder = () => {
     try {
       await notifee.createTriggerNotification(
         {
-          id,
+          id: id?.toString(),
           title:
             type === "gmail"
               ? subject

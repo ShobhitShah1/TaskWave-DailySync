@@ -25,19 +25,32 @@ interface TextWithDefaultProps extends Text {
 LogBox.ignoreAllLogs();
 
 notifee.onBackgroundEvent(async ({ type, detail }) => {
-  const { notification } = detail;
+  const notification: Notification = detail.notification?.data as any;
 
   switch (type) {
     case EventType.DISMISSED:
       break;
     case EventType.PRESS:
-      handleNotificationPress(notification?.data);
+      handleNotificationPress(notification);
       break;
     case EventType.DELIVERED:
-      handleNotificationPress(notification?.data);
+      if (notification) {
+        try {
+          const { updatedNotification } = await updateToNextDate(notification);
+
+          if (updatedNotification) {
+            await useReminder().updateNotification(updatedNotification);
+          }
+        } catch (error: any) {
+          showMessage({
+            message: String(error?.message || error),
+            type: "danger",
+          });
+        }
+      }
       break;
     default:
-      handleNotificationPress(notification?.data);
+      return;
   }
 });
 
