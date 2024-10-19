@@ -36,6 +36,7 @@ export type RootStackParamList = {
     notificationData: Notification;
   };
   AboutApp: undefined;
+  HowAppWorks: undefined;
 };
 
 export interface ReusableBottomSheetProps {

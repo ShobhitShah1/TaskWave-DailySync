@@ -59,6 +59,11 @@ const ob_WhatsappBusiness = require("../../assets/Images/ob_WhatsappBusiness.png
 const appLogoRound = require("../../assets/Images/Dailysync_round.png");
 const appLogoSquare = require("../../assets/Images/Dailysync_square.png");
 
+const HIW_home_dark = require("../../assets/Images/HIW_home_dark.png");
+const HIW_create_dark = require("../../assets/Images/HIW_create_dark.png");
+const HIW_Notification = require("../../assets/Images/HIW_Notification.png");
+const HIW_whatsapp_dark = require("../../assets/Images/HIW_whatsapp_dark.png");
+
 // Animation
 const success_animation = require("../../assets/Animations/success_animation.json");
 
@@ -114,6 +119,11 @@ export default {
   ob_WhatsappBusiness,
   appLogoRound,
   appLogoSquare,
+
+  HIW_home_dark,
+  HIW_create_dark,
+  HIW_Notification,
+  HIW_whatsapp_dark,
 
   // Animation
   success_animation,

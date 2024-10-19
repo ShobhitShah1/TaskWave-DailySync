@@ -48,7 +48,13 @@ const Settings = () => {
       icon: AssetsPath.ic_info,
       onPress: () => navigation.navigate("AboutApp"),
     },
-    { title: "How app works", icon: AssetsPath.ic_info, onPress: () => {} },
+    {
+      title: "How app works",
+      icon: AssetsPath.ic_info,
+      onPress: () => {
+        navigation.navigate("HowAppWorks");
+      },
+    },
   ];
 
   return (

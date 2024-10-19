@@ -16,6 +16,7 @@ import AboutApp from "../Screens/Setting/AboutApp";
 import useThemeColors from "../Theme/useThemeMode";
 import { RootStackParamList } from "../Types/Interface";
 import BottomTab from "./BottomTab";
+import HowAppWorks from "../Screens/Setting/HowAppWorks";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -62,6 +63,7 @@ const Routes = () => {
           />
           <Stack.Screen name="ReminderPreview" component={ReminderPreview} />
           <Stack.Screen name="AboutApp" component={AboutApp} />
+          <Stack.Screen name="HowAppWorks" component={HowAppWorks} />
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>
