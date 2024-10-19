@@ -52,10 +52,8 @@ const RenderCategoryItem = ({
   );
 
   const onCategoryClick = useCallback(() => {
-    // Animate the layout change
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
-    // Move the selected category to the first position
     const newCategories = categories.filter((cat) => cat.type !== item.type);
     setCategories([item, ...newCategories]);
 
@@ -67,7 +65,7 @@ const RenderCategoryItem = ({
       style={[
         styles.pressableContainer,
         {
-          borderColor: isSelected ? createViewColor : colors.borderColor,
+          borderColor: isSelected ? colors.black : colors.borderColor,
         },
       ]}
       onPress={onCategoryClick}
@@ -75,7 +73,7 @@ const RenderCategoryItem = ({
       <ImageBackground
         resizeMode="cover"
         tintColor={
-          isSelected ? typeColor : theme === "light" ? "#8B8E8E" : undefined
+          isSelected ? colors.black : theme === "light" ? "#8B8E8E" : undefined
         }
         source={AssetsPath.ic_categoryFrame}
         style={styles.imageBackground}
@@ -110,6 +108,7 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 10,
     borderWidth: 1,
+    overflow: "hidden",
   },
   imageBackground: {
     width: "100%",

@@ -7,6 +7,7 @@ import {
   Image,
   Pressable,
   RefreshControl,
+  SafeAreaView,
   Text,
   useWindowDimensions,
   View,
@@ -24,7 +25,6 @@ import RenderCalenderView from "../../Components/RenderCalenderView";
 import YearMonthPicker from "../../Components/YearMonthPicker";
 import { useAppContext } from "../../Contexts/ThemeProvider";
 import AssetsPath from "../../Global/AssetsPath";
-import TextString from "../../Global/TextString";
 import useCalendar from "../../Hooks/useCalendar";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useNotificationPermission from "../../Hooks/useNotificationPermission";
@@ -34,6 +34,7 @@ import { Notification, NotificationType } from "../../Types/Interface";
 import { fromNowText } from "../../Utils/isSameDat";
 import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "./Components/HomeHeader";
+import RenderEmptyView from "./Components/RenderEmptyView";
 import styles from "./styles";
 
 const Home = () => {
@@ -158,12 +159,23 @@ const Home = () => {
       const allNotifications = await getAllNotifications();
       const now = new Date();
 
-      const active = allNotifications.filter(
-        (notification) => new Date(notification.date) >= now
-      );
-      const inactive = allNotifications.filter(
-        (notification) => new Date(notification.date) < now
-      );
+      const active = allNotifications
+        .filter(
+          (notification) =>
+            new Date(notification.date).getTime() >= now.getTime()
+        )
+        .sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+
+      const inactive = allNotifications
+        .filter(
+          (notification) =>
+            new Date(notification.date).getTime() < now.getTime()
+        )
+        .sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
 
       const [day, month, year] = selectedDate.split("-");
       const selectedDateObj = new Date(`${year}-${month}-${day}`);
@@ -175,25 +187,30 @@ const Home = () => {
 
       const filteredByType =
         selectedFilter === "all"
-          ? active
-          : active.filter(
-              (notification) => notification.type === selectedFilter
-            );
+          ? [...active, ...inactive]
+          : [
+              ...active.filter(
+                (notification) => notification.type === selectedFilter
+              ),
+              ...inactive.filter(
+                (notification) => notification.type === selectedFilter
+              ),
+            ];
 
       const filteredByDate = filteredByType.filter((notification) => {
-        const notificationDate = new Date(
-          notification.date
-        ).toLocaleDateString();
-        const selected = selectedDateObj.toLocaleDateString();
+        const notificationDate = new Date(notification.date);
+        notificationDate.setHours(0, 0, 0, 0);
+        const selectedWithoutTime = new Date(selectedDateObj);
+        selectedWithoutTime.setHours(0, 0, 0, 0);
 
-        return notificationDate === selected;
+        return notificationDate.getTime() === selectedWithoutTime.getTime();
       });
 
       setNotificationsState({
-        all: allNotifications.reverse(),
-        allByDate: filteredByDate.reverse(),
-        active: filteredByDate.reverse(),
-        inactive: inactive.reverse(),
+        all: [...active, ...inactive],
+        allByDate: filteredByDate,
+        active: active,
+        inactive: inactive,
       });
     } catch (error) {
       console.error("Error loading notifications:", error);
@@ -226,32 +243,6 @@ const Home = () => {
     ]);
   }, []);
 
-  const RenderEmptyView = () => {
-    return (
-      <Animated.View
-        style={[style.emptyViewContainer, { justifyContent: "center" }]}
-      >
-        <Image
-          style={style.emptyDateTimeImage}
-          source={AssetsPath.ic_emptyDateTime}
-        />
-        <View style={style.emptyTextContainer}>
-          <Text style={style.emptyNoEventTitle}>
-            {TextString.NoScheduleYet}
-          </Text>
-          <Text style={style.emptyListText}>
-            {TextString.LetsScheduleYourDailyEvents}
-          </Text>
-        </View>
-        <Image
-          source={AssetsPath.ic_emptyRocket}
-          resizeMode="contain"
-          style={style.emptyArrowRocket}
-        />
-      </Animated.View>
-    );
-  };
-
   const RenderHeaderView = () => {
     return (
       <View style={style.listHeaderView}>
@@ -261,12 +252,13 @@ const Home = () => {
             <Pressable
               style={[
                 style.filterAllBtn,
+                { backgroundColor: colors.background },
                 selectedFilter === "all" && {
                   shadowColor: "gray",
                   shadowOffset: { width: 0, height: 0 },
                   shadowOpacity: 1,
-                  shadowRadius: 10,
-                  elevation: 5,
+                  shadowRadius: 15,
+                  elevation: 10,
                 },
               ]}
               onPress={() => setSelectedFilter("all")}
@@ -287,8 +279,8 @@ const Home = () => {
                       shadowColor: "gray",
                       shadowOffset: { width: 0, height: 0 },
                       shadowOpacity: 1,
-                      shadowRadius: 10,
-                      elevation: 5,
+                      shadowRadius: 15,
+                      elevation: 10,
                     },
                   ]}
                   onPress={() =>
@@ -340,7 +332,7 @@ const Home = () => {
   };
 
   return (
-    <View style={style.container}>
+    <SafeAreaView style={style.container}>
       <HomeHeader hideGrid={notificationsState.allByDate?.length === 0} />
 
       <View style={style.homeContainContainer}>
@@ -455,7 +447,7 @@ const Home = () => {
         onConfirm={handleDateChange}
         onCancel={() => setShowDateAndYearModal(false)}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

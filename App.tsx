@@ -34,7 +34,7 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
       handleNotificationPress(notification);
       break;
     case EventType.DELIVERED:
-      if (notification) {
+      if (notification && notification?.scheduleFrequency?.length !== 0) {
         try {
           const { updatedNotification } = await updateToNextDate(notification);
 
@@ -76,7 +76,7 @@ export default function App() {
           handleNotificationPress(notification);
           break;
         case EventType.DELIVERED:
-          if (notification) {
+          if (notification && notification?.scheduleFrequency?.length !== 0) {
             try {
               const { updatedNotification } =
                 await updateToNextDate(notification);

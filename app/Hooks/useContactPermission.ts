@@ -41,21 +41,10 @@ const useContactPermission = () => {
         });
         return false;
       case RESULTS.DENIED:
-        // Automatically request permission if it's denied
-        return await requestPermission();
+        return false;
       case RESULTS.GRANTED:
-        // Permission granted, return true
         return true;
       case RESULTS.BLOCKED:
-        // Show alert and direct user to settings
-        Alert.alert(
-          "Contacts Permission Blocked",
-          "Contacts permission is blocked. Please enable it in the settings.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Open Settings", onPress: () => Linking.openSettings() },
-          ]
-        );
         return false;
       default:
         return false;
@@ -70,14 +59,13 @@ const useContactPermission = () => {
       if (result === RESULTS.GRANTED) {
         return true;
       } else if (result === RESULTS.BLOCKED) {
-        Alert.alert(
-          "Contacts Permission Blocked",
-          "Contacts permission is blocked. Please enable it in the settings.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Open Settings", onPress: () => Linking.openSettings() },
-          ]
-        );
+        showMessage({
+          message:
+            "Contacts permission is required to access your contacts. click here to go to settings",
+          type: "danger",
+          duration: 5000,
+          onPress: () => Linking.openSettings(),
+        });
         return false;
       }
       return false;

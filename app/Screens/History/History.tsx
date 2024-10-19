@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import { showMessage } from "react-native-flash-message";
 import Animated from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 import RenderCalenderView from "../../Components/RenderCalenderView";
 import YearMonthPicker from "../../Components/YearMonthPicker";
 import AssetsPath from "../../Global/AssetsPath";
@@ -33,7 +34,6 @@ import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "../Home/Components/HomeHeader";
 import RenderFilterTabData from "./Components/RenderFilterTabData";
 import RenderHistoryList from "./Components/RenderHistoryList";
-import Header from "../../Components/Header";
 
 const History = () => {
   const style = styles();
@@ -270,7 +270,7 @@ const History = () => {
   };
 
   return (
-    <View style={style.container}>
+    <SafeAreaView style={style.container}>
       <HomeHeader hideGrid={true} hideThemeButton={true} />
 
       <View
@@ -401,7 +401,7 @@ const History = () => {
           onCancel={() => setShowDateAndYearModal(false)}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -7,6 +7,7 @@ import NextButton from "./Components/NextButton";
 import OnBoardingListView from "./Components/OnBoardingListView";
 import Paginator from "./Components/Paginator";
 import { storage, useAppContext } from "../../Contexts/ThemeProvider";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const OnBoarding = () => {
   const navigation = useNavigation<any>();
@@ -43,7 +44,7 @@ const OnBoarding = () => {
   }, []);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.white }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
       <StatusBar barStyle={"dark-content"} backgroundColor={colors.white} />
       <View style={{ flex: 2 }}>
         <FlatList
@@ -71,7 +72,7 @@ const OnBoarding = () => {
         <Paginator data={OnBoardingData} scrollX={scrollX} />
         <NextButton scrollTo={scrollTo} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

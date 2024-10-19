@@ -36,7 +36,17 @@ const HowItWorkView: FC<HowItWorkViewProps> = ({ item }) => {
         <Text style={[styles.titleText, { color: colors.text }]}>
           {item.title}
         </Text>
-        <Text style={[styles.descriptionText, { color: colors.text }]}>
+        <Text
+          style={[
+            styles.descriptionText,
+            {
+              color:
+                theme === "dark"
+                  ? "rgba(139, 142, 142, 1)"
+                  : "rgba(78, 78, 79, 1)",
+            },
+          ]}
+        >
           {item.description}
         </Text>
       </View>
@@ -53,10 +63,9 @@ const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
     overflow: "hidden",
-    height: "15%",
   },
   textViewContainer: {
-    flex: 0.25,
+    flex: 0.15,
     overflow: "hidden",
     justifyContent: "center",
   },

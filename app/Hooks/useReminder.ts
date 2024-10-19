@@ -230,7 +230,6 @@ const useReminder = () => {
       await db.execAsync(transactionSQL);
       return id;
     } catch (error: any) {
-      console.log("error?.message", error?.message);
       showMessage({
         message: String(error?.message || error),
         type: "danger",
@@ -341,8 +340,7 @@ const useReminder = () => {
     const transactionSQL = `${updateNotificationSQL}; ${deleteContactsSQL}; ${insertContactsSQL}`;
 
     try {
-      const response = await database.execAsync(transactionSQL);
-      console.log("response:", response);
+      await database.execAsync(transactionSQL);
       return true;
     } catch (error: any) {
       showMessage({

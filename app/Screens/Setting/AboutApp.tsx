@@ -5,13 +5,15 @@ import useThemeColors from "../../Theme/useThemeMode";
 import HomeHeader from "../Home/Components/HomeHeader";
 import { useAppContext } from "../../Contexts/ThemeProvider";
 import { useNavigation } from "@react-navigation/native";
+import AssetsPath from "../../Global/AssetsPath";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const AboutApp = () => {
   const style = styles();
   const navigation = useNavigation();
 
   return (
-    <View style={style.container}>
+    <SafeAreaView style={style.container}>
       <HomeHeader
         onBackPress={() => navigation.goBack()}
         title="About App"
@@ -26,10 +28,7 @@ const AboutApp = () => {
       >
         <View style={style.section}>
           <View style={style.logoContainer}>
-            <Image
-              style={style.logo}
-              source={require("../../../assets/Icons/ic_appLogo.png")}
-            />
+            <Image style={style.logo} source={AssetsPath.appLogoRound} />
           </View>
 
           <Text style={style.appTitle}>Dailysync</Text>
@@ -60,7 +59,7 @@ const AboutApp = () => {
 
         <Text style={style.footerText}>All rights to@nirvanatechlabs</Text>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -88,7 +87,7 @@ const styles = () => {
         theme === "light"
           ? "rgba(173, 175, 176, 1)"
           : "rgba(255, 255, 255, 0.2)",
-      borderBottomWidth: 1,
+      borderBottomWidth: StyleSheet.hairlineWidth,
       paddingVertical: 30,
     },
     logoContainer: {

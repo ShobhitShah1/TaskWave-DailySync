@@ -32,6 +32,7 @@ import { Notification } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 import { formatDate, formatTime } from "../AddReminder/ReminderScheduled";
 import { useAppContext } from "../../Contexts/ThemeProvider";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type NotificationProps = {
   params: { notificationData: Notification };
@@ -178,7 +179,7 @@ const ReminderPreview = () => {
   });
 
   return (
-    <View style={style.container}>
+    <SafeAreaView style={style.container}>
       <View style={style.innerContainer}>
         <View style={style.backView}>
           <Pressable
@@ -429,7 +430,7 @@ const ReminderPreview = () => {
         images={imageUrls}
         initialIndex={showFilePreview.index}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

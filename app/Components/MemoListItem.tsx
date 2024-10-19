@@ -43,7 +43,6 @@ const AudioMemoItem = ({
 
     return () => {
       if (sound) {
-        console.log("Unloading Sound");
         sound.unloadAsync();
       }
     };

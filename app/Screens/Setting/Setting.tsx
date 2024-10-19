@@ -8,6 +8,7 @@ import AssetsPath from "../../Global/AssetsPath";
 import { SIZE } from "../../Global/Theme";
 import useThemeColors from "../../Theme/useThemeMode";
 import SettingItem from "./Components/SettingItem";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Settings = () => {
   const style = styles();
@@ -58,7 +59,7 @@ const Settings = () => {
   ];
 
   return (
-    <View style={style.container}>
+    <SafeAreaView style={style.container}>
       <WithBackHeader title={"Setting"} />
 
       <View
@@ -82,7 +83,7 @@ const Settings = () => {
         isVisible={modalStatus.rateUs}
         onClose={() => setModalStatus({ ...modalStatus, rateUs: false })}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -142,7 +142,6 @@ const styles = () => {
       justifyContent: "center",
       alignItems: "center",
       borderRadius: 500,
-      overflow: "hidden",
     },
     filterIcon: {
       width: "50%",

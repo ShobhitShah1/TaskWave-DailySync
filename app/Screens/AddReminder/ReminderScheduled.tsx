@@ -15,6 +15,7 @@ import useThemeColors from "../../Theme/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import TextString from "../../Global/TextString";
 import LottieView from "lottie-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type ReminderScheduledProps = {
   params: { themeColor: string; notification: Notification };
@@ -37,21 +38,19 @@ const monthsOfYear = [
 ];
 
 export const formatTime = (date: Date) => {
-  const hours = date.getHours() % 12 || 12; // Convert 24-hour to 12-hour format
-  const minutes = date.getMinutes().toString().padStart(2, "0"); // Add leading 0 if needed
-  const ampm = date.getHours() >= 12 ? "PM" : "AM"; // AM or PM
+  const hours = date.getHours() % 12 || 12;
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const ampm = date.getHours() >= 12 ? "PM" : "AM";
   return `${hours}:${minutes} ${ampm}`;
 };
 
-// Function to format the date part (e.g., Thu, Jan 23)
 export const formatDate = (date: Date) => {
-  const dayName = daysOfWeek[date.getDay()]; // e.g., Thu
-  const day = date.getDate(); // e.g., 23
-  const month = monthsOfYear[date.getMonth()]; // e.g., Jan
+  const dayName = daysOfWeek[date.getDay()];
+  const day = date.getDate();
+  const month = monthsOfYear[date.getMonth()];
   return `${dayName}, ${month} ${day}`;
 };
 
-// Function to join both the date and time parts (optional)
 export const formatDateTime = (date: Date) => {
   const formattedTime = formatTime(date);
   const formattedDate = formatDate(date);
@@ -78,7 +77,7 @@ const ReminderScheduled = () => {
   const [hours, minutes, seconds] = formattedTimeLeft.split(" : ");
 
   return (
-    <View style={style.container}>
+    <SafeAreaView style={style.container}>
       <View style={style.contentWrapper}>
         <View
           style={{ height: "60%", width: "100%", justifyContent: "flex-end" }}
@@ -190,7 +189,7 @@ const ReminderScheduled = () => {
         />
         <Text style={style.contactDoneButtonText}>Home</Text>
       </Pressable>
-    </View>
+    </SafeAreaView>
   );
 };
 

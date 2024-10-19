@@ -11,6 +11,7 @@ import useThemeColors from "../../Theme/useThemeMode";
 import HomeHeader from "../Home/Components/HomeHeader";
 import AssetsPath from "../../Global/AssetsPath";
 import HowItWorkView from "./Components/HowItWorkView";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const HowAppWorks = () => {
   const colors = useThemeColors();
@@ -64,7 +65,9 @@ const HowAppWorks = () => {
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <HomeHeader hideGrid={true} title="How app works" hideThemeButton />
 
       <View style={{ flex: 1, marginVertical: 10 }}>
@@ -116,7 +119,7 @@ const HowAppWorks = () => {
           );
         })}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -129,14 +132,14 @@ const styles = StyleSheet.create({
   contentView: {
     flex: 1,
     width: "90%",
-    marginVertical: 10,
+    marginVertical: 15,
     alignSelf: "center",
   },
   paginatorContainer: {
     justifyContent: "center",
     flexDirection: "row",
     position: "absolute",
-    bottom: "18%",
+    bottom: "14%",
     alignItems: "center",
     alignContent: "center",
     alignSelf: "center",

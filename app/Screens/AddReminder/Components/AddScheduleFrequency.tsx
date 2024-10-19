@@ -83,13 +83,15 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
   const colors = useThemeColors();
 
   const toggleFrequency = (frequency: string) => {
-    console.log("frequency", frequency);
     Keyboard.dismiss();
     setScheduleFrequency(frequency === scheduleFrequency ? "" : frequency);
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={styles.container}
+    >
       <Text style={[styles.title, { color: colors.text }]}>Reminder:</Text>
       <View style={styles.frequencyContainer}>
         {frequencies.map((frequency) => (

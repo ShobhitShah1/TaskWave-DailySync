@@ -41,6 +41,7 @@ import {
 } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 import { generateUniqueFileName } from "../../Utils/generateUniqueFileName";
+import { validateDateTime } from "../../Utils/validateDateTime";
 import { validateMultipleEmails } from "../../Utils/validateMultipleEmails";
 import AddContact from "./Components/AddContact";
 import AddDateAndTime from "./Components/AddDateAndTime";
@@ -54,7 +55,7 @@ import AttachFile from "./Components/AttachFile";
 import ContactListModal from "./Components/ContactListModal";
 import styles from "./styles";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 type NotificationProps = {
   params: { notificationType: NotificationType; id?: string };
@@ -82,24 +83,13 @@ const AddReminder = () => {
     }
   }, [id]);
 
-  const getExistingNotificationData = async () => {
-    const response = await getNotificationById(id);
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", () => {
+      stopRecording();
+    });
 
-    if (response) {
-      setMessage(response?.message);
-      setTo(response?.toMail?.[0]);
-      setSubject(response?.subject || "");
-      setScheduleFrequency(response?.scheduleFrequency);
-      setSelectedDateAndTime({
-        date: new Date(response?.date),
-        time: new Date(response?.date),
-      });
-      setSelectedDocuments(response?.attachments);
-      setContacts(response?.toContact);
-      setSelectedContacts(response?.toContact);
-      setMemos(response?.memo || []);
-    }
-  };
+    return unsubscribe;
+  }, [navigation]);
 
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
@@ -131,13 +121,31 @@ const AddReminder = () => {
   const [recording, setRecording] = useState<Recording | undefined>();
   const [memos, setMemos] = useState<Memo[]>([]);
   const [audioMetering, setAudioMetering] = useState<number[]>([]);
-
   const metering = useSharedValue(-100);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isContactLoading, setIsContactLoading] = useState(false);
   const { createViewColor } = useNotificationIconColors(notificationType);
   const { requestPermission, checkPermissionStatus } = useContactPermission();
+
+  const getExistingNotificationData = async () => {
+    const response = await getNotificationById(id);
+
+    if (response) {
+      setMessage(response?.message);
+      setTo(response?.toMail?.[0]);
+      setSubject(response?.subject || "");
+      setScheduleFrequency(response?.scheduleFrequency);
+      setSelectedDateAndTime({
+        date: new Date(response?.date),
+        time: new Date(response?.date),
+      });
+      setSelectedDocuments(response?.attachments);
+      setContacts(response?.toContact);
+      setSelectedContacts(response?.toContact);
+      setMemos(response?.memo || []);
+    }
+  };
 
   const onRecordingPress = async () => {
     const isPermissionGranted = await check(PERMISSIONS.ANDROID.RECORD_AUDIO);
@@ -215,7 +223,6 @@ const AddReminder = () => {
       allowsRecordingIOS: false,
     });
     const uri = recording.getURI();
-    console.log("Recording stopped and stored at", uri);
 
     if (uri) {
       metering.value = -100;
@@ -258,7 +265,6 @@ const AddReminder = () => {
 
   const onHandelContactClick = async () => {
     try {
-      // if (contacts.length === 0) {
       setIsContactLoading(true);
 
       const isPermissionEnable = await checkPermissionStatus();
@@ -270,8 +276,8 @@ const AddReminder = () => {
 
         return;
       }
+
       requestContactData();
-      // }
       setIsContactLoading(false);
       setContactModalVisible(true);
     } catch (error: any) {
@@ -364,10 +370,12 @@ const AddReminder = () => {
         });
       }
     } catch (e: any) {
-      showMessage({
-        message: String(e?.message) || "Failed to pick document",
-        type: "danger",
-      });
+      if (e?.message !== "User canceled directory picker") {
+        showMessage({
+          message: String(e?.message) || "Failed to pick document",
+          type: "danger",
+        });
+      }
     }
   }, []);
 
@@ -470,26 +478,10 @@ const AddReminder = () => {
           selectedDateAndTime.time!.getMinutes()
         );
 
-        const now = new Date();
-        const tenSecondsFromNow = new Date(now.getTime() + 10 * 1000); // 10 seconds from now
-
-        if (selectedDateTime < now) {
-          showMessage({
-            message: "The selected date and time cannot be in the past.",
-            type: "danger",
-          });
-          setIsLoading(false);
-          return;
-        }
-
-        if (selectedDateTime < tenSecondsFromNow) {
-          showMessage({
-            message:
-              "The notification must be scheduled at least 10 seconds in the future.",
-            type: "danger",
-          });
-          setIsLoading(false);
-          return;
+        if (!validateDateTime(selectedDateTime)) {
+          throw new Error(
+            "The notification must be scheduled at least 10 seconds in the future."
+          );
         }
 
         const extractedContacts: Contact[] = selectedContacts?.map(
@@ -531,7 +523,6 @@ const AddReminder = () => {
         } else {
           notificationScheduleId =
             await scheduleNotificationWithNotifee(notificationData);
-          console.log("notificationScheduleId: " + notificationScheduleId);
           if (notificationScheduleId?.trim()) {
             const data = {
               ...notificationData,
