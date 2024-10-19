@@ -285,12 +285,14 @@ const AddReminder = () => {
   const requestContactData = async () => {
     try {
       const contactsData = await Contacts.getAll();
-      const simplifiedContacts: Contact[] = contactsData.map((contact) => ({
-        recordID: contact.recordID || "",
-        name: contact.displayName,
-        number: contact.phoneNumbers?.[0]?.number,
-        hasThumbnail: contact.hasThumbnail,
-      }));
+      const simplifiedContacts: Contact[] = contactsData
+        .map((contact) => ({
+          recordID: contact.recordID || "",
+          name: contact.displayName,
+          number: contact.phoneNumbers?.[0]?.number,
+          hasThumbnail: contact.hasThumbnail,
+        }))
+        .sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1));
 
       setContacts(simplifiedContacts);
     } catch (error: any) {

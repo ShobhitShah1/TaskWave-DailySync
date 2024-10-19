@@ -27,6 +27,10 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
+    setThemeBasedOnTime();
+  }, []);
+
+  useEffect(() => {
     const unSubscribe = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "active") {
         setThemeBasedOnTime();
