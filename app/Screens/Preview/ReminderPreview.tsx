@@ -123,10 +123,14 @@ const ReminderPreview = () => {
 
     Alert.alert(
       "Confirmation",
-      "Are you sure you want to delete this reminder?",
+      `Are you sure you want to delete this ${notificationType.toLocaleUpperCase()} event?`,
       [
         {
-          text: "Yes",
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
           onPress: async () => {
             try {
               if (!notificationData?.id) {
@@ -147,10 +151,6 @@ const ReminderPreview = () => {
             }
           },
           style: "destructive",
-        },
-        {
-          text: "No",
-          style: "cancel",
         },
       ]
     );

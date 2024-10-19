@@ -139,6 +139,7 @@ const useReminder = () => {
   const initializeDatabase = async (database: SQLite.SQLiteDatabase) => {
     await database.execAsync(`
       PRAGMA foreign_keys = ON;
+
       CREATE TABLE IF NOT EXISTS notifications (
         id TEXT PRIMARY KEY,
         type TEXT NOT NULL,
@@ -147,8 +148,10 @@ const useReminder = () => {
         subject TEXT,
         attachments TEXT,
         scheduleFrequency TEXT,
-        memo TEXT
+        memo TEXT,
+        toMail TEXT
       );
+
       CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         notification_id TEXT,
@@ -194,15 +197,28 @@ const useReminder = () => {
       return null;
     }
 
+    const toMailString = JSON.stringify(toMail || []);
+
     const insertNotificationSQL = `
-    INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo)
-    VALUES ('${id}', '${type}', '${message.toString()}', '${date.toISOString()}', '${subject}', '${JSON.stringify(attachments)}', '${notification.scheduleFrequency}', '${JSON.stringify(memo)}')
-  `;
+    INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail)
+    VALUES (
+      '${id}',
+      '${type}',
+      '${message?.toString() || ""}',
+      '${date.toISOString()}',
+      '${subject || ""}',
+      '${JSON.stringify(attachments || [])}',
+      '${notification.scheduleFrequency}',
+      '${JSON.stringify(memo || [])}',
+      '${toMailString}'
+    )`;
 
     let insertContactsSQL = "";
 
     if (type === "gmail") {
-      insertContactsSQL = toMail
+      const emailArray = Array.isArray(toMail) ? toMail : [toMail];
+      insertContactsSQL = emailArray
+        .filter((email) => email)
         .map(
           (email) => `
         INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
@@ -215,7 +231,7 @@ const useReminder = () => {
         .map(
           (contact) => `
         INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-        VALUES ('${id}', '${contact.name}', '${contact.number ?? null}', '${contact.recordID}', '${contact.thumbnailPath ?? null}')
+        VALUES ('${id}', '${contact.name}', ${contact.number ? `'${contact.number}'` : "null"}, '${contact.recordID}', ${contact.thumbnailPath ? `'${contact.thumbnailPath}'` : "null"})
       `
         )
         .join(";");
@@ -224,17 +240,14 @@ const useReminder = () => {
     const transactionSQL = `
     ${insertNotificationSQL};
     ${insertContactsSQL}
-  `;
+  `.trim();
 
     try {
       await db.execAsync(transactionSQL);
       return id;
     } catch (error: any) {
-      showMessage({
-        message: String(error?.message || error),
-        type: "danger",
-      });
-      return null;
+      console.log("error.message", error.message);
+      throw new Error(error.message || error);
     }
   };
 
@@ -263,8 +276,25 @@ const useReminder = () => {
       memo,
     } = notification;
 
-    const toContactArray = Array.isArray(toContact) ? toContact : [];
-    const toMailArray = Array.isArray(toMail) ? toMail : [];
+    let toMailArray;
+    try {
+      if (Array.isArray(toMail)) {
+        toMailArray = toMail;
+      } else if (typeof toMail === "string") {
+        toMailArray = JSON.parse(toMail);
+      } else {
+        toMailArray = [];
+      }
+
+      toMailArray = toMailArray
+        .map((email: string) => email.trim())
+        .filter(Boolean);
+    } catch (e) {
+      console.error("Error parsing toMail:", e);
+      toMailArray = [];
+    }
+
+    console.log("toMailArray:", toMailArray);
 
     const channelId = await notifee.createChannel({
       id: CHANNEL_ID,
@@ -285,10 +315,10 @@ const useReminder = () => {
     const notificationData = {
       ...notification,
       subject: subject || "",
-      toContact: JSON.stringify(toContactArray),
+      toContact: JSON.stringify(toContact || []),
       toMail: JSON.stringify(toMailArray),
-      attachments: JSON.stringify(attachments),
-      memo: JSON.stringify(memo),
+      attachments: JSON.stringify(attachments || []),
+      memo: JSON.stringify(memo || []),
     };
 
     try {
@@ -300,11 +330,8 @@ const useReminder = () => {
               ? subject
               : `Reminder: ${subject || "You have an upcoming task"}`,
           body:
-            message.toString() ||
-            `Don't forget! You have a task with ${
-              toContactArray.map((contact) => contact.name).join(", ") ||
-              toMailArray.join(", ")
-            }. Please check details or contact them if needed.`,
+            message?.toString() ||
+            `Don't forget! You have a task with ${toMailArray.join(", ")}. Please check details or contact them if needed.`,
           android: {
             channelId,
             visibility: AndroidVisibility.PUBLIC,
@@ -326,28 +353,62 @@ const useReminder = () => {
       return false;
     }
 
-    const updateNotificationSQL = `UPDATE notifications SET type = '${type}', message = '${message.toString()}', date = '${date.toISOString()}', subject = '${subject}', attachments = '${JSON.stringify(attachments)}', scheduleFrequency = '${notification.scheduleFrequency}', memo = '${JSON.stringify(memo)}' WHERE id = '${id}'`;
+    const escapedToMail = JSON.stringify(toMailArray).replace(/'/g, "''");
+    const updateNotificationSQL = `
+      UPDATE notifications
+      SET
+        type = '${type}',
+        message = '${(message || "").toString().replace(/'/g, "''")}',
+        date = '${date.toISOString()}',
+        subject = '${(subject || "").replace(/'/g, "''")}',
+        attachments = '${JSON.stringify(attachments || [])}',
+        scheduleFrequency = '${notification.scheduleFrequency || ""}',
+        memo = '${JSON.stringify(memo || [])}',
+        toMail = '${escapedToMail}'
+      WHERE id = '${id}'
+    `;
 
     const deleteContactsSQL = `DELETE FROM contacts WHERE notification_id = '${id}'`;
 
-    const insertContactsSQL = toContactArray
-      .map(
-        (contact) =>
-          `INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath) VALUES ('${id}', '${contact.name}', '${contact.number ?? null}', '${contact.recordID}', '${contact.thumbnailPath ?? null}')`
-      )
-      .join(";");
+    let insertContactsSQL = "";
+    if (type === "gmail" && toMailArray.length > 0) {
+      insertContactsSQL = toMailArray
+        .map(
+          (email: string) => `
+          INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
+          VALUES ('${id}', '${email.trim()}', null, '${email.trim()}', null)
+        `
+        )
+        .join(";");
+    } else if (toContact && toContact.length > 0) {
+      insertContactsSQL = toContact
+        .map(
+          (contact) => `
+          INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
+          VALUES (
+            '${id}',
+            '${contact.name.replace(/'/g, "''")}',
+            ${contact.number ? `'${contact.number.replace(/'/g, "''")}'` : "null"},
+            '${contact.recordID.replace(/'/g, "''")}',
+            ${contact.thumbnailPath ? `'${contact.thumbnailPath.replace(/'/g, "''")}'` : "null"}
+          )
+        `
+        )
+        .join(";");
+    }
 
-    const transactionSQL = `${updateNotificationSQL}; ${deleteContactsSQL}; ${insertContactsSQL}`;
+    const transactionSQL = `
+      ${updateNotificationSQL};
+      ${deleteContactsSQL};
+      ${insertContactsSQL}
+    `;
 
     try {
       await database.execAsync(transactionSQL);
       return true;
     } catch (error: any) {
-      showMessage({
-        message: String(error?.message || error),
-        type: "danger",
-      });
-      return false;
+      console.log("error:", error);
+      throw new Error(String(error?.message || error));
     }
   };
 

@@ -359,7 +359,7 @@ const AddReminder = () => {
           setSelectedDocuments((prev) => [...prev, selectedDocumentInfo]);
         } else {
           showMessage({
-            message: `File size exceeds the limit of ${MAX_FILE_SIZE}MB`,
+            message: `File size exceeds the limit of ${MAX_FILE_SIZE / (1024 * 1024)} MB. Please upload a smaller file.`,
             type: "danger",
           });
         }
@@ -505,6 +505,8 @@ const AddReminder = () => {
           scheduleFrequency: scheduleFrequency || "",
           memo: memos || [],
         };
+
+        console.log("notificationData:", notificationData);
 
         let notificationScheduleId;
 
