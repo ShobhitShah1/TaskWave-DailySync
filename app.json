@@ -35,6 +35,12 @@
         {
           "microphonePermission": "Allow to access your microphone."
         }
+      ],
+      [
+        "expo-dev-launcher",
+        {
+          "launchMode": "most-recent"
+        }
       ]
     ],
     "extra": {
