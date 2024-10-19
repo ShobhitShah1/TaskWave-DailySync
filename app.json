@@ -35,6 +35,12 @@
         {
           "microphonePermission": "Allow to access your microphone."
         }
+      ],
+      [
+        "react-native-permissions",
+        {
+          "iosPermissions": ["Microphone"]
+        }
       ]
     ],
     "extra": {
