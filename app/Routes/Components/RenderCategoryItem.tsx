@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { memo, useCallback, useMemo } from "react";
 import {
   Image,
   ImageBackground,
@@ -6,32 +6,13 @@ import {
   StyleSheet,
   Text,
   View,
-  LayoutAnimation,
-  UIManager,
-  Platform,
 } from "react-native";
+import { useAppContext } from "../../Contexts/ThemeProvider";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS } from "../../Global/Theme";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useThemeColors from "../../Theme/useThemeMode";
-import { NotificationType } from "../../Types/Interface";
-import { categoriesType } from "../BottomTab";
-import { useAppContext } from "../../Contexts/ThemeProvider";
-
-interface CategoryItemType {
-  item: categoriesType;
-  setSelectedCategory: (category: NotificationType) => void;
-  selectedCategory: NotificationType | null | undefined;
-  categories: categoriesType[];
-  setCategories: (categories: categoriesType[]) => void;
-}
-
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+import { CategoryItemType } from "../../Types/Interface";
 
 const RenderCategoryItem = ({
   item,
@@ -42,7 +23,7 @@ const RenderCategoryItem = ({
 }: CategoryItemType) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
-  const { typeColor, createViewColor } = useNotificationIconColors(item.type);
+  const { typeColor } = useNotificationIconColors(item.type);
 
   const isSelected = useMemo(
     () =>
@@ -52,8 +33,6 @@ const RenderCategoryItem = ({
   );
 
   const onCategoryClick = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-
     const newCategories = categories.filter((cat) => cat.type !== item.type);
     setCategories([item, ...newCategories]);
 
@@ -146,4 +125,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RenderCategoryItem;
+export default memo(RenderCategoryItem);

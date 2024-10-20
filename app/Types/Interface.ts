@@ -1,5 +1,6 @@
 import { DocumentPickerResponse } from "react-native-document-picker";
 import { FrequencyType } from "../Screens/AddReminder/Components/AddScheduleFrequency";
+import { categoriesType } from "../Routes/BottomTab";
 
 declare global {
   namespace ReactNavigation {
@@ -111,3 +112,25 @@ export type Memo = {
   uri: string;
   metering: number[];
 };
+
+export interface NotificationStatus {
+  all: Notification[];
+  allByDate: Notification[];
+  active: Notification[];
+  inactive: Notification[];
+}
+
+export interface headerInterface {
+  selectedFilter: NotificationType | "all";
+  setSelectedFilter: (category: NotificationType | "all") => void;
+  notificationsState: NotificationStatus;
+  setFullScreenPreview: (isFullScreen: boolean) => void;
+}
+
+export interface CategoryItemType {
+  item: categoriesType;
+  setSelectedCategory: (category: NotificationType) => void;
+  selectedCategory: NotificationType | null | undefined;
+  categories: categoriesType[];
+  setCategories: (categories: categoriesType[]) => void;
+}

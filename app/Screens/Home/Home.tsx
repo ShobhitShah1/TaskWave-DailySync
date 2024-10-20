@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   Pressable,
   RefreshControl,
   SafeAreaView,
@@ -23,18 +22,20 @@ import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
 import ReminderCard from "../../Components/ReminderCard";
 import RenderCalenderView from "../../Components/RenderCalenderView";
 import YearMonthPicker from "../../Components/YearMonthPicker";
-import { useAppContext } from "../../Contexts/ThemeProvider";
-import AssetsPath from "../../Global/AssetsPath";
 import useCalendar from "../../Hooks/useCalendar";
-import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useNotificationPermission from "../../Hooks/useNotificationPermission";
 import { default as useDatabase } from "../../Hooks/useReminder";
 import useThemeColors from "../../Theme/useThemeMode";
-import { Notification, NotificationType } from "../../Types/Interface";
+import {
+  Notification,
+  NotificationStatus,
+  NotificationType,
+} from "../../Types/Interface";
 import { fromNowText } from "../../Utils/isSameDat";
 import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "./Components/HomeHeader";
 import RenderEmptyView from "./Components/RenderEmptyView";
+import RenderHeaderView from "./Components/RenderHeaderView";
 import styles from "./styles";
 
 const Home = () => {
@@ -42,7 +43,6 @@ const Home = () => {
   const colors = useThemeColors();
   const isFocus = useIsFocused();
   const { height } = useWindowDimensions();
-  const { theme } = useAppContext();
 
   const flatListRef = useRef<FlatList>(null);
   const { getAllNotifications, deleteNotification } = useDatabase();
@@ -62,12 +62,13 @@ const Home = () => {
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [notificationsState, setNotificationsState] = useState({
-    all: [] as Notification[],
-    allByDate: [] as Notification[],
-    active: [] as Notification[],
-    inactive: [] as Notification[],
-  });
+  const [notificationsState, setNotificationsState] =
+    useState<NotificationStatus>({
+      all: [] as Notification[],
+      allByDate: [] as Notification[],
+      active: [] as Notification[],
+      inactive: [] as Notification[],
+    });
   const [refreshing, setRefreshing] = React.useState(false);
   const [selectedFilter, setSelectedFilter] = useState<
     NotificationType | "all"
@@ -120,39 +121,6 @@ const Home = () => {
       setRefreshing(false);
     }
   }, []);
-
-  const categories = [
-    {
-      id: 1,
-      type: "whatsapp",
-      icon: AssetsPath.ic_whatsapp,
-      color: colors.whatsapp,
-    },
-    {
-      id: 2,
-      type: "SMS",
-      icon: AssetsPath.ic_sms,
-      color: colors.sms,
-    },
-    {
-      id: 3,
-      type: "whatsappBusiness",
-      icon: AssetsPath.ic_whatsappBusiness,
-      color: colors.whatsappBusiness,
-    },
-    {
-      id: 4,
-      type: "gmail",
-      icon: AssetsPath.ic_gmail,
-      color: colors.gmail,
-    },
-    {
-      id: 5,
-      type: "phone",
-      icon: AssetsPath.ic_phone,
-      color: colors.sms,
-    },
-  ];
 
   const loadNotifications = async () => {
     try {
@@ -243,79 +211,6 @@ const Home = () => {
     ]);
   }, []);
 
-  const RenderHeaderView = () => {
-    return (
-      <View style={style.listHeaderView}>
-        <Text style={style.headerScheduleText}>Schedule</Text>
-        <View style={style.filterOptionContainer}>
-          <View style={style.filterButtonsFlex}>
-            <Pressable
-              style={[
-                style.filterAllBtn,
-                { backgroundColor: colors.background },
-                selectedFilter === "all" && {
-                  shadowColor: "gray",
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 1,
-                  shadowRadius: 15,
-                  elevation: 10,
-                },
-              ]}
-              onPress={() => setSelectedFilter("all")}
-            >
-              <Text style={style.filterAllText}>All</Text>
-            </Pressable>
-            {categories.map((res, index) => {
-              const getColor = useNotificationIconColors(
-                res.type as NotificationType
-              );
-              return (
-                <Pressable
-                  key={index}
-                  style={[
-                    style.filterBtn,
-                    { backgroundColor: getColor.backgroundColor },
-                    selectedFilter === res.type && {
-                      shadowColor: "gray",
-                      shadowOffset: { width: 0, height: 0 },
-                      shadowOpacity: 1,
-                      shadowRadius: 15,
-                      elevation: 10,
-                    },
-                  ]}
-                  onPress={() =>
-                    setSelectedFilter(res.type as NotificationType)
-                  }
-                >
-                  <Image
-                    source={res.icon}
-                    tintColor={res.type === "gmail" ? undefined : res.color}
-                    style={style.filterIcon}
-                  />
-                </Pressable>
-              );
-            })}
-          </View>
-
-          <Pressable
-            onPress={() => {
-              if (notificationsState.allByDate.length > 0) {
-                setFullScreenPreview(true);
-              }
-            }}
-          >
-            <Image
-              resizeMode="contain"
-              tintColor={theme === "light" ? colors.sms : colors.text}
-              source={AssetsPath.ic_fullScreen}
-              style={style.fullScreenIcon}
-            />
-          </Pressable>
-        </View>
-      </View>
-    );
-  };
-
   const handleDateChange = (year: number, month: number) => {
     const currentDay = selectedDateObject.getDate();
 
@@ -389,7 +284,12 @@ const Home = () => {
           />
         </Animated.View>
 
-        <RenderHeaderView />
+        <RenderHeaderView
+          selectedFilter={selectedFilter}
+          notificationsState={notificationsState}
+          setSelectedFilter={setSelectedFilter}
+          setFullScreenPreview={setFullScreenPreview}
+        />
 
         <View style={{ flex: 1, height }}>
           {isLoading && notificationsState?.allByDate?.length !== 0 ? (

@@ -1,4 +1,4 @@
-import { useIsFocused, useNavigation } from "@react-navigation/native";
+import { useIsFocused } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
 import React, {
   useCallback,
@@ -13,6 +13,7 @@ import {
   FlatList,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -40,13 +41,12 @@ const History = () => {
   const colors = useThemeColors();
   const flashListRef = useRef<any>(null);
   const isFocus = useIsFocused();
-  const navigation = useNavigation();
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filteredNotifications, setFilteredNotifications] = useState<
     Notification[]
   >([]);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const [loading, setLoading] = useState(true);
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
 
@@ -95,12 +95,6 @@ const History = () => {
   const filterTabData = useMemo(
     () => [
       {
-        title: "All",
-        reminders: notifications.length,
-        icon: null,
-        type: null,
-      },
-      {
         title: "Whatsapp",
         reminders: notificationCounts["whatsapp"] || 0,
         icon: AssetsPath.ic_whatsapp,
@@ -123,6 +117,12 @@ const History = () => {
         reminders: notificationCounts["gmail"] || 0,
         icon: AssetsPath.ic_gmail,
         type: "gmail",
+      },
+      {
+        title: "Phone",
+        reminders: notificationCounts["phone"] || 0,
+        icon: AssetsPath.ic_phone,
+        type: "phone",
       },
     ],
     [notificationCounts, notifications]
@@ -273,9 +273,7 @@ const History = () => {
     <SafeAreaView style={style.container}>
       <HomeHeader hideGrid={true} hideThemeButton={true} />
 
-      <View
-        style={{ flex: 1, width: SIZE.appContainWidth, alignSelf: "center" }}
-      >
+      <View style={style.contentView}>
         <View style={{ flex: 1 }}>
           <View style={style.headerContainer}>
             <Pressable onPress={() => setShowDateAndYearModal(true)}>
@@ -364,31 +362,45 @@ const History = () => {
         </View>
 
         <View style={style.tabsContainer}>
-          {filterTabData.map((res, index) => {
-            const isActive = index === activeIndex;
+          <View style={{ width: "20%" }}>
+            <RenderFilterTabData
+              index={-1}
+              isActive={activeIndex === -1}
+              onTabPress={() => handleTabPress(-1)}
+              res={{ title: "All", type: null, icon: null, reminders: 0 }}
+            />
+          </View>
 
-            const onTabPress = () => {
-              if (isActive) {
-                if (flashListRef.current) {
-                  flashListRef.current?.scrollToOffset({
-                    animated: true,
-                    offset: 0,
-                  });
-                }
-              } else {
-                handleTabPress(index);
-              }
-            };
+          <View style={{ width: "80%", overflow: "visible" }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {filterTabData.map((res, index) => {
+                const isActive = index === activeIndex;
 
-            return (
-              <RenderFilterTabData
-                index={index}
-                isActive={isActive}
-                onTabPress={onTabPress}
-                res={res}
-              />
-            );
-          })}
+                const onTabPress = () => {
+                  if (isActive) {
+                    if (flashListRef.current) {
+                      flashListRef.current?.scrollToOffset({
+                        animated: true,
+                        offset: 0,
+                      });
+                    }
+                  } else {
+                    handleTabPress(index);
+                  }
+                };
+
+                return (
+                  <RenderFilterTabData
+                    key={index}
+                    index={index}
+                    isActive={isActive}
+                    onTabPress={onTabPress}
+                    res={res}
+                  />
+                );
+              })}
+            </ScrollView>
+          </View>
         </View>
       </View>
 
@@ -415,6 +427,11 @@ const styles = () => {
       flex: 1,
       backgroundColor: colors.background,
     },
+    contentView: {
+      flex: 1,
+      width: SIZE.appContainWidth,
+      alignSelf: "center",
+    },
     tabsContainer: {
       bottom: 38,
       height: 68,
@@ -427,6 +444,7 @@ const styles = () => {
       alignItems: "center",
       shadowOpacity: 0.3,
       shadowRadius: 3.84,
+      overflow: "visible",
       justifyContent: "space-around",
       backgroundColor: colors.scheduleReminderCardBackground,
       shadowOffset: { width: 0, height: 2 },

@@ -506,8 +506,6 @@ const AddReminder = () => {
           memo: memos || [],
         };
 
-        console.log("notificationData:", notificationData);
-
         let notificationScheduleId;
 
         if (id) {

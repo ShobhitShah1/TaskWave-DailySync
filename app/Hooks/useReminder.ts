@@ -246,7 +246,6 @@ const useReminder = () => {
       await db.execAsync(transactionSQL);
       return id;
     } catch (error: any) {
-      console.log("error.message", error.message);
       throw new Error(error.message || error);
     }
   };
@@ -293,8 +292,6 @@ const useReminder = () => {
       console.error("Error parsing toMail:", e);
       toMailArray = [];
     }
-
-    console.log("toMailArray:", toMailArray);
 
     const channelId = await notifee.createChannel({
       id: CHANNEL_ID,
@@ -407,7 +404,6 @@ const useReminder = () => {
       await database.execAsync(transactionSQL);
       return true;
     } catch (error: any) {
-      console.log("error:", error);
       throw new Error(String(error?.message || error));
     }
   };

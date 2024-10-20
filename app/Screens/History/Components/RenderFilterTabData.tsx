@@ -24,7 +24,7 @@ const RenderFilterTabData: FC<filterTabProps> = ({
     <Pressable
       key={index}
       onPress={onTabPress}
-      style={[style.tabButton, { width: "100%" }]}
+      style={[style.tabButton, { width: 70 }]}
     >
       <Animated.View style={[style.tabContainer, isActive && style.activeTab]}>
         {res.icon && (
@@ -70,9 +70,9 @@ const styles = () => {
 
   return StyleSheet.create({
     tabButton: {
-      flex: 1,
       height: "98%",
       alignItems: "center",
+      overflow: "visible",
       justifyContent: "center",
     },
     tabContainer: {
@@ -104,6 +104,7 @@ const styles = () => {
       borderRadius: 50,
       width: 22,
       height: 22,
+      overflow: "visible",
       justifyContent: "center",
       alignItems: "center",
     },

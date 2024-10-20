@@ -55,7 +55,6 @@ const Routes = () => {
             <Stack.Screen name="OnBoarding" component={OnBoarding} />
           )}
           <Stack.Screen name="BottomTab" component={BottomTab} />
-          {/* Create Reminder Is Add Reminder Added In Bottom Tab Also */}
           <Stack.Screen name="CreateReminder" component={AddReminder} />
           <Stack.Screen
             name="ReminderScheduled"
