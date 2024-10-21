@@ -48,7 +48,7 @@ const ContactListModal: FC<ContactListModalProps> = ({
             /^[1-9]\d{6,14}$/.test(contact.number));
         return (
           isValidNumber &&
-          contact.name.toLowerCase().includes(searchText.toLowerCase())
+          contact.name?.toLowerCase()?.includes(searchText?.toLowerCase())
         );
       }),
     [contacts, searchText]
@@ -66,10 +66,10 @@ const ContactListModal: FC<ContactListModalProps> = ({
           return [contact];
         } else {
           return prevSelectedContacts.some(
-            (c) => c.recordID === contact.recordID
+            (c) => c?.recordID === contact?.recordID
           )
             ? prevSelectedContacts.filter(
-                (c) => c.recordID !== contact.recordID
+                (c) => c?.recordID !== contact?.recordID
               )
             : [...prevSelectedContacts, contact];
         }

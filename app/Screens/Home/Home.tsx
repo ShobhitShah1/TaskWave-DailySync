@@ -329,7 +329,9 @@ const Home = () => {
               )}
             />
           ) : (
-            <RenderEmptyView />
+            <View style={{ height: "80%" }}>
+              <RenderEmptyView />
+            </View>
           )}
         </View>
       </View>

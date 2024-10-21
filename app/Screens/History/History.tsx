@@ -46,7 +46,7 @@ const History = () => {
   const [filteredNotifications, setFilteredNotifications] = useState<
     Notification[]
   >([]);
-  const [activeIndex, setActiveIndex] = useState(-1);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
 
@@ -99,30 +99,35 @@ const History = () => {
         reminders: notificationCounts["whatsapp"] || 0,
         icon: AssetsPath.ic_whatsapp,
         type: "whatsapp",
+        id: 1,
       },
       {
         title: "SMS",
         reminders: notificationCounts["SMS"] || 0,
         icon: AssetsPath.ic_sms,
         type: "SMS",
+        id: 2,
       },
       {
         title: "Whatsapp Business",
         reminders: notificationCounts["whatsappBusiness"] || 0,
         icon: AssetsPath.ic_whatsappBusiness,
         type: "whatsappBusiness",
+        id: 3,
       },
       {
         title: "Email",
         reminders: notificationCounts["gmail"] || 0,
         icon: AssetsPath.ic_gmail,
         type: "gmail",
+        id: 4,
       },
       {
         title: "Phone",
         reminders: notificationCounts["phone"] || 0,
         icon: AssetsPath.ic_phone,
         type: "phone",
+        id: 5,
       },
     ],
     [notificationCounts, notifications]
@@ -199,13 +204,17 @@ const History = () => {
         if (filteredByDate.length !== 0) {
           setNotifications(filteredByDate.reverse());
 
-          const selectedType = filterTabData[activeIndex].type;
+          const selectedType =
+            activeIndex === 0 ? "all" : filterTabData[activeIndex - 1].type;
 
-          const data = selectedType
-            ? filteredByDate.filter(
-                (notification) => notification.type === selectedType
-              )
-            : filteredByDate;
+          const data =
+            activeIndex === 0
+              ? filteredByDate
+              : selectedType
+                ? filteredByDate.filter(
+                    (notification) => notification.type === selectedType
+                  )
+                : filteredByDate;
 
           setFilteredNotifications(data || []);
         } else {
@@ -364,9 +373,9 @@ const History = () => {
         <View style={style.tabsContainer}>
           <View style={{ width: "20%" }}>
             <RenderFilterTabData
-              index={-1}
-              isActive={activeIndex === -1}
-              onTabPress={() => handleTabPress(-1)}
+              index={0}
+              isActive={activeIndex === 0}
+              onTabPress={() => handleTabPress(0)}
               res={{ title: "All", type: null, icon: null, reminders: 0 }}
             />
           </View>
@@ -374,7 +383,7 @@ const History = () => {
           <View style={{ width: "80%", overflow: "visible" }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {filterTabData.map((res, index) => {
-                const isActive = index === activeIndex;
+                const isActive = res.id === activeIndex;
 
                 const onTabPress = () => {
                   if (isActive) {
@@ -385,14 +394,14 @@ const History = () => {
                       });
                     }
                   } else {
-                    handleTabPress(index);
+                    handleTabPress(res.id);
                   }
                 };
 
                 return (
                   <RenderFilterTabData
                     key={index}
-                    index={index}
+                    index={res.id}
                     isActive={isActive}
                     onTabPress={onTabPress}
                     res={res}

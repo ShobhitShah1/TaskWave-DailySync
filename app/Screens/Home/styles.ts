@@ -59,23 +59,23 @@ const styles = () => {
       fontFamily: FONTS.Medium,
     },
     emptyViewContainer: {
-      flex: 1,
-      bottom: 20,
       justifyContent: "flex-end",
       alignItems: "center",
+      flex: 1,
     },
     emptyDateTimeImage: {
-      width: 85,
-      height: 85,
+      height: "50%",
+      resizeMode: "contain",
       justifyContent: "center",
     },
     emptyTextContainer: {
       marginVertical: 10,
+      height: "50%",
       justifyContent: "center",
       alignItems: "center",
     },
     emptyNoEventTitle: {
-      fontSize: 25,
+      fontSize: 24,
       color: colors.text,
       fontFamily: FONTS.Medium,
     },
@@ -90,8 +90,9 @@ const styles = () => {
     },
     emptyArrowRocket: {
       left: 25,
-      height: 320,
-      marginVertical: 10,
+      height: "60%",
+      top: 5,
+      justifyContent: "flex-end",
       alignSelf: "flex-end",
     },
     listHeaderView: {

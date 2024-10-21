@@ -298,7 +298,11 @@ const AddReminder = () => {
           number: contact.phoneNumbers?.[0]?.number,
           hasThumbnail: contact.hasThumbnail,
         }))
-        .sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1));
+        .sort((a, b) =>
+          a?.name?.toLowerCase() > b?.name?.toLowerCase() ? 1 : -1
+        );
+
+      console.log("simplifiedContacts", simplifiedContacts);
 
       setContacts(simplifiedContacts);
     } catch (error: any) {
