@@ -23,13 +23,20 @@ const Settings = () => {
       title: "Share",
       icon: AssetsPath.ic_share,
       onPress: () => {
-        Share.open({ message: "Hello World!" }).catch((err) => {});
+        Share.open({
+          message:
+            "🗓️ Boost your productivity with DailySync! 🎯\n\nSet reminders for WhatsApp, WhatsApp Business, SMS, Gmail, and phone calls all in one app. 💬📧📞\n\nDownload now and never miss a task again! ⏰👇\nhttps://play.google.com/store/apps/details?id=com.taskwave.dailysync",
+        }).catch((err) => {});
       },
     },
     {
       title: "Privacy Policy",
       icon: AssetsPath.ic_support,
-      onPress: () => {},
+      onPress: () => {
+        Linking.openURL(
+          "https://www.termsfeed.com/live/81b88b8e-c6ab-4149-9efa-1373c47f4268"
+        );
+      },
     },
     {
       title: "Rate us",
@@ -41,7 +48,7 @@ const Settings = () => {
       title: "Contact us",
       icon: AssetsPath.ic_contact,
       onPress: () => {
-        Linking.openURL("mailto:test@gmail.com");
+        Linking.openURL("mailto:nirvanatechlabs@gmail.com");
       },
     },
     {
@@ -62,13 +69,7 @@ const Settings = () => {
     <SafeAreaView style={style.container}>
       <WithBackHeader title={"Setting"} />
 
-      <View
-        style={{
-          width: SIZE.appContainWidth,
-          alignSelf: "center",
-          marginVertical: 15,
-        }}
-      >
+      <View style={style.wrapper}>
         {settingsData.map((item, index) => (
           <SettingItem
             key={index}
@@ -96,6 +97,12 @@ const styles = () => {
     container: {
       flex: 1,
       backgroundColor: colors.background,
+    },
+    wrapper: {
+      width: SIZE.appContainWidth,
+      alignSelf: "center",
+      marginVertical: 15,
+      gap: 10,
     },
   });
 };

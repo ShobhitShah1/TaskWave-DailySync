@@ -32,8 +32,8 @@ const styles = () => {
       alignItems: "center",
       paddingVertical: 10,
       paddingHorizontal: 10,
-      marginBottom: 10,
       borderRadius: 15,
+      alignSelf: "center",
       backgroundColor: colors.reminderCardBackground,
     },
     iconContainer: {
@@ -54,6 +54,7 @@ const styles = () => {
       fontFamily: FONTS.Medium,
     },
     arrow: {
+      bottom: 2,
       fontSize: 23,
       color: colors.white,
       fontFamily: FONTS.Medium,

@@ -1,10 +1,17 @@
+import { BlurView } from "expo-blur";
 import React, { FC, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import ReactNativeModal from "react-native-modal";
 import AssetsPath from "../Global/AssetsPath";
 import { FONTS } from "../Global/Theme";
 import useThemeColors from "../Theme/useThemeMode";
-import { BlurView } from "expo-blur";
 
 interface RateUsModalProps {
   isVisible: boolean;
@@ -70,7 +77,15 @@ const RateUsModal: FC<RateUsModalProps> = ({ isVisible, onClose }) => {
             <Pressable style={style.cancelButton} onPress={onClose}>
               <Text style={[style.buttonText, { color: "red" }]}>Cancel</Text>
             </Pressable>
-            <Pressable style={style.submitButton}>
+            <Pressable
+              style={style.submitButton}
+              onPress={() => {
+                Linking.openURL(
+                  "https://play.google.com/store/apps/details?id=com.taskwave.dailysync"
+                );
+                onClose();
+              }}
+            >
               <Text style={style.buttonText}>Submit</Text>
             </Pressable>
           </View>
