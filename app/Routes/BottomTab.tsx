@@ -11,7 +11,6 @@ import React, { memo, useCallback, useRef, useState } from "react";
 import {
   Image,
   ImageSourcePropType,
-  LayoutAnimation,
   Linking,
   NativeModules,
   Platform,
@@ -19,12 +18,16 @@ import {
   Animated as RNAnimated,
   StyleSheet,
   Text,
-  UIManager,
   View,
 } from "react-native";
 import { CurvedBottomBar } from "react-native-curved-bottom-bar";
 import { showMessage } from "react-native-flash-message";
 import LinearGradient from "react-native-linear-gradient";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import TextString from "../Global/TextString";
@@ -39,18 +42,6 @@ import useThemeColors from "../Theme/useThemeMode";
 import { NotificationType } from "../Types/Interface";
 import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  LinearTransition,
-} from "react-native-reanimated";
-
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 interface RenderTabBarProps {
   routeName: string;
@@ -149,12 +140,6 @@ const BottomTab = () => {
       const shouldHide = selectedTab === "History" || selectedTab === "Setting";
 
       if (hideBottomTab !== shouldHide) {
-        LayoutAnimation.configureNext({
-          duration: 500,
-          create: { type: "easeInEaseOut", property: "opacity" },
-          update: { type: "spring", springDamping: 0.4 },
-          delete: { type: "easeInEaseOut", property: "opacity" },
-        });
         setHideBottomTab(shouldHide);
       }
     },
@@ -226,11 +211,7 @@ const BottomTab = () => {
             message: errorMessage,
             description: "Click here to install",
             type: "warning",
-            onPress: () => {
-              Linking.openURL(appStoreUrl).catch((err) =>
-                console.error("An error occurred", err)
-              );
-            },
+            onPress: () => Linking.openURL(appStoreUrl),
             duration: 5000,
             floating: true,
           });
@@ -344,6 +325,32 @@ const BottomTab = () => {
 
       <BottomSheetModalProvider>
         <BottomSheetModal
+          enablePanDownToClose
+          footerComponent={() => {
+            return (
+              <LinearGradient
+                start={{ x: 0, y: 1 }}
+                end={{ x: 0, y: 0 }}
+                colors={["rgba(0,0,0,1)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.0)"]}
+                style={styles.sheetNextButtonContainer}
+              >
+                <Pressable
+                  disabled={selectedCategory?.length === 0}
+                  onPress={onPressNext}
+                  style={styles.sheetNextButton}
+                >
+                  <Text
+                    style={[
+                      styles.sheetNextButtonText,
+                      { color: colors.white },
+                    ]}
+                  >
+                    {TextString.Next}
+                  </Text>
+                </Pressable>
+              </LinearGradient>
+            );
+          }}
           backdropComponent={renderBackdrop}
           containerStyle={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
           backgroundStyle={{ backgroundColor: colors.background }}
@@ -422,25 +429,6 @@ const BottomTab = () => {
               />
             </View>
           </BottomSheetScrollView>
-
-          <LinearGradient
-            start={{ x: 0, y: 1 }}
-            end={{ x: 0, y: 0 }}
-            colors={["rgba(0,0,0,1)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.0)"]}
-            style={styles.sheetNextButtonContainer}
-          >
-            <Pressable
-              disabled={selectedCategory?.length === 0}
-              onPress={onPressNext}
-              style={styles.sheetNextButton}
-            >
-              <Text
-                style={[styles.sheetNextButtonText, { color: colors.white }]}
-              >
-                {TextString.Next}
-              </Text>
-            </Pressable>
-          </LinearGradient>
         </BottomSheetModal>
       </BottomSheetModalProvider>
     </React.Fragment>

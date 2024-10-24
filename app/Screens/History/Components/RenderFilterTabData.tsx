@@ -51,6 +51,7 @@ const RenderFilterTabData: FC<filterTabProps> = ({
             style={[
               style.badgeContainer,
               {
+                zIndex: 9999,
                 backgroundColor: isActive ? colors.yellow : colors.grayTitle,
               },
             ]}
@@ -99,11 +100,12 @@ const styles = () => {
     },
     badgeContainer: {
       position: "absolute",
-      top: -5,
+      top: 0,
       right: 0,
       borderRadius: 50,
       width: 22,
       height: 22,
+      zIndex: 1,
       overflow: "visible",
       justifyContent: "center",
       alignItems: "center",

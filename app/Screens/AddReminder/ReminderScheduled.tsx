@@ -16,6 +16,7 @@ import { Notification } from "../../Types/Interface";
 import TextString from "../../Global/TextString";
 import LottieView from "lottie-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { formatNotificationType } from "../../Utils/formatNotificationType";
 
 type ReminderScheduledProps = {
   params: { themeColor: string; notification: Notification };
@@ -142,7 +143,7 @@ const ReminderScheduled = () => {
                     style={style.userImage}
                   />
                   <Text style={[style.userName, { color: colors.text }]}>
-                    {TextString.TaskWave}
+                    {formatNotificationType(notificationData.type)}
                   </Text>
                 </View>
                 <Text

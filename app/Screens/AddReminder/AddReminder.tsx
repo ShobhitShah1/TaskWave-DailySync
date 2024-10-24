@@ -124,7 +124,10 @@ const AddReminder = () => {
   const metering = useSharedValue(-100);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isContactLoading, setIsContactLoading] = useState(false);
+  const [isContactLoading, setIsContactLoading] = useState({
+    isLoading: false,
+    isRefreshing: false,
+  });
   const { createViewColor } = useNotificationIconColors(notificationType);
   const { requestPermission, checkPermissionStatus } = useContactPermission();
 
@@ -265,26 +268,38 @@ const AddReminder = () => {
 
   const onHandelContactClick = async () => {
     try {
-      setIsContactLoading(true);
+      if (contacts?.length !== 0) {
+        setContactModalVisible(true);
+        return;
+      }
+
+      setIsContactLoading((prev) => ({
+        ...prev,
+        isLoading: true,
+      }));
 
       const isPermissionEnable = await checkPermissionStatus();
 
       if (!isPermissionEnable) {
-        await requestPermission().then((res) => {
-          if (res) requestContactData();
+        requestPermission().then(async (res) => {
+          if (res) {
+            requestContactData();
+          }
         });
-
         return;
       }
 
-      requestContactData();
-      setIsContactLoading(false);
       setContactModalVisible(true);
+      requestContactData();
     } catch (error: any) {
       showMessage({
         message: String(error?.message || error),
         type: "danger",
       });
+      setIsContactLoading((prev) => ({
+        ...prev,
+        isLoading: false,
+      }));
     }
   };
 
@@ -302,8 +317,6 @@ const AddReminder = () => {
           a?.name?.toLowerCase() > b?.name?.toLowerCase() ? 1 : -1
         );
 
-      console.log("simplifiedContacts", simplifiedContacts);
-
       setContacts(simplifiedContacts);
     } catch (error: any) {
       const message = String(error?.message) || "Failed to fetch contacts.";
@@ -312,7 +325,10 @@ const AddReminder = () => {
         type: "danger",
       });
     } finally {
-      setIsContactLoading(false);
+      setIsContactLoading((prev) => ({
+        ...prev,
+        isLoading: false,
+      }));
     }
   };
 
@@ -742,10 +758,12 @@ const AddReminder = () => {
       <ContactListModal
         contacts={contacts}
         isVisible={contactModalVisible}
-        isContactLoading={isContactLoading}
+        onRefreshData={requestContactData}
         selectedContacts={selectedContacts}
         notificationType={notificationType}
+        refreshing={isContactLoading.isRefreshing}
         setSelectedContacts={setSelectedContacts}
+        isContactLoading={isContactLoading.isLoading}
         onClose={() => setContactModalVisible(false)}
       />
     </View>

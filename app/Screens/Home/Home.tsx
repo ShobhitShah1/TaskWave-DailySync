@@ -37,6 +37,7 @@ import HomeHeader from "./Components/HomeHeader";
 import RenderEmptyView from "./Components/RenderEmptyView";
 import RenderHeaderView from "./Components/RenderHeaderView";
 import styles from "./styles";
+import notifee, { EventType } from "@notifee/react-native";
 
 const Home = () => {
   const style = styles();
@@ -120,7 +121,7 @@ const Home = () => {
     } catch (error) {
       setRefreshing(false);
     }
-  }, []);
+  }, [selectedFilter]);
 
   const loadNotifications = async () => {
     try {
@@ -228,7 +229,10 @@ const Home = () => {
 
   return (
     <SafeAreaView style={style.container}>
-      <HomeHeader hideGrid={notificationsState.allByDate?.length === 0} />
+      <HomeHeader
+        hideGrid={true}
+        // hideGrid={notificationsState.allByDate?.length === 0}
+      />
 
       <View style={style.homeContainContainer}>
         <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>

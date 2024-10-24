@@ -5,6 +5,7 @@ import {
   Dimensions,
   Image,
   Pressable,
+  RefreshControl,
   StatusBar,
   Text,
   TextInput,
@@ -26,6 +27,8 @@ const ContactListModal: FC<ContactListModalProps> = ({
   isVisible,
   onClose,
   contacts,
+  refreshing,
+  onRefreshData,
   selectedContacts,
   isContactLoading,
   notificationType,
@@ -78,6 +81,7 @@ const ContactListModal: FC<ContactListModalProps> = ({
     [notificationType, setSelectedContacts]
   );
 
+  console.log("isContactLoading", isContactLoading);
   return (
     <Modal
       isVisible={isVisible}
@@ -128,6 +132,14 @@ const ContactListModal: FC<ContactListModalProps> = ({
           <FlashList
             data={filteredContacts}
             extraData={selectedContacts}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                colors={[colors.text]}
+                onRefresh={onRefreshData}
+                progressBackgroundColor={colors.background}
+              />
+            }
             estimatedItemSize={200}
             keyExtractor={(item, index) => index.toString()}
             keyboardShouldPersistTaps="handled"
@@ -146,8 +158,8 @@ const ContactListModal: FC<ContactListModalProps> = ({
           start={{ x: 0, y: 1 }}
           end={{ x: 0, y: 0 }}
           colors={[
-            "rgba(0,0,0,1)", // Opaque at the bottom
-            "rgba(0,0,0,0.95)", // Adding more stops for a smoother effect
+            "rgba(0,0,0,1)",
+            "rgba(0,0,0,0.95)",
             "rgba(0,0,0,0.9)",
             "rgba(0,0,0,0.8)",
             "rgba(0,0,0,0.7)",
@@ -156,8 +168,8 @@ const ContactListModal: FC<ContactListModalProps> = ({
             "rgba(0,0,0,0.4)",
             "rgba(0,0,0,0.3)",
             "rgba(0,0,0,0.2)",
-            "rgba(0,0,0,0.1)", // Nearly transparent
-            "rgba(0,0,0,0)", // Fully transparent
+            "rgba(0,0,0,0.1)",
+            "rgba(0,0,0,0)",
           ]}
           style={style.contactDoneButton}
         >

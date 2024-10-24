@@ -102,6 +102,8 @@ export interface ContactListModalProps {
   isVisible: boolean;
   onClose: () => void;
   contacts: Contact[];
+  refreshing: boolean;
+  onRefreshData: () => void;
   isContactLoading: boolean;
   selectedContacts: Contact[];
   setSelectedContacts: React.Dispatch<React.SetStateAction<Contact[]>>;

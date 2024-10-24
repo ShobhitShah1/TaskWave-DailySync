@@ -376,7 +376,12 @@ const History = () => {
               index={0}
               isActive={activeIndex === 0}
               onTabPress={() => handleTabPress(0)}
-              res={{ title: "All", type: null, icon: null, reminders: 0 }}
+              res={{
+                title: "All",
+                type: null,
+                icon: null,
+                reminders: notifications?.length,
+              }}
             />
           </View>
 

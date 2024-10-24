@@ -58,9 +58,7 @@ export const handleNotificationPress = (notification: any) => {
       if (Array.isArray(parsedMemo) && parsedMemo.length > 0) {
         audioPath = parsedMemo[0].uri || "";
       }
-    } catch (error) {
-      console.error("Failed to parse memo (audio):", error);
-    }
+    } catch (error) {}
 
     switch (type) {
       case "whatsapp":
