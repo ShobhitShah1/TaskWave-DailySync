@@ -210,8 +210,11 @@ const AddReminder = () => {
           setAudioMetering((curVal) => [...curVal, status.metering || -100]);
         }
       });
-    } catch (err) {
-      console.error("Failed to start recording", err);
+    } catch (err: any) {
+      showMessage({
+        message: String(err?.message || err),
+        type: "danger",
+      });
     }
   }, []);
 

@@ -179,13 +179,13 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
                 style={styles.actionIcon}
               />
             </Pressable>
-            <Pressable onPress={() => console.log("duplicate")}>
+            {/* <Pressable onPress={() => console.log("duplicate")}>
               <Image
                 tintColor={typeColor}
                 source={AssetsPath.ic_duplicate}
                 style={styles.actionIcon}
               />
-            </Pressable>
+            </Pressable> */}
           </View>
         </View>
       </Pressable>

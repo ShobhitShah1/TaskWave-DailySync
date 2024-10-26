@@ -187,7 +187,10 @@ const History = () => {
         const selectedDateObj = new Date(`${year}-${month}-${day}`);
 
         if (isNaN(selectedDateObj.getTime())) {
-          console.error("Invalid selectedDate:", selectedDate);
+          showMessage({
+            message: `Invalid selected date: ${selectedDate?.toString()}`,
+            type: "danger",
+          });
           return;
         }
 
@@ -225,7 +228,6 @@ const History = () => {
         setNotifications([]);
       }
     } catch (error) {
-      console.error("Error loading notifications:", error);
     } finally {
       setLoading(false);
     }

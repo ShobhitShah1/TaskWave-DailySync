@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppProvider } from "./app/Contexts/ThemeProvider";
 import { FONTS } from "./app/Global/Theme";
 import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
+import { updateNotification } from "./app/Hooks/updateNotification";
 import updateToNextDate from "./app/Hooks/updateToNextDate";
 import useReminder from "./app/Hooks/useReminder";
 import Routes from "./app/Routes/Routes";
@@ -37,12 +38,13 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
       if (notification && notification?.scheduleFrequency?.length !== 0) {
         try {
           const { updatedNotification } = await updateToNextDate(notification);
-
           if (updatedNotification) {
-            await useReminder().updateNotification(updatedNotification);
+            await updateNotification(updatedNotification);
           }
         } catch (error: any) {}
       }
+
+      handleNotificationPress(notification);
       break;
     default:
       return;
@@ -79,12 +81,7 @@ export default function App() {
               if (updatedNotification) {
                 await updateNotification(updatedNotification);
               }
-            } catch (error: any) {
-              showMessage({
-                message: String(error?.message || error),
-                type: "danger",
-              });
-            }
+            } catch (error: any) {}
           }
           break;
       }

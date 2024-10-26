@@ -221,7 +221,6 @@ const BottomTab = () => {
           message: errorMessage,
           type: "danger",
         });
-        console.error("Error checking app installation:", error);
       }
     },
     [SendMessagesModule, navigation, selectedCategory]

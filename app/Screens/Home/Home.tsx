@@ -37,7 +37,6 @@ import HomeHeader from "./Components/HomeHeader";
 import RenderEmptyView from "./Components/RenderEmptyView";
 import RenderHeaderView from "./Components/RenderHeaderView";
 import styles from "./styles";
-import notifee, { EventType } from "@notifee/react-native";
 
 const Home = () => {
   const style = styles();
@@ -91,7 +90,6 @@ const Home = () => {
           viewPosition: 0.5,
         });
       } else {
-        console.warn("Invalid index:", index);
       }
     }
   };
@@ -151,6 +149,10 @@ const Home = () => {
 
       if (isNaN(selectedDateObj.getTime())) {
         console.error("Invalid selectedDate:", selectedDate);
+        showMessage({
+          message: `Invalid selected date: ${selectedDate?.toString()}`,
+          type: "danger",
+        });
         return;
       }
 
@@ -182,7 +184,6 @@ const Home = () => {
         inactive: inactive,
       });
     } catch (error) {
-      console.error("Error loading notifications:", error);
     } finally {
       setIsLoading(false);
     }

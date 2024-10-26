@@ -26,7 +26,6 @@ const useContactPermission = () => {
       setPermissionStatus(result);
       return await handlePermissionStatus(result);
     } catch (error) {
-      console.error("Error checking contact permission:", error);
       return false;
     }
   };
@@ -69,8 +68,11 @@ const useContactPermission = () => {
         return false;
       }
       return false;
-    } catch (error) {
-      console.error("Error requesting contact permission:", error);
+    } catch (error: any) {
+      showMessage({
+        message: `Error requesting contact permission: ${String(error?.message || error)}`,
+        type: "danger",
+      });
       return false;
     }
   };

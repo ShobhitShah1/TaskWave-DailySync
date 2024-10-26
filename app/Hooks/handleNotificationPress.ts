@@ -13,7 +13,6 @@ export const handleNotificationPress = (notification: any) => {
     let attachmentPaths: string[] = [];
     let audioPath: string = "";
 
-    console.log("CLICKED BACK");
     const globalMessage: string = String(message) || "";
     const globalSubject: string = String(subject) || "";
 

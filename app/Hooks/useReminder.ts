@@ -11,8 +11,8 @@ import { useEffect, useState } from "react";
 import { showMessage } from "react-native-flash-message";
 import { Contact, Notification } from "../Types/Interface";
 
-let CHANNEL_ID = "reminder";
-let CHANNEL_NAME = "Reminder";
+export const CHANNEL_ID = "reminder";
+export const CHANNEL_NAME = "Reminder";
 
 export const scheduleNotificationWithNotifee = async (
   notification: Notification
@@ -289,7 +289,6 @@ const useReminder = () => {
         .map((email: string) => email?.trim())
         .filter(Boolean);
     } catch (e) {
-      console.error("Error parsing toMail:", e);
       toMailArray = [];
     }
 
@@ -342,7 +341,6 @@ const useReminder = () => {
         trigger
       );
     } catch (error: any) {
-      console.error("Error updating notification in Notifee:", error);
       showMessage({
         message: String(error?.message || error),
         type: "danger",
