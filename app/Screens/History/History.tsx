@@ -250,19 +250,23 @@ const History = () => {
       return;
     }
 
-    Alert.alert("Confirmation", "Are you sure you want to delete this?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        onPress: async () => {
-          await deleteNotification(id);
-          loadNotifications();
+    Alert.alert(
+      "Confirmation",
+      "Are you sure you want to delete this event? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Delete",
+          onPress: async () => {
+            await deleteNotification(id);
+            loadNotifications();
+          },
+        },
+      ]
+    );
   }, []);
 
   const handleDateChange = (year: number, month: number) => {

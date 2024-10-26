@@ -130,7 +130,7 @@ const ContactListModal: FC<ContactListModalProps> = ({
         ) : (
           <FlashList
             data={filteredContacts}
-            extraData={selectedContacts}
+            extraData={selectedContacts || filteredContacts || isContactLoading}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}

@@ -2,7 +2,7 @@ import notifee, { EventType } from "@notifee/react-native";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { LogBox, StatusBar, StyleSheet, Text } from "react-native";
-import FlashMessage, { showMessage } from "react-native-flash-message";
+import FlashMessage from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppProvider } from "./app/Contexts/ThemeProvider";

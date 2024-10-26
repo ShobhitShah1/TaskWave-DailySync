@@ -123,7 +123,7 @@ const ReminderPreview = () => {
 
     Alert.alert(
       "Confirmation",
-      `Are you sure you want to delete this ${notificationType.toLocaleUpperCase()} event?`,
+      `Are you sure you want to delete this event? This action cannot be undone.`,
       [
         {
           text: "Cancel",
