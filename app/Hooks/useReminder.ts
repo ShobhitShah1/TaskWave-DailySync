@@ -286,7 +286,7 @@ const useReminder = () => {
       }
 
       toMailArray = toMailArray
-        .map((email: string) => email.trim())
+        .map((email: string) => email?.trim())
         .filter(Boolean);
     } catch (e) {
       console.error("Error parsing toMail:", e);
@@ -373,7 +373,7 @@ const useReminder = () => {
         .map(
           (email: string) => `
           INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-          VALUES ('${id}', '${email.trim()}', null, '${email.trim()}', null)
+          VALUES ('${id}', '${email?.trim()}', null, '${email?.trim()}', null)
         `
         )
         .join(";");

@@ -94,8 +94,9 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
     >
       <Text style={[styles.title, { color: colors.text }]}>Reminder:</Text>
       <View style={styles.frequencyContainer}>
-        {frequencies.map((frequency) => (
+        {frequencies.map((frequency, index) => (
           <FrequencyItem
+            key={index}
             frequency={frequency}
             themeColor={themeColor}
             scheduleFrequency={scheduleFrequency}

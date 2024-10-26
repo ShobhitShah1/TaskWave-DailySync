@@ -1,4 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import LottieView from "lottie-react-native";
 import React, { memo, useMemo } from "react";
 import {
   Image,
@@ -8,15 +9,12 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useThemeColors from "../../Theme/useThemeMode";
 import { Notification } from "../../Types/Interface";
-import TextString from "../../Global/TextString";
-import LottieView from "lottie-react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { formatNotificationType } from "../../Utils/formatNotificationType";
 
 type ReminderScheduledProps = {
   params: { themeColor: string; notification: Notification };
@@ -143,14 +141,19 @@ const ReminderScheduled = () => {
                     style={style.userImage}
                   />
                   <Text style={[style.userName, { color: colors.text }]}>
-                    {formatNotificationType(notificationData.type)}
+                    {notificationData.type === "gmail"
+                      ? notificationData?.toMail?.map((res) => res)
+                      : notificationData?.toContact?.map(
+                          (res) =>
+                            `${res.name}${notificationData?.toContact?.length >= 2 ? "," : ""} `
+                        )}
+                  </Text>
+                  <Text
+                    style={[style.timeAgo, { color: colors.placeholderText }]}
+                  >
+                    12m ago
                   </Text>
                 </View>
-                <Text
-                  style={[style.timeAgo, { color: colors.placeholderText }]}
-                >
-                  12m ago
-                </Text>
               </View>
 
               <Text
@@ -217,10 +220,13 @@ const styles = () => {
     card: {
       padding: 15,
       width: "100%",
+      overflow: "hidden",
       borderRadius: 10,
       marginBottom: 50,
     },
     cardHeader: {
+      maxWidth: "100%",
+      overflow: "hidden",
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
@@ -228,6 +234,7 @@ const styles = () => {
     userInfo: {
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "space-between",
     },
     userImage: {
       width: 40,
@@ -235,6 +242,7 @@ const styles = () => {
       borderRadius: 5,
     },
     userName: {
+      width: "68%",
       fontSize: 18,
       marginLeft: 10,
       fontFamily: FONTS.Medium,
@@ -242,6 +250,7 @@ const styles = () => {
     timeAgo: {
       fontFamily: FONTS.Medium,
       fontSize: 16,
+      alignItems: "flex-end",
     },
     notificationText: {
       marginVertical: 5,

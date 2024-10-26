@@ -13,13 +13,14 @@ export const handleNotificationPress = (notification: any) => {
     let attachmentPaths: string[] = [];
     let audioPath: string = "";
 
+    console.log("CLICKED BACK");
     const globalMessage: string = String(message) || "";
     const globalSubject: string = String(subject) || "";
 
     try {
       const contacts: Contact[] = JSON.parse(toContact as any);
       numbers = Array.isArray(contacts)
-        ? contacts.map((contact: Contact) => contact.number)
+        ? contacts?.map((contact: Contact) => contact?.number)
         : [];
     } catch (error: any) {
       showMessage({
@@ -30,7 +31,7 @@ export const handleNotificationPress = (notification: any) => {
 
     try {
       const emails: string[] = JSON.parse(toMail as any);
-      emailMails = emails.filter((email) => email !== "").join(", ");
+      emailMails = emails?.filter((email) => email !== "").join(", ");
     } catch (error: any) {
       showMessage({
         message: `Failed to parse toMail: ${error.message || error}`,
@@ -42,13 +43,13 @@ export const handleNotificationPress = (notification: any) => {
       const parsedAttachments =
         typeof attachments === "string" ? JSON.parse(attachments) : attachments;
       if (Array.isArray(parsedAttachments)) {
-        attachmentPaths = parsedAttachments.map(
-          (attachment) => attachment.uri || ""
+        attachmentPaths = parsedAttachments?.map(
+          (attachment) => attachment?.uri || ""
         );
       }
     } catch (error: any) {
       showMessage({
-        message: `Failed to parse attachments: ${error.message || error}`,
+        message: `Failed to parse attachments: ${error?.message || error}`,
         type: "danger",
       });
     }
@@ -56,7 +57,7 @@ export const handleNotificationPress = (notification: any) => {
     try {
       const parsedMemo = typeof memo === "string" ? JSON.parse(memo) : memo;
       if (Array.isArray(parsedMemo) && parsedMemo.length > 0) {
-        audioPath = parsedMemo[0].uri || "";
+        audioPath = parsedMemo?.[0]?.uri || "";
       }
     } catch (error) {}
 
@@ -65,9 +66,9 @@ export const handleNotificationPress = (notification: any) => {
       case "whatsappBusiness":
         if (numbers.length > 0) {
           SendMessagesModule.sendWhatsapp(
-            numbers.join(","),
+            numbers?.join(","),
             globalMessage,
-            attachmentPaths.join(","),
+            attachmentPaths?.join(","),
             audioPath,
             type === "whatsapp"
           );
@@ -80,10 +81,10 @@ export const handleNotificationPress = (notification: any) => {
         break;
       case "SMS":
         if (numbers.length > 0) {
-          SendMessagesModule.sendSms(
+          SendMessagesModule?.sendSms(
             numbers,
             globalMessage,
-            attachmentPaths.join(",")
+            attachmentPaths?.join(",")
           );
         } else {
           showMessage({
@@ -94,11 +95,11 @@ export const handleNotificationPress = (notification: any) => {
         break;
       case "gmail":
         try {
-          SendMessagesModule.sendMail(
+          SendMessagesModule?.sendMail(
             emailMails,
             globalSubject,
             globalMessage,
-            attachmentPaths.join(",")
+            attachmentPaths?.join(",")
           );
         } catch (error: any) {
           showMessage({

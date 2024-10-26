@@ -281,11 +281,12 @@ const AddReminder = () => {
       const isPermissionEnable = await checkPermissionStatus();
 
       if (!isPermissionEnable) {
-        requestPermission().then(async (res) => {
-          if (res) {
-            requestContactData();
-          }
-        });
+        const status = await requestPermission();
+        if (status) {
+          setContactModalVisible(true);
+          requestContactData();
+        }
+
         return;
       }
 

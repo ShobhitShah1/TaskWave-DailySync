@@ -383,7 +383,7 @@ const ReminderPreview = () => {
                       style={style.toContainer}
                     >
                       <Text key={`${index}-${emailIndex}`} style={style.toText}>
-                        {email.trim()}
+                        {email?.trim()}
                       </Text>
                     </View>
                   ))

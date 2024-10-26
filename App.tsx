@@ -41,12 +41,7 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
           if (updatedNotification) {
             await useReminder().updateNotification(updatedNotification);
           }
-        } catch (error: any) {
-          showMessage({
-            message: String(error?.message || error),
-            type: "danger",
-          });
-        }
+        } catch (error: any) {}
       }
       break;
     default:

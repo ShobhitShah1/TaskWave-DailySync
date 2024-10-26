@@ -81,7 +81,6 @@ const ContactListModal: FC<ContactListModalProps> = ({
     [notificationType, setSelectedContacts]
   );
 
-  console.log("isContactLoading", isContactLoading);
   return (
     <Modal
       isVisible={isVisible}
