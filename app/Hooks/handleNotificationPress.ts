@@ -30,7 +30,7 @@ export const handleNotificationPress = (notification: any) => {
 
     try {
       const emails: string[] = JSON.parse(toMail as any);
-      emailMails = emails?.filter((email) => email !== "").join(", ");
+      emailMails = emails?.filter((email) => email !== "")?.join(", ");
     } catch (error: any) {
       showMessage({
         message: `Failed to parse toMail: ${error.message || error}`,
@@ -55,7 +55,7 @@ export const handleNotificationPress = (notification: any) => {
 
     try {
       const parsedMemo = typeof memo === "string" ? JSON.parse(memo) : memo;
-      if (Array.isArray(parsedMemo) && parsedMemo.length > 0) {
+      if (Array.isArray(parsedMemo) && parsedMemo?.length > 0) {
         audioPath = parsedMemo?.[0]?.uri || "";
       }
     } catch (error) {}

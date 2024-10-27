@@ -1,9 +1,12 @@
 import AssetsPath from "../Global/AssetsPath";
 
-export const getIconSourceForBottomTabs = (routeName: string) => {
+export const getIconSourceForBottomTabs = (
+  routeName: string,
+  isFocus: boolean
+) => {
   switch (routeName) {
     case "Home":
-      return AssetsPath.ic_fillHome;
+      return isFocus ? AssetsPath.ic_fillHome : AssetsPath.ic_home;
     case "Coming Soon":
       return AssetsPath.ic_unFillComingSoon;
     case "History":

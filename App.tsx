@@ -2,7 +2,7 @@ import notifee, { EventType } from "@notifee/react-native";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { LogBox, StatusBar, StyleSheet, Text } from "react-native";
-import FlashMessage from "react-native-flash-message";
+import FlashMessage, { showMessage } from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppProvider } from "./app/Contexts/ThemeProvider";
@@ -26,28 +26,41 @@ interface TextWithDefaultProps extends Text {
 LogBox.ignoreAllLogs();
 
 notifee.onBackgroundEvent(async ({ type, detail }) => {
-  const notification: Notification = detail.notification?.data as any;
+  try {
+    const notification: Notification = detail.notification?.data as any;
 
-  switch (type) {
-    case EventType.DISMISSED:
-      break;
-    case EventType.PRESS:
-      handleNotificationPress(notification);
-      break;
-    case EventType.DELIVERED:
-      if (notification && notification?.scheduleFrequency?.length !== 0) {
-        try {
-          const { updatedNotification } = await updateToNextDate(notification);
-          if (updatedNotification) {
-            await updateNotification(updatedNotification);
+    switch (type) {
+      case EventType.DISMISSED:
+        break;
+      case EventType.PRESS:
+        handleNotificationPress(notification);
+        break;
+      case EventType.DELIVERED:
+        if (notification && notification?.scheduleFrequency?.length !== 0) {
+          try {
+            const { updatedNotification } =
+              await updateToNextDate(notification);
+            if (updatedNotification) {
+              await updateNotification(updatedNotification);
+            }
+          } catch (error: any) {
+            showMessage({
+              message: String(error?.message || error),
+              type: "danger",
+            });
           }
-        } catch (error: any) {}
-      }
+        }
 
-      handleNotificationPress(notification);
-      break;
-    default:
-      return;
+        handleNotificationPress(notification);
+        break;
+      default:
+        return;
+    }
+  } catch (error: any) {
+    showMessage({
+      message: String(error?.message || error),
+      type: "danger",
+    });
   }
 });
 
@@ -64,26 +77,38 @@ export default function App() {
 
   useEffect(() => {
     return notifee.onForegroundEvent(async ({ type, detail }) => {
-      const notification: Notification = detail.notification?.data as any;
+      try {
+        const notification: Notification = detail.notification?.data as any;
 
-      switch (type) {
-        case EventType.DISMISSED:
-          break;
-        case EventType.PRESS:
-          handleNotificationPress(notification);
-          break;
-        case EventType.DELIVERED:
-          if (notification && notification?.scheduleFrequency?.length !== 0) {
-            try {
-              const { updatedNotification } =
-                await updateToNextDate(notification);
+        switch (type) {
+          case EventType.DISMISSED:
+            break;
+          case EventType.PRESS:
+            handleNotificationPress(notification);
+            break;
+          case EventType.DELIVERED:
+            if (notification && notification?.scheduleFrequency?.length !== 0) {
+              try {
+                const { updatedNotification } =
+                  await updateToNextDate(notification);
 
-              if (updatedNotification) {
-                await updateNotification(updatedNotification);
+                if (updatedNotification) {
+                  await updateNotification(updatedNotification);
+                }
+              } catch (error: any) {
+                showMessage({
+                  message: String(error?.message || error),
+                  type: "danger",
+                });
               }
-            } catch (error: any) {}
-          }
-          break;
+            }
+            break;
+        }
+      } catch (error: any) {
+        showMessage({
+          message: String(error?.message || error),
+          type: "danger",
+        });
       }
     });
   }, []);

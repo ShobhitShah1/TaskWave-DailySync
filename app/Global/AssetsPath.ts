@@ -1,3 +1,4 @@
+const ic_home = require("../../assets/Icons/ic_home.png");
 const ic_fillHome = require("../../assets/Icons/ic_fillHome.png");
 const ic_unFillHistory = require("../../assets/Icons/ic_unFillHistory.png");
 const ic_unFillNotification = require("../../assets/Icons/ic_unFillNotification.png");
@@ -67,6 +68,7 @@ const HIW_whatsapp_dark = require("../../assets/Images/HIW_whatsapp_dark.png");
 const success_animation = require("../../assets/Animations/success_animation.json");
 
 export default {
+  ic_home,
   ic_fillHome,
   ic_unFillHistory,
   ic_unFillNotification,

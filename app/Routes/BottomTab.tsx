@@ -160,8 +160,11 @@ const BottomTab = () => {
         style={styles.tabBarItem}
       >
         <Image
-          source={getIconSourceForBottomTabs(routeName)}
-          tintColor={selectedTab === routeName ? colors.white : undefined}
+          source={getIconSourceForBottomTabs(
+            routeName,
+            selectedTab === routeName
+          )}
+          tintColor={selectedTab === routeName ? colors.white : colors.white}
           style={styles.icon}
         />
         <Text style={[styles.tabLabel, { color: colors.white }]}>
@@ -451,7 +454,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -5 },
     shadowOpacity: 1,
     shadowRadius: 5,
-    elevation: 4,
+    elevation: 5,
   },
   tabBarItem: {
     flex: 1,

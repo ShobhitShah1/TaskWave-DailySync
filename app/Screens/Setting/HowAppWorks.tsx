@@ -26,8 +26,8 @@ const HowAppWorks = () => {
         light: AssetsPath.HIW_home_dark,
         dark: AssetsPath.HIW_home_dark,
       },
-      title: "Just tap on plus to create event",
-      description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+      title: "Tap '+' to create an event",
+      description: "Start by tapping the '+' button to schedule an event.",
     },
     {
       id: 2,
