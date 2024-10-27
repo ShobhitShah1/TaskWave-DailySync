@@ -271,10 +271,10 @@ const AddReminder = () => {
 
   const onHandelContactClick = async () => {
     try {
-      if (contacts?.length !== 0) {
-        setContactModalVisible(true);
-        return;
-      }
+      // if (contacts?.length !== 0) {
+      //   setContactModalVisible(true);
+      //   return;
+      // }
 
       setIsContactLoading((prev) => ({
         ...prev,

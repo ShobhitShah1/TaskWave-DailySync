@@ -68,10 +68,10 @@ const ContactListModal: FC<ContactListModalProps> = ({
           onClose();
           return [contact];
         } else {
-          return prevSelectedContacts.some(
+          return prevSelectedContacts?.some(
             (c) => c?.recordID === contact?.recordID
           )
-            ? prevSelectedContacts.filter(
+            ? prevSelectedContacts?.filter(
                 (c) => c?.recordID !== contact?.recordID
               )
             : [...prevSelectedContacts, contact];
@@ -90,6 +90,7 @@ const ContactListModal: FC<ContactListModalProps> = ({
       animationInTiming={600}
       animationOutTiming={300}
       useNativeDriver={true}
+      useNativeDriverForBackdrop={true}
       onBackdropPress={onClose}
       onBackButtonPress={onClose}
       style={{ margin: 0, justifyContent: "flex-end" }}

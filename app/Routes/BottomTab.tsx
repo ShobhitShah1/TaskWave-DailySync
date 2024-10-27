@@ -266,12 +266,14 @@ const BottomTab = () => {
         type="DOWN"
         style={[
           styles.bottomBar,
-          { display: hideBottomTab ? "none" : undefined },
-          { zIndex: hideBottomTab ? -1 : undefined },
+          {
+            display: hideBottomTab ? "none" : undefined,
+            zIndex: hideBottomTab ? -1 : undefined,
+          },
         ]}
         height={60}
         circleWidth={50}
-        screenOptions={{ headerShown: false }}
+        screenOptions={{ headerShown: false, tabBarHideOnKeyboard: true }}
         bgColor={colors.bottomTab}
         initialRouteName="Home"
         borderTopLeftRight
@@ -288,17 +290,12 @@ const BottomTab = () => {
         tabBar={renderTabBar}
         screenListeners={{
           state: (e) => {
-            const currentIndex = e.data.state.index;
-            const currentRouteName = e.data.state.routeNames?.[currentIndex];
+            const currentIndex = e?.data?.state?.index;
+            const currentRouteName = e?.data?.state?.routeNames?.[currentIndex];
+            const hideTab =
+              currentRouteName === "History" || currentRouteName === "Setting";
 
-            if (
-              currentRouteName === "History" ||
-              currentRouteName === "Setting"
-            ) {
-              setHideBottomTab(true);
-            } else {
-              setHideBottomTab(false);
-            }
+            setHideBottomTab(hideTab);
           },
         }}
       >
