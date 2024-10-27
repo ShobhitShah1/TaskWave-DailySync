@@ -140,7 +140,10 @@ const ReminderScheduled = () => {
                     source={AssetsPath.appLogoRound}
                     style={style.userImage}
                   />
-                  <Text style={[style.userName, { color: colors.text }]}>
+                  <Text
+                    numberOfLines={2}
+                    style={[style.userName, { color: colors.text }]}
+                  >
                     {notificationData.type === "gmail"
                       ? notificationData?.toMail?.map((res) => res)
                       : notificationData?.toContact?.map(
@@ -220,13 +223,11 @@ const styles = () => {
     card: {
       padding: 15,
       width: "100%",
-      overflow: "hidden",
       borderRadius: 10,
       marginBottom: 50,
     },
     cardHeader: {
       maxWidth: "100%",
-      overflow: "hidden",
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",

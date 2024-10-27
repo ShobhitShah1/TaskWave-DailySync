@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { memo, useCallback, useMemo } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
 import AssetsPath from "../../../Global/AssetsPath";
@@ -55,24 +55,6 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
       navigation.navigate("ReminderPreview", {
         notificationData: notification,
       });
-    }, [notification]);
-
-    const onDeletePress = useCallback(() => {
-      Alert.alert(
-        "Delete Reminder",
-        "Are you sure you want to delete this reminder?",
-        [
-          {
-            text: "No",
-            style: "cancel",
-          },
-          {
-            text: "Yes",
-            style: "destructive",
-            onPress: () => deleteReminder(notification?.id),
-          },
-        ]
-      );
     }, [notification]);
 
     return (
@@ -190,7 +172,11 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                   style={styles.actionIcon}
                 />
               </Pressable> */}
-              <Pressable onPress={onDeletePress}>
+              <Pressable
+                onPress={() =>
+                  notification?.id && deleteReminder(notification?.id)
+                }
+              >
                 <Image
                   tintColor={theme === "dark" ? colors.white : typeColor}
                   source={AssetsPath.ic_delete}
