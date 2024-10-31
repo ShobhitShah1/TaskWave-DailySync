@@ -29,7 +29,6 @@
     },
     "plugins": [
       "expo-font",
-      "react-native-bootsplash",
       [
         "expo-av",
         {
@@ -42,14 +41,6 @@
           "iosPermissions": ["Microphone"]
         }
       ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "a3b0f09f-94c3-4b22-8934-9cc8e78fc1e4"
-      }
-    },
-    "updates": {
-      "url": "https://u.expo.dev/a3b0f09f-94c3-4b22-8934-9cc8e78fc1e4"
-    }
+    ]
   }
 }
