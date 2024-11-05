@@ -1,6 +1,7 @@
 import { useIsFocused } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
 import React, {
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -214,10 +215,10 @@ const History = () => {
             activeIndex === 0
               ? filteredByDate
               : selectedType
-                ? filteredByDate.filter(
-                    (notification) => notification.type === selectedType
-                  )
-                : filteredByDate;
+              ? filteredByDate.filter(
+                  (notification) => notification.type === selectedType
+                )
+              : filteredByDate;
 
           setFilteredNotifications(data || []);
         } else {
@@ -437,7 +438,7 @@ const History = () => {
   );
 };
 
-export default History;
+export default memo(History);
 
 const styles = () => {
   const colors = useThemeColors();

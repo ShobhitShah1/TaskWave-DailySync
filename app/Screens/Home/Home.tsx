@@ -302,13 +302,7 @@ const Home = () => {
 
         <View style={{ flex: 1, height }}>
           {isLoading && notificationsState?.allByDate?.length !== 0 ? (
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+            <View style={style.loaderContainer}>
               <ActivityIndicator color={colors.text} size={"large"} />
             </View>
           ) : notificationsState.allByDate?.length !== 0 ? (
@@ -325,7 +319,7 @@ const Home = () => {
               }
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 93 }}
-              keyExtractor={(item, index) => index.toString()}
+              keyExtractor={(item, index) => item?.id?.toString()}
               layout={LinearTransition.stiffness(400)}
               entering={FadeIn.easing(Easing.linear)}
               exiting={FadeOut.easing(Easing.linear)}

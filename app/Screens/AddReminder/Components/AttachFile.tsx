@@ -31,7 +31,7 @@ const AttachFile: FC<AttachFileProps> = ({
   onHandelAttachmentClick,
   onRemoveDocument,
 }) => {
-  let imageIndexCounter = 0; // Counter to track only image indices starting from 0
+  let imageIndexCounter = 0;
 
   const colors = useThemeColors();
   const [showFilePreview, setShowFilePreview] = useState({

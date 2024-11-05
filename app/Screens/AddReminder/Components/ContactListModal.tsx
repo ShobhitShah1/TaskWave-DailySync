@@ -117,8 +117,8 @@ const ContactListModal: FC<ContactListModalProps> = ({
 
         {isContactLoading ? (
           <Animated.View
-            entering={FadeIn.springify().damping(200)}
-            exiting={FadeOut.springify().damping(200)}
+            entering={FadeIn}
+            exiting={FadeOut}
             style={style.contactLoadingContainer}
           >
             <ActivityIndicator size={"large"} color={colors.text} />
@@ -141,7 +141,6 @@ const ContactListModal: FC<ContactListModalProps> = ({
               />
             }
             estimatedItemSize={200}
-            keyExtractor={(item, index) => index.toString()}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: 80 }}
             renderItem={({ item }) => (

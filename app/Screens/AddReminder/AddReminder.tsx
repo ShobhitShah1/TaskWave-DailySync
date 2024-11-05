@@ -54,6 +54,7 @@ import AddScheduleFrequency, {
 import AttachFile from "./Components/AttachFile";
 import ContactListModal from "./Components/ContactListModal";
 import styles from "./styles";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -383,7 +384,9 @@ const AddReminder = () => {
           setSelectedDocuments((prev) => [...prev, selectedDocumentInfo]);
         } else {
           showMessage({
-            message: `File size exceeds the limit of ${MAX_FILE_SIZE / (1024 * 1024)} MB. Please upload a smaller file.`,
+            message: `File size exceeds the limit of ${
+              MAX_FILE_SIZE / (1024 * 1024)
+            } MB. Please upload a smaller file.`,
             type: "danger",
           });
         }
@@ -545,8 +548,9 @@ const AddReminder = () => {
             return;
           }
         } else {
-          notificationScheduleId =
-            await scheduleNotificationWithNotifee(notificationData);
+          notificationScheduleId = await scheduleNotificationWithNotifee(
+            notificationData
+          );
           if (notificationScheduleId?.trim()) {
             const data = {
               ...notificationData,
@@ -612,7 +616,7 @@ const AddReminder = () => {
   };
 
   return (
-    <View style={style.container}>
+    <SafeAreaView style={style.container}>
       <View style={style.contentContainer}>
         <RenderHeader />
 
@@ -770,7 +774,7 @@ const AddReminder = () => {
         isContactLoading={isContactLoading.isLoading}
         onClose={() => setContactModalVisible(false)}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -148,6 +148,11 @@ const styles = () => {
       width: "50%",
       height: "50%",
     },
+    loaderContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
   });
 };
 
