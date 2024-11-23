@@ -6,7 +6,7 @@ import RateUsModal from "../../Components/RateUsModal";
 import WithBackHeader from "../../Components/WithBackHeader";
 import AssetsPath from "../../Global/AssetsPath";
 import { SIZE } from "../../Global/Theme";
-import useThemeColors from "../../Theme/useThemeMode";
+import useThemeColors from "../../Hooks/useThemeMode";
 import SettingItem from "./Components/SettingItem";
 import { SafeAreaView } from "react-native-safe-area-context";
 

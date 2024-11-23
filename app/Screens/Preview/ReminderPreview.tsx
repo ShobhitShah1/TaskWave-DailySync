@@ -27,7 +27,7 @@ import { FONTS, SIZE } from "../../Global/Theme";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useReminder from "../../Hooks/useReminder";
-import useThemeColors from "../../Theme/useThemeMode";
+import useThemeColors from "../../Hooks/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 import { formatDate, formatTime } from "../AddReminder/ReminderScheduled";

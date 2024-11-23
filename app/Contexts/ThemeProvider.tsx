@@ -1,23 +1,12 @@
-import { MMKV } from "react-native-mmkv";
-import React, {
-  ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { AppState } from "react-native";
-
-interface AppContextProps {
-  children: ReactNode;
-}
-
-type Theme = "light" | "dark";
-
-interface AppContextType {
-  theme: Theme;
-  toggleTheme: (newTheme: Theme) => void;
-}
+import { MMKV } from "react-native-mmkv";
+import {
+  AppContextProps,
+  AppContextType,
+  Theme,
+  ViewMode,
+} from "../Types/Interface";
 
 export const storage = new MMKV();
 
@@ -25,16 +14,20 @@ export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>("dark");
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const storedViewMode = storage.getString("viewMode");
+    return (storedViewMode as ViewMode) || "list";
+  });
 
   useEffect(() => {
     setThemeBasedOnTime();
+    storeViewMode();
   }, []);
 
   useEffect(() => {
     const unSubscribe = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "active") {
         setThemeBasedOnTime();
-        // storeTheme();
       }
     });
 
@@ -61,6 +54,26 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
     }
   };
 
+  const storeViewMode = () => {
+    try {
+      const storedViewMode = storage.getString("viewMode");
+      if (storedViewMode) {
+        setViewMode(storedViewMode as ViewMode);
+      }
+    } catch (error: any) {
+      console.error("Error loading stored preferences:", error.message);
+    }
+  };
+
+  const toggleViewMode = async (newMode: ViewMode) => {
+    try {
+      storage.set("viewMode", newMode);
+      setViewMode(newMode);
+    } catch (error: any) {
+      throw new Error("Error storing view mode: " + error?.message);
+    }
+  };
+
   const toggleTheme = async (newTheme: Theme) => {
     try {
       storage.set("themeMode", newTheme);
@@ -70,7 +83,12 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
     }
   };
 
-  const contextValue: AppContextType = { theme, toggleTheme };
+  const contextValue: AppContextType = {
+    theme,
+    toggleTheme,
+    viewMode,
+    toggleViewMode,
+  };
 
   return (
     <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>

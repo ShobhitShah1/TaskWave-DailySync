@@ -22,10 +22,11 @@ import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
 import ReminderCard from "../../Components/ReminderCard";
 import RenderCalenderView from "../../Components/RenderCalenderView";
 import YearMonthPicker from "../../Components/YearMonthPicker";
+import isGridView from "../../Hooks/isGridView";
 import useCalendar from "../../Hooks/useCalendar";
 import useNotificationPermission from "../../Hooks/useNotificationPermission";
 import { default as useDatabase } from "../../Hooks/useReminder";
-import useThemeColors from "../../Theme/useThemeMode";
+import useThemeColors from "../../Hooks/useThemeMode";
 import {
   Notification,
   NotificationStatus,
@@ -40,6 +41,7 @@ import styles from "./styles";
 
 const Home = () => {
   const style = styles();
+  const isGrid = isGridView();
   const colors = useThemeColors();
   const isFocus = useIsFocused();
   const { height } = useWindowDimensions();
@@ -235,10 +237,9 @@ const Home = () => {
   return (
     <SafeAreaView style={style.container}>
       <HomeHeader
-        hideGrid={true}
         hideThemeButton={false}
         hideBackButton={true}
-        // hideGrid={notificationsState.allByDate?.length === 0}
+        hideGrid={notificationsState.allByDate?.length === 0}
       />
 
       <View style={style.homeContainContainer}>
@@ -309,22 +310,25 @@ const Home = () => {
             </View>
           ) : notificationsState.allByDate?.length !== 0 ? (
             <Animated.FlatList
+              layout={LinearTransition}
+              columnWrapperStyle={
+                isGrid ? { justifyContent: "space-between" } : undefined
+              }
+              key={isGrid ? "grid" : "list"}
+              numColumns={isGrid ? 2 : undefined}
               data={notificationsState?.allByDate}
               extraData={notificationsState?.allByDate}
               refreshControl={
                 <RefreshControl
+                  onRefresh={onRefresh}
+                  colors={[colors.text]}
                   refreshing={refreshing}
                   progressBackgroundColor={colors.background}
-                  colors={[colors.text]}
-                  onRefresh={onRefresh}
                 />
               }
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 93 }}
               keyExtractor={(item, index) => item?.id?.toString()}
-              layout={LinearTransition.stiffness(400)}
-              entering={FadeIn.easing(Easing.linear)}
-              exiting={FadeOut.easing(Easing.linear)}
               renderItem={({ item }) => (
                 <ReminderCard
                   notification={item}

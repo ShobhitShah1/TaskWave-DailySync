@@ -7,7 +7,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { FONTS } from "../../../Global/Theme";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface OnBoardingProps {
   item: any;

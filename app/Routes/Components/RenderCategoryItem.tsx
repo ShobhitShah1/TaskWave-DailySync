@@ -11,7 +11,7 @@ import { useAppContext } from "../../Contexts/ThemeProvider";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS } from "../../Global/Theme";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
-import useThemeColors from "../../Theme/useThemeMode";
+import useThemeColors from "../../Hooks/useThemeMode";
 import { CategoryItemType } from "../../Types/Interface";
 
 const RenderCategoryItem = ({

@@ -1,6 +1,7 @@
 import { DocumentPickerResponse } from "react-native-document-picker";
 import { FrequencyType } from "../Screens/AddReminder/Components/AddScheduleFrequency";
 import { categoriesType } from "../Routes/BottomTab";
+import { ReactNode } from "react";
 
 declare global {
   namespace ReactNavigation {
@@ -39,6 +40,20 @@ export type RootStackParamList = {
   AboutApp: undefined;
   HowAppWorks: undefined;
 };
+
+export interface AppContextProps {
+  children: ReactNode;
+}
+
+export type Theme = "light" | "dark";
+export type ViewMode = "grid" | "list";
+
+export interface AppContextType {
+  theme: Theme;
+  toggleTheme: (newTheme: Theme) => void;
+  viewMode: ViewMode;
+  toggleViewMode: (newMode: ViewMode) => void;
+}
 
 export interface ReusableBottomSheetProps {
   snapPoints?: Array<string | number>;
@@ -135,4 +150,42 @@ export interface CategoryItemType {
   selectedCategory: NotificationType | null | undefined;
   categories: categoriesType[];
   setCategories: (categories: categoriesType[]) => void;
+}
+
+export interface ReminderCardProps {
+  notification: Notification;
+  deleteReminder: (id?: string) => void;
+  onRefreshData?: () => void;
+}
+
+export interface NotificationColor {
+  backgroundColor: string;
+  typeColor: string;
+  iconColor: string;
+  createViewColor: string;
+  icon: number;
+}
+
+export interface AddContactProps {
+  themeColor: string;
+  onContactPress: () => void;
+  selectedContacts: Contact[];
+  onRemoveContact: (contact: Contact) => void;
+}
+
+export interface IListViewProps {
+  cardBackgroundColor: string;
+  colors: any;
+  icon: any;
+  notification: Notification;
+  onCardPress: () => void;
+  typeColor: string;
+  deleteReminder: (id: string) => void;
+  onEditPress: () => void;
+}
+
+export interface FullScreenProps {
+  isVisible: boolean;
+  onClose: () => void;
+  notifications: Notification[];
 }

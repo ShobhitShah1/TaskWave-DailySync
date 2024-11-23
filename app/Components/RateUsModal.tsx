@@ -11,7 +11,7 @@ import {
 import ReactNativeModal from "react-native-modal";
 import AssetsPath from "../Global/AssetsPath";
 import { FONTS } from "../Global/Theme";
-import useThemeColors from "../Theme/useThemeMode";
+import useThemeColors from "../Hooks/useThemeMode";
 
 interface RateUsModalProps {
   isVisible: boolean;

@@ -11,7 +11,7 @@ import {
 import ReactNativeModal from "react-native-modal";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import AssetsPath from "../Global/AssetsPath";
-import useThemeColors from "../Theme/useThemeMode";
+import useThemeColors from "../Hooks/useThemeMode";
 
 interface ImagePreviewModalProps {
   isVisible: boolean;

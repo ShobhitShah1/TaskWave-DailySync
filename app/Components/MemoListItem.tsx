@@ -10,7 +10,7 @@ import Animated, {
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import { FONTS, SIZE } from "../Global/Theme";
-import useThemeColors from "../Theme/useThemeMode";
+import useThemeColors from "../Hooks/useThemeMode";
 import { Memo } from "../Types/Interface";
 
 const AudioMemoItem = ({
@@ -142,8 +142,8 @@ const AudioMemoItem = ({
                         progress > index / waveformData.length
                           ? themeColor
                           : theme === "dark"
-                            ? "rgba(255, 255, 255, 0.7)"
-                            : "rgba(91, 87, 87, 0.7)",
+                          ? "rgba(255, 255, 255, 0.7)"
+                          : "rgba(91, 87, 87, 0.7)",
                     },
                   ]}
                 />

@@ -10,7 +10,7 @@ import {
 import { DocumentPickerResponse } from "react-native-document-picker";
 import AssetsPath from "../../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../../Global/Theme";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 import ImagePreviewModal from "../../../Components/ImagePreviewModal";
 import Animated, {
   FadeIn,

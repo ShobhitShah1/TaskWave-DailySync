@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 import { FONTS } from "../../../Global/Theme";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,

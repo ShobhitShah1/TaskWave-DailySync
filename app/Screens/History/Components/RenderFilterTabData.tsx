@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { FONTS } from "../../../Global/Theme";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface filterTabProps {
   res: { title: string; reminders: number; icon: any; type: any };

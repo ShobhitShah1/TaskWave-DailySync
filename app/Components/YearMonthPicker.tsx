@@ -17,7 +17,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { FONTS, SIZE } from "../Global/Theme";
-import useThemeColors from "../Theme/useThemeMode";
+import useThemeColors from "../Hooks/useThemeMode";
 import { BlurView } from "expo-blur";
 
 interface YearMonthPickerProps {

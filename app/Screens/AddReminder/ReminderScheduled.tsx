@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
-import useThemeColors from "../../Theme/useThemeMode";
+import useThemeColors from "../../Hooks/useThemeMode";
 import { Notification } from "../../Types/Interface";
 
 type ReminderScheduledProps = {
@@ -148,7 +148,11 @@ const ReminderScheduled = () => {
                       ? notificationData?.toMail?.map((res) => res)
                       : notificationData?.toContact?.map(
                           (res) =>
-                            `${res.name}${notificationData?.toContact?.length >= 2 ? "," : ""} `
+                            `${res.name}${
+                              notificationData?.toContact?.length >= 2
+                                ? ","
+                                : ""
+                            } `
                         )}
                   </Text>
                   <Text
@@ -179,7 +183,9 @@ const ReminderScheduled = () => {
             <Text
               style={[style.receivedNotificationText, { color: colors.text }]}
             >
-              {`You have received a notification at ${formatDateTime(notificationData.date)}, tap on it.`}
+              {`You have received a notification at ${formatDateTime(
+                notificationData.date
+              )}, tap on it.`}
             </Text>
           </View>
         </View>

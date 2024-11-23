@@ -13,7 +13,7 @@ import ReminderScheduled from "../Screens/AddReminder/ReminderScheduled";
 import OnBoarding from "../Screens/OnBoarding/Index";
 import ReminderPreview from "../Screens/Preview/ReminderPreview";
 import AboutApp from "../Screens/Setting/AboutApp";
-import useThemeColors from "../Theme/useThemeMode";
+import useThemeColors from "../Hooks/useThemeMode";
 import { RootStackParamList } from "../Types/Interface";
 import BottomTab from "./BottomTab";
 import HowAppWorks from "../Screens/Setting/HowAppWorks";

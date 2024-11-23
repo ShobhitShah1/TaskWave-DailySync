@@ -2,7 +2,7 @@ import React, { FC, memo } from "react";
 import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
 import ReactNativeModal from "react-native-modal";
 import AssetsPath from "../Global/AssetsPath";
-import useThemeColors from "../Theme/useThemeMode";
+import useThemeColors from "../Hooks/useThemeMode";
 
 interface FullScreenMessageModalProps {
   isVisible: boolean;

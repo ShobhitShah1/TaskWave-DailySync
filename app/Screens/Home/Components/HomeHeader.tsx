@@ -7,7 +7,7 @@ import { useAppContext } from "../../../Contexts/ThemeProvider";
 import AssetsPath from "../../../Global/AssetsPath";
 import TextString from "../../../Global/TextString";
 import { FONTS, SIZE } from "../../../Global/Theme";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface IHomeHeaderProps {
   hideGrid?: boolean;
@@ -26,7 +26,7 @@ const HomeHeader = ({
 }: IHomeHeaderProps) => {
   const colors = useThemeColors();
   const navigation = useNavigation();
-  const { theme, toggleTheme } = useAppContext();
+  const { theme, toggleTheme, viewMode, toggleViewMode } = useAppContext();
   const [isSwitchOn, setIsSwitchOn] = useState(theme !== "dark");
 
   useEffect(() => {
@@ -54,7 +54,13 @@ const HomeHeader = ({
           ]}
         >
           {!hideGrid && (
-            <Image source={AssetsPath.ic_menu} style={styles.menuIcon} />
+            <Pressable
+              onPress={() =>
+                toggleViewMode(viewMode === "grid" ? "list" : "grid")
+              }
+            >
+              <Image source={AssetsPath.ic_menu} style={styles.menuIcon} />
+            </Pressable>
           )}
           {hideGrid && hideThemeButton && !hideBackButton && (
             <Pressable

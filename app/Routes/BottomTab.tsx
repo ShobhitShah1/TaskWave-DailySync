@@ -38,7 +38,7 @@ import History from "../Screens/History/History";
 import Home from "../Screens/Home/Home";
 import Notification from "../Screens/Notification/Notification";
 import Setting from "../Screens/Setting/Setting";
-import useThemeColors from "../Theme/useThemeMode";
+import useThemeColors from "../Hooks/useThemeMode";
 import { NotificationType } from "../Types/Interface";
 import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
@@ -200,8 +200,9 @@ const BottomTab = () => {
   const checkAppAndNavigate = useCallback(
     async (packageName: string, appStoreUrl: string, errorMessage: string) => {
       try {
-        const result =
-          await SendMessagesModule.CheckisAppInstalled(packageName);
+        const result = await SendMessagesModule.CheckisAppInstalled(
+          packageName
+        );
         if (result) {
           onCloseSheet();
           setTimeout(() => {

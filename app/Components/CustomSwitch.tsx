@@ -11,7 +11,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import AssetsPath from "../Global/AssetsPath";
-import useThemeColors from "../Theme/useThemeMode";
+import useThemeColors from "../Hooks/useThemeMode";
 import { useAppContext } from "../Contexts/ThemeProvider";
 
 interface CustomSwitchProps {

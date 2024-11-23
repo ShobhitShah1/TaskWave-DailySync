@@ -4,15 +4,8 @@ import Animated, { LinearTransition } from "react-native-reanimated";
 import AssetsPath from "../../../Global/AssetsPath";
 import TextString from "../../../Global/TextString";
 import { FONTS, SIZE } from "../../../Global/Theme";
-import useThemeColors from "../../../Theme/useThemeMode";
-import { Contact } from "../../../Types/Interface";
-
-interface AddContactProps {
-  themeColor: string;
-  onContactPress: () => void;
-  selectedContacts: Contact[];
-  onRemoveContact: (contact: Contact) => void;
-}
+import useThemeColors from "../../../Hooks/useThemeMode";
+import { AddContactProps, Contact } from "../../../Types/Interface";
 
 const AddContact: FC<AddContactProps> = ({
   themeColor,

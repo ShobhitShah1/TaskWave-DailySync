@@ -1,7 +1,7 @@
 import React, { FC, memo, useCallback } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 import { FONTS, SIZE } from "../../../Global/Theme";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface AddMailSubjectProps {
   themeColor: string;

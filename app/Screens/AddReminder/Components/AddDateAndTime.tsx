@@ -1,6 +1,6 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import React, { FC } from "react";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 import { FONTS, SIZE } from "../../../Global/Theme";
 import TextString from "../../../Global/TextString";
 import AssetsPath from "../../../Global/AssetsPath";

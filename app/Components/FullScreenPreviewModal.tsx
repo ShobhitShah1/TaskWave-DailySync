@@ -1,6 +1,6 @@
-import { FlashList } from "@shopify/flash-list";
 import React, { FC, memo } from "react";
 import {
+  FlatList,
   Image,
   Pressable,
   StyleSheet,
@@ -13,15 +13,10 @@ import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import TextString from "../Global/TextString";
 import { FONTS, SIZE } from "../Global/Theme";
-import useThemeColors from "../Theme/useThemeMode";
-import { Notification } from "../Types/Interface";
+import isGridView from "../Hooks/isGridView";
+import useThemeColors from "../Hooks/useThemeMode";
+import { FullScreenProps } from "../Types/Interface";
 import ReminderCard from "./ReminderCard";
-
-interface FullScreenProps {
-  isVisible: boolean;
-  onClose: () => void;
-  notifications: Notification[];
-}
 
 const FullScreenPreviewModal: FC<FullScreenProps> = ({
   isVisible,
@@ -29,6 +24,7 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
   notifications,
 }) => {
   const style = styles();
+  const isGrid = isGridView();
   const { theme } = useAppContext();
   const { height, width } = useWindowDimensions();
   const colors = useThemeColors();
@@ -109,9 +105,13 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
 
         <View style={style.listContainer}>
           <View style={style.listView}>
-            <FlashList
-              estimatedItemSize={300}
+            <FlatList
               data={notifications}
+              columnWrapperStyle={
+                isGrid ? { justifyContent: "space-between" } : undefined
+              }
+              key={isGrid ? "grid" : "list"}
+              numColumns={isGrid ? 2 : undefined}
               stickyHeaderHiddenOnScroll={true}
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={renderEmptyView}

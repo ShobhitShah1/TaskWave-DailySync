@@ -1,7 +1,7 @@
 import React, { FC, memo } from "react";
 import { Image, Pressable, StyleSheet, Text } from "react-native";
 import AssetsPath from "../../../Global/AssetsPath";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 import { FONTS } from "../../../Global/Theme";
 
 interface NextButtonProps {

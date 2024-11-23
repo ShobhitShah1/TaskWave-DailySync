@@ -6,7 +6,7 @@ import { useAppContext } from "../../../Contexts/ThemeProvider";
 import AssetsPath from "../../../Global/AssetsPath";
 import { FONTS } from "../../../Global/Theme";
 import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 import { Notification } from "../../../Types/Interface";
 import { getNotificationIcon } from "../../../Utils/getNotificationIcon";
 import { formatDate, formatTime } from "../../AddReminder/ReminderScheduled";
@@ -34,8 +34,8 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
       return notification.type === "gmail" && theme === "light"
         ? colors.gmailText
         : notification.type === "whatsappBusiness"
-          ? notificationColors.createViewColor
-          : notificationColors.typeColor;
+        ? notificationColors.createViewColor
+        : notificationColors.typeColor;
     }, [notification.type, theme, colors.gmailText, notificationColors]);
 
     const gmailBorder = useMemo(
@@ -84,7 +84,9 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                   ? notification?.toMail?.[0]
                   : notification?.toContact?.map(
                       (res) =>
-                        `${res.name}${notification?.toContact?.length >= 2 ? "," : ""} `
+                        `${res.name}${
+                          notification?.toContact?.length >= 2 ? "," : ""
+                        } `
                     )}
               </Text>
               <Text

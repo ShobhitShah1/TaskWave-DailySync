@@ -5,7 +5,7 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
 import AssetsPath from "../Global/AssetsPath";
 import { FONTS, SIZE } from "../Global/Theme";
-import useThemeColors from "../Theme/useThemeMode";
+import useThemeColors from "../Hooks/useThemeMode";
 import CustomSwitch from "./CustomSwitch";
 
 interface IHomeHeaderProps {

@@ -1,6 +1,6 @@
 import React, { FC, memo } from "react";
 import { Animated, StyleSheet, View, useWindowDimensions } from "react-native";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface PaginatorProps {
   data: any[];

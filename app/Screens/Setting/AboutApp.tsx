@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { FONTS, SIZE } from "../../Global/Theme";
-import useThemeColors from "../../Theme/useThemeMode";
+import useThemeColors from "../../Hooks/useThemeMode";
 import HomeHeader from "../Home/Components/HomeHeader";
 import { useAppContext } from "../../Contexts/ThemeProvider";
 import { useNavigation } from "@react-navigation/native";

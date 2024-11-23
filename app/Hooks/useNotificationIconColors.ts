@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { NotificationColor } from "../Components/ReminderCard";
-import useThemeColors from "../Theme/useThemeMode";
+import useThemeColors from "./useThemeMode";
 import { NotificationType } from "../Types/Interface";
 import AssetsPath from "../Global/AssetsPath";
 

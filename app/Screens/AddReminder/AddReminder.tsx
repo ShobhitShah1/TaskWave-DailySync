@@ -32,7 +32,7 @@ import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useDatabase, {
   scheduleNotificationWithNotifee,
 } from "../../Hooks/useReminder";
-import useThemeColors from "../../Theme/useThemeMode";
+import useThemeColors from "../../Hooks/useThemeMode";
 import {
   Contact,
   Memo,

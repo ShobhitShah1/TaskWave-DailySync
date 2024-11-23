@@ -28,7 +28,7 @@ import AssetsPath from "../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../Global/Theme";
 import useCalendar from "../../Hooks/useCalendar";
 import useReminder from "../../Hooks/useReminder";
-import useThemeColors from "../../Theme/useThemeMode";
+import useThemeColors from "../../Hooks/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import { countNotificationsByType } from "../../Utils/countNotificationsByType";
 import { generateDaysArray } from "../../Utils/generateDaysArray";

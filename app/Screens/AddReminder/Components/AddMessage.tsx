@@ -12,7 +12,7 @@ import FullScreenMessageModal from "../../../Components/FullScreenMessageModal";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
 import AssetsPath from "../../../Global/AssetsPath";
 import { FONTS, SIZE } from "../../../Global/Theme";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface AddMessageProps {
   title?: "Message" | "Note";

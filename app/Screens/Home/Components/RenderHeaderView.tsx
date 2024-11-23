@@ -3,7 +3,7 @@ import { Image, Pressable, Text, View } from "react-native";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
 import AssetsPath from "../../../Global/AssetsPath";
 import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 import { headerInterface, NotificationType } from "../../../Types/Interface";
 import styles from "../styles";
 

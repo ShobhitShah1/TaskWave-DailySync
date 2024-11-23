@@ -5,7 +5,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
-import useThemeColors from "../../../Theme/useThemeMode";
+import useThemeColors from "../../../Hooks/useThemeMode";
 import { Contact } from "../../../Types/Interface";
 import styles from "../styles";
 
