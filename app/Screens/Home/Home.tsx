@@ -236,6 +236,8 @@ const Home = () => {
     <SafeAreaView style={style.container}>
       <HomeHeader
         hideGrid={true}
+        hideThemeButton={false}
+        hideBackButton={true}
         // hideGrid={notificationsState.allByDate?.length === 0}
       />
 

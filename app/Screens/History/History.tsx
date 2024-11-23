@@ -287,7 +287,11 @@ const History = () => {
 
   return (
     <SafeAreaView style={style.container}>
-      <HomeHeader hideGrid={true} hideThemeButton={true} />
+      <HomeHeader
+        hideGrid={true}
+        hideThemeButton={true}
+        hideBackButton={false}
+      />
 
       <View style={style.contentView}>
         <View style={{ flex: 1 }}>

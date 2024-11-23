@@ -1,13 +1,12 @@
+import { useNavigation } from "@react-navigation/native";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
-import useThemeColors from "../Theme/useThemeMode";
 import AssetsPath from "../Global/AssetsPath";
-import TextString from "../Global/TextString";
-import CustomSwitch from "./CustomSwitch";
 import { FONTS, SIZE } from "../Global/Theme";
-import { useNavigation } from "@react-navigation/native";
+import useThemeColors from "../Theme/useThemeMode";
+import CustomSwitch from "./CustomSwitch";
 
 interface IHomeHeaderProps {
   title: string;
@@ -52,7 +51,7 @@ const WithBackHeader = ({ title }: IHomeHeaderProps) => {
           <CustomSwitch
             isOn={isSwitchOn}
             onToggle={(state: boolean) => {
-              // handleToggle(state);
+              handleToggle(state);
             }}
           />
         </View>
