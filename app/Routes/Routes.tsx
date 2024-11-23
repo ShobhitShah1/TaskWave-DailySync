@@ -17,6 +17,7 @@ import useThemeColors from "../Theme/useThemeMode";
 import { RootStackParamList } from "../Types/Interface";
 import BottomTab from "./BottomTab";
 import HowAppWorks from "../Screens/Setting/HowAppWorks";
+import * as SplashScreen from "expo-splash-screen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -36,7 +37,14 @@ const Routes = () => {
   const showOnboarding = storage.getString("onboardingShown");
 
   return (
-    <NavigationContainer theme={MyTheme}>
+    <NavigationContainer
+      theme={MyTheme}
+      onReady={() => {
+        setTimeout(() => {
+          SplashScreen.hideAsync();
+        }, 500);
+      }}
+    >
       <SafeAreaView style={styles.container}>
         <StatusBar
           translucent

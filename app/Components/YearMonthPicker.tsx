@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { memo, useCallback, useMemo, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -313,4 +313,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default YearMonthPicker;
+export default memo(YearMonthPicker);

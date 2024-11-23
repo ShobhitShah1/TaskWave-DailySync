@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { FONTS, SIZE } from "../../Global/Theme";
 import useThemeColors from "../../Theme/useThemeMode";
@@ -63,7 +63,7 @@ const AboutApp = () => {
   );
 };
 
-export default AboutApp;
+export default memo(AboutApp);
 
 const styles = () => {
   const colors = useThemeColors();

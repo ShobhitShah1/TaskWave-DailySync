@@ -1,5 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { memo, useCallback, useMemo, useState } from "react";
 import {
   Alert,
   Image,
@@ -434,7 +434,7 @@ const ReminderPreview = () => {
   );
 };
 
-export default ReminderPreview;
+export default memo(ReminderPreview);
 
 const styles = () => {
   const colors = useThemeColors();

@@ -13,6 +13,9 @@ import updateToNextDate from "./app/Hooks/updateToNextDate";
 import useReminder from "./app/Hooks/useReminder";
 import Routes from "./app/Routes/Routes";
 import { Notification } from "./app/Types/Interface";
+import * as SplashScreen from "expo-splash-screen";
+
+SplashScreen.preventAutoHideAsync();
 
 interface TextWithDefaultProps extends Text {
   defaultProps?: { allowFontScaling?: boolean };
@@ -23,7 +26,9 @@ interface TextWithDefaultProps extends Text {
   allowFontScaling: false,
 };
 
-LogBox.ignoreAllLogs();
+if (__DEV__) {
+  LogBox.ignoreAllLogs();
+}
 
 notifee.onBackgroundEvent(async ({ type, detail }) => {
   try {
@@ -38,8 +43,9 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
       case EventType.DELIVERED:
         if (notification && notification?.scheduleFrequency?.length !== 0) {
           try {
-            const { updatedNotification } =
-              await updateToNextDate(notification);
+            const { updatedNotification } = await updateToNextDate(
+              notification
+            );
             if (updatedNotification) {
               await updateNotification(updatedNotification);
             }
@@ -89,8 +95,9 @@ export default function App() {
           case EventType.DELIVERED:
             if (notification && notification?.scheduleFrequency?.length !== 0) {
               try {
-                const { updatedNotification } =
-                  await updateToNextDate(notification);
+                const { updatedNotification } = await updateToNextDate(
+                  notification
+                );
 
                 if (updatedNotification) {
                   await updateNotification(updatedNotification);

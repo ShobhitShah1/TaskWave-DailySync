@@ -1,19 +1,20 @@
+import { useNavigation } from "@react-navigation/native";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
+import CustomSwitch from "../../../Components/CustomSwitch";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
 import AssetsPath from "../../../Global/AssetsPath";
-import useThemeColors from "../../../Theme/useThemeMode";
 import TextString from "../../../Global/TextString";
 import { FONTS, SIZE } from "../../../Global/Theme";
-import CustomSwitch from "../../../Components/CustomSwitch";
-import { useNavigation } from "@react-navigation/native";
+import useThemeColors from "../../../Theme/useThemeMode";
 
 interface IHomeHeaderProps {
   hideGrid?: boolean;
   title?: string;
   hideThemeButton?: boolean;
   onBackPress?: () => void;
+  hideBackButton?: boolean;
 }
 
 const HomeHeader = ({
@@ -21,6 +22,7 @@ const HomeHeader = ({
   title,
   hideThemeButton = false,
   onBackPress,
+  hideBackButton = true,
 }: IHomeHeaderProps) => {
   const colors = useThemeColors();
   const navigation = useNavigation();
@@ -34,8 +36,8 @@ const HomeHeader = ({
 
   const handleToggle = useCallback(
     (state: boolean) => {
-      // setIsSwitchOn(state);
-      // toggleTheme(state ? "light" : "dark");
+      setIsSwitchOn(state);
+      toggleTheme(state ? "light" : "dark");
     },
     [toggleTheme]
   );
@@ -54,7 +56,7 @@ const HomeHeader = ({
           {!hideGrid && (
             <Image source={AssetsPath.ic_menu} style={styles.menuIcon} />
           )}
-          {hideGrid && hideThemeButton && (
+          {hideGrid && hideThemeButton && !hideBackButton && (
             <Pressable
               onPress={() =>
                 onBackPress

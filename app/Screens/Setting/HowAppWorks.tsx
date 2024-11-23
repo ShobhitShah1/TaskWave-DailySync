@@ -1,17 +1,16 @@
+import React, { memo, useRef } from "react";
 import {
   Animated,
   FlatList,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from "react-native";
-import React, { useRef } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import AssetsPath from "../../Global/AssetsPath";
 import useThemeColors from "../../Theme/useThemeMode";
 import HomeHeader from "../Home/Components/HomeHeader";
-import AssetsPath from "../../Global/AssetsPath";
 import HowItWorkView from "./Components/HowItWorkView";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const HowAppWorks = () => {
   const colors = useThemeColors();
@@ -123,7 +122,7 @@ const HowAppWorks = () => {
   );
 };
 
-export default HowAppWorks;
+export default memo(HowAppWorks);
 
 const styles = StyleSheet.create({
   container: {
