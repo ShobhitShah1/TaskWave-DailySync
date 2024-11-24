@@ -1,5 +1,7 @@
+import { BlurView } from "expo-blur";
 import React, { FC, memo, useMemo, useState } from "react";
-import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import ReactNativeModal from "react-native-modal";
 import { useAppContext } from "../../Contexts/ThemeProvider";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS } from "../../Global/Theme";
@@ -24,80 +26,6 @@ const GridView: FC<IListViewProps> = ({
   const { timeLeft } = useCountdownTimer(notification.date);
   const [menuVisible, setMenuVisible] = useState(false);
 
-  const handleMenuPress = () => {
-    setMenuVisible(true);
-  };
-
-  const MenuOverlay = () => (
-    <Modal
-      visible={menuVisible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={() => setMenuVisible(false)}
-    >
-      <Pressable
-        style={styles.modalOverlay}
-        onPress={() => setMenuVisible(false)}
-      >
-        <View
-          style={[
-            styles.menuContainer,
-            {
-              backgroundColor: colors.background,
-            },
-          ]}
-        >
-          <Pressable
-            style={styles.menuItem}
-            onPress={() => {
-              onEditPress();
-              setMenuVisible(false);
-            }}
-          >
-            <Image
-              tintColor={typeColor}
-              source={AssetsPath.ic_edit}
-              style={styles.menuIcon}
-            />
-            <Text style={[styles.menuText, { color: colors.text }]}>Edit</Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.menuItem}
-            onPress={() => {
-              onCardPress();
-              setMenuVisible(false);
-            }}
-          >
-            <Image
-              tintColor={typeColor}
-              source={AssetsPath.ic_view}
-              style={styles.menuIcon}
-            />
-            <Text style={[styles.menuText, { color: colors.text }]}>View</Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.menuItem}
-            onPress={() => {
-              handleDuplicatePress();
-              setMenuVisible(false);
-            }}
-          >
-            <Image
-              tintColor={typeColor}
-              source={AssetsPath.ic_duplicate}
-              style={styles.menuIcon}
-            />
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Duplicate
-            </Text>
-          </Pressable>
-        </View>
-      </Pressable>
-    </Modal>
-  );
-
   const title = useMemo(
     () =>
       notification.type === "gmail"
@@ -109,8 +37,19 @@ const GridView: FC<IListViewProps> = ({
     [notification]
   );
 
+  const description = useMemo(
+    () =>
+      notification.message?.toString() ||
+      notification.subject?.toString() ||
+      "No note",
+    [notification]
+  );
+
+  const handleMenuPress = () => {
+    setMenuVisible(true);
+  };
+
   const handleDuplicatePress = () => {
-    console.log("duplicate");
     setMenuVisible(false);
   };
 
@@ -164,9 +103,7 @@ const GridView: FC<IListViewProps> = ({
               },
             ]}
           >
-            {notification.message?.toString() ||
-              notification.subject?.toString() ||
-              "No note"}
+            {description}
           </Text>
         </View>
 
@@ -203,7 +140,88 @@ const GridView: FC<IListViewProps> = ({
         </View>
       </Pressable>
 
-      <MenuOverlay />
+      <ReactNativeModal
+        isVisible={menuVisible}
+        hasBackdrop
+        animationIn={"fadeIn"}
+        animationOut={"fadeOut"}
+        hideModalContentWhileAnimating
+        customBackdrop={
+          <BlurView
+            tint={theme}
+            intensity={9}
+            experimentalBlurMethod="dimezisBlurView"
+            style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+          />
+        }
+        style={{ margin: 0 }}
+        onBackButtonPress={() => setMenuVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setMenuVisible(false)}
+        >
+          <View
+            style={[
+              styles.menuContainer,
+              {
+                backgroundColor: colors.background,
+              },
+            ]}
+          >
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => {
+                onEditPress();
+                setMenuVisible(false);
+              }}
+            >
+              <Image
+                tintColor={typeColor}
+                source={AssetsPath.ic_edit}
+                style={styles.menuIcon}
+              />
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Edit
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => {
+                onCardPress();
+                setMenuVisible(false);
+              }}
+            >
+              <Image
+                tintColor={typeColor}
+                source={AssetsPath.ic_view}
+                style={styles.menuIcon}
+              />
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                View
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => {
+                handleDuplicatePress();
+                setMenuVisible(false);
+              }}
+            >
+              <Image
+                tintColor={typeColor}
+                source={AssetsPath.ic_duplicate}
+                style={styles.menuIcon}
+              />
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Duplicate
+              </Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </ReactNativeModal>
     </View>
   );
 };

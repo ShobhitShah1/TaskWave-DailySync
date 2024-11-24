@@ -20,8 +20,8 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   const { theme } = useAppContext();
   const navigation = useNavigation();
 
-  const { timeLeft, timeIsOver } = useCountdownTimer(notification.date);
-  const notificationColors = useNotificationIconColors(notification.type);
+  const { timeLeft, timeIsOver } = useCountdownTimer(notification?.date);
+  const notificationColors = useNotificationIconColors(notification?.type);
 
   useEffect(() => {
     if (timeIsOver && onRefreshData) {
