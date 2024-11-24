@@ -6,6 +6,7 @@ const ic_unFillSetting = require("../../assets/Icons/ic_unFillSetting.png");
 const ic_unFillComingSoon = require("../../assets/Icons/ic_comingSoon.png");
 
 const ic_menu = require("../../assets/Icons/ic_menu.png");
+const ic_dotMenu = require("../../assets/Icons/ic_dotMenu.png");
 const ic_darkTheme = require("../../assets/Icons/ic_darkTheme.png");
 const ic_lightTheme = require("../../assets/Icons/ic_lightTheme.png");
 const ic_notification = require("../../assets/Icons/ic_notification.png");
@@ -75,6 +76,7 @@ export default {
   ic_unFillSetting,
   ic_unFillComingSoon,
   ic_menu,
+  ic_dotMenu,
   ic_darkTheme,
   ic_lightTheme,
   ic_notification,

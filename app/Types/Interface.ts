@@ -175,7 +175,6 @@ export interface AddContactProps {
 
 export interface IListViewProps {
   cardBackgroundColor: string;
-  colors: any;
   icon: any;
   notification: Notification;
   onCardPress: () => void;

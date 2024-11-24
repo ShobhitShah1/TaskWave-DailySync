@@ -1,9 +1,10 @@
-import React, { FC, memo, useMemo } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { FC, memo, useMemo, useState } from "react";
+import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAppContext } from "../../Contexts/ThemeProvider";
 import AssetsPath from "../../Global/AssetsPath";
 import { FONTS } from "../../Global/Theme";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
+import useThemeColors from "../../Hooks/useThemeMode";
 import { formatTime } from "../../Screens/AddReminder/ReminderScheduled";
 import { IListViewProps } from "../../Types/Interface";
 
@@ -11,7 +12,6 @@ const LOGO_SIZE = 25;
 
 const GridView: FC<IListViewProps> = ({
   cardBackgroundColor,
-  colors,
   icon,
   notification,
   onCardPress,
@@ -19,8 +19,84 @@ const GridView: FC<IListViewProps> = ({
   deleteReminder,
   onEditPress,
 }) => {
+  const colors = useThemeColors();
   const { theme } = useAppContext();
   const { timeLeft } = useCountdownTimer(notification.date);
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  const handleMenuPress = () => {
+    setMenuVisible(true);
+  };
+
+  const MenuOverlay = () => (
+    <Modal
+      visible={menuVisible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setMenuVisible(false)}
+    >
+      <Pressable
+        style={styles.modalOverlay}
+        onPress={() => setMenuVisible(false)}
+      >
+        <View
+          style={[
+            styles.menuContainer,
+            {
+              backgroundColor: colors.background,
+            },
+          ]}
+        >
+          <Pressable
+            style={styles.menuItem}
+            onPress={() => {
+              onEditPress();
+              setMenuVisible(false);
+            }}
+          >
+            <Image
+              tintColor={typeColor}
+              source={AssetsPath.ic_edit}
+              style={styles.menuIcon}
+            />
+            <Text style={[styles.menuText, { color: colors.text }]}>Edit</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.menuItem}
+            onPress={() => {
+              onCardPress();
+              setMenuVisible(false);
+            }}
+          >
+            <Image
+              tintColor={typeColor}
+              source={AssetsPath.ic_view}
+              style={styles.menuIcon}
+            />
+            <Text style={[styles.menuText, { color: colors.text }]}>View</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.menuItem}
+            onPress={() => {
+              handleDuplicatePress();
+              setMenuVisible(false);
+            }}
+          >
+            <Image
+              tintColor={typeColor}
+              source={AssetsPath.ic_duplicate}
+              style={styles.menuIcon}
+            />
+            <Text style={[styles.menuText, { color: colors.text }]}>
+              Duplicate
+            </Text>
+          </Pressable>
+        </View>
+      </Pressable>
+    </Modal>
+  );
 
   const title = useMemo(
     () =>
@@ -32,6 +108,11 @@ const GridView: FC<IListViewProps> = ({
           ),
     [notification]
   );
+
+  const handleDuplicatePress = () => {
+    console.log("duplicate");
+    setMenuVisible(false);
+  };
 
   return (
     <View
@@ -70,7 +151,6 @@ const GridView: FC<IListViewProps> = ({
           </View>
         </View>
 
-        {/* Content Section */}
         <View style={styles.contentContainer}>
           <Text
             numberOfLines={2}
@@ -95,6 +175,8 @@ const GridView: FC<IListViewProps> = ({
             <Text style={[styles.timeText, { color: typeColor }]}>
               {formatTime(notification.date)}
             </Text>
+            <View style={[styles.separator, { borderColor: typeColor }]} />
+
             <View style={styles.countdownContainer}>
               <Image
                 tintColor={colors.text}
@@ -106,14 +188,25 @@ const GridView: FC<IListViewProps> = ({
               </Text>
             </View>
           </View>
-          <View style={styles.actionsContainer}>{/* 3 Dot */}</View>
+          <View>
+            <Pressable
+              style={styles.actionsContainer}
+              onPress={handleMenuPress}
+            >
+              <Image
+                tintColor={colors.text}
+                source={AssetsPath.ic_dotMenu}
+                style={styles.menu}
+              />
+            </Pressable>
+          </View>
         </View>
       </Pressable>
+
+      <MenuOverlay />
     </View>
   );
 };
-
-export default memo(GridView);
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -175,6 +268,9 @@ const styles = StyleSheet.create({
   },
   footerContainer: {
     marginTop: 3,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   timeWrapper: {
     flexDirection: "row",
@@ -194,8 +290,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   countdownText: {
-    fontSize: 14,
-    letterSpacing: 1,
+    fontSize: 13,
+    letterSpacing: 0.5,
     fontFamily: FONTS.Medium,
   },
   actionsContainer: {},
@@ -205,4 +301,56 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     marginLeft: 12,
   },
+  separator: {
+    height: 14,
+    justifyContent: "center",
+    alignSelf: "center",
+    marginLeft: 6,
+    borderRightWidth: 1.5,
+  },
+  menu: {
+    width: 12.5,
+    height: 12.5,
+    resizeMode: "contain",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  menuContainer: {
+    width: 200,
+    borderRadius: 10,
+    padding: 10,
+    position: "absolute",
+    right: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  menuText: {
+    fontSize: 16,
+    fontFamily: FONTS.Medium,
+    marginLeft: 12,
+  },
+  menuIcon: {
+    width: 20,
+    height: 20,
+    resizeMode: "contain",
+  },
 });
+
+export default memo(GridView);

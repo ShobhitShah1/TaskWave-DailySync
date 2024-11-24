@@ -7,8 +7,8 @@ import useNotificationIconColors from "../Hooks/useNotificationIconColors";
 import useThemeColors from "../Hooks/useThemeMode";
 import { ReminderCardProps } from "../Types/Interface";
 import { getNotificationIcon } from "../Utils/getNotificationIcon";
-import ListView from "./ReminderCards/ListView";
 import GridView from "./ReminderCards/GridList";
+import ListView from "./ReminderCards/ListView";
 
 const ReminderCard: React.FC<ReminderCardProps> = ({
   notification,
@@ -68,7 +68,6 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   return isGrid ? (
     <GridView
       icon={icon}
-      colors={colors}
       typeColor={typeColor}
       onCardPress={onCardPress}
       onEditPress={onEditPress}
@@ -79,7 +78,6 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   ) : (
     <ListView
       icon={icon}
-      colors={colors}
       typeColor={typeColor}
       onCardPress={onCardPress}
       onEditPress={onEditPress}

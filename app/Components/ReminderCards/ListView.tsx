@@ -7,12 +7,12 @@ import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import { formatTime } from "../../Screens/AddReminder/ReminderScheduled";
 import { IListViewProps } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
+import useThemeColors from "../../Hooks/useThemeMode";
 
 const LOGO_SIZE = 65;
 
 const ListView: FC<IListViewProps> = ({
   cardBackgroundColor,
-  colors,
   icon,
   notification,
   onCardPress,
@@ -20,6 +20,8 @@ const ListView: FC<IListViewProps> = ({
   deleteReminder,
   onEditPress,
 }) => {
+  const colors = useThemeColors();
+
   const { theme } = useAppContext();
   const { timeLeft } = useCountdownTimer(notification.date);
 
