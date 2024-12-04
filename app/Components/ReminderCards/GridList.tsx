@@ -20,6 +20,7 @@ const GridView: FC<IListViewProps> = ({
   typeColor,
   deleteReminder,
   onEditPress,
+  onDuplicatePress,
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
@@ -50,6 +51,7 @@ const GridView: FC<IListViewProps> = ({
   };
 
   const handleDuplicatePress = () => {
+    onDuplicatePress();
     setMenuVisible(false);
   };
 

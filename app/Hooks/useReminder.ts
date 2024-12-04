@@ -48,8 +48,8 @@ export const scheduleNotificationWithNotifee = async (
         scheduleFrequency === "Daily"
           ? RepeatFrequency.DAILY
           : scheduleFrequency === "Weekly"
-            ? RepeatFrequency.WEEKLY
-            : undefined,
+          ? RepeatFrequency.WEEKLY
+          : undefined,
       alarmManager: {
         type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
       },
@@ -76,7 +76,10 @@ export const scheduleNotificationWithNotifee = async (
             : `Reminder: ${subject || "You have an upcoming task"}`,
         body:
           message.toString() ||
-          `Don't forget! You have a task with ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}. Please check details or contact them if needed.`,
+          `Don't forget! You have a task with ${
+            toContact?.map((contact) => contact.name).join(", ") ||
+            toMail.join(", ")
+          }. Please check details or contact them if needed.`,
         android: {
           channelId,
           visibility: AndroidVisibility.PUBLIC,
@@ -99,7 +102,10 @@ export const scheduleNotificationWithNotifee = async (
             : `Reminder: ${subject || "You have an upcoming task"}`,
         body:
           message.toString() ||
-          `Don't forget! You have a task with ${toContact?.map((contact) => contact.name).join(", ") || toMail.join(", ")}. Please check details or contact them if needed.`,
+          `Don't forget! You have a task with ${
+            toContact?.map((contact) => contact.name).join(", ") ||
+            toMail.join(", ")
+          }. Please check details or contact them if needed.`,
         android: {
           channelId,
           visibility: AndroidVisibility.PUBLIC,
@@ -231,7 +237,11 @@ const useReminder = () => {
         .map(
           (contact) => `
         INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-        VALUES ('${id}', '${contact.name}', ${contact.number ? `'${contact.number}'` : "null"}, '${contact.recordID}', ${contact.thumbnailPath ? `'${contact.thumbnailPath}'` : "null"})
+        VALUES ('${id}', '${contact.name}', ${
+            contact.number ? `'${contact.number}'` : "null"
+          }, '${contact.recordID}', ${
+            contact.thumbnailPath ? `'${contact.thumbnailPath}'` : "null"
+          })
       `
         )
         .join(";");
@@ -327,7 +337,9 @@ const useReminder = () => {
               : `Reminder: ${subject || "You have an upcoming task"}`,
           body:
             message?.toString() ||
-            `Don't forget! You have a task with ${toMailArray.join(", ")}. Please check details or contact them if needed.`,
+            `Don't forget! You have a task with ${toMailArray.join(
+              ", "
+            )}. Please check details or contact them if needed.`,
           android: {
             channelId,
             visibility: AndroidVisibility.PUBLIC,
@@ -383,9 +395,17 @@ const useReminder = () => {
           VALUES (
             '${id}',
             '${contact.name.replace(/'/g, "''")}',
-            ${contact.number ? `'${contact.number.replace(/'/g, "''")}'` : "null"},
+            ${
+              contact.number
+                ? `'${contact.number.replace(/'/g, "''")}'`
+                : "null"
+            },
             '${contact.recordID.replace(/'/g, "''")}',
-            ${contact.thumbnailPath ? `'${contact.thumbnailPath.replace(/'/g, "''")}'` : "null"}
+            ${
+              contact.thumbnailPath
+                ? `'${contact.thumbnailPath.replace(/'/g, "''")}'`
+                : "null"
+            }
           )
         `
         )

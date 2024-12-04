@@ -5,23 +5,12 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
 import AssetsPath from "../../../Global/AssetsPath";
 import { FONTS } from "../../../Global/Theme";
+import { useDuplicateReminder } from "../../../Hooks/useDuplicateReminder";
 import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
 import useThemeColors from "../../../Hooks/useThemeMode";
-import { Notification } from "../../../Types/Interface";
+import { ReminderCardProps } from "../../../Types/Interface";
 import { getNotificationIcon } from "../../../Utils/getNotificationIcon";
 import { formatDate, formatTime } from "../../AddReminder/ReminderScheduled";
-
-export interface ReminderCardProps {
-  notification: Notification;
-  deleteReminder: (id: string) => void;
-}
-
-export interface NotificationColor {
-  backgroundColor: string;
-  typeColor: string;
-  iconColor: string;
-  createViewColor: string;
-}
 
 const RenderHistoryList: React.FC<ReminderCardProps> = memo(
   ({ notification, deleteReminder }) => {
@@ -57,138 +46,147 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
       });
     }, [notification]);
 
+    const { showDateTimeModal, renderDateTimePicker, openDuplicateModal } =
+      useDuplicateReminder(notification, theme);
+
     return (
-      <Animated.View
-        entering={FadeIn.duration(1 * Number(notification.id))}
-        style={[
-          styles.cardContainer,
-          {
-            borderColor:
-              notification.type === "gmail" ? gmailBorder : typeColor,
-          },
-        ]}
-      >
-        <Pressable
-          style={styles.pressableContainer}
-          onPress={onCardPress}
-          onLongPress={() => notification.id && deleteReminder(notification.id)}
+      <>
+        <Animated.View
+          entering={FadeIn.duration(1 * Number(notification.id))}
+          style={[
+            styles.cardContainer,
+            {
+              borderColor:
+                notification.type === "gmail" ? gmailBorder : typeColor,
+            },
+          ]}
         >
-          <View style={styles.rowContainer}>
-            <View style={styles.textContainer}>
-              <Text
-                numberOfLines={1}
-                style={[styles.titleText, { color: colors.text }]}
-              >
-                To:{" "}
-                {notification.type === "gmail"
-                  ? notification?.toMail?.[0]
-                  : notification?.toContact?.map(
-                      (res) =>
-                        `${res.name}${
-                          notification?.toContact?.length >= 2 ? "," : ""
-                        } `
-                    )}
-              </Text>
-              <Text
-                style={[styles.descriptionText, { color: colors.grayTitle }]}
-                numberOfLines={2}
-              >
-                {notification?.message || notification.subject}
-              </Text>
-            </View>
-            <View style={styles.iconContainer}>
-              <Image
-                source={icon}
-                tintColor={
-                  notification.type === "gmail" ? undefined : typeColor
-                }
-                resizeMode="contain"
-                style={styles.notificationIcon}
-              />
-            </View>
-          </View>
-          <View style={styles.footerContainer}>
-            <View style={styles.timeContainer}>
-              <View
-                style={[
-                  styles.timeBadge,
-                  {
-                    backgroundColor:
-                      theme === "dark"
-                        ? colors.darkPrimaryBackground
-                        : typeColor,
-                  },
-                ]}
-              >
-                <View style={styles.dateContainer}>
-                  <Image
-                    tintColor={colors.white}
-                    source={AssetsPath.ic_calender}
-                    style={styles.dateIcon}
-                  />
-                  <Text
-                    style={[
-                      styles.dateText,
-                      {
-                        color:
-                          theme === "dark" ? colors.grayTitle : colors.white,
-                      },
-                    ]}
-                  >
-                    {formatDate(notification.date)}
-                  </Text>
-                </View>
-                <View style={styles.timeIconContainer}>
-                  <Image
-                    tintColor={colors.white}
-                    source={AssetsPath.ic_timerClock}
-                    style={styles.timeIcon}
-                  />
-                  <Text
-                    style={[
-                      styles.timeText,
-                      {
-                        color:
-                          theme === "dark" ? colors.grayTitle : colors.white,
-                      },
-                    ]}
-                  >
-                    {formatTime(notification.date)}
-                  </Text>
-                </View>
+          <Pressable
+            style={styles.pressableContainer}
+            onPress={onCardPress}
+            onLongPress={() =>
+              notification.id && deleteReminder(notification.id)
+            }
+          >
+            <View style={styles.rowContainer}>
+              <View style={styles.textContainer}>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.titleText, { color: colors.text }]}
+                >
+                  To:{" "}
+                  {notification.type === "gmail"
+                    ? notification?.toMail?.[0]
+                    : notification?.toContact?.map(
+                        (res) =>
+                          `${res.name}${
+                            notification?.toContact?.length >= 2 ? "," : ""
+                          } `
+                      )}
+                </Text>
+                <Text
+                  style={[styles.descriptionText, { color: colors.grayTitle }]}
+                  numberOfLines={2}
+                >
+                  {notification?.message || notification.subject}
+                </Text>
+              </View>
+              <View style={styles.iconContainer}>
+                <Image
+                  source={icon}
+                  tintColor={
+                    notification.type === "gmail" ? undefined : typeColor
+                  }
+                  resizeMode="contain"
+                  style={styles.notificationIcon}
+                />
               </View>
             </View>
+            <View style={styles.footerContainer}>
+              <View style={styles.timeContainer}>
+                <View
+                  style={[
+                    styles.timeBadge,
+                    {
+                      backgroundColor:
+                        theme === "dark"
+                          ? colors.darkPrimaryBackground
+                          : typeColor,
+                    },
+                  ]}
+                >
+                  <View style={styles.dateContainer}>
+                    <Image
+                      tintColor={colors.white}
+                      source={AssetsPath.ic_calender}
+                      style={styles.dateIcon}
+                    />
+                    <Text
+                      style={[
+                        styles.dateText,
+                        {
+                          color:
+                            theme === "dark" ? colors.grayTitle : colors.white,
+                        },
+                      ]}
+                    >
+                      {formatDate(notification.date)}
+                    </Text>
+                  </View>
+                  <View style={styles.timeIconContainer}>
+                    <Image
+                      tintColor={colors.white}
+                      source={AssetsPath.ic_timerClock}
+                      style={styles.timeIcon}
+                    />
+                    <Text
+                      style={[
+                        styles.timeText,
+                        {
+                          color:
+                            theme === "dark" ? colors.grayTitle : colors.white,
+                        },
+                      ]}
+                    >
+                      {formatTime(notification.date)}
+                    </Text>
+                  </View>
+                </View>
+              </View>
 
-            <View style={styles.actionsContainer}>
-              <Pressable onPress={onCardPress}>
-                <Image
-                  tintColor={theme === "dark" ? colors.white : typeColor}
-                  source={AssetsPath.ic_view}
-                  style={styles.actionIcon}
-                />
-              </Pressable>
-              {/* <Pressable onPress={() => console.log("duplicate")}>
-                <Image
-                  tintColor={theme === "dark" ? colors.white : typeColor}
-                  source={AssetsPath.ic_duplicate}
-                  style={styles.actionIcon}
-                />
-              </Pressable> */}
-              <Pressable
-                onPress={() =>
-                  notification?.id && deleteReminder(notification?.id)
-                }
-              >
-                <Image
-                  tintColor={theme === "dark" ? colors.white : typeColor}
-                  source={AssetsPath.ic_delete}
-                  style={[styles.actionIcon, { height: 17, width: 17 }]}
-                />
-              </Pressable>
+              <View style={styles.actionsContainer}>
+                <Pressable onPress={onCardPress}>
+                  <Image
+                    tintColor={theme === "dark" ? colors.white : typeColor}
+                    source={AssetsPath.ic_view}
+                    style={styles.actionIcon}
+                  />
+                </Pressable>
+                <Pressable onPress={openDuplicateModal}>
+                  <Image
+                    tintColor={theme === "dark" ? colors.white : typeColor}
+                    source={AssetsPath.ic_duplicate}
+                    style={styles.actionIcon}
+                  />
+                </Pressable>
+                <Pressable
+                  onPress={() =>
+                    notification?.id && deleteReminder(notification?.id)
+                  }
+                >
+                  <Image
+                    tintColor={theme === "dark" ? colors.white : typeColor}
+                    source={AssetsPath.ic_delete}
+                    style={[styles.actionIcon, { height: 17, width: 17 }]}
+                  />
+                </Pressable>
+              </View>
             </View>
-          </View>
-        </Pressable>
-      </Animated.View>
+          </Pressable>
+        </Animated.View>
+
+        {showDateTimeModal && renderDateTimePicker()}
+      </>
     );
   }
 );

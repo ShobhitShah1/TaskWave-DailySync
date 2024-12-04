@@ -181,6 +181,7 @@ export interface IListViewProps {
   typeColor: string;
   deleteReminder: (id: string) => void;
   onEditPress: () => void;
+  onDuplicatePress: () => void;
 }
 
 export interface FullScreenProps {

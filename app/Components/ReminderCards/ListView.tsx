@@ -19,6 +19,7 @@ const ListView: FC<IListViewProps> = ({
   typeColor,
   deleteReminder,
   onEditPress,
+  onDuplicatePress,
 }) => {
   const colors = useThemeColors();
 
@@ -132,7 +133,7 @@ const ListView: FC<IListViewProps> = ({
                 style={styles.actionIcon}
               />
             </Pressable>
-            <Pressable onPress={() => console.log("duplicate")}>
+            <Pressable onPress={onDuplicatePress}>
               <Image
                 tintColor={typeColor}
                 source={AssetsPath.ic_duplicate}

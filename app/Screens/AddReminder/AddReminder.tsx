@@ -272,11 +272,6 @@ const AddReminder = () => {
 
   const onHandelContactClick = async () => {
     try {
-      // if (contacts?.length !== 0) {
-      //   setContactModalVisible(true);
-      //   return;
-      // }
-
       setIsContactLoading((prev) => ({
         ...prev,
         isLoading: true,
@@ -290,7 +285,6 @@ const AddReminder = () => {
           setContactModalVisible(true);
           requestContactData();
         }
-
         return;
       }
 
