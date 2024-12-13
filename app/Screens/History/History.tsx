@@ -103,32 +103,39 @@ const History = () => {
         id: 1,
       },
       {
-        title: "SMS",
-        reminders: notificationCounts["SMS"] || 0,
-        icon: AssetsPath.ic_sms,
-        type: "SMS",
-        id: 2,
-      },
-      {
         title: "Whatsapp Business",
         reminders: notificationCounts["whatsappBusiness"] || 0,
         icon: AssetsPath.ic_whatsappBusiness,
         type: "whatsappBusiness",
+        id: 2,
+      },
+      {
+        title: "Instagram",
+        reminders: notificationCounts["instagram"] || 0,
+        icon: AssetsPath.ic_instagram,
+        type: "instagram",
         id: 3,
+      },
+      {
+        title: "SMS",
+        reminders: notificationCounts["SMS"] || 0,
+        icon: AssetsPath.ic_sms,
+        type: "SMS",
+        id: 4,
       },
       {
         title: "Email",
         reminders: notificationCounts["gmail"] || 0,
         icon: AssetsPath.ic_gmail,
         type: "gmail",
-        id: 4,
+        id: 5,
       },
       {
         title: "Phone",
         reminders: notificationCounts["phone"] || 0,
         icon: AssetsPath.ic_phone,
         type: "phone",
-        id: 5,
+        id: 6,
       },
     ],
     [notificationCounts, notifications]
@@ -162,16 +169,19 @@ const History = () => {
   }, [isFocus, selectedDate, activeIndex]);
 
   const storeFilterData = useCallback(async () => {
+    console.log("activeIndexL", activeIndex);
     const selectedType = filterTabData?.[activeIndex].type;
 
+    console.log("selectedType:", selectedType);
     const data = selectedType
       ? notifications.filter(
           (notification) => notification.type === selectedType
         )
       : notifications;
 
+    console.log("data:", data);
     setFilteredNotifications(data || []);
-  }, [notifications, activeIndex, selectedDate]);
+  }, [notifications, activeIndex, selectedDate, filterTabData]);
 
   const loadNotifications = async () => {
     try {
@@ -236,10 +246,11 @@ const History = () => {
 
   const handleTabPress = useCallback(
     (index: number) => {
+      console.log(index);
       setActiveIndex(index);
       storeFilterData();
     },
-    [filterTabData, notifications]
+    [filterTabData, notifications, activeIndex]
   );
 
   const deleteReminder = useCallback(async (id?: string) => {
@@ -386,7 +397,12 @@ const History = () => {
             <RenderFilterTabData
               index={0}
               isActive={activeIndex === 0}
-              onTabPress={() => handleTabPress(0)}
+              onTabPress={() => {
+                if (activeIndex === 0) {
+                  return;
+                }
+                handleTabPress(0);
+              }}
               res={{
                 title: "All",
                 type: null,

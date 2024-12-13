@@ -19,24 +19,42 @@ export const useDuplicateReminder = (notification: any, theme: string) => {
   };
 
   const handleDateChange = (event: any, date?: Date) => {
-    if (Platform.OS === "android") {
-      if (event.type === "set") {
+    try {
+      if (Platform.OS === "android") {
+        if (event.type === "set") {
+          setSelectedDate(date || new Date());
+          setDatePickerMode("time");
+        } else {
+          setShowDateTimeModal(false);
+        }
+      } else {
         setSelectedDate(date || new Date());
-        setDatePickerMode("time");
       }
-    } else {
-      setSelectedDate(date || new Date());
+    } catch (error: any) {
+      setShowDateTimeModal(false);
+      showMessage({
+        message: error?.message?.toString(),
+        type: "danger",
+      });
     }
   };
 
   const handleTimeChange = async (event: any, time?: Date) => {
-    setShowDateTimeModal(false);
-
-    if (event.type === "set") {
-      setSelectedTime(time || new Date());
-      await createDuplicateReminder();
-    } else {
+    try {
       setShowDateTimeModal(false);
+
+      if (event.type === "set") {
+        setSelectedTime(time || new Date());
+        await createDuplicateReminder();
+      } else {
+        setShowDateTimeModal(false);
+      }
+    } catch (error: any) {
+      setShowDateTimeModal(false);
+      showMessage({
+        message: error?.message?.toString(),
+        type: "danger",
+      });
     }
   };
 
