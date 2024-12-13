@@ -1,8 +1,7 @@
 import { useMemo } from "react";
-import { NotificationColor } from "../Components/ReminderCard";
-import useThemeColors from "./useThemeMode";
-import { NotificationType } from "../Types/Interface";
 import AssetsPath from "../Global/AssetsPath";
+import { NotificationColor, NotificationType } from "../Types/Interface";
+import useThemeColors from "./useThemeMode";
 
 const useNotificationIconColors = (
   notification: NotificationType
@@ -45,6 +44,13 @@ const useNotificationIconColors = (
         iconColor: colors.smsDark,
         createViewColor: colors.smsDark,
         icon: AssetsPath.ic_sms,
+      },
+      instagram: {
+        backgroundColor: colors.instagramBackground,
+        typeColor: colors.instagram,
+        iconColor: colors.instagramDark,
+        createViewColor: colors.instagramDark,
+        icon: AssetsPath.ic_instagram,
       },
     };
   }, [colors]);

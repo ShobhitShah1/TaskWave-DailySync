@@ -13,6 +13,8 @@ export const getNotificationIcon = (type: NotificationType) => {
       return AssetsPath.ic_gmail;
     case "phone":
       return AssetsPath.ic_phone;
+    case "instagram":
+      return AssetsPath.ic_instagram;
     default:
       return null;
   }

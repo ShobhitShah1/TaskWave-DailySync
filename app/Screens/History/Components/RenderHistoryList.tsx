@@ -11,6 +11,7 @@ import useThemeColors from "../../../Hooks/useThemeMode";
 import { ReminderCardProps } from "../../../Types/Interface";
 import { getNotificationIcon } from "../../../Utils/getNotificationIcon";
 import { formatDate, formatTime } from "../../AddReminder/ReminderScheduled";
+import React from "react";
 
 const RenderHistoryList: React.FC<ReminderCardProps> = memo(
   ({ notification, deleteReminder }) => {

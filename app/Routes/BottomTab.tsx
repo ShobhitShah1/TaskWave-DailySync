@@ -9,8 +9,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import React, { memo, useCallback, useRef, useState } from "react";
 import {
+  FlatList,
   Image,
-  ImageSourcePropType,
   Linking,
   NativeModules,
   Platform,
@@ -33,50 +33,20 @@ import AssetsPath from "../Global/AssetsPath";
 import TextString from "../Global/TextString";
 import { FONTS } from "../Global/Theme";
 import { useBottomSheetBackHandler } from "../Hooks/useBottomSheetBackHandler";
+import useThemeColors from "../Hooks/useThemeMode";
 import AddReminder from "../Screens/AddReminder/AddReminder";
 import History from "../Screens/History/History";
 import Home from "../Screens/Home/Home";
 import Notification from "../Screens/Notification/Notification";
 import Setting from "../Screens/Setting/Setting";
-import useThemeColors from "../Hooks/useThemeMode";
-import { NotificationType } from "../Types/Interface";
+import {
+  NotificationType,
+  remindersCategoriesType,
+  RenderTabBarProps,
+} from "../Types/Interface";
 import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
-
-interface RenderTabBarProps {
-  routeName: string;
-  selectedTab: string;
-  navigate: (routeName: string) => void;
-}
-
-export type categoriesType = {
-  id: number;
-  type: NotificationType;
-  title: string;
-  description: string;
-  icon: ImageSourcePropType;
-  color: string;
-};
-
-export const TabBarIcon = ({
-  source,
-  focused,
-}: {
-  source: any;
-  focused: boolean;
-}) => {
-  const colors = useThemeColors();
-  return (
-    <View style={styles.iconContainer}>
-      <Image
-        source={source}
-        tintColor={focused ? colors.gmail : undefined}
-        resizeMode="contain"
-        style={[styles.icon]}
-      />
-    </View>
-  );
-};
+import { getCategories } from "../Utils/initialCategories";
 
 const BottomTab = () => {
   const colors = useThemeColors();
@@ -89,49 +59,7 @@ const BottomTab = () => {
   const [hideBottomTab, setHideBottomTab] = useState(false);
   const [selectedCategory, setSelectedCategory] =
     useState<NotificationType>("whatsapp");
-
-  const initialCategories: categoriesType[] = [
-    {
-      id: 1,
-      type: "whatsapp",
-      title: "Whatsapp",
-      description: "Let’s create whatsapp event",
-      icon: AssetsPath.ic_whatsapp,
-      color: colors.whatsapp,
-    },
-    {
-      id: 2,
-      type: "SMS",
-      title: "SMS",
-      description: "Let’s create text messages event",
-      icon: AssetsPath.ic_sms,
-      color: colors.sms,
-    },
-    {
-      id: 3,
-      type: "whatsappBusiness",
-      title: "WA Business",
-      description: "Let’s create business event",
-      icon: AssetsPath.ic_whatsappBusiness,
-      color: colors.whatsappBusinessDark,
-    },
-    {
-      id: 4,
-      type: "gmail",
-      title: "Email",
-      description: "Let’s compose mail event",
-      icon: AssetsPath.ic_gmail,
-      color: colors.gmail,
-    },
-    {
-      id: 5,
-      type: "phone",
-      title: "Phone",
-      description: "Let’s create phone event",
-      icon: AssetsPath.ic_phone,
-      color: colors.sms,
-    },
-  ];
+  const initialCategories = getCategories(colors);
 
   const [categories, setCategories] = useState(initialCategories);
 
@@ -408,12 +336,9 @@ const BottomTab = () => {
                   );
                 })}
               </View>
-              <Animated.FlatList
+              <FlatList
                 numColumns={2}
                 data={categories}
-                exiting={FadeOut}
-                entering={FadeIn}
-                layout={LinearTransition.stiffness(200).damping(100)}
                 renderItem={({ item }) => (
                   <RenderCategoryItem
                     item={item}
@@ -423,7 +348,7 @@ const BottomTab = () => {
                     setCategories={setCategories}
                   />
                 )}
-                keyExtractor={(item, index) => index.toString()}
+                keyExtractor={(item, index) => item.id?.toString()}
                 contentContainerStyle={{ rowGap: 15, paddingBottom: 90 }}
                 columnWrapperStyle={{ justifyContent: "space-between" }}
               />

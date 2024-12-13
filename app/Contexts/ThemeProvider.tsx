@@ -20,19 +20,19 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
   });
 
   useEffect(() => {
-    setThemeBasedOnTime();
+    // setThemeBasedOnTime();
     storeViewMode();
   }, []);
 
-  useEffect(() => {
-    const unSubscribe = AppState.addEventListener("change", (nextAppState) => {
-      if (nextAppState === "active") {
-        setThemeBasedOnTime();
-      }
-    });
+  // useEffect(() => {
+  //   const unSubscribe = AppState.addEventListener("change", (nextAppState) => {
+  //     if (nextAppState === "active") {
+  //       setThemeBasedOnTime();
+  //     }
+  //   });
 
-    return () => unSubscribe.remove();
-  }, []);
+  //   return () => unSubscribe.remove();
+  // }, []);
 
   const setThemeBasedOnTime = () => {
     const currentHour = new Date().getHours();

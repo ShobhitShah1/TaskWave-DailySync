@@ -1,7 +1,7 @@
 import { DocumentPickerResponse } from "react-native-document-picker";
 import { FrequencyType } from "../Screens/AddReminder/Components/AddScheduleFrequency";
-import { categoriesType } from "../Routes/BottomTab";
 import { ReactNode } from "react";
+import { ImageSourcePropType } from "react-native";
 
 declare global {
   namespace ReactNavigation {
@@ -67,7 +67,8 @@ export type NotificationType =
   | "whatsappBusiness"
   | "SMS"
   | "gmail"
-  | "phone";
+  | "phone"
+  | "instagram";
 
 export interface Contact {
   name: string;
@@ -145,11 +146,11 @@ export interface headerInterface {
 }
 
 export interface CategoryItemType {
-  item: categoriesType;
+  item: remindersCategoriesType;
   setSelectedCategory: (category: NotificationType) => void;
   selectedCategory: NotificationType | null | undefined;
-  categories: categoriesType[];
-  setCategories: (categories: categoriesType[]) => void;
+  categories: remindersCategoriesType[];
+  setCategories: (categories: remindersCategoriesType[]) => void;
 }
 
 export interface ReminderCardProps {
@@ -189,3 +190,18 @@ export interface FullScreenProps {
   onClose: () => void;
   notifications: Notification[];
 }
+
+export interface RenderTabBarProps {
+  routeName: string;
+  selectedTab: string;
+  navigate: (routeName: string) => void;
+}
+
+export type remindersCategoriesType = {
+  id: number;
+  type: NotificationType;
+  title: string;
+  description: string;
+  icon: ImageSourcePropType;
+  color: string;
+};

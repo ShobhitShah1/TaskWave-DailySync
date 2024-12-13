@@ -16,6 +16,7 @@ const ic_sms = require("../../assets/Icons/ic_sms.png");
 const ic_whatsapp = require("../../assets/Icons/ic_whatsapp.png");
 const ic_whatsappBusiness = require("../../assets/Icons/ic_whatsappBusiness.png");
 const ic_phone = require("../../assets/Icons/ic_phone.png");
+const ic_instagram = require("../../assets/Icons/ic_instagram.png");
 
 const ic_edit = require("../../assets/Icons/ic_edit.png");
 const ic_view = require("../../assets/Icons/ic_view.png");
@@ -85,6 +86,7 @@ export default {
   ic_whatsapp,
   ic_whatsappBusiness,
   ic_phone,
+  ic_instagram,
   ic_edit,
   ic_view,
   ic_duplicate,

@@ -6,39 +6,7 @@ import useNotificationIconColors from "../../../Hooks/useNotificationIconColors"
 import useThemeColors from "../../../Hooks/useThemeMode";
 import { headerInterface, NotificationType } from "../../../Types/Interface";
 import styles from "../styles";
-
-const categories = (colors: any) => [
-  {
-    id: 1,
-    type: "whatsapp",
-    icon: AssetsPath.ic_whatsapp,
-    color: colors.whatsapp,
-  },
-  {
-    id: 2,
-    type: "SMS",
-    icon: AssetsPath.ic_sms,
-    color: colors.sms,
-  },
-  {
-    id: 3,
-    type: "whatsappBusiness",
-    icon: AssetsPath.ic_whatsappBusiness,
-    color: colors.whatsappBusiness,
-  },
-  {
-    id: 4,
-    type: "gmail",
-    icon: AssetsPath.ic_gmail,
-    color: colors.gmail,
-  },
-  {
-    id: 5,
-    type: "phone",
-    icon: AssetsPath.ic_phone,
-    color: colors.sms,
-  },
-];
+import { getCategories } from "../../../Utils/initialCategories";
 
 const FilterButton = memo(
   ({
@@ -85,6 +53,7 @@ const RenderHeaderView: FC<headerInterface> = ({
   const style = styles();
   const colors = useThemeColors();
   const { theme } = useAppContext();
+  const initialCategories = getCategories(colors);
 
   const handleSelectFilter = useCallback(
     (filter: NotificationType) => setSelectedFilter(filter),
@@ -119,7 +88,7 @@ const RenderHeaderView: FC<headerInterface> = ({
             <Text style={style.filterAllText}>All</Text>
           </Pressable>
 
-          {categories(colors).map((res) => {
+          {initialCategories.map((res) => {
             const getColor = useNotificationIconColors(
               res.type as NotificationType
             );
@@ -131,7 +100,7 @@ const RenderHeaderView: FC<headerInterface> = ({
                 onPress={() => handleSelectFilter(res.type as NotificationType)}
                 icon={res.icon}
                 color={res.color}
-                backgroundColor={getColor.backgroundColor}
+                backgroundColor={getColor?.backgroundColor || ""}
                 style={style}
               />
             );
