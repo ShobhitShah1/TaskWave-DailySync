@@ -178,6 +178,15 @@ const BottomTab = () => {
           "WhatsApp Business is not installed"
         );
         break;
+      case "instagram":
+        checkAppAndNavigate(
+          "com.instagram.android",
+          Platform.OS === "android"
+            ? "https://play.google.com/store/apps/details?id=com.instagram.android"
+            : "https://apps.apple.com/us/app/instagram/id389801252",
+          "Instagram is not installed"
+        );
+        break;
       default:
         onCloseSheet();
         setTimeout(() => {
