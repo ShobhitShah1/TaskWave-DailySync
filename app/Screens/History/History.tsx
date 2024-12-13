@@ -169,17 +169,14 @@ const History = () => {
   }, [isFocus, selectedDate, activeIndex]);
 
   const storeFilterData = useCallback(async () => {
-    console.log("activeIndexL", activeIndex);
     const selectedType = filterTabData?.[activeIndex].type;
 
-    console.log("selectedType:", selectedType);
     const data = selectedType
       ? notifications.filter(
           (notification) => notification.type === selectedType
         )
       : notifications;
 
-    console.log("data:", data);
     setFilteredNotifications(data || []);
   }, [notifications, activeIndex, selectedDate, filterTabData]);
 
@@ -246,7 +243,6 @@ const History = () => {
 
   const handleTabPress = useCallback(
     (index: number) => {
-      console.log(index);
       setActiveIndex(index);
       storeFilterData();
     },
