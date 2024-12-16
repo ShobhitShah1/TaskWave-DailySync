@@ -3,8 +3,8 @@ import React, { memo, useCallback, useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
-import AssetsPath from "../Global/AssetsPath";
-import { FONTS, SIZE } from "../Global/Theme";
+import AssetsPath from "../Constants/AssetsPath";
+import { FONTS, SIZE } from "../Constants/Theme";
 import useThemeColors from "../Hooks/useThemeMode";
 import CustomSwitch from "./CustomSwitch";
 

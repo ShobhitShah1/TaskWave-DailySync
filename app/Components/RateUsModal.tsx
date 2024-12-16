@@ -9,8 +9,8 @@ import {
   View,
 } from "react-native";
 import ReactNativeModal from "react-native-modal";
-import AssetsPath from "../Global/AssetsPath";
-import { FONTS } from "../Global/Theme";
+import AssetsPath from "../Constants/AssetsPath";
+import { FONTS } from "../Constants/Theme";
 import useThemeColors from "../Hooks/useThemeMode";
 
 interface RateUsModalProps {

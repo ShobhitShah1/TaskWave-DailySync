@@ -24,8 +24,8 @@ import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import RenderCalenderView from "../../Components/RenderCalenderView";
 import YearMonthPicker from "../../Components/YearMonthPicker";
-import AssetsPath from "../../Global/AssetsPath";
-import { FONTS, SIZE } from "../../Global/Theme";
+import AssetsPath from "../../Constants/AssetsPath";
+import { FONTS, SIZE } from "../../Constants/Theme";
 import useCalendar from "../../Hooks/useCalendar";
 import useReminder from "../../Hooks/useReminder";
 import useThemeColors from "../../Hooks/useThemeMode";
@@ -36,6 +36,8 @@ import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "../Home/Components/HomeHeader";
 import RenderFilterTabData from "./Components/RenderFilterTabData";
 import RenderHistoryList from "./Components/RenderHistoryList";
+import { categoriesConfig } from "../../Constants/CategoryConfig";
+import { formatNotificationType } from "../../Utils/formatNotificationType";
 
 const History = () => {
   const style = styles();
@@ -47,7 +49,7 @@ const History = () => {
   const [filteredNotifications, setFilteredNotifications] = useState<
     Notification[]
   >([]);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeTabType, setActiveTabType] = useState("all");
   const [loading, setLoading] = useState(true);
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
 
@@ -93,52 +95,21 @@ const History = () => {
     setCurrentMonth(newDate);
   }, [currentMonth]);
 
-  const filterTabData = useMemo(
-    () => [
-      {
-        title: "Whatsapp",
-        reminders: notificationCounts["whatsapp"] || 0,
-        icon: AssetsPath.ic_whatsapp,
-        type: "whatsapp",
-        id: 1,
-      },
-      {
-        title: "Whatsapp Business",
-        reminders: notificationCounts["whatsappBusiness"] || 0,
-        icon: AssetsPath.ic_whatsappBusiness,
-        type: "whatsappBusiness",
-        id: 2,
-      },
-      {
-        title: "Instagram",
-        reminders: notificationCounts["instagram"] || 0,
-        icon: AssetsPath.ic_instagram,
-        type: "instagram",
-        id: 3,
-      },
-      {
-        title: "SMS",
-        reminders: notificationCounts["SMS"] || 0,
-        icon: AssetsPath.ic_sms,
-        type: "SMS",
-        id: 4,
-      },
-      {
-        title: "Email",
-        reminders: notificationCounts["gmail"] || 0,
-        icon: AssetsPath.ic_gmail,
-        type: "gmail",
-        id: 5,
-      },
-      {
-        title: "Phone",
-        reminders: notificationCounts["phone"] || 0,
-        icon: AssetsPath.ic_phone,
-        type: "phone",
-        id: 6,
-      },
-    ],
-    [notificationCounts, notifications]
+  const filterTabData = useMemo(() => {
+    const enrichedCategories = categoriesConfig(colors).map((category) => ({
+      ...category,
+      title: formatNotificationType(category.type),
+      reminders: notificationCounts[category.type] || 0,
+    }));
+    return enrichedCategories;
+  }, [colors, notificationCounts]);
+
+  const selectedType = useMemo(
+    () =>
+      activeTabType === "all"
+        ? "all"
+        : filterTabData.find((tab) => tab.type === activeTabType)?.type,
+    [activeTabType, filterTabData]
   );
 
   const findSelectedIndex = () => {
@@ -166,31 +137,13 @@ const History = () => {
   useEffect(() => {
     setLoading(filteredNotifications?.length === 0);
     loadNotifications();
-  }, [isFocus, selectedDate, activeIndex]);
-
-  const storeFilterData = useCallback(async () => {
-    const selectedType = filterTabData?.[activeIndex].type;
-
-    const data = selectedType
-      ? notifications.filter(
-          (notification) => notification.type === selectedType
-        )
-      : notifications;
-
-    setFilteredNotifications(data || []);
-  }, [notifications, activeIndex, selectedDate, filterTabData]);
+  }, [isFocus, selectedDate, activeTabType]);
 
   const loadNotifications = async () => {
     try {
       const allNotifications = await getAllNotifications();
 
       if (allNotifications && allNotifications.length > 0) {
-        // const now = new Date();
-
-        // const activeNotifications = allNotifications.filter(
-        //   (notification) => new Date(notification.date) >= now
-        // );
-
         const [day, month, year] = selectedDate.split("-");
         const selectedDateObj = new Date(`${year}-${month}-${day}`);
 
@@ -215,11 +168,8 @@ const History = () => {
         if (filteredByDate.length !== 0) {
           setNotifications(filteredByDate.reverse());
 
-          const selectedType =
-            activeIndex === 0 ? "all" : filterTabData[activeIndex - 1].type;
-
           const data =
-            activeIndex === 0
+            activeTabType === "all"
               ? filteredByDate
               : selectedType
               ? filteredByDate.filter(
@@ -241,13 +191,19 @@ const History = () => {
     }
   };
 
-  const handleTabPress = useCallback(
-    (index: number) => {
-      setActiveIndex(index);
-      storeFilterData();
-    },
-    [filterTabData, notifications, activeIndex]
-  );
+  const handleTabPress = useCallback((type: string) => {
+    setActiveTabType(type);
+  }, []);
+
+  useEffect(() => {
+    const data = selectedType
+      ? notifications.filter(
+          (notification) => notification.type === selectedType
+        )
+      : notifications;
+
+    setFilteredNotifications(data || []);
+  }, [activeTabType, notifications, filterTabData]);
 
   const deleteReminder = useCallback(async (id?: string) => {
     if (!id) {
@@ -369,7 +325,7 @@ const History = () => {
               ref={flashListRef}
               extraData={
                 selectedDate ||
-                activeIndex ||
+                activeTabType ||
                 filteredNotifications ||
                 notifications
               }
@@ -392,12 +348,10 @@ const History = () => {
           <View style={{ width: "20%" }}>
             <RenderFilterTabData
               index={0}
-              isActive={activeIndex === 0}
+              isActive={activeTabType === "all"}
               onTabPress={() => {
-                if (activeIndex === 0) {
-                  return;
-                }
-                handleTabPress(0);
+                if (activeTabType === "all") return;
+                handleTabPress("all");
               }}
               res={{
                 title: "All",
@@ -411,7 +365,7 @@ const History = () => {
           <View style={{ width: "80%", overflow: "visible" }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {filterTabData.map((res, index) => {
-                const isActive = res.id === activeIndex;
+                const isActive = res.type === activeTabType;
 
                 const onTabPress = () => {
                   if (isActive) {
@@ -422,7 +376,7 @@ const History = () => {
                       });
                     }
                   } else {
-                    handleTabPress(res.id);
+                    handleTabPress(res.type);
                   }
                 };
 

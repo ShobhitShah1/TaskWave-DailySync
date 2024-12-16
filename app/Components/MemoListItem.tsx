@@ -8,8 +8,8 @@ import Animated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
-import AssetsPath from "../Global/AssetsPath";
-import { FONTS, SIZE } from "../Global/Theme";
+import AssetsPath from "../Constants/AssetsPath";
+import { FONTS, SIZE } from "../Constants/Theme";
 import useThemeColors from "../Hooks/useThemeMode";
 import { Memo } from "../Types/Interface";
 

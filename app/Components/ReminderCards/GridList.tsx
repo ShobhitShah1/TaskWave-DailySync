@@ -2,9 +2,9 @@ import { BlurView } from "expo-blur";
 import React, { FC, memo, useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import ReactNativeModal from "react-native-modal";
+import AssetsPath from "../../Constants/AssetsPath";
+import { FONTS } from "../../Constants/Theme";
 import { useAppContext } from "../../Contexts/ThemeProvider";
-import AssetsPath from "../../Global/AssetsPath";
-import { FONTS } from "../../Global/Theme";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useThemeColors from "../../Hooks/useThemeMode";
 import { formatTime } from "../../Screens/AddReminder/ReminderScheduled";
@@ -15,6 +15,7 @@ const LOGO_SIZE = 25;
 const GridView: FC<IListViewProps> = ({
   cardBackgroundColor,
   icon,
+  title,
   notification,
   onCardPress,
   typeColor,
@@ -26,17 +27,6 @@ const GridView: FC<IListViewProps> = ({
   const { theme } = useAppContext();
   const { timeLeft } = useCountdownTimer(notification.date);
   const [menuVisible, setMenuVisible] = useState(false);
-
-  const title = useMemo(
-    () =>
-      notification.type === "gmail"
-        ? notification?.toMail?.[0]
-        : notification?.toContact?.map(
-            (res) =>
-              `${res.name}${notification?.toContact?.length >= 2 ? "," : ""} `
-          ),
-    [notification]
-  );
 
   const description = useMemo(
     () =>

@@ -68,7 +68,8 @@ export type NotificationType =
   | "SMS"
   | "gmail"
   | "phone"
-  | "instagram";
+  | "instagram"
+  | "telegram";
 
 export interface Contact {
   name: string;
@@ -88,6 +89,7 @@ export interface Notification {
   attachments: DocumentPickerResponse[];
   scheduleFrequency: FrequencyType | null;
   memo?: Memo[];
+  telegramUsername: string;
 }
 
 export interface SimplifiedContact {
@@ -149,8 +151,7 @@ export interface CategoryItemType {
   item: remindersCategoriesType;
   setSelectedCategory: (category: NotificationType) => void;
   selectedCategory: NotificationType | null | undefined;
-  categories: remindersCategoriesType[];
-  setCategories: (categories: remindersCategoriesType[]) => void;
+  onCategoryClick: (category: remindersCategoriesType) => void;
 }
 
 export interface ReminderCardProps {
@@ -177,6 +178,7 @@ export interface AddContactProps {
 export interface IListViewProps {
   cardBackgroundColor: string;
   icon: any;
+  title: string;
   notification: Notification;
   onCardPress: () => void;
   typeColor: string;
@@ -203,5 +205,22 @@ export type remindersCategoriesType = {
   title: string;
   description: string;
   icon: ImageSourcePropType;
-  color: string;
+  color: {
+    background: string;
+    primary: string;
+    dark: string;
+  };
+};
+
+export type NotificationCategory = {
+  id: number;
+  type: NotificationType;
+  title: string;
+  description: string;
+  icon: number;
+  color: {
+    background: string;
+    primary: string;
+    dark: string;
+  };
 };

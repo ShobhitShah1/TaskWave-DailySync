@@ -10,11 +10,12 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AssetsPath from "../../Global/AssetsPath";
-import { FONTS, SIZE } from "../../Global/Theme";
+import AssetsPath from "../../Constants/AssetsPath";
+import { FONTS, SIZE } from "../../Constants/Theme";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useThemeColors from "../../Hooks/useThemeMode";
 import { Notification } from "../../Types/Interface";
+import { getNotificationTitle } from "../../Utils/getNotificationTitle";
 
 type ReminderScheduledProps = {
   params: { themeColor: string; notification: Notification };
@@ -72,6 +73,11 @@ const ReminderScheduled = () => {
   const notificationData = useMemo(() => {
     return params?.notification;
   }, [params]);
+
+  const title = useMemo(
+    () => getNotificationTitle(notificationData),
+    [notificationData]
+  );
 
   const [hours, minutes, seconds] = formattedTimeLeft.split(" : ");
 
@@ -144,16 +150,7 @@ const ReminderScheduled = () => {
                     numberOfLines={2}
                     style={[style.userName, { color: colors.text }]}
                   >
-                    {notificationData.type === "gmail"
-                      ? notificationData?.toMail?.map((res) => res)
-                      : notificationData?.toContact?.map(
-                          (res) =>
-                            `${res.name}${
-                              notificationData?.toContact?.length >= 2
-                                ? ","
-                                : ""
-                            } `
-                        )}
+                    {title?.toString()}
                   </Text>
                   <Text
                     style={[style.timeAgo, { color: colors.placeholderText }]}
@@ -170,7 +167,9 @@ const ReminderScheduled = () => {
                 ]}
                 numberOfLines={3}
               >
-                {notificationData.message || "No Message Available"}
+                {notificationData.message ||
+                  notificationData.subject ||
+                  "No Message Available"}
               </Text>
 
               <Image

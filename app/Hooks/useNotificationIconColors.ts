@@ -1,61 +1,34 @@
 import { useMemo } from "react";
-import AssetsPath from "../Global/AssetsPath";
-import { NotificationColor, NotificationType } from "../Types/Interface";
 import useThemeColors from "./useThemeMode";
+import { categoriesConfig } from "../Constants/CategoryConfig";
+import { NotificationColor } from "../Types/Interface";
 
 const useNotificationIconColors = (
-  notification: NotificationType
+  notificationType: string
 ): NotificationColor => {
   const colors = useThemeColors();
 
   const colorMap = useMemo(() => {
-    return {
-      whatsapp: {
-        backgroundColor: colors.whatsappBackground,
-        typeColor: colors.whatsapp,
-        iconColor: colors.whatsappDark,
-        createViewColor: colors.whatsapp,
-        icon: AssetsPath.ic_whatsapp,
-      },
-      whatsappBusiness: {
-        backgroundColor: colors.whatsappBusinessBackground,
-        typeColor: colors.whatsappBusiness,
-        iconColor: colors.whatsappBusinessDark,
-        createViewColor: colors.whatsappBusinessDark,
-        icon: AssetsPath.ic_whatsappBusiness,
-      },
-      SMS: {
-        backgroundColor: colors.smsBackground,
-        typeColor: colors.sms,
-        iconColor: colors.smsDark,
-        createViewColor: colors.smsDark,
-        icon: AssetsPath.ic_sms,
-      },
-      gmail: {
-        backgroundColor: colors.gmailBackground,
-        typeColor: colors.gmail,
-        iconColor: colors.gmailDark,
-        createViewColor: colors.gmailLightDark,
-        icon: AssetsPath.ic_gmail,
-      },
-      phone: {
-        backgroundColor: colors.smsBackground,
-        typeColor: colors.sms,
-        iconColor: colors.smsDark,
-        createViewColor: colors.smsDark,
-        icon: AssetsPath.ic_sms,
-      },
-      instagram: {
-        backgroundColor: colors.instagramBackground,
-        typeColor: colors.instagram,
-        iconColor: colors.instagramDark,
-        createViewColor: colors.instagramDark,
-        icon: AssetsPath.ic_instagram,
-      },
-    };
+    const config = categoriesConfig(colors);
+    return config.reduce<Record<string, NotificationColor>>((map, category) => {
+      map[category.type] = {
+        backgroundColor: category.color.background,
+        typeColor: category.color.primary,
+        iconColor: category.color.dark,
+        createViewColor: category.color.primary,
+        icon: category.icon,
+      };
+      return map;
+    }, {});
   }, [colors]);
 
-  return colorMap[notification];
+  if (!colorMap[notificationType]) {
+    throw new Error(
+      `No color configuration found for notification type: ${notificationType}`
+    );
+  }
+
+  return colorMap[notificationType];
 };
 
 export default useNotificationIconColors;

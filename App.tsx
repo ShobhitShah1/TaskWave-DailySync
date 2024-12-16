@@ -6,7 +6,7 @@ import FlashMessage, { showMessage } from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppProvider } from "./app/Contexts/ThemeProvider";
-import { FONTS } from "./app/Global/Theme";
+import { FONTS } from "./app/Constants/Theme";
 import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
 import { updateNotification } from "./app/Hooks/updateNotification";
 import updateToNextDate from "./app/Hooks/updateToNextDate";

@@ -16,7 +16,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { FONTS, SIZE } from "../Global/Theme";
+import { FONTS, SIZE } from "../Constants/Theme";
 import useThemeColors from "../Hooks/useThemeMode";
 import { BlurView } from "expo-blur";
 

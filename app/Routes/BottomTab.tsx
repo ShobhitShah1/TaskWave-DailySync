@@ -29,9 +29,9 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
-import AssetsPath from "../Global/AssetsPath";
-import TextString from "../Global/TextString";
-import { FONTS } from "../Global/Theme";
+import AssetsPath from "../Constants/AssetsPath";
+import TextString from "../Constants/TextString";
+import { FONTS } from "../Constants/Theme";
 import { useBottomSheetBackHandler } from "../Hooks/useBottomSheetBackHandler";
 import useThemeColors from "../Hooks/useThemeMode";
 import AddReminder from "../Screens/AddReminder/AddReminder";
@@ -40,13 +40,14 @@ import Home from "../Screens/Home/Home";
 import Notification from "../Screens/Notification/Notification";
 import Setting from "../Screens/Setting/Setting";
 import {
+  NotificationCategory,
   NotificationType,
   remindersCategoriesType,
   RenderTabBarProps,
 } from "../Types/Interface";
 import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
 import RenderCategoryItem from "./Components/RenderCategoryItem";
-import { getCategories } from "../Utils/initialCategories";
+import { getCategories } from "../Utils/getCategories";
 
 const BottomTab = () => {
   const colors = useThemeColors();
@@ -61,7 +62,8 @@ const BottomTab = () => {
     useState<NotificationType>("whatsapp");
   const initialCategories = getCategories(colors);
 
-  const [categories, setCategories] = useState(initialCategories);
+  const [categories, setCategories] =
+    useState<NotificationCategory[]>(initialCategories);
 
   const handleTabChange = useCallback(
     (selectedTab: string) => {
@@ -198,6 +200,16 @@ const BottomTab = () => {
     }
   }, [checkAppAndNavigate, selectedCategory, navigation]);
 
+  const onCategoryClick = useCallback(
+    (item: any) => {
+      const newCategories = categories.filter((cat) => cat.type !== item.type);
+      setCategories([item, ...newCategories]);
+
+      setSelectedCategory(item.type);
+    },
+    [categories]
+  );
+
   return (
     <React.Fragment>
       <CurvedBottomBar.Navigator
@@ -321,13 +333,16 @@ const BottomTab = () => {
                   const isSelected = res.type === selectedCategory;
                   return (
                     <Pressable
-                      onPress={() => setSelectedCategory(res?.type)}
+                      onPress={() => {
+                        onCategoryClick(res);
+                        setSelectedCategory(res.type);
+                      }}
                       key={res.id}
                       style={[
                         styles.sheetSuggestionImageView,
                         {
                           backgroundColor: isSelected
-                            ? res.color
+                            ? res.color.background
                             : "rgba(209, 209, 209, 0.6)",
                         },
                       ]}
@@ -351,10 +366,9 @@ const BottomTab = () => {
                 renderItem={({ item }) => (
                   <RenderCategoryItem
                     item={item}
+                    onCategoryClick={onCategoryClick}
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
-                    categories={categories}
-                    setCategories={setCategories}
                   />
                 )}
                 keyExtractor={(item, index) => item.id?.toString()}
@@ -375,14 +389,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
   },
   btnCircleUp: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
     bottom: 30,
-    backgroundColor: "rgba(64, 93, 240, 1)",
-    shadowColor: "rgba(71, 134, 249, 1)",
     shadowOffset: { width: 0, height: -5 },
     shadowOpacity: 1,
     shadowRadius: 5,
@@ -399,6 +408,13 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.Medium,
   },
   addButton: {
+    flex: 1,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "rgba(64, 93, 240, 1)",
+    shadowColor: "rgba(71, 134, 249, 1)",
+
     justifyContent: "center",
     alignItems: "center",
   },

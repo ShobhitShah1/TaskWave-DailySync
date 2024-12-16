@@ -8,8 +8,8 @@ import {
   View,
 } from "react-native";
 import { useAppContext } from "../../Contexts/ThemeProvider";
-import AssetsPath from "../../Global/AssetsPath";
-import { FONTS } from "../../Global/Theme";
+import AssetsPath from "../../Constants/AssetsPath";
+import { FONTS } from "../../Constants/Theme";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useThemeColors from "../../Hooks/useThemeMode";
 import { CategoryItemType } from "../../Types/Interface";
@@ -18,8 +18,7 @@ const RenderCategoryItem = ({
   item,
   selectedCategory,
   setSelectedCategory,
-  categories,
-  setCategories,
+  onCategoryClick,
 }: CategoryItemType) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
@@ -32,12 +31,12 @@ const RenderCategoryItem = ({
     [selectedCategory]
   );
 
-  const onCategoryClick = useCallback(() => {
-    const newCategories = categories.filter((cat) => cat.type !== item.type);
-    setCategories([item, ...newCategories]);
+  // const onCategoryClick = useCallback(() => {
+  //   const newCategories = categories.filter((cat) => cat.type !== item.type);
+  //   setCategories([item, ...newCategories]);
 
-    setSelectedCategory(item.type);
-  }, [item, categories]);
+  //   setSelectedCategory(item.type);
+  // }, [item, categories]);
 
   return (
     <Pressable
@@ -47,7 +46,10 @@ const RenderCategoryItem = ({
           borderColor: isSelected ? colors.black : colors.borderColor,
         },
       ]}
-      onPress={onCategoryClick}
+      onPress={() => {
+        onCategoryClick(item);
+        setSelectedCategory(item.type);
+      }}
     >
       <ImageBackground
         resizeMode="cover"

@@ -14,6 +14,8 @@
     <package android:name="com.google.android.gm"/>
     <package android:name="com.whatsapp"/>
     <package android:name="com.whatsapp.w4b"/>
+    <package android:name="com.instagram.android" />
+    <package android:name="org.telegram.messenger" />
   </queries>
   <queries>
     <intent>

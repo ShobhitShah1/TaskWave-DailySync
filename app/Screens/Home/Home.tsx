@@ -12,12 +12,7 @@ import {
   View,
 } from "react-native";
 import { showMessage } from "react-native-flash-message";
-import Animated, {
-  Easing,
-  FadeIn,
-  FadeOut,
-  LinearTransition,
-} from "react-native-reanimated";
+import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
 import ReminderCard from "../../Components/ReminderCard";
 import RenderCalenderView from "../../Components/RenderCalenderView";

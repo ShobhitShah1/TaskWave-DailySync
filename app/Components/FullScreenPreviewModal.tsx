@@ -10,9 +10,9 @@ import {
 } from "react-native";
 import ReactNativeModal from "react-native-modal";
 import { useAppContext } from "../Contexts/ThemeProvider";
-import AssetsPath from "../Global/AssetsPath";
-import TextString from "../Global/TextString";
-import { FONTS, SIZE } from "../Global/Theme";
+import AssetsPath from "../Constants/AssetsPath";
+import TextString from "../Constants/TextString";
+import { FONTS, SIZE } from "../Constants/Theme";
 import isGridView from "../Hooks/isGridView";
 import useThemeColors from "../Hooks/useThemeMode";
 import { FullScreenProps } from "../Types/Interface";

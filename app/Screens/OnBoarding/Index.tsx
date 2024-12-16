@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, FlatList, StatusBar, StyleSheet, View } from "react-native";
-import { OnBoardingData } from "../../Global/Data";
+import { OnBoardingData } from "../../Constants/Data";
 import useThemeColors from "../../Hooks/useThemeMode";
 import NextButton from "./Components/NextButton";
 import OnBoardingListView from "./Components/OnBoardingListView";

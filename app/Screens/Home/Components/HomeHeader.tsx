@@ -4,9 +4,9 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import CustomSwitch from "../../../Components/CustomSwitch";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
-import AssetsPath from "../../../Global/AssetsPath";
-import TextString from "../../../Global/TextString";
-import { FONTS, SIZE } from "../../../Global/Theme";
+import AssetsPath from "../../../Constants/AssetsPath";
+import TextString from "../../../Constants/TextString";
+import { FONTS, SIZE } from "../../../Constants/Theme";
 import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface IHomeHeaderProps {

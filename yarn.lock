@@ -8599,10 +8599,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-share@npm:^11.0.4":
-  version: 11.1.0
-  resolution: "react-native-share@npm:11.1.0"
-  checksum: 10c0/37ecb4a661d19f00aa301acd58197d17a78cab049e8621490dc10af68d3d12db44c87b145dd243aaf1ff5447d6ac4270bb5365a1fa7fdc0b0f4475e0fa85ed6e
+"react-native-share@npm:^12.0.3":
+  version: 12.0.3
+  resolution: "react-native-share@npm:12.0.3"
+  checksum: 10c0/38ebf9b9f8c0b7e6d1bc37a86042c283cc985b7034fe3ba91f95d5ca49054c23145b4e90a7a839b6b906f0db32a453297657d9d906909899670934716fab45fc
   languageName: node
   linkType: hard
 
@@ -9832,7 +9832,7 @@ __metadata:
     react-native-reanimated: "npm:~3.10.1"
     react-native-safe-area-context: "npm:4.10.5"
     react-native-screens: "npm:3.31.1"
-    react-native-share: "npm:^11.0.4"
+    react-native-share: "npm:^12.0.3"
     react-native-svg: "npm:15.2.0"
     typescript: "npm:~5.3.3"
   languageName: unknown

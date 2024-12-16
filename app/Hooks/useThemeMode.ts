@@ -1,5 +1,5 @@
 import { useAppContext } from "../Contexts/ThemeProvider";
-import { DarkThemeColors, LightThemeColors } from "../Global/Theme";
+import { DarkThemeColors, LightThemeColors } from "../Constants/Theme";
 
 const useThemeColors = () => {
   const { theme } = useAppContext();

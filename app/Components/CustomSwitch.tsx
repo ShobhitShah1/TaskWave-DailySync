@@ -10,7 +10,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import AssetsPath from "../Global/AssetsPath";
+import AssetsPath from "../Constants/AssetsPath";
 import useThemeColors from "../Hooks/useThemeMode";
 import { useAppContext } from "../Contexts/ThemeProvider";
 

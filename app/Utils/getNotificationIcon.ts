@@ -1,4 +1,4 @@
-import AssetsPath from "../Global/AssetsPath";
+import AssetsPath from "../Constants/AssetsPath";
 import { NotificationType } from "../Types/Interface";
 
 export const getNotificationIcon = (type: NotificationType) => {
@@ -15,6 +15,8 @@ export const getNotificationIcon = (type: NotificationType) => {
       return AssetsPath.ic_phone;
     case "instagram":
       return AssetsPath.ic_instagram;
+    case "telegram":
+      return AssetsPath.ic_telegram;
     default:
       return null;
   }

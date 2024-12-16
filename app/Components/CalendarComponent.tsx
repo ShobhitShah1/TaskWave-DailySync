@@ -1,7 +1,7 @@
 import React from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated from "react-native-reanimated";
-import { FONTS } from "../Global/Theme";
+import { FONTS } from "../Constants/Theme";
 import useCalendar from "../Hooks/useCalendar";
 import useThemeColors from "../Hooks/useThemeMode";
 

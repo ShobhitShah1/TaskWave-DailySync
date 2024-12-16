@@ -15,6 +15,7 @@ import { ReminderCardProps } from "../Types/Interface";
 import { getNotificationIcon } from "../Utils/getNotificationIcon";
 import GridView from "./ReminderCards/GridList";
 import ListView from "./ReminderCards/ListView";
+import { getNotificationTitle } from "../Utils/getNotificationTitle";
 
 const ReminderCard: React.FC<ReminderCardProps> = ({
   notification,
@@ -40,6 +41,11 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
       onRefreshData();
     }
   }, [timeIsOver, timeLeft]);
+
+  const title = useMemo(
+    () => getNotificationTitle(notification),
+    [notification]
+  );
 
   const cardBackgroundColor = useMemo(() => {
     return theme === "dark"
@@ -164,6 +170,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           onDuplicatePress={onDuplicatePress}
           cardBackgroundColor={cardBackgroundColor}
           icon={icon}
+          title={title}
           typeColor={typeColor}
           deleteReminder={deleteReminder}
         />
@@ -175,6 +182,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           onDuplicatePress={onDuplicatePress}
           cardBackgroundColor={cardBackgroundColor}
           icon={icon}
+          title={title}
           typeColor={typeColor}
           deleteReminder={deleteReminder}
         />

@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import useThemeColors from "../../Hooks/useThemeMode";
-import { FONTS } from "../../Global/Theme";
+import { FONTS } from "../../Constants/Theme";
 
 const styles = () => {
   const colors = useThemeColors();

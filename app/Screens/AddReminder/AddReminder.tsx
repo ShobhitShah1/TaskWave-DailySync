@@ -26,7 +26,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import AudioMemoItem from "../../Components/MemoListItem";
-import AssetsPath from "../../Global/AssetsPath";
+import AssetsPath from "../../Constants/AssetsPath";
 import useContactPermission from "../../Hooks/useContactPermission";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useDatabase, {
@@ -55,6 +55,7 @@ import AttachFile from "./Components/AttachFile";
 import ContactListModal from "./Components/ContactListModal";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AddTelegramUsername from "./Components/AddTelegramUsername";
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -124,6 +125,8 @@ const AddReminder = () => {
   const [audioMetering, setAudioMetering] = useState<number[]>([]);
   const metering = useSharedValue(-100);
 
+  const [telegramUsername, setTelegramUsername] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
   const [isContactLoading, setIsContactLoading] = useState({
     isLoading: false,
@@ -148,6 +151,7 @@ const AddReminder = () => {
       setContacts(response?.toContact);
       setSelectedContacts(response?.toContact);
       setMemos(response?.memo || []);
+      setTelegramUsername(response?.telegramUsername || "");
     }
   };
 
@@ -450,7 +454,7 @@ const AddReminder = () => {
         return false;
       }
     } else {
-      if (!selectedContacts?.length) {
+      if (!selectedContacts?.length && notificationType !== "telegram") {
         showMessage({
           message: "'Contact(s)' field is required.",
           type: "danger",
@@ -525,6 +529,7 @@ const AddReminder = () => {
           attachments: selectedDocuments,
           scheduleFrequency: scheduleFrequency || "",
           memo: memos || [],
+          telegramUsername: telegramUsername?.toString() || "",
         };
 
         let notificationScheduleId;
@@ -570,11 +575,12 @@ const AddReminder = () => {
           }
         }
 
-        setIsLoading(false);
         navigation.navigate("ReminderScheduled", {
           themeColor: createViewColor,
           notification: { ...notificationData, id: notificationScheduleId },
         });
+
+        setIsLoading(false);
       }
     } catch (error: any) {
       showMessage({
@@ -631,12 +637,20 @@ const AddReminder = () => {
             />
           )}
 
-          {notificationType !== "gmail" && (
+          {notificationType !== "gmail" && notificationType !== "telegram" && (
             <AddContact
               onContactPress={onHandelContactClick}
               themeColor={createViewColor}
               selectedContacts={selectedContacts}
               onRemoveContact={handleRemoveContact}
+            />
+          )}
+
+          {notificationType === "telegram" && (
+            <AddTelegramUsername
+              telegramUsername={telegramUsername}
+              setTelegramUsername={setTelegramUsername}
+              themeColor={createViewColor}
             />
           )}
 
@@ -649,7 +663,7 @@ const AddReminder = () => {
             />
           )}
 
-          {notificationType !== "phone" && (
+          {notificationType !== "phone" && notificationType !== "telegram" && (
             <AttachFile
               themeColor={createViewColor}
               onRemoveDocument={onRemoveDocument}

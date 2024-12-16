@@ -29,6 +29,7 @@ export const scheduleNotificationWithNotifee = async (
       toMail,
       attachments,
       memo,
+      telegramUsername,
     } = notification;
 
     await notifee.requestPermission();
@@ -66,6 +67,7 @@ export const scheduleNotificationWithNotifee = async (
       toMail: JSON.stringify(toMail),
       attachments: JSON.stringify(attachments),
       memo: JSON.stringify(memo),
+      telegramUsername: telegramUsername || "",
     };
 
     const notifeeNotificationId = await notifee.createTriggerNotification(
@@ -155,7 +157,8 @@ const useReminder = () => {
         attachments TEXT,
         scheduleFrequency TEXT,
         memo TEXT,
-        toMail TEXT
+        toMail TEXT,
+        telegramUsername TEXT
       );
 
       CREATE TABLE IF NOT EXISTS contacts (
@@ -193,6 +196,7 @@ const useReminder = () => {
       attachments,
       id,
       memo,
+      telegramUsername,
     } = notification;
 
     if (!id) {
@@ -206,7 +210,7 @@ const useReminder = () => {
     const toMailString = JSON.stringify(toMail || []);
 
     const insertNotificationSQL = `
-    INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail)
+    INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail, telegramUsername)
     VALUES (
       '${id}',
       '${type}',
@@ -216,7 +220,8 @@ const useReminder = () => {
       '${JSON.stringify(attachments || [])}',
       '${notification.scheduleFrequency}',
       '${JSON.stringify(memo || [])}',
-      '${toMailString}'
+      '${toMailString}',
+      '${telegramUsername?.toString().replace(/'/g, "''") || ""}'
     )`;
 
     let insertContactsSQL = "";
@@ -283,6 +288,7 @@ const useReminder = () => {
       subject,
       attachments,
       memo,
+      telegramUsername,
     } = notification;
 
     let toMailArray;
@@ -371,7 +377,10 @@ const useReminder = () => {
         attachments = '${JSON.stringify(attachments || [])}',
         scheduleFrequency = '${notification.scheduleFrequency || ""}',
         memo = '${JSON.stringify(memo || [])}',
-        toMail = '${escapedToMail}'
+        toMail = '${escapedToMail}',
+        telegramUsername = '${(telegramUsername || "")
+          .toString()
+          .replace(/'/g, "''")}'
       WHERE id = '${id}'
     `;
 

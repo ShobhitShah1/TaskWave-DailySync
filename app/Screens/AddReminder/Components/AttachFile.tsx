@@ -8,8 +8,8 @@ import {
   View,
 } from "react-native";
 import { DocumentPickerResponse } from "react-native-document-picker";
-import AssetsPath from "../../../Global/AssetsPath";
-import { FONTS, SIZE } from "../../../Global/Theme";
+import AssetsPath from "../../../Constants/AssetsPath";
+import { FONTS, SIZE } from "../../../Constants/Theme";
 import useThemeColors from "../../../Hooks/useThemeMode";
 import ImagePreviewModal from "../../../Components/ImagePreviewModal";
 import Animated, {

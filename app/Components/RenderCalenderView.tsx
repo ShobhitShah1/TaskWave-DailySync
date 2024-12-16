@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import React, { FC, memo } from "react";
-import { FONTS } from "../Global/Theme";
+import { FONTS } from "../Constants/Theme";
 import useThemeColors from "../Hooks/useThemeMode";
 import { DayItem } from "../Types/Interface";
 

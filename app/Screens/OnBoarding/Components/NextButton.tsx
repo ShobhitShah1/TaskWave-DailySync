@@ -1,8 +1,8 @@
 import React, { FC, memo } from "react";
 import { Image, Pressable, StyleSheet, Text } from "react-native";
-import AssetsPath from "../../../Global/AssetsPath";
+import AssetsPath from "../../../Constants/AssetsPath";
 import useThemeColors from "../../../Hooks/useThemeMode";
-import { FONTS } from "../../../Global/Theme";
+import { FONTS } from "../../../Constants/Theme";
 
 interface NextButtonProps {
   scrollTo: () => void;

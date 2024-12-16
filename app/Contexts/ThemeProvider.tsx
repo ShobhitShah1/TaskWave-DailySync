@@ -34,15 +34,15 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
   //   return () => unSubscribe.remove();
   // }, []);
 
-  const setThemeBasedOnTime = () => {
-    const currentHour = new Date().getHours();
+  // const setThemeBasedOnTime = () => {
+  //   const currentHour = new Date().getHours();
 
-    const currentTheme: Theme =
-      currentHour >= 6 && currentHour < 18 ? "light" : "dark";
-    setTheme(currentTheme);
+  //   const currentTheme: Theme =
+  //     currentHour >= 6 && currentHour < 18 ? "light" : "dark";
+  //   setTheme(currentTheme);
 
-    storage.set("themeMode", currentTheme);
-  };
+  //   storage.set("themeMode", currentTheme);
+  // };
 
   const storeTheme = async () => {
     try {

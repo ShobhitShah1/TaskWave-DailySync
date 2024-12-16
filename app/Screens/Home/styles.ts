@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { FONTS, SIZE } from "../../Global/Theme";
+import { FONTS, SIZE } from "../../Constants/Theme";
 import useThemeColors from "../../Hooks/useThemeMode";
 import { useAppContext } from "../../Contexts/ThemeProvider";
 
@@ -107,9 +107,15 @@ const styles = () => {
       fontFamily: FONTS.Medium,
       fontSize: 21,
     },
+    fullscreenButton: {
+      width: 23,
+      height: 23,
+      justifyContent: "center",
+      alignItems: "center",
+    },
     fullScreenIcon: {
-      width: 18,
-      height: 18,
+      width: "80%",
+      height: "80%",
     },
 
     filterOptionContainer: {

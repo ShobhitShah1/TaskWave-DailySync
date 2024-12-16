@@ -15,7 +15,7 @@ import {
 import LinearGradient from "react-native-linear-gradient";
 import Modal from "react-native-modal";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import AssetsPath from "../../../Global/AssetsPath";
+import AssetsPath from "../../../Constants/AssetsPath";
 import useThemeColors from "../../../Hooks/useThemeMode";
 import { Contact, ContactListModalProps } from "../../../Types/Interface";
 import styles from "../styles";

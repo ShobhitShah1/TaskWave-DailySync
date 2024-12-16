@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AssetsPath from "../../Global/AssetsPath";
+import AssetsPath from "../../Constants/AssetsPath";
 import useThemeColors from "../../Hooks/useThemeMode";
 import HomeHeader from "../Home/Components/HomeHeader";
 import HowItWorkView from "./Components/HowItWorkView";

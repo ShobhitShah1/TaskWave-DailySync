@@ -1,4 +1,4 @@
-import AssetsPath from "../Global/AssetsPath";
+import AssetsPath from "../Constants/AssetsPath";
 
 export const getIconSourceForBottomTabs = (
   routeName: string,

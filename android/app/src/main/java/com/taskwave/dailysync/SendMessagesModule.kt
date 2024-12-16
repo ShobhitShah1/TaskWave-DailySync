@@ -78,7 +78,12 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
         }
 
         try {
-            reactApplicationContext.currentActivity?.startActivity(Intent.createChooser(emailIntent, "Send email..."))
+            reactApplicationContext.currentActivity?.startActivity(
+                Intent.createChooser(
+                    emailIntent,
+                    "Send email..."
+                )
+            )
         } catch (e: ActivityNotFoundException) {
             e.printStackTrace()
             Log.e("SendMail", "No activity found to handle email intent.")
@@ -152,106 +157,149 @@ class SendMessagesModule(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-fun sendWhatsapp(
-    numbers: String,
-    message: String,
-    attachmentPaths: String,
-    audioPaths: String,
-    isWhatsapp: Boolean
-) {
-    Log.d("SendMessagesModule", "sendWhatsapp: Start")
-    Log.d(
-        "SendMessagesModule",
-        "Numbers: $numbers, Message: $message, AttachmentPaths: $attachmentPaths, AudioPaths: $audioPaths, isWhatsapp: $isWhatsapp"
-    )
+    fun sendWhatsapp(
+        numbers: String,
+        message: String,
+        attachmentPaths: String,
+        audioPaths: String,
+        isWhatsapp: Boolean
+    ) {
+        Log.d("SendMessagesModule", "sendWhatsapp: Start")
+        Log.d(
+            "SendMessagesModule",
+            "Numbers: $numbers, Message: $message, AttachmentPaths: $attachmentPaths, AudioPaths: $audioPaths, isWhatsapp: $isWhatsapp"
+        )
 
-    // Choose the correct intent based on attachments
-    val whatsappIntent = if (attachmentPaths.isEmpty() && audioPaths.isEmpty()) {
-        // No attachments, send only text
-        Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
+        // Choose the correct intent based on attachments
+        val whatsappIntent = if (attachmentPaths.isEmpty() && audioPaths.isEmpty()) {
+            // No attachments, send only text
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+            }
+        } else {
+            // Attachments available, send media and text
+            Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                type = "image/*"
+            }
         }
-    } else {
-        // Attachments available, send media and text
-        Intent(Intent.ACTION_SEND_MULTIPLE).apply {
-            type = "image/*"
+
+        whatsappIntent.putExtra(Intent.EXTRA_TEXT, message)
+
+        // Format the phone number
+        val formattedNumbers = numbers.split(",").map { it.replace("+", "").replace(" ", "") }
+        whatsappIntent.putExtra("jid", "${formattedNumbers.first()}@s.whatsapp.net")
+
+        val uris = ArrayList<Uri>()
+
+        // Process attachments
+        if (attachmentPaths.isNotEmpty()) {
+            val attachments = attachmentPaths.split(",")
+            for (path in attachments) {
+                val attachment = File(path.trim())
+                Log.d("SendMessagesModule", "Attachment: $attachment")
+
+                if (attachment.exists()) {
+                    val uri = FileProvider.getUriForFile(
+                        reactApplicationContext,
+                        "com.taskwave.dailysync.provider",
+                        attachment
+                    )
+                    uris.add(uri)
+                } else {
+                    Log.e("SendMessagesModule", "Attachment does not exist: $attachment")
+                }
+            }
         }
-    }
 
-    whatsappIntent.putExtra(Intent.EXTRA_TEXT, message)
+        // Process audio paths
+        if (audioPaths.isNotEmpty()) {
+            val audioPath = audioPaths.trim().replace("file://", "")
+            val audioFile = File(audioPath)
 
-    // Format the phone number
-    val formattedNumbers = numbers.split(",").map { it.replace("+", "").replace(" ", "") }
-    whatsappIntent.putExtra("jid", "${formattedNumbers.first()}@s.whatsapp.net")
-
-    val uris = ArrayList<Uri>()
-
-    // Process attachments
-    if (attachmentPaths.isNotEmpty()) {
-        val attachments = attachmentPaths.split(",")
-        for (path in attachments) {
-            val attachment = File(path.trim())
-            Log.d("SendMessagesModule", "Attachment: $attachment")
-
-            if (attachment.exists()) {
+            if (audioFile.exists()) {
                 val uri = FileProvider.getUriForFile(
                     reactApplicationContext,
                     "com.taskwave.dailysync.provider",
-                    attachment
+                    audioFile
                 )
+                Log.d("sendMessageModule", "AudioURI: $uri")
                 uris.add(uri)
             } else {
-                Log.e("SendMessagesModule", "Attachment does not exist: $attachment")
+                Log.e(
+                    "SendMessagesModule",
+                    "Audio attachment does not exist: ${audioFile.absolutePath}"
+                )
             }
         }
-    }
 
-    // Process audio paths
-    if (audioPaths.isNotEmpty()) {
-        val audioPath = audioPaths.trim().replace("file://", "")
-        val audioFile = File(audioPath)
+        Log.d("SendMessagesModule", "URIS: $uris")
 
-        if (audioFile.exists()) {
-            val uri = FileProvider.getUriForFile(
-                reactApplicationContext,
-                "com.taskwave.dailysync.provider",
-                audioFile
-            )
-            Log.d("sendMessageModule", "AudioURI: $uri")
-            uris.add(uri)
+        // Attach the URIs to the intent if there are any
+        if (uris.isNotEmpty()) {
+            whatsappIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+            whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        val packageName = if (isWhatsapp) "com.whatsapp" else "com.whatsapp.w4b"
+        Log.d("SendMessagesModule", "WhatsApp Package: $packageName")
+
+        if (isAppInstalled(packageName)) {
+            whatsappIntent.setPackage(packageName)
+
+            try {
+                reactApplicationContext.currentActivity?.startActivity(whatsappIntent)
+                Log.d("SendMessagesModule", "WhatsApp intent sent successfully")
+            } catch (e: Exception) {
+                Log.e("SendMessagesModule", "Error starting WhatsApp Intent", e)
+            }
         } else {
-            Log.e("SendMessagesModule", "Audio attachment does not exist: ${audioFile.absolutePath}")
+            Log.d(
+                "SendMessagesModule",
+                if (isWhatsapp) "WhatsApp not installed" else "WhatsApp Business not installed"
+            )
         }
     }
 
-    Log.d("SendMessagesModule", "URIS: $uris")
 
-    // Attach the URIs to the intent if there are any
-    if (uris.isNotEmpty()) {
-        whatsappIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
-        whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
+    @ReactMethod
+    fun sendTelegramMessage(username: String, message: String) {
+        Log.d("SendMessagesModule", "sendTelegramMessage: Start")
+        Log.d("SendMessagesModule", "Username: $username, Message: $message")
 
-    val packageName = if (isWhatsapp) "com.whatsapp" else "com.whatsapp.w4b"
-    Log.d("SendMessagesModule", "WhatsApp Package: $packageName")
+        // Check if Telegram is installed
+        val telegramPackage = "org.telegram.messenger"
+        if (!isAppInstalled(telegramPackage)) {
+            Log.e("SendMessagesModule", "Telegram app is not installed.")
+            Toast.makeText(
+                reactApplicationContext,
+                "Telegram app is not installed",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
 
-    if (isAppInstalled(packageName)) {
-        whatsappIntent.setPackage(packageName)
+        // Create the Telegram deep link
+        val telegramDeepLink = "tg://resolve?domain=$username&text=${Uri.encode(message)}"
 
+        // Create the intent
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse(telegramDeepLink)
+            setPackage(telegramPackage)
+        }
+
+        // Start the Telegram intent
         try {
-            reactApplicationContext.currentActivity?.startActivity(whatsappIntent)
-            Log.d("SendMessagesModule", "WhatsApp intent sent successfully")
+            reactApplicationContext.currentActivity?.startActivity(intent)
+            Log.d("SendMessagesModule", "Telegram message intent sent successfully.")
         } catch (e: Exception) {
-            Log.e("SendMessagesModule", "Error starting WhatsApp Intent", e)
+            Log.e("SendMessagesModule", "Error starting Telegram intent", e)
+            Toast.makeText(
+                reactApplicationContext,
+                "Error sending message to Telegram",
+                Toast.LENGTH_SHORT
+            ).show()
         }
-    } else {
-        Log.d(
-            "SendMessagesModule",
-            if (isWhatsapp) "WhatsApp not installed" else "WhatsApp Business not installed"
-        )
     }
-}
-
 
     @ReactMethod
     fun CheckisAppInstalled(packageId: String, promise: Promise) {

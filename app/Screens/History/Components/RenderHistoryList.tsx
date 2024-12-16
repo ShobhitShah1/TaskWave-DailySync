@@ -3,8 +3,8 @@ import { memo, useCallback, useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
-import AssetsPath from "../../../Global/AssetsPath";
-import { FONTS } from "../../../Global/Theme";
+import AssetsPath from "../../../Constants/AssetsPath";
+import { FONTS } from "../../../Constants/Theme";
 import { useDuplicateReminder } from "../../../Hooks/useDuplicateReminder";
 import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
 import useThemeColors from "../../../Hooks/useThemeMode";
@@ -12,6 +12,7 @@ import { ReminderCardProps } from "../../../Types/Interface";
 import { getNotificationIcon } from "../../../Utils/getNotificationIcon";
 import { formatDate, formatTime } from "../../AddReminder/ReminderScheduled";
 import React from "react";
+import { getNotificationTitle } from "../../../Utils/getNotificationTitle";
 
 const RenderHistoryList: React.FC<ReminderCardProps> = memo(
   ({ notification, deleteReminder }) => {
@@ -34,6 +35,11 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
           ? notificationColors.iconColor
           : typeColor,
       [notificationColors]
+    );
+
+    const title = useMemo(
+      () => getNotificationTitle(notification),
+      [notification]
     );
 
     const icon = useMemo(
@@ -75,15 +81,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                   numberOfLines={1}
                   style={[styles.titleText, { color: colors.text }]}
                 >
-                  To:{" "}
-                  {notification.type === "gmail"
-                    ? notification?.toMail?.[0]
-                    : notification?.toContact?.map(
-                        (res) =>
-                          `${res.name}${
-                            notification?.toContact?.length >= 2 ? "," : ""
-                          } `
-                      )}
+                  To: {title?.toString()}
                 </Text>
                 <Text
                   style={[styles.descriptionText, { color: colors.grayTitle }]}

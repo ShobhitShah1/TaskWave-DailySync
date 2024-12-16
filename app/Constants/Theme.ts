@@ -42,6 +42,12 @@ const ColorGroups = {
         end: "rgba(255, 0, 80, 1)", // Magenta gradient end
       },
     },
+    telegram: {
+      primary: "rgba(29, 155, 240, 1)",
+      background: "rgba(29, 155, 240, 0.15)",
+      dark: "rgba(21, 101, 192, 0.88)",
+      text: "rgba(29, 155, 240, 1)",
+    },
   },
   accent: {
     green: "rgba(21, 255, 0, 1)",
@@ -49,6 +55,36 @@ const ColorGroups = {
     blue: "rgba(48, 169, 255, 1)",
     darkBlue: "rgba(64, 93, 240, 1)",
   },
+};
+
+const CommunicationPlatformColors = {
+  whatsapp: ColorGroups.communication.whatsapp.primary,
+  whatsappBackground: ColorGroups.communication.whatsapp.background,
+  whatsappDark: ColorGroups.communication.whatsapp.dark,
+  whatsappBusiness: ColorGroups.communication.whatsapp.business,
+  whatsappBusinessBackground:
+    ColorGroups.communication.whatsapp.businessBackground,
+  whatsappBusinessDark: ColorGroups.communication.whatsapp.businessDark,
+
+  sms: ColorGroups.communication.sms.primary,
+  smsBackground: ColorGroups.communication.sms.background,
+  smsDark: ColorGroups.communication.sms.dark,
+
+  instagram: ColorGroups.communication.instagram.primary,
+  instagramBackground: ColorGroups.communication.instagram.background,
+  instagramDark: ColorGroups.communication.instagram.dark,
+  instagramGradient: ColorGroups.communication.instagram.gradient,
+
+  gmail: ColorGroups.communication.gmail.primary,
+  gmailBackground: ColorGroups.communication.gmail.background,
+  gmailDark: ColorGroups.communication.gmail.dark,
+  gmailText: ColorGroups.communication.gmail.text,
+  gmailLightDark: ColorGroups.communication.gmail.text,
+
+  telegram: ColorGroups.communication.telegram.primary,
+  telegramBackground: ColorGroups.communication.telegram.background,
+  telegramDark: ColorGroups.communication.telegram.dark,
+  telegramText: ColorGroups.communication.telegram.text,
 };
 
 export const LightThemeColors = {
@@ -75,30 +111,7 @@ export const LightThemeColors = {
   blue: ColorGroups.accent.blue,
   darkBlue: ColorGroups.accent.darkBlue,
   previewBackground: "rgba(236, 236, 236, 1)",
-
-  // Communication platform colors
-  whatsapp: ColorGroups.communication.whatsapp.primary,
-  whatsappBackground: ColorGroups.communication.whatsapp.background,
-  whatsappDark: ColorGroups.communication.whatsapp.dark,
-  whatsappBusiness: ColorGroups.communication.whatsapp.business,
-  whatsappBusinessBackground:
-    ColorGroups.communication.whatsapp.businessBackground,
-  whatsappBusinessDark: ColorGroups.communication.whatsapp.businessDark,
-
-  sms: ColorGroups.communication.sms.primary,
-  smsBackground: ColorGroups.communication.sms.background,
-  smsDark: ColorGroups.communication.sms.dark,
-
-  instagram: ColorGroups.communication.instagram.primary,
-  instagramBackground: ColorGroups.communication.instagram.background,
-  instagramDark: ColorGroups.communication.instagram.dark,
-  instagramGradient: ColorGroups.communication.instagram.gradient,
-
-  gmail: ColorGroups.communication.gmail.primary,
-  gmailBackground: ColorGroups.communication.gmail.background,
-  gmailDark: ColorGroups.communication.gmail.dark,
-  gmailText: ColorGroups.communication.gmail.text,
-  gmailLightDark: ColorGroups.communication.gmail.text,
+  ...CommunicationPlatformColors,
 };
 
 export const DarkThemeColors = {
@@ -125,30 +138,7 @@ export const DarkThemeColors = {
   blue: ColorGroups.accent.blue,
   darkBlue: ColorGroups.accent.darkBlue,
   previewBackground: "rgba(63, 65, 69, 1)",
-
-  // Communication platform colors
-  whatsapp: ColorGroups.communication.whatsapp.primary,
-  whatsappBackground: ColorGroups.communication.whatsapp.background,
-  whatsappDark: ColorGroups.communication.whatsapp.dark,
-  whatsappBusiness: ColorGroups.communication.whatsapp.business,
-  whatsappBusinessBackground:
-    ColorGroups.communication.whatsapp.businessBackground,
-  whatsappBusinessDark: ColorGroups.communication.whatsapp.businessDark,
-
-  sms: ColorGroups.communication.sms.primary,
-  smsBackground: ColorGroups.communication.sms.background,
-  smsDark: ColorGroups.communication.sms.dark,
-
-  instagram: ColorGroups.communication.instagram.primary,
-  instagramBackground: ColorGroups.communication.instagram.background,
-  instagramDark: ColorGroups.communication.instagram.dark,
-  instagramGradient: ColorGroups.communication.instagram.gradient,
-
-  gmail: ColorGroups.communication.gmail.primary,
-  gmailBackground: ColorGroups.communication.gmail.background,
-  gmailDark: ColorGroups.communication.gmail.dark,
-  gmailText: ColorGroups.communication.gmail.text,
-  gmailLightDark: ColorGroups.communication.gmail.text,
+  ...CommunicationPlatformColors,
 };
 
 export const FONTS = {

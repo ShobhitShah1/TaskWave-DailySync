@@ -6,7 +6,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { FONTS } from "../../../Global/Theme";
+import { FONTS } from "../../../Constants/Theme";
 import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface OnBoardingProps {

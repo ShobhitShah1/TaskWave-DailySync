@@ -5,8 +5,16 @@ import { Contact, Notification } from "../Types/Interface";
 export const handleNotificationPress = (notification: any) => {
   try {
     const { SendMessagesModule } = NativeModules;
-    const { type, message, subject, toContact, toMail, attachments, memo } =
-      notification as Notification;
+    const {
+      type,
+      message,
+      subject,
+      toContact,
+      toMail,
+      attachments,
+      memo,
+      telegramUsername,
+    } = notification as Notification;
 
     let numbers: string[] = [];
     let emailMails: string = "";
@@ -73,7 +81,9 @@ export const handleNotificationPress = (notification: any) => {
           );
         } else {
           showMessage({
-            message: `No valid contact found for ${type === "whatsapp" ? "WhatsApp" : "WhatsApp Business"}.`,
+            message: `No valid contact found for ${
+              type === "whatsapp" ? "WhatsApp" : "WhatsApp Business"
+            }.`,
             type: "danger",
           });
         }
@@ -109,6 +119,23 @@ export const handleNotificationPress = (notification: any) => {
         break;
       case "phone":
         Linking.openURL(`tel:${numbers}`);
+        break;
+      case "telegram":
+        try {
+          if (telegramUsername.length !== 0 && message?.length !== 0) {
+            SendMessagesModule.sendTelegramMessage(telegramUsername, message);
+          } else {
+            showMessage({
+              message: "Invalid Telegram username or message.",
+              type: "danger",
+            });
+          }
+        } catch (error: any) {
+          showMessage({
+            message: String(error.message || error),
+            type: "danger",
+          });
+        }
         break;
       default:
         showMessage({

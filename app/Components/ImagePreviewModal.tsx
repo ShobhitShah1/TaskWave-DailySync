@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import ReactNativeModal from "react-native-modal";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import AssetsPath from "../Global/AssetsPath";
+import AssetsPath from "../Constants/AssetsPath";
 import useThemeColors from "../Hooks/useThemeMode";
 
 interface ImagePreviewModalProps {

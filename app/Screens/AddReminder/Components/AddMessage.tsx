@@ -10,8 +10,8 @@ import {
 } from "react-native";
 import FullScreenMessageModal from "../../../Components/FullScreenMessageModal";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
-import AssetsPath from "../../../Global/AssetsPath";
-import { FONTS, SIZE } from "../../../Global/Theme";
+import AssetsPath from "../../../Constants/AssetsPath";
+import { FONTS, SIZE } from "../../../Constants/Theme";
 import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface AddMessageProps {

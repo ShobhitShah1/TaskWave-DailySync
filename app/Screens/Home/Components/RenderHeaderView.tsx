@@ -1,12 +1,12 @@
 import React, { FC, memo, useCallback } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
-import AssetsPath from "../../../Global/AssetsPath";
+import AssetsPath from "../../../Constants/AssetsPath";
 import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
 import useThemeColors from "../../../Hooks/useThemeMode";
 import { headerInterface, NotificationType } from "../../../Types/Interface";
 import styles from "../styles";
-import { getCategories } from "../../../Utils/initialCategories";
+import { getCategories } from "../../../Utils/getCategories";
 
 const FilterButton = memo(
   ({
@@ -107,7 +107,10 @@ const RenderHeaderView: FC<headerInterface> = ({
           })}
         </View>
 
-        <Pressable onPress={handleFullScreenPreview}>
+        <Pressable
+          style={style.fullscreenButton}
+          onPress={handleFullScreenPreview}
+        >
           <Image
             resizeMode="contain"
             tintColor={theme === "light" ? colors.sms : colors.text}

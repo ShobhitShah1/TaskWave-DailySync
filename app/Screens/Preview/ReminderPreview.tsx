@@ -22,8 +22,8 @@ import Animated, {
 } from "react-native-reanimated";
 import ImagePreviewModal from "../../Components/ImagePreviewModal";
 import AudioMemoItem from "../../Components/MemoListItem";
-import AssetsPath from "../../Global/AssetsPath";
-import { FONTS, SIZE } from "../../Global/Theme";
+import AssetsPath from "../../Constants/AssetsPath";
+import { FONTS, SIZE } from "../../Constants/Theme";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useReminder from "../../Hooks/useReminder";

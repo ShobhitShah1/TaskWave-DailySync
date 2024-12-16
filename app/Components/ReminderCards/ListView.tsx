@@ -1,8 +1,8 @@
 import React, { FC, memo, useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAppContext } from "../../Contexts/ThemeProvider";
-import AssetsPath from "../../Global/AssetsPath";
-import { FONTS } from "../../Global/Theme";
+import AssetsPath from "../../Constants/AssetsPath";
+import { FONTS } from "../../Constants/Theme";
 import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import { formatTime } from "../../Screens/AddReminder/ReminderScheduled";
 import { IListViewProps } from "../../Types/Interface";
@@ -14,6 +14,7 @@ const LOGO_SIZE = 65;
 const ListView: FC<IListViewProps> = ({
   cardBackgroundColor,
   icon,
+  title,
   notification,
   onCardPress,
   typeColor,
@@ -25,17 +26,6 @@ const ListView: FC<IListViewProps> = ({
 
   const { theme } = useAppContext();
   const { timeLeft } = useCountdownTimer(notification.date);
-
-  const title = useMemo(
-    () =>
-      notification.type === "gmail"
-        ? notification?.toMail?.[0]
-        : notification?.toContact?.map(
-            (res) =>
-              `${res.name}${notification?.toContact?.length >= 2 ? "," : ""} `
-          ),
-    [notification]
-  );
 
   return (
     <View
