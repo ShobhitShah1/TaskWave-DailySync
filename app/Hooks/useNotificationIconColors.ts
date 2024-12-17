@@ -15,7 +15,10 @@ const useNotificationIconColors = (
         backgroundColor: category.color.background,
         typeColor: category.color.primary,
         iconColor: category.color.dark,
-        createViewColor: category.color.primary,
+        createViewColor:
+          category?.type === "gmail"
+            ? category.color.lightDark || category.color.background
+            : category.color.primary,
         icon: category.icon,
       };
       return map;

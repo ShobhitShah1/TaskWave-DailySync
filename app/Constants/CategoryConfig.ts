@@ -61,6 +61,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => [
       background: colors.gmailBackground,
       primary: colors.gmail,
       dark: colors.gmailDark,
+      lightDark: colors.gmailLightDark,
     },
   },
   {

@@ -134,7 +134,9 @@ const useReminder = () => {
   const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null);
 
   async function openDatabase() {
-    const database = await SQLite.openDatabaseAsync("notifications.db");
+    const database = await SQLite.openDatabaseAsync("notifications.db", {
+      useNewConnection: true,
+    });
     setDb(database);
     await initializeDatabase(database);
     return database;
@@ -145,9 +147,21 @@ const useReminder = () => {
   }, []);
 
   const initializeDatabase = async (database: SQLite.SQLiteDatabase) => {
-    await database.execAsync(`
-      PRAGMA foreign_keys = ON;
+    // Enable foreign keys
+    await database.execAsync(`PRAGMA foreign_keys = ON;`);
 
+    // Define the result type explicitly
+    type PRAGMAResult = { user_version: number };
+
+    // Query the current database version
+    const result = await database.getAllAsync<PRAGMAResult>(
+      `PRAGMA user_version;`
+    );
+    const currentVersion = result[0]?.user_version || 0;
+
+    if (currentVersion < 1) {
+      // Version 1: Initial schema setup
+      await database.execAsync(`
       CREATE TABLE IF NOT EXISTS notifications (
         id TEXT PRIMARY KEY,
         type TEXT NOT NULL,
@@ -157,8 +171,7 @@ const useReminder = () => {
         attachments TEXT,
         scheduleFrequency TEXT,
         memo TEXT,
-        toMail TEXT,
-        telegramUsername TEXT
+        toMail TEXT
       );
 
       CREATE TABLE IF NOT EXISTS contacts (
@@ -170,13 +183,26 @@ const useReminder = () => {
         thumbnailPath TEXT,
         FOREIGN KEY (notification_id) REFERENCES notifications (id) ON DELETE CASCADE
       );
+
+      PRAGMA user_version = 1;
     `);
+    }
+
+    if (currentVersion < 2) {
+      // Version 2: Add the 'telegramUsername' column to the notifications table
+      await database.execAsync(`
+      ALTER TABLE notifications ADD COLUMN telegramUsername TEXT;
+
+      PRAGMA user_version = 2;
+    `);
+    }
   };
 
   const createNotification = async (
     notification: Notification
   ): Promise<string | null> => {
-    await openDatabase();
+    const database = await openDatabase();
+    await initializeDatabase(database);
 
     if (!db) {
       showMessage({

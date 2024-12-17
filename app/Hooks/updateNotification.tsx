@@ -13,7 +13,9 @@ import notifee, {
 export const updateNotification = async (
   notification: Notification
 ): Promise<boolean> => {
-  const database = await SQLite.openDatabaseAsync("notifications.db");
+  const database = await SQLite.openDatabaseAsync("notifications.db", {
+    useNewConnection: true,
+  });
 
   if (!database) {
     showMessage({
@@ -86,7 +88,9 @@ export const updateNotification = async (
             : `Reminder: ${subject || "You have an upcoming task"}`,
         body:
           message?.toString() ||
-          `Don't forget! You have a task with ${toMailArray.join(", ")}. Please check details or contact them if needed.`,
+          `Don't forget! You have a task with ${toMailArray.join(
+            ", "
+          )}. Please check details or contact them if needed.`,
         android: {
           channelId,
           visibility: AndroidVisibility.PUBLIC,
@@ -142,9 +146,17 @@ export const updateNotification = async (
           VALUES (
             '${id}',
             '${contact.name.replace(/'/g, "''")}',
-            ${contact.number ? `'${contact.number.replace(/'/g, "''")}'` : "null"},
+            ${
+              contact.number
+                ? `'${contact.number.replace(/'/g, "''")}'`
+                : "null"
+            },
             '${contact.recordID.replace(/'/g, "''")}',
-            ${contact.thumbnailPath ? `'${contact.thumbnailPath.replace(/'/g, "''")}'` : "null"}
+            ${
+              contact.thumbnailPath
+                ? `'${contact.thumbnailPath.replace(/'/g, "''")}'`
+                : "null"
+            }
           )
         `
       )

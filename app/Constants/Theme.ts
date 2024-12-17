@@ -32,6 +32,7 @@ const ColorGroups = {
       background: "rgba(241, 68, 64, 0.15)",
       dark: "rgba(190, 11, 7, 0.88)",
       text: "rgba(241, 68, 64, 1)",
+      lightDark: "rgba(241, 68, 64, 1)",
     },
     instagram: {
       primary: "rgba(225, 48, 108, 1)",
