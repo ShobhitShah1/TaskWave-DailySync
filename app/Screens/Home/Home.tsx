@@ -116,7 +116,7 @@ const Home = () => {
     } catch (error) {
       setRefreshing(false);
     }
-  }, [selectedFilter]);
+  }, [selectedDate, selectedFilter]);
 
   const loadNotifications = async () => {
     try {
@@ -306,6 +306,9 @@ const Home = () => {
           ) : notificationsState.allByDate?.length !== 0 ? (
             <Animated.FlatList
               layout={LinearTransition}
+              itemLayoutAnimation={LinearTransition.springify()
+                .damping(80)
+                .stiffness(200)}
               columnWrapperStyle={
                 isGrid ? { justifyContent: "space-between" } : undefined
               }

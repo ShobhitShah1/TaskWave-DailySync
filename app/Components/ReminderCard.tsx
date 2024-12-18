@@ -135,14 +135,26 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
             message: String(created),
             type: "danger",
           });
+        } else {
+          showMessage({
+            message: "Reminder duplicated successfully.",
+            type: "success",
+          });
         }
+
+        onRefreshData && onRefreshData();
       } else {
         showMessage({
           message: "Failed to schedule notification.",
           type: "danger",
         });
       }
-    } catch (error) {}
+    } catch (error: any) {
+      showMessage({
+        message: error?.message?.toString(),
+        type: "danger",
+      });
+    }
   };
 
   const renderDateTimePicker = useCallback(() => {

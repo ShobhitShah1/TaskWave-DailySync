@@ -147,54 +147,80 @@ const useReminder = () => {
   }, []);
 
   const initializeDatabase = async (database: SQLite.SQLiteDatabase) => {
-    // Enable foreign keys
     await database.execAsync(`PRAGMA foreign_keys = ON;`);
 
-    // Define the result type explicitly
     type PRAGMAResult = { user_version: number };
 
-    // Query the current database version
+    type ColumnInfo = {
+      cid: number;
+      name: string;
+      type: string;
+      notnull: number;
+      dflt_value: any;
+      pk: number;
+    };
+
     const result = await database.getAllAsync<PRAGMAResult>(
       `PRAGMA user_version;`
     );
     const currentVersion = result[0]?.user_version || 0;
 
-    if (currentVersion < 1) {
-      // Version 1: Initial schema setup
-      await database.execAsync(`
-      CREATE TABLE IF NOT EXISTS notifications (
-        id TEXT PRIMARY KEY,
-        type TEXT NOT NULL,
-        message TEXT NOT NULL,
-        date TEXT NOT NULL,
-        subject TEXT,
-        attachments TEXT,
-        scheduleFrequency TEXT,
-        memo TEXT,
-        toMail TEXT
-      );
+    await database.execAsync("BEGIN TRANSACTION;");
 
-      CREATE TABLE IF NOT EXISTS contacts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        notification_id TEXT,
-        name TEXT NOT NULL,
-        number TEXT,
-        recordID TEXT NOT NULL,
-        thumbnailPath TEXT,
-        FOREIGN KEY (notification_id) REFERENCES notifications (id) ON DELETE CASCADE
-      );
+    try {
+      if (currentVersion < 1) {
+        await database.execAsync(`
+        CREATE TABLE IF NOT EXISTS notifications (
+          id TEXT PRIMARY KEY,
+          type TEXT NOT NULL,
+          message TEXT NOT NULL,
+          date TEXT NOT NULL,
+          subject TEXT,
+          attachments TEXT,
+          scheduleFrequency TEXT,
+          memo TEXT,
+          toMail TEXT
+        );
 
-      PRAGMA user_version = 1;
-    `);
-    }
+        CREATE TABLE IF NOT EXISTS contacts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          notification_id TEXT,
+          name TEXT NOT NULL,
+          number TEXT,
+          recordID TEXT NOT NULL,
+          thumbnailPath TEXT,
+          FOREIGN KEY (notification_id) REFERENCES notifications (id) ON DELETE CASCADE
+        );
+      `);
 
-    if (currentVersion < 2) {
-      // Version 2: Add the 'telegramUsername' column to the notifications table
-      await database.execAsync(`
-      ALTER TABLE notifications ADD COLUMN telegramUsername TEXT;
+        await database.execAsync(`PRAGMA user_version = 1;`);
+      }
 
-      PRAGMA user_version = 2;
-    `);
+      if (currentVersion < 2) {
+        const columnCheckResult = await database.getAllAsync<ColumnInfo>(
+          `PRAGMA table_info(notifications);`
+        );
+
+        const telegramUsernameExists = columnCheckResult.some(
+          (column) => column.name === "telegramUsername"
+        );
+
+        console.log("telegramUsernameExists:", telegramUsernameExists);
+
+        if (!telegramUsernameExists) {
+          await database.execAsync(`
+          ALTER TABLE notifications ADD COLUMN telegramUsername TEXT;
+        `);
+        }
+
+        await database.execAsync(`PRAGMA user_version = 2;`);
+      }
+
+      await database.execAsync("COMMIT;");
+    } catch (error) {
+      await database.execAsync("ROLLBACK;");
+      console.error("Database initialization error:", error);
+      throw error;
     }
   };
 

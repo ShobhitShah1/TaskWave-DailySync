@@ -8,6 +8,7 @@ import { formatTime } from "../../Screens/AddReminder/ReminderScheduled";
 import { IListViewProps } from "../../Types/Interface";
 import { formatNotificationType } from "../../Utils/formatNotificationType";
 import useThemeColors from "../../Hooks/useThemeMode";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 const LOGO_SIZE = 65;
 
@@ -28,7 +29,9 @@ const ListView: FC<IListViewProps> = ({
   const { timeLeft } = useCountdownTimer(notification.date);
 
   return (
-    <View
+    <Animated.View
+      entering={FadeIn}
+      exiting={FadeOut}
       style={[
         styles.cardContainer,
         {
@@ -133,7 +136,7 @@ const ListView: FC<IListViewProps> = ({
           </View>
         </View>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 };
 

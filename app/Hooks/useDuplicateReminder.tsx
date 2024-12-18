@@ -83,7 +83,7 @@ export const useDuplicateReminder = (notification: any, theme: string) => {
           });
         } else {
           showMessage({
-            message: "Duplicate reminder created successfully.",
+            message: "Reminder duplicated successfully.",
             type: "success",
           });
         }
@@ -93,9 +93,9 @@ export const useDuplicateReminder = (notification: any, theme: string) => {
           type: "danger",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       showMessage({
-        message: "Error creating duplicate reminder.",
+        message: error?.message?.toString(),
         type: "danger",
       });
     }

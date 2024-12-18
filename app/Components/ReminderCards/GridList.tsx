@@ -9,6 +9,8 @@ import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useThemeColors from "../../Hooks/useThemeMode";
 import { formatTime } from "../../Screens/AddReminder/ReminderScheduled";
 import { IListViewProps } from "../../Types/Interface";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import DropMenu from "../DropMenu";
 
 const LOGO_SIZE = 25;
 
@@ -46,7 +48,9 @@ const GridView: FC<IListViewProps> = ({
   };
 
   return (
-    <View
+    <Animated.View
+      entering={FadeIn}
+      exiting={FadeOut}
       style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}
     >
       <Pressable
@@ -117,104 +121,25 @@ const GridView: FC<IListViewProps> = ({
               </Text>
             </View>
           </View>
-          <View>
-            <Pressable
-              style={styles.actionsContainer}
-              onPress={handleMenuPress}
-            >
-              <Image
-                tintColor={colors.text}
-                source={AssetsPath.ic_dotMenu}
-                style={styles.menu}
-              />
-            </Pressable>
-          </View>
+          <Pressable>
+            <DropMenu
+              items={[
+                {
+                  key: "view",
+                  title: "View",
+                },
+                {
+                  key: "edit",
+                  title: "Edit",
+                },
+              ]}
+              color={colors.text}
+              onPress={(key) => console.log(key)}
+            />
+          </Pressable>
         </View>
       </Pressable>
-
-      <ReactNativeModal
-        isVisible={menuVisible}
-        hasBackdrop
-        animationIn={"fadeIn"}
-        animationOut={"fadeOut"}
-        hideModalContentWhileAnimating
-        customBackdrop={
-          <BlurView
-            tint={theme}
-            intensity={9}
-            experimentalBlurMethod="dimezisBlurView"
-            style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-          />
-        }
-        style={{ margin: 0 }}
-        onBackButtonPress={() => setMenuVisible(false)}
-      >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setMenuVisible(false)}
-        >
-          <View
-            style={[
-              styles.menuContainer,
-              {
-                backgroundColor: colors.background,
-              },
-            ]}
-          >
-            <Pressable
-              style={styles.menuItem}
-              onPress={() => {
-                onEditPress();
-                setMenuVisible(false);
-              }}
-            >
-              <Image
-                tintColor={typeColor}
-                source={AssetsPath.ic_edit}
-                style={styles.menuIcon}
-              />
-              <Text style={[styles.menuText, { color: colors.text }]}>
-                Edit
-              </Text>
-            </Pressable>
-
-            <Pressable
-              style={styles.menuItem}
-              onPress={() => {
-                onCardPress();
-                setMenuVisible(false);
-              }}
-            >
-              <Image
-                tintColor={typeColor}
-                source={AssetsPath.ic_view}
-                style={styles.menuIcon}
-              />
-              <Text style={[styles.menuText, { color: colors.text }]}>
-                View
-              </Text>
-            </Pressable>
-
-            <Pressable
-              style={styles.menuItem}
-              onPress={() => {
-                handleDuplicatePress();
-                setMenuVisible(false);
-              }}
-            >
-              <Image
-                tintColor={typeColor}
-                source={AssetsPath.ic_duplicate}
-                style={styles.menuIcon}
-              />
-              <Text style={[styles.menuText, { color: colors.text }]}>
-                Duplicate
-              </Text>
-            </Pressable>
-          </View>
-        </Pressable>
-      </ReactNativeModal>
-    </View>
+    </Animated.View>
   );
 };
 
