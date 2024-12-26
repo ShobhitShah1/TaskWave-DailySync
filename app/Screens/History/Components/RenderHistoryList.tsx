@@ -197,13 +197,14 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 120,
     borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    overflow: "hidden",
     marginVertical: 5,
     borderWidth: 1,
   },
   pressableContainer: {
     flex: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   rowContainer: {
     flex: 0.75,

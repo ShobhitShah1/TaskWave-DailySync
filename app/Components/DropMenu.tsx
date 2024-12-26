@@ -2,14 +2,16 @@ import React from "react";
 import { Image, StyleSheet } from "react-native";
 import * as DropdownMenu from "zeego/dropdown-menu";
 import AssetsPath from "../Constants/AssetsPath";
+import { FONTS } from "../Constants/Theme";
+import { MenuItem } from "./ReminderCards/GridList";
 
 export type props = {
   items: Array<{
     title: string;
-    key: string;
+    key: MenuItem;
   }>;
   color: string;
-  onPress: (key: string) => void;
+  onPress: (key: MenuItem) => void;
 };
 
 export default function DropMenu({ items, onPress, color }: props) {
@@ -23,17 +25,18 @@ export default function DropMenu({ items, onPress, color }: props) {
         />
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <DropdownMenu.Item key="1">
-          <DropdownMenu.ItemTitle>Option Menu</DropdownMenu.ItemTitle>
-        </DropdownMenu.Item>
-
         <DropdownMenu.Group>
           {items.map((item) => (
             <DropdownMenu.Item
               key={item.key}
+              destructive={item.key === "delete"}
               onSelect={() => onPress(item.key)}
             >
-              <DropdownMenu.ItemTitle>{item.title}</DropdownMenu.ItemTitle>
+              <DropdownMenu.ItemTitle
+                style={{ fontFamily: FONTS.Medium, fontSize: 15 }}
+              >
+                {item.title}
+              </DropdownMenu.ItemTitle>
             </DropdownMenu.Item>
           ))}
         </DropdownMenu.Group>

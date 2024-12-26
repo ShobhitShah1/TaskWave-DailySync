@@ -2,9 +2,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import { Platform } from "react-native";
 import { showMessage } from "react-native-flash-message";
-import useDatabase, {
-  scheduleNotificationWithNotifee,
-} from "../Hooks/useReminder";
+import useDatabase, { scheduleNotification } from "../Hooks/useReminder";
 
 export const useDuplicateReminder = (notification: any, theme: string) => {
   const { createNotification } = useDatabase();
@@ -65,7 +63,7 @@ export const useDuplicateReminder = (notification: any, theme: string) => {
 
       const newNotification = { ...notification, date: newDateTime, id: "" };
 
-      const notificationScheduleId = await scheduleNotificationWithNotifee(
+      const notificationScheduleId = await scheduleNotification(
         newNotification
       );
 

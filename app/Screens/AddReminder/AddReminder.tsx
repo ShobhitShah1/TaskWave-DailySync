@@ -8,8 +8,10 @@ import {
   Image,
   Keyboard,
   Linking,
+  Platform,
   Pressable,
   Text,
+  UIManager,
   View,
 } from "react-native";
 import RNBlobUtil from "react-native-blob-util";
@@ -21,6 +23,7 @@ import { showMessage } from "react-native-flash-message";
 import { check, PERMISSIONS, request } from "react-native-permissions";
 import Animated, {
   interpolate,
+  LinearTransition,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -29,9 +32,7 @@ import AudioMemoItem from "../../Components/MemoListItem";
 import AssetsPath from "../../Constants/AssetsPath";
 import useContactPermission from "../../Hooks/useContactPermission";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
-import useDatabase, {
-  scheduleNotificationWithNotifee,
-} from "../../Hooks/useReminder";
+import useDatabase, { scheduleNotification } from "../../Hooks/useReminder";
 import useThemeColors from "../../Hooks/useThemeMode";
 import {
   Contact,
@@ -56,6 +57,13 @@ import ContactListModal from "./Components/ContactListModal";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AddTelegramUsername from "./Components/AddTelegramUsername";
+import { FONTS } from "../../Constants/Theme";
+
+if (Platform.OS === "android") {
+  if (UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+}
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -137,7 +145,7 @@ const AddReminder = () => {
 
   const getExistingNotificationData = async () => {
     const response = await getNotificationById(id);
-
+    console.log("response:", response);
     if (response) {
       setMessage(response?.message);
       setTo(response?.toMail?.[0]);
@@ -454,7 +462,11 @@ const AddReminder = () => {
         return false;
       }
     } else {
-      if (!selectedContacts?.length && notificationType !== "telegram") {
+      if (
+        !selectedContacts?.length &&
+        notificationType === "telegram" &&
+        telegramUsername.length === 0
+      ) {
         showMessage({
           message: "'Contact(s)' field is required.",
           type: "danger",
@@ -547,9 +559,7 @@ const AddReminder = () => {
             return;
           }
         } else {
-          notificationScheduleId = await scheduleNotificationWithNotifee(
-            notificationData
-          );
+          notificationScheduleId = await scheduleNotification(notificationData);
           if (notificationScheduleId?.trim()) {
             const data = {
               ...notificationData,
@@ -637,16 +647,58 @@ const AddReminder = () => {
             />
           )}
 
-          {notificationType !== "gmail" && notificationType !== "telegram" && (
-            <AddContact
-              onContactPress={onHandelContactClick}
-              themeColor={createViewColor}
-              selectedContacts={selectedContacts}
-              onRemoveContact={handleRemoveContact}
-            />
-          )}
+          {notificationType !== "gmail" &&
+            notificationType === "telegram" &&
+            telegramUsername?.length === 0 && (
+              <AddContact
+                onContactPress={onHandelContactClick}
+                themeColor={createViewColor}
+                selectedContacts={selectedContacts}
+                onRemoveContact={handleRemoveContact}
+              />
+            )}
 
-          {notificationType === "telegram" && (
+          {notificationType === "telegram" &&
+            telegramUsername?.length === 0 &&
+            selectedContacts.length === 0 && (
+              <Animated.View
+                layout={LinearTransition}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 5,
+                  marginBottom: 15,
+                }}
+              >
+                <View
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    backgroundColor: colors.borderColor,
+                  }}
+                />
+                <Text
+                  style={{
+                    marginHorizontal: 10,
+                    color: colors.text,
+                    fontFamily: FONTS.SemiBold,
+                    fontSize: 15,
+                    textAlign: "center",
+                  }}
+                >
+                  Or
+                </Text>
+                <View
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    backgroundColor: colors.borderColor,
+                  }}
+                />
+              </Animated.View>
+            )}
+
+          {notificationType === "telegram" && contacts.length === 0 && (
             <AddTelegramUsername
               telegramUsername={telegramUsername}
               setTelegramUsername={setTelegramUsername}

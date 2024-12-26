@@ -7,6 +7,8 @@ import { FONTS, SIZE } from "../../../Constants/Theme";
 import useThemeColors from "../../../Hooks/useThemeMode";
 import { AddContactProps, Contact } from "../../../Types/Interface";
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 const AddContact: FC<AddContactProps> = ({
   themeColor,
   onContactPress,
@@ -17,7 +19,8 @@ const AddContact: FC<AddContactProps> = ({
   const colors = useThemeColors();
 
   return (
-    <Pressable
+    <AnimatedPressable
+      layout={LinearTransition}
       onPress={onContactPress}
       style={[
         style.container,
@@ -52,7 +55,7 @@ const AddContact: FC<AddContactProps> = ({
         source={AssetsPath.ic_downArrow}
         style={style.downArrow}
       />
-    </Pressable>
+    </AnimatedPressable>
   );
 };
 
@@ -65,7 +68,7 @@ const styles = () => {
     container: {
       minHeight: 50,
       width: "100%",
-      marginBottom: 20,
+      marginBottom: 10,
       alignItems: "center",
       paddingHorizontal: 15,
       flexDirection: "row",

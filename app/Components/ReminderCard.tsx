@@ -7,9 +7,7 @@ import { useAppContext } from "../Contexts/ThemeProvider";
 import isGridView from "../Hooks/isGridView";
 import { useCountdownTimer } from "../Hooks/useCountdownTimer";
 import useNotificationIconColors from "../Hooks/useNotificationIconColors";
-import useDatabase, {
-  scheduleNotificationWithNotifee,
-} from "../Hooks/useReminder";
+import useDatabase, { scheduleNotification } from "../Hooks/useReminder";
 import useThemeColors from "../Hooks/useThemeMode";
 import { ReminderCardProps } from "../Types/Interface";
 import { getNotificationIcon } from "../Utils/getNotificationIcon";
@@ -119,7 +117,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
 
       const newNotification = { ...notification, date: newDateTime, id: "" };
 
-      const notificationScheduleId = await scheduleNotificationWithNotifee(
+      const notificationScheduleId = await scheduleNotification(
         newNotification
       );
 

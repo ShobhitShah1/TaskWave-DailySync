@@ -55,6 +55,7 @@ const HomeHeader = ({
         >
           {!hideGrid && (
             <Pressable
+              style={styles.gridButton}
               onPress={() =>
                 toggleViewMode(viewMode === "grid" ? "list" : "grid")
               }
@@ -121,6 +122,12 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.Medium,
   },
   backButton: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  gridButton: {
+    width: 28,
+    height: 28,
     alignItems: "center",
     justifyContent: "center",
   },

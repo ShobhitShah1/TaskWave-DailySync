@@ -1,7 +1,6 @@
-import { BlurView } from "expo-blur";
 import React, { FC, memo, useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import ReactNativeModal from "react-native-modal";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import AssetsPath from "../../Constants/AssetsPath";
 import { FONTS } from "../../Constants/Theme";
 import { useAppContext } from "../../Contexts/ThemeProvider";
@@ -9,10 +8,30 @@ import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useThemeColors from "../../Hooks/useThemeMode";
 import { formatTime } from "../../Screens/AddReminder/ReminderScheduled";
 import { IListViewProps } from "../../Types/Interface";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import DropMenu from "../DropMenu";
 
 const LOGO_SIZE = 25;
+
+export type MenuItem = "view" | "edit" | "duplicate" | "delete";
+
+const dropMenuItem = [
+  {
+    key: "view" as MenuItem,
+    title: "View",
+  },
+  {
+    key: "edit" as MenuItem,
+    title: "Edit",
+  },
+  {
+    key: "duplicate" as MenuItem,
+    title: "Duplicate",
+  },
+  {
+    key: "delete" as MenuItem,
+    title: "Delete",
+  },
+];
 
 const GridView: FC<IListViewProps> = ({
   cardBackgroundColor,
@@ -28,7 +47,6 @@ const GridView: FC<IListViewProps> = ({
   const colors = useThemeColors();
   const { theme } = useAppContext();
   const { timeLeft } = useCountdownTimer(notification.date);
-  const [menuVisible, setMenuVisible] = useState(false);
 
   const description = useMemo(
     () =>
@@ -38,13 +56,21 @@ const GridView: FC<IListViewProps> = ({
     [notification]
   );
 
-  const handleMenuPress = () => {
-    setMenuVisible(true);
-  };
-
-  const handleDuplicatePress = () => {
-    onDuplicatePress();
-    setMenuVisible(false);
+  const menuListPress = (menuItem: MenuItem) => {
+    switch (menuItem) {
+      case "view":
+        onCardPress();
+        break;
+      case "edit":
+        onEditPress();
+        break;
+      case "duplicate":
+        onDuplicatePress();
+        break;
+      case "delete":
+        deleteReminder(notification?.id);
+        break;
+    }
   };
 
   return (
@@ -123,18 +149,9 @@ const GridView: FC<IListViewProps> = ({
           </View>
           <Pressable>
             <DropMenu
-              items={[
-                {
-                  key: "view",
-                  title: "View",
-                },
-                {
-                  key: "edit",
-                  title: "Edit",
-                },
-              ]}
+              items={dropMenuItem}
               color={colors.text}
-              onPress={(key) => console.log(key)}
+              onPress={(key) => menuListPress(key)}
             />
           </Pressable>
         </View>
@@ -147,12 +164,12 @@ const styles = StyleSheet.create({
   cardContainer: {
     margin: 5,
     height: 130,
-    padding: 10,
     width: "48%",
     borderRadius: 15,
   },
   pressableContainer: {
     flex: 1,
+    padding: 10,
   },
   headerContainer: {
     flexDirection: "row",

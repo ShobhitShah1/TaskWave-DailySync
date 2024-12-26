@@ -2,152 +2,145 @@ import { Linking, NativeModules } from "react-native";
 import { showMessage } from "react-native-flash-message";
 import { Contact, Notification } from "../Types/Interface";
 
+const { SendMessagesModule } = NativeModules;
+
+const parseContacts = (toContact: any): string[] => {
+  try {
+    const contacts: Contact[] = JSON.parse(toContact);
+    return Array.isArray(contacts)
+      ? contacts.map((contact) => contact.number)
+      : [];
+  } catch (error: any) {
+    showError(`Failed to parse toContact: ${error.message || error}`);
+    return [];
+  }
+};
+
+const parseEmails = (toMail: any): string => {
+  try {
+    const emails: string[] = JSON.parse(toMail);
+    return emails.filter((email) => email !== "").join(", ");
+  } catch (error: any) {
+    showError(`Failed to parse toMail: ${error.message || error}`);
+    return "";
+  }
+};
+
+const parseAttachments = (attachments: any): string[] => {
+  try {
+    const parsed =
+      typeof attachments === "string" ? JSON.parse(attachments) : attachments;
+    return Array.isArray(parsed)
+      ? parsed.map((attachment) => attachment?.uri || "")
+      : [];
+  } catch (error: any) {
+    showError(`Failed to parse attachments: ${error.message || error}`);
+    return [];
+  }
+};
+
+const parseAudioMemo = (memo: any): string => {
+  try {
+    const parsed = typeof memo === "string" ? JSON.parse(memo) : memo;
+    return Array.isArray(parsed) && parsed.length > 0
+      ? parsed[0]?.uri || ""
+      : "";
+  } catch {
+    return "";
+  }
+};
+
+const showError = (message: string) => {
+  showMessage({ message, type: "danger" });
+};
+
+const notificationHandlers = {
+  whatsapp: (data: Notification, isWhatsApp: boolean = true) => {
+    const numbers = parseContacts(data.toContact);
+    if (!numbers.length) {
+      showError(
+        `No valid contact found for ${
+          isWhatsApp ? "WhatsApp" : "WhatsApp Business"
+        }.`
+      );
+      return;
+    }
+
+    const attachments = parseAttachments(data.attachments);
+    const audioPath = parseAudioMemo(data.memo);
+    SendMessagesModule.sendWhatsapp(
+      numbers.join(","),
+      String(data.message),
+      attachments.join(","),
+      audioPath,
+      isWhatsApp
+    );
+  },
+
+  SMS: (data: Notification) => {
+    const numbers = parseContacts(data.toContact);
+    if (!numbers.length) {
+      showError("No valid phone numbers found for SMS.");
+      return;
+    }
+
+    const attachments = parseAttachments(data.attachments);
+    SendMessagesModule.sendSms(
+      numbers,
+      String(data.message),
+      attachments.join(",")
+    );
+  },
+
+  gmail: (data: Notification) => {
+    try {
+      const emails = parseEmails(data.toMail);
+      const attachments = parseAttachments(data.attachments);
+      SendMessagesModule.sendMail(
+        emails,
+        String(data.subject),
+        String(data.message),
+        attachments.join(",")
+      );
+    } catch (error: any) {
+      showError(error.message || String(error));
+    }
+  },
+
+  phone: (data: Notification) => {
+    const numbers = parseContacts(data.toContact);
+    Linking.openURL(`tel:${numbers}`);
+  },
+
+  telegram: (data: Notification) => {
+    const numbers = parseContacts(data.toContact);
+    const recipient = data.telegramUsername || numbers[0];
+
+    if (!recipient || !data.message) {
+      showError("Invalid Telegram username or message.");
+      return;
+    }
+
+    try {
+      SendMessagesModule.sendTelegramMessage(recipient, data.message);
+    } catch (error: any) {
+      showError(error.message || String(error));
+    }
+  },
+};
+
 export const handleNotificationPress = (notification: any) => {
   try {
-    const { SendMessagesModule } = NativeModules;
-    const {
-      type,
-      message,
-      subject,
-      toContact,
-      toMail,
-      attachments,
-      memo,
-      telegramUsername,
-    } = notification as Notification;
-
-    let numbers: string[] = [];
-    let emailMails: string = "";
-    let attachmentPaths: string[] = [];
-    let audioPath: string = "";
-
-    const globalMessage: string = String(message) || "";
-    const globalSubject: string = String(subject) || "";
-
-    try {
-      const contacts: Contact[] = JSON.parse(toContact as any);
-      numbers = Array.isArray(contacts)
-        ? contacts?.map((contact: Contact) => contact?.number)
-        : [];
-    } catch (error: any) {
-      showMessage({
-        message: `Failed to parse toContact: ${error.message || error}`,
-        type: "danger",
-      });
-    }
-
-    try {
-      const emails: string[] = JSON.parse(toMail as any);
-      emailMails = emails?.filter((email) => email !== "")?.join(", ");
-    } catch (error: any) {
-      showMessage({
-        message: `Failed to parse toMail: ${error.message || error}`,
-        type: "danger",
-      });
-    }
-
-    try {
-      const parsedAttachments =
-        typeof attachments === "string" ? JSON.parse(attachments) : attachments;
-      if (Array.isArray(parsedAttachments)) {
-        attachmentPaths = parsedAttachments?.map(
-          (attachment) => attachment?.uri || ""
-        );
-      }
-    } catch (error: any) {
-      showMessage({
-        message: `Failed to parse attachments: ${error?.message || error}`,
-        type: "danger",
-      });
-    }
-
-    try {
-      const parsedMemo = typeof memo === "string" ? JSON.parse(memo) : memo;
-      if (Array.isArray(parsedMemo) && parsedMemo?.length > 0) {
-        audioPath = parsedMemo?.[0]?.uri || "";
-      }
-    } catch (error) {}
-
-    switch (type) {
-      case "whatsapp":
-      case "whatsappBusiness":
-        if (numbers.length > 0) {
-          SendMessagesModule.sendWhatsapp(
-            numbers?.join(","),
-            globalMessage,
-            attachmentPaths?.join(","),
-            audioPath,
-            type === "whatsapp"
-          );
-        } else {
-          showMessage({
-            message: `No valid contact found for ${
-              type === "whatsapp" ? "WhatsApp" : "WhatsApp Business"
-            }.`,
-            type: "danger",
-          });
-        }
-        break;
-      case "SMS":
-        if (numbers.length > 0) {
-          SendMessagesModule?.sendSms(
-            numbers,
-            globalMessage,
-            attachmentPaths?.join(",")
-          );
-        } else {
-          showMessage({
-            message: "No valid phone numbers found for SMS.",
-            type: "danger",
-          });
-        }
-        break;
-      case "gmail":
-        try {
-          SendMessagesModule?.sendMail(
-            emailMails,
-            globalSubject,
-            globalMessage,
-            attachmentPaths?.join(",")
-          );
-        } catch (error: any) {
-          showMessage({
-            message: String(error.message || error),
-            type: "danger",
-          });
-        }
-        break;
-      case "phone":
-        Linking.openURL(`tel:${numbers}`);
-        break;
-      case "telegram":
-        try {
-          if (telegramUsername.length !== 0 && message?.length !== 0) {
-            SendMessagesModule.sendTelegramMessage(telegramUsername, message);
-          } else {
-            showMessage({
-              message: "Invalid Telegram username or message.",
-              type: "danger",
-            });
-          }
-        } catch (error: any) {
-          showMessage({
-            message: String(error.message || error),
-            type: "danger",
-          });
-        }
-        break;
-      default:
-        showMessage({
-          message: "Unsupported notification type.",
-          type: "danger",
-        });
-        break;
+    const handler =
+      notificationHandlers[
+        notification.type as keyof typeof notificationHandlers
+      ];
+    if (handler) {
+      handler(notification as Notification);
+    } else {
+      showError("Unsupported notification type.");
     }
   } catch (error: any) {
-    showMessage({
-      message: String(error?.message || error),
-      type: "danger",
-    });
+    showError(error.message || String(error));
   }
 };

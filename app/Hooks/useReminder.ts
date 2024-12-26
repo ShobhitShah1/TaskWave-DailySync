@@ -14,7 +14,7 @@ import { Contact, Notification } from "../Types/Interface";
 export const CHANNEL_ID = "reminder";
 export const CHANNEL_NAME = "Reminder";
 
-export const scheduleNotificationWithNotifee = async (
+export const scheduleNotification = async (
   notification: Notification
 ): Promise<string | null> => {
   try {

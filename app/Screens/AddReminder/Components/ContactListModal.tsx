@@ -63,7 +63,8 @@ const ContactListModal: FC<ContactListModalProps> = ({
         if (
           notificationType === "whatsapp" ||
           notificationType === "whatsappBusiness" ||
-          notificationType === "phone"
+          notificationType === "phone" ||
+          notificationType === "telegram"
         ) {
           onClose();
           return [contact];

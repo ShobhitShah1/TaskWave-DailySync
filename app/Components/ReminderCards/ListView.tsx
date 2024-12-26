@@ -146,12 +146,13 @@ const styles = StyleSheet.create({
   cardContainer: {
     height: 125,
     borderRadius: 15,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
     marginVertical: 5,
+    overflow: "hidden",
   },
   pressableContainer: {
     flex: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   rowContainer: {
     flex: 0.8,
