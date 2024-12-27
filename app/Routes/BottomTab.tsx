@@ -129,33 +129,38 @@ const BottomTab = () => {
 
   const checkAppAndNavigate = useCallback(
     async (packageName: string, appStoreUrl: string, errorMessage: string) => {
-      try {
-        const result = await SendMessagesModule.CheckisAppInstalled(
-          packageName
-        );
-        if (result) {
-          onCloseSheet();
-          setTimeout(() => {
-            navigation.navigate("CreateReminder", {
-              notificationType: selectedCategory,
-            });
-          }, 200);
-        } else {
-          showMessage({
-            message: errorMessage,
-            description: "Click here to install",
-            type: "warning",
-            onPress: () => Linking.openURL(appStoreUrl),
-            duration: 5000,
-            floating: true,
-          });
-        }
-      } catch (error) {
-        showMessage({
-          message: errorMessage,
-          type: "danger",
+      setTimeout(() => {
+        navigation.navigate("CreateReminder", {
+          notificationType: selectedCategory,
         });
-      }
+      }, 200);
+      // try {
+      //   const result = await SendMessagesModule.CheckisAppInstalled(
+      //     packageName
+      //   );
+      //   if (result) {
+      //     onCloseSheet();
+      //     setTimeout(() => {
+      //       navigation.navigate("CreateReminder", {
+      //         notificationType: selectedCategory,
+      //       });
+      //     }, 200);
+      //   } else {
+      //     showMessage({
+      //       message: errorMessage,
+      //       description: "Click here to install",
+      //       type: "warning",
+      //       onPress: () => Linking.openURL(appStoreUrl),
+      //       duration: 5000,
+      //       floating: true,
+      //     });
+      //   }
+      // } catch (error) {
+      //   showMessage({
+      //     message: errorMessage,
+      //     type: "danger",
+      //   });
+      // }
     },
     [SendMessagesModule, navigation, selectedCategory]
   );

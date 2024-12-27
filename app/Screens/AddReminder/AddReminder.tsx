@@ -28,6 +28,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AudioMemoItem from "../../Components/MemoListItem";
 import AssetsPath from "../../Constants/AssetsPath";
 import useContactPermission from "../../Hooks/useContactPermission";
@@ -52,12 +53,10 @@ import AddMessage from "./Components/AddMessage";
 import AddScheduleFrequency, {
   FrequencyType,
 } from "./Components/AddScheduleFrequency";
+import AddTelegramUsername from "./Components/AddTelegramUsername";
 import AttachFile from "./Components/AttachFile";
 import ContactListModal from "./Components/ContactListModal";
 import styles from "./styles";
-import { SafeAreaView } from "react-native-safe-area-context";
-import AddTelegramUsername from "./Components/AddTelegramUsername";
-import { FONTS } from "../../Constants/Theme";
 
 if (Platform.OS === "android") {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -145,7 +144,6 @@ const AddReminder = () => {
 
   const getExistingNotificationData = async () => {
     const response = await getNotificationById(id);
-    console.log("response:", response);
     if (response) {
       setMessage(response?.message);
       setTo(response?.toMail?.[0]);
@@ -271,14 +269,6 @@ const AddReminder = () => {
         [0.7, 0.3, 0.7]
       )})`,
       opacity,
-    };
-  });
-
-  const animateRecordIconColor = useAnimatedStyle(() => {
-    return {
-      tintColor: withTiming(recording ? colors.white : createViewColor, {
-        duration: 300,
-      }),
     };
   });
 
@@ -464,8 +454,9 @@ const AddReminder = () => {
     } else {
       if (
         !selectedContacts?.length &&
-        notificationType === "telegram" &&
-        telegramUsername.length === 0
+        (notificationType === "telegram" && telegramUsername.length === 0
+          ? true
+          : false)
       ) {
         showMessage({
           message: "'Contact(s)' field is required.",
@@ -648,8 +639,9 @@ const AddReminder = () => {
           )}
 
           {notificationType !== "gmail" &&
-            notificationType === "telegram" &&
-            telegramUsername?.length === 0 && (
+            (notificationType === "telegram"
+              ? telegramUsername?.length === 0
+              : true) && (
               <AddContact
                 onContactPress={onHandelContactClick}
                 themeColor={createViewColor}
@@ -663,42 +655,15 @@ const AddReminder = () => {
             selectedContacts.length === 0 && (
               <Animated.View
                 layout={LinearTransition}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: 5,
-                  marginBottom: 15,
-                }}
+                style={style.orContainer}
               >
-                <View
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    backgroundColor: colors.borderColor,
-                  }}
-                />
-                <Text
-                  style={{
-                    marginHorizontal: 10,
-                    color: colors.text,
-                    fontFamily: FONTS.SemiBold,
-                    fontSize: 15,
-                    textAlign: "center",
-                  }}
-                >
-                  Or
-                </Text>
-                <View
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    backgroundColor: colors.borderColor,
-                  }}
-                />
+                <View style={style.orLine} />
+                <Text style={style.orText}>Or</Text>
+                <View style={style.orLine} />
               </Animated.View>
             )}
 
-          {notificationType === "telegram" && contacts.length === 0 && (
+          {notificationType === "telegram" && selectedContacts.length === 0 && (
             <AddTelegramUsername
               telegramUsername={telegramUsername}
               setTelegramUsername={setTelegramUsername}
@@ -744,11 +709,9 @@ const AddReminder = () => {
                     >
                       <Animated.Image
                         resizeMode="contain"
+                        tintColor={colors.white}
                         source={AssetsPath.ic_recordMic}
-                        style={[
-                          { width: "100%", height: "100%" },
-                          animateRecordIconColor,
-                        ]}
+                        style={[{ width: "100%", height: "100%" }]}
                       />
                     </Pressable>
                   </View>

@@ -179,6 +179,23 @@ const styles = () => {
     recorderRedCircle: {
       aspectRatio: 1,
     },
+    orContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 15,
+    },
+    orLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.borderColor,
+    },
+    orText: {
+      marginHorizontal: 10,
+      color: colors.text,
+      fontFamily: FONTS.SemiBold,
+      fontSize: 15,
+      textAlign: "center",
+    },
   });
 };
 

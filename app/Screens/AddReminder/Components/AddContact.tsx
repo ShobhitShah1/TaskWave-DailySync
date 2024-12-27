@@ -68,7 +68,7 @@ const styles = () => {
     container: {
       minHeight: 50,
       width: "100%",
-      marginBottom: 10,
+      marginBottom: 15,
       alignItems: "center",
       paddingHorizontal: 15,
       flexDirection: "row",
