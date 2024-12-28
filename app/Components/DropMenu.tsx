@@ -17,15 +17,7 @@ export type props = {
 export default function DropMenu({ items, onPress, color }: props) {
   return (
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger
-        style={{
-          width: 25,
-          height: 25,
-          background: "yellow",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      <DropdownMenu.Trigger style={styles.triggerContainer}>
         <Image
           tintColor={color}
           source={AssetsPath.ic_dotMenu}
@@ -58,5 +50,11 @@ const styles = StyleSheet.create({
     width: "50%",
     height: "50%",
     resizeMode: "contain",
+  },
+  triggerContainer: {
+    width: 25,
+    height: 25,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
