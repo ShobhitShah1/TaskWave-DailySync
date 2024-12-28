@@ -147,7 +147,15 @@ const GridView: FC<IListViewProps> = ({
               </Text>
             </View>
           </View>
-          <Pressable>
+          <Pressable
+            style={{
+              // flex: 1,
+              width: 20,
+              height: 20,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <DropMenu
               items={dropMenuItem}
               color={colors.text}
@@ -166,6 +174,7 @@ const styles = StyleSheet.create({
     height: 130,
     width: "48%",
     borderRadius: 15,
+    overflow: "hidden",
   },
   pressableContainer: {
     flex: 1,
