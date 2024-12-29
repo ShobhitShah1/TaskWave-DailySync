@@ -9,17 +9,12 @@ import {
 } from "react-native";
 import { FONTS, SIZE } from "../../../Constants/Theme";
 import useThemeColors from "../../../Hooks/useThemeMode";
-import Animated, { LinearTransition } from "react-native-reanimated";
 
 interface AddTelegramUsernameProps {
   themeColor: string;
   telegramUsername: string;
   setTelegramUsername: React.Dispatch<React.SetStateAction<string>>;
 }
-
-const AnimatedTouchableWithoutFeedback = Animated.createAnimatedComponent(
-  TouchableWithoutFeedback
-);
 
 const AddTelegramUsername: FC<AddTelegramUsernameProps> = ({
   themeColor,
@@ -37,10 +32,7 @@ const AddTelegramUsername: FC<AddTelegramUsernameProps> = ({
   );
 
   return (
-    <AnimatedTouchableWithoutFeedback
-      layout={LinearTransition.springify().damping(80).stiffness(200)}
-      onPress={Keyboard.dismiss}
-    >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={{ marginBottom: 10 }}>
         <View
           style={[
@@ -62,7 +54,7 @@ const AddTelegramUsername: FC<AddTelegramUsernameProps> = ({
         </View>
         <Text style={style.infoText}>single username without "@"</Text>
       </View>
-    </AnimatedTouchableWithoutFeedback>
+    </TouchableWithoutFeedback>
   );
 };
 

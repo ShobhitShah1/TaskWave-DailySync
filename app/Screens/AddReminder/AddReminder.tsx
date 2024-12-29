@@ -653,14 +653,11 @@ const AddReminder = () => {
           {notificationType === "telegram" &&
             telegramUsername?.length === 0 &&
             selectedContacts.length === 0 && (
-              <Animated.View
-                layout={LinearTransition}
-                style={style.orContainer}
-              >
+              <View style={style.orContainer}>
                 <View style={style.orLine} />
                 <Text style={style.orText}>Or</Text>
                 <View style={style.orLine} />
-              </Animated.View>
+              </View>
             )}
 
           {notificationType === "telegram" && selectedContacts.length === 0 && (

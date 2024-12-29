@@ -11,9 +11,9 @@ import useDatabase, { scheduleNotification } from "../Hooks/useReminder";
 import useThemeColors from "../Hooks/useThemeMode";
 import { ReminderCardProps } from "../Types/Interface";
 import { getNotificationIcon } from "../Utils/getNotificationIcon";
+import { getNotificationTitle } from "../Utils/getNotificationTitle";
 import GridView from "./ReminderCards/GridList";
 import ListView from "./ReminderCards/ListView";
-import { getNotificationTitle } from "../Utils/getNotificationTitle";
 
 const ReminderCard: React.FC<ReminderCardProps> = ({
   notification,
@@ -26,10 +26,11 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   const navigation = useNavigation();
   const { createNotification } = useDatabase();
 
-  const [showDateTimeModal, setShowDateTimeModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTime, setSelectedTime] = useState(new Date());
-  const [datePickerMode, setDatePickerMode] = useState<"date" | "time">("date");
+  const [dateTimePickerState, setDateTimePickerState] = useState({
+    show: false,
+    mode: "date" as any,
+    value: notification.date,
+  });
 
   const { timeLeft, timeIsOver } = useCountdownTimer(notification?.date);
   const notificationColors = useNotificationIconColors(notification?.type);
@@ -82,40 +83,61 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   }, [notification]);
 
   const onDuplicatePress = useCallback(() => {
-    setShowDateTimeModal(true);
-    setDatePickerMode("date");
+    setDateTimePickerState({
+      show: true,
+      mode: "date",
+      value: new Date(notification.date),
+    });
   }, []);
 
-  const handleDateChange = (event: any, date?: Date) => {
-    if (Platform.OS === "android") {
-      if (event.type === "set") {
-        setSelectedDate(date || new Date());
-        setDatePickerMode("time");
+  const handleDateTimeChange = useCallback(
+    (event: any, selectedDateTime?: Date) => {
+      const currentState = dateTimePickerState;
+
+      if (Platform.OS === "android") {
+        setDateTimePickerState((prev) => ({ ...prev, show: false }));
+
+        if (event.type === "set" && selectedDateTime) {
+          if (currentState.mode === "date") {
+            const newDateTime = new Date(selectedDateTime);
+            const now = new Date();
+            newDateTime.setHours(now.getHours(), now.getMinutes(), 0, 0);
+
+            setDateTimePickerState({
+              show: true,
+              mode: "time",
+              value: newDateTime,
+            });
+          } else {
+            const finalDateTime = new Date(currentState.value);
+            finalDateTime.setHours(
+              selectedDateTime.getHours(),
+              selectedDateTime.getMinutes(),
+              0,
+              0
+            );
+            createDuplicateReminder(finalDateTime);
+          }
+        }
       } else {
-        setShowDateTimeModal(false);
+        if (selectedDateTime) {
+          setDateTimePickerState((prev) => ({
+            ...prev,
+            value: selectedDateTime,
+          }));
+        }
       }
-    } else {
-      setSelectedDate(date || new Date());
-    }
-  };
+    },
+    [dateTimePickerState]
+  );
 
-  const handleTimeChange = (event: any, time?: Date) => {
-    setShowDateTimeModal(false);
-
-    if (event.type === "set") {
-      setSelectedTime(time || new Date());
-      createDuplicateReminder();
-    } else {
-      setShowDateTimeModal(false);
-    }
-  };
-
-  const createDuplicateReminder = async () => {
+  const createDuplicateReminder = async (scheduledDateTime: Date) => {
     try {
-      const newDateTime = new Date(selectedDate);
-      newDateTime.setHours(selectedTime.getHours(), selectedTime.getMinutes());
-
-      const newNotification = { ...notification, date: newDateTime, id: "" };
+      const newNotification = {
+        ...notification,
+        date: scheduledDateTime,
+        id: "",
+      };
 
       const notificationScheduleId = await scheduleNotification(
         newNotification
@@ -126,6 +148,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           ...newNotification,
           id: notificationScheduleId,
         };
+
         const created = await createNotification(data);
 
         if (!created) {
@@ -138,9 +161,8 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
             message: "Reminder duplicated successfully.",
             type: "success",
           });
+          onRefreshData?.();
         }
-
-        onRefreshData && onRefreshData();
       } else {
         showMessage({
           message: "Failed to schedule notification.",
@@ -149,26 +171,25 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
       }
     } catch (error: any) {
       showMessage({
-        message: error?.message?.toString(),
+        message: error?.message?.toString() || "Failed to create reminder",
         type: "danger",
       });
     }
   };
 
-  const renderDateTimePicker = useCallback(() => {
-    return (
+  const renderDateTimePicker = useCallback(
+    () => (
       <DateTimePicker
-        mode={datePickerMode}
+        mode={dateTimePickerState.mode}
         display="default"
-        value={datePickerMode === "date" ? selectedDate : selectedTime}
+        value={dateTimePickerState.value}
         minimumDate={new Date()}
         themeVariant={theme === "dark" ? "dark" : "light"}
-        onChange={
-          datePickerMode === "date" ? handleDateChange : handleTimeChange
-        }
+        onChange={handleDateTimeChange}
       />
-    );
-  }, [showDateTimeModal, datePickerMode, selectedDate, selectedTime]);
+    ),
+    [dateTimePickerState, theme]
+  );
 
   return (
     <>
@@ -198,7 +219,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
         />
       )}
 
-      {showDateTimeModal && renderDateTimePicker()}
+      {dateTimePickerState.show && renderDateTimePicker()}
     </>
   );
 };

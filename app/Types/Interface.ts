@@ -158,6 +158,7 @@ export interface ReminderCardProps {
   notification: Notification;
   deleteReminder: (id?: string) => void;
   onRefreshData?: () => void;
+  loadNotifications: () => void;
 }
 
 export interface NotificationColor {

@@ -15,7 +15,7 @@ import React from "react";
 import { getNotificationTitle } from "../../../Utils/getNotificationTitle";
 
 const RenderHistoryList: React.FC<ReminderCardProps> = memo(
-  ({ notification, deleteReminder }) => {
+  ({ notification, deleteReminder, loadNotifications }) => {
     const colors = useThemeColors();
     const { theme } = useAppContext();
     const navigation = useNavigation();
@@ -54,7 +54,13 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
     }, [notification]);
 
     const { showDateTimeModal, renderDateTimePicker, openDuplicateModal } =
-      useDuplicateReminder(notification, theme);
+      useDuplicateReminder({
+        notification: notification,
+        theme: theme,
+        onSuccess() {
+          loadNotifications();
+        },
+      });
 
     return (
       <>

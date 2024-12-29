@@ -338,6 +338,7 @@ const History = () => {
                 <RenderHistoryList
                   notification={item}
                   deleteReminder={deleteReminder}
+                  loadNotifications={loadNotifications}
                 />
               )}
             />

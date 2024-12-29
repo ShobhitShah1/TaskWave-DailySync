@@ -20,7 +20,6 @@ const AddContact: FC<AddContactProps> = ({
 
   return (
     <AnimatedPressable
-      layout={LinearTransition}
       onPress={onContactPress}
       style={[
         style.container,

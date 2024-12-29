@@ -147,15 +147,7 @@ const GridView: FC<IListViewProps> = ({
               </Text>
             </View>
           </View>
-          <Pressable
-            style={{
-              // flex: 1,
-              width: 20,
-              height: 20,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
+          <Pressable style={styles.dropDownContainer}>
             <DropMenu
               items={dropMenuItem}
               color={colors.text}
@@ -273,6 +265,12 @@ const styles = StyleSheet.create({
     width: 12.5,
     height: 12.5,
     resizeMode: "contain",
+  },
+  dropDownContainer: {
+    width: 18,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "flex-end",
   },
 
   modalOverlay: {
