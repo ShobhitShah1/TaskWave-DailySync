@@ -1,5 +1,5 @@
 import React, { FC, memo, useCallback } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
 import AssetsPath from "../../../Constants/AssetsPath";
 import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
@@ -70,41 +70,50 @@ const RenderHeaderView: FC<headerInterface> = ({
     <View style={style.listHeaderView}>
       <Text style={style.headerScheduleText}>Schedule</Text>
       <View style={style.filterOptionContainer}>
-        <View style={style.filterButtonsFlex}>
-          <Pressable
-            style={[
-              style.filterAllBtn,
-              { backgroundColor: colors.background },
-              selectedFilter === "all" && {
-                shadowColor: "gray",
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 1,
-                shadowRadius: 15,
-                elevation: 5,
-              },
-            ]}
-            onPress={() => setSelectedFilter("all")}
+        <View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            horizontal
+            contentContainerStyle={{ gap: 5 }}
+            style={style.filterButtonsFlex}
           >
-            <Text style={style.filterAllText}>All</Text>
-          </Pressable>
+            <Pressable
+              style={[
+                style.filterAllBtn,
+                { backgroundColor: colors.background },
+                selectedFilter === "all" && {
+                  shadowColor: "gray",
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 1,
+                  shadowRadius: 15,
+                  elevation: 5,
+                },
+              ]}
+              onPress={() => setSelectedFilter("all")}
+            >
+              <Text style={style.filterAllText}>All</Text>
+            </Pressable>
 
-          {initialCategories.map((res) => {
-            const getColor = useNotificationIconColors(
-              res.type as NotificationType
-            );
-            return (
-              <FilterButton
-                key={res.id}
-                filterType={res.type}
-                selectedFilter={selectedFilter}
-                onPress={() => handleSelectFilter(res.type as NotificationType)}
-                icon={res.icon}
-                color={res.color}
-                backgroundColor={getColor?.backgroundColor || ""}
-                style={style}
-              />
-            );
-          })}
+            {initialCategories.map((res) => {
+              const getColor = useNotificationIconColors(
+                res.type as NotificationType
+              );
+              return (
+                <FilterButton
+                  key={res.id}
+                  filterType={res.type}
+                  selectedFilter={selectedFilter}
+                  onPress={() =>
+                    handleSelectFilter(res.type as NotificationType)
+                  }
+                  icon={res.icon}
+                  color={res.color}
+                  backgroundColor={getColor?.backgroundColor || ""}
+                  style={style}
+                />
+              );
+            })}
+          </ScrollView>
         </View>
 
         <Pressable

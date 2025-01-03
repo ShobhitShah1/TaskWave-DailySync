@@ -88,4 +88,16 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => [
       dark: colors.telegramDark,
     },
   },
+  {
+    id: 8,
+    type: "note" as NotificationType,
+    title: "Note",
+    description: "Let’s create note event",
+    icon: AssetsPath.ic_notes,
+    color: {
+      background: colors.noteBackground,
+      primary: colors.note,
+      dark: colors.noteDark,
+    },
+  },
 ];

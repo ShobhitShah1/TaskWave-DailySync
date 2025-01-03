@@ -639,6 +639,7 @@ const AddReminder = () => {
           )}
 
           {notificationType !== "gmail" &&
+            notificationType !== "note" &&
             (notificationType === "telegram"
               ? telegramUsername?.length === 0
               : true) && (
@@ -677,14 +678,16 @@ const AddReminder = () => {
             />
           )}
 
-          {notificationType !== "phone" && notificationType !== "telegram" && (
-            <AttachFile
-              themeColor={createViewColor}
-              onRemoveDocument={onRemoveDocument}
-              selectedDocuments={selectedDocuments}
-              onHandelAttachmentClick={onHandelAttachmentClick}
-            />
-          )}
+          {notificationType !== "phone" &&
+            notificationType !== "telegram" &&
+            notificationType !== "note" && (
+              <AttachFile
+                themeColor={createViewColor}
+                onRemoveDocument={onRemoveDocument}
+                selectedDocuments={selectedDocuments}
+                onHandelAttachmentClick={onHandelAttachmentClick}
+              />
+            )}
 
           {(notificationType === "whatsapp" ||
             notificationType === "whatsappBusiness") && (

@@ -86,9 +86,8 @@ export const scheduleNotification = async (
           channelId,
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
-          pressAction: {
-            id: "default",
-          },
+          pressAction: { id: "default" },
+          smallIcon: "notification_icon",
         },
         data: notificationData as any,
       },
@@ -112,9 +111,8 @@ export const scheduleNotification = async (
           channelId,
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
-          pressAction: {
-            id: "default",
-          },
+          pressAction: { id: "default" },
+          smallIcon: "notification_icon",
         },
         data: {
           ...notificationData,
@@ -204,8 +202,6 @@ const useReminder = () => {
         const telegramUsernameExists = columnCheckResult.some(
           (column) => column.name === "telegramUsername"
         );
-
-        console.log("telegramUsernameExists:", telegramUsernameExists);
 
         if (!telegramUsernameExists) {
           await database.execAsync(`
@@ -405,6 +401,7 @@ const useReminder = () => {
             pressAction: {
               id: "default",
             },
+            smallIcon: "notification_icon",
           },
           data: notificationData as any,
         },

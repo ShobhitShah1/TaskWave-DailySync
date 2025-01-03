@@ -125,8 +125,8 @@ const styles = () => {
       alignItems: "center",
     },
     filterButtonsFlex: {
-      flexDirection: "row",
-      gap: 5,
+      // flexDirection: "row",
+      // gap: 5,
     },
     filterAllBtn: {
       justifyContent: "center",

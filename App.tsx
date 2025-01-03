@@ -1,19 +1,19 @@
 import notifee, { EventType } from "@notifee/react-native";
 import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { LogBox, StatusBar, StyleSheet, Text } from "react-native";
 import FlashMessage, { showMessage } from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AppProvider } from "./app/Contexts/ThemeProvider";
 import { FONTS } from "./app/Constants/Theme";
+import { AppProvider } from "./app/Contexts/ThemeProvider";
 import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
 import { updateNotification } from "./app/Hooks/updateNotification";
 import updateToNextDate from "./app/Hooks/updateToNextDate";
 import useReminder from "./app/Hooks/useReminder";
 import Routes from "./app/Routes/Routes";
 import { Notification } from "./app/Types/Interface";
-import * as SplashScreen from "expo-splash-screen";
 
 SplashScreen.preventAutoHideAsync();
 

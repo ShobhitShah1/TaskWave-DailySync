@@ -69,7 +69,8 @@ export type NotificationType =
   | "gmail"
   | "phone"
   | "instagram"
-  | "telegram";
+  | "telegram"
+  | "note";
 
 export interface Contact {
   name: string;

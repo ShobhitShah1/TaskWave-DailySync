@@ -25,19 +25,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import RenderCalenderView from "../../Components/RenderCalenderView";
 import YearMonthPicker from "../../Components/YearMonthPicker";
 import AssetsPath from "../../Constants/AssetsPath";
+import { categoriesConfig } from "../../Constants/CategoryConfig";
 import { FONTS, SIZE } from "../../Constants/Theme";
 import useCalendar from "../../Hooks/useCalendar";
 import useReminder from "../../Hooks/useReminder";
 import useThemeColors from "../../Hooks/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import { countNotificationsByType } from "../../Utils/countNotificationsByType";
+import { formatNotificationType } from "../../Utils/formatNotificationType";
 import { generateDaysArray } from "../../Utils/generateDaysArray";
 import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "../Home/Components/HomeHeader";
 import RenderFilterTabData from "./Components/RenderFilterTabData";
 import RenderHistoryList from "./Components/RenderHistoryList";
-import { categoriesConfig } from "../../Constants/CategoryConfig";
-import { formatNotificationType } from "../../Utils/formatNotificationType";
 
 const History = () => {
   const style = styles();
@@ -137,7 +137,7 @@ const History = () => {
   useEffect(() => {
     setLoading(filteredNotifications?.length === 0);
     loadNotifications();
-  }, [isFocus, selectedDate, activeTabType]);
+  }, [selectedDate, activeTabType]);
 
   const loadNotifications = async () => {
     try {
@@ -163,10 +163,10 @@ const History = () => {
           return notificationDate === selected;
         });
 
-        setNotifications(filteredByDate.reverse());
+        setNotifications(filteredByDate);
 
         if (filteredByDate.length !== 0) {
-          setNotifications(filteredByDate.reverse());
+          setNotifications(filteredByDate);
 
           const data =
             activeTabType === "all"
@@ -177,7 +177,7 @@ const History = () => {
                 )
               : filteredByDate;
 
-          setFilteredNotifications(data || []);
+          setFilteredNotifications(data);
         } else {
           setNotifications([]);
           setFilteredNotifications([]);
@@ -185,7 +185,11 @@ const History = () => {
       } else {
         setNotifications([]);
       }
-    } catch (error) {
+    } catch (error: any) {
+      showMessage({
+        message: error?.message?.toString(),
+        type: "danger",
+      });
     } finally {
       setLoading(false);
     }

@@ -49,6 +49,12 @@ const ColorGroups = {
       dark: "rgba(21, 101, 192, 0.88)",
       text: "rgba(29, 155, 240, 1)",
     },
+    note: {
+      primary: "rgb(243, 145, 88)",
+      background: "rgba(255, 250, 200,0.5)",
+      dark: "rgb(204, 153, 0)",
+      text: "rgb(102, 85, 0)",
+    },
   },
   accent: {
     green: "rgba(21, 255, 0, 1)",
@@ -86,6 +92,11 @@ const CommunicationPlatformColors = {
   telegramBackground: ColorGroups.communication.telegram.background,
   telegramDark: ColorGroups.communication.telegram.dark,
   telegramText: ColorGroups.communication.telegram.text,
+
+  note: ColorGroups.communication.note.primary,
+  noteBackground: ColorGroups.communication.note.background,
+  noteDark: ColorGroups.communication.note.dark,
+  noteText: ColorGroups.communication.note.text,
 };
 
 export const LightThemeColors = {

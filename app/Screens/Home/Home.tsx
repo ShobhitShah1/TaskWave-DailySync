@@ -1,3 +1,4 @@
+import notifee from "@notifee/react-native";
 import { useIsFocused } from "@react-navigation/native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -332,6 +333,7 @@ const Home = () => {
                   notification={item}
                   onRefreshData={loadNotifications}
                   deleteReminder={deleteReminder}
+                  loadNotifications={loadNotifications}
                 />
               )}
             />

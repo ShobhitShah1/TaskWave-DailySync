@@ -3,7 +3,6 @@ import {
   Dimensions,
   FlatList,
   Pressable,
-  StatusBar,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -58,8 +57,8 @@ const MONTHS = [
 
 const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
   isVisible,
-  startYear = new Date().getFullYear(),
-  endYear = new Date().getFullYear() + 10,
+  startYear = 2024,
+  endYear = 2040,
   selectedYear: initialSelectedYear,
   selectedMonth: initialSelectedMonth,
   onConfirm,
@@ -73,6 +72,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i),
     [startYear, endYear]
   );
+
   const [selectedYear, setSelectedYear] = useState(
     initialSelectedYear || new Date().getFullYear()
   );
