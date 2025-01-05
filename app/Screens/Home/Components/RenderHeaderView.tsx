@@ -1,12 +1,19 @@
 import React, { FC, memo, useCallback } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
-import { useAppContext } from "../../../Contexts/ThemeProvider";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+  ViewStyle,
+} from "react-native";
 import AssetsPath from "../../../Constants/AssetsPath";
+import { useAppContext } from "../../../Contexts/ThemeProvider";
 import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
 import useThemeColors from "../../../Hooks/useThemeMode";
 import { headerInterface, NotificationType } from "../../../Types/Interface";
-import styles from "../styles";
 import { getCategories } from "../../../Utils/getCategories";
+import styles from "../styles";
 
 const FilterButton = memo(
   ({
@@ -19,15 +26,9 @@ const FilterButton = memo(
     style,
   }: any) => {
     const isSelected = selectedFilter === filterType;
-    const shadowStyle = isSelected
-      ? {
-          shadowColor: "gray",
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 1,
-          shadowRadius: 15,
-          elevation: 5,
-        }
-      : {};
+    const shadowStyle: ViewStyle = isSelected
+      ? { opacity: 1, overflow: "hidden" }
+      : { opacity: 0.6 };
 
     return (
       <Pressable
@@ -81,17 +82,20 @@ const RenderHeaderView: FC<headerInterface> = ({
               style={[
                 style.filterAllBtn,
                 { backgroundColor: colors.background },
-                selectedFilter === "all" && {
-                  shadowColor: "gray",
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 1,
-                  shadowRadius: 15,
-                  elevation: 5,
-                },
               ]}
               onPress={() => setSelectedFilter("all")}
             >
-              <Text style={style.filterAllText}>All</Text>
+              <Text
+                style={[
+                  style.filterAllText,
+                  {
+                    color:
+                      selectedFilter === "all" ? colors.text : colors.grayTitle,
+                  },
+                ]}
+              >
+                All
+              </Text>
             </Pressable>
 
             {initialCategories.map((res) => {

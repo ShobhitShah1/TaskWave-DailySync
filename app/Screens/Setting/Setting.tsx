@@ -20,6 +20,11 @@ const Settings = () => {
 
   const settingsData = [
     {
+      title: "Notification",
+      icon: AssetsPath.ic_notification,
+      onPress: () => {},
+    },
+    {
       title: "Share",
       icon: AssetsPath.ic_share,
       onPress: () => {
@@ -62,6 +67,11 @@ const Settings = () => {
       onPress: () => {
         navigation.navigate("HowAppWorks");
       },
+    },
+    {
+      title: "Portfolio",
+      icon: AssetsPath.ic_info,
+      onPress: () => {},
     },
   ];
 

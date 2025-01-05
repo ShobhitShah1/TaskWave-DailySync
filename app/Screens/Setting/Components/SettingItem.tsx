@@ -1,7 +1,9 @@
 import React, { FC, memo } from "react";
-import { Text, View, StyleSheet, Pressable, Image } from "react-native";
-import useThemeColors from "../../../Hooks/useThemeMode";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import AssetsPath from "../../../Constants/AssetsPath";
 import { FONTS } from "../../../Constants/Theme";
+import { useAppContext } from "../../../Contexts/ThemeProvider";
+import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface SettingProps {
   icon: number;
@@ -11,19 +13,37 @@ interface SettingProps {
 
 const SettingItem: FC<SettingProps> = ({ icon, title, onPress }) => {
   const style = styles();
+  const { theme } = useAppContext();
+  const colors = useThemeColors();
 
   return (
     <Pressable style={style.itemContainer} onPress={onPress}>
       <View style={style.iconContainer}>
-        <Image source={icon} style={style.icon} />
+        <Image
+          source={icon}
+          tintColor={theme === "dark" ? colors.white : undefined}
+          style={style.icon}
+        />
       </View>
       <Text style={style.title}>{title}</Text>
-      <Text style={style.arrow}>▼</Text>
+      <Image
+        resizeMode="contain"
+        source={AssetsPath.ic_leftArrow}
+        style={[
+          style.arrow,
+          {
+            transform: [
+              { rotate: title === "Notification" ? "180deg" : "-90deg" },
+            ],
+          },
+        ]}
+      />
     </Pressable>
   );
 };
 
 const styles = () => {
+  const { theme } = useAppContext();
   const colors = useThemeColors();
 
   return StyleSheet.create({
@@ -34,7 +54,13 @@ const styles = () => {
       paddingHorizontal: 10,
       borderRadius: 15,
       alignSelf: "center",
-      backgroundColor: colors.reminderCardBackground,
+      backgroundColor:
+        theme === "dark"
+          ? "rgba(43, 43, 44, 1)"
+          : colors.reminderCardBackground,
+
+      borderWidth: 0.5,
+      borderColor: theme === "dark" ? "rgba(99, 99, 99, 1)" : "transparent",
     },
     iconContainer: {
       width: 30,
@@ -56,11 +82,9 @@ const styles = () => {
       alignItems: "center",
     },
     arrow: {
-      bottom: 3,
-      fontSize: 20,
-      color: colors.white,
-      fontFamily: FONTS.Medium,
-      includeFontPadding: false,
+      width: 17,
+      height: 17,
+      right: 5,
     },
   });
 };

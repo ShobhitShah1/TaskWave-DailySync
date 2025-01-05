@@ -201,9 +201,9 @@ const BottomTab = () => {
   }, [checkAppAndNavigate, selectedCategory, navigation]);
 
   const onCategoryClick = useCallback(
-    (item: any) => {
+    (item: any, isSort: boolean) => {
       const newCategories = categories.filter((cat) => cat.type !== item.type);
-      setCategories([item, ...newCategories]);
+      isSort && setCategories([item, ...newCategories]);
 
       setSelectedCategory(item.type);
     },
@@ -334,7 +334,7 @@ const BottomTab = () => {
                   return (
                     <Pressable
                       onPress={() => {
-                        onCategoryClick(res);
+                        onCategoryClick(res, true);
                         setSelectedCategory(res.type);
                       }}
                       key={res.id}
@@ -344,6 +344,7 @@ const BottomTab = () => {
                           backgroundColor: isSelected
                             ? res.color.background
                             : "rgba(209, 209, 209, 0.6)",
+                          opacity: isSelected ? 1 : 0.3,
                         },
                       ]}
                     >
@@ -360,13 +361,19 @@ const BottomTab = () => {
                   );
                 })}
               </View>
-              <FlatList
+              <Animated.FlatList
                 numColumns={2}
+                entering={FadeIn}
+                itemLayoutAnimation={LinearTransition.springify()
+                  .damping(80)
+                  .stiffness(200)}
                 data={categories}
                 renderItem={({ item }) => (
                   <RenderCategoryItem
                     item={item}
-                    onCategoryClick={onCategoryClick}
+                    onCategoryClick={(category) =>
+                      onCategoryClick(category, false)
+                    }
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
                   />

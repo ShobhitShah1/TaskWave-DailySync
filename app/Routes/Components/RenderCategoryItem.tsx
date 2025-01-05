@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from "react";
+import React, { memo, useMemo } from "react";
 import {
   Image,
   ImageBackground,
@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { useAppContext } from "../../Contexts/ThemeProvider";
+import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import AssetsPath from "../../Constants/AssetsPath";
 import { FONTS } from "../../Constants/Theme";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
@@ -21,7 +21,6 @@ const RenderCategoryItem = ({
   onCategoryClick,
 }: CategoryItemType) => {
   const colors = useThemeColors();
-  const { theme } = useAppContext();
   const { typeColor } = useNotificationIconColors(item.type);
 
   const isSelected = useMemo(
@@ -31,55 +30,62 @@ const RenderCategoryItem = ({
     [selectedCategory]
   );
 
-  // const onCategoryClick = useCallback(() => {
-  //   const newCategories = categories.filter((cat) => cat.type !== item.type);
-  //   setCategories([item, ...newCategories]);
-
-  //   setSelectedCategory(item.type);
-  // }, [item, categories]);
-
   return (
-    <Pressable
+    <Animated.View
+      // entering={FadeIn}
       style={[
         styles.pressableContainer,
         {
-          borderColor: isSelected ? colors.black : colors.borderColor,
+          borderColor: isSelected
+            ? item?.type === "gmail"
+              ? item?.color?.background
+              : item?.color?.primary
+            : colors.borderColor,
         },
       ]}
-      onPress={() => {
-        onCategoryClick(item);
-        setSelectedCategory(item.type);
-      }}
+      layout={LinearTransition.springify().damping(20).stiffness(300)}
     >
-      <ImageBackground
-        resizeMode="cover"
-        tintColor={
-          isSelected ? colors.black : theme === "light" ? "#8B8E8E" : undefined
-        }
-        source={AssetsPath.ic_categoryFrame}
-        style={styles.imageBackground}
+      <Pressable
+        style={{ flex: 1 }}
+        onPress={() => {
+          onCategoryClick(item);
+          setSelectedCategory(item.type);
+        }}
       >
-        <View style={styles.innerContainer}>
-          <View style={styles.iconContainer}>
-            <Image
-              source={item.icon}
-              style={styles.icon}
-              resizeMode="contain"
-              tintColor={item.type === "gmail" ? undefined : typeColor}
-            />
-          </View>
+        <ImageBackground
+          resizeMode="cover"
+          tintColor={
+            isSelected
+              ? item?.type === "gmail"
+                ? item?.color?.background
+                : item?.color?.primary
+              : undefined
+          }
+          source={AssetsPath.ic_categoryFrame}
+          style={styles.imageBackground}
+        >
+          <View style={styles.innerContainer}>
+            <View style={styles.iconContainer}>
+              <Image
+                source={item.icon}
+                style={styles.icon}
+                resizeMode="contain"
+                tintColor={item.type === "gmail" ? undefined : typeColor}
+              />
+            </View>
 
-          <View style={styles.textContainer}>
-            <Text style={[styles.titleText, { color: colors.text }]}>
-              {item.title}
-            </Text>
-            <Text style={[styles.descriptionText, { color: colors.text }]}>
-              {item.description}
-            </Text>
+            <View style={styles.textContainer}>
+              <Text style={[styles.titleText, { color: colors.text }]}>
+                {item.title}
+              </Text>
+              <Text style={[styles.descriptionText, { color: colors.text }]}>
+                {item.description}
+              </Text>
+            </View>
           </View>
-        </View>
-      </ImageBackground>
-    </Pressable>
+        </ImageBackground>
+      </Pressable>
+    </Animated.View>
   );
 };
 

@@ -239,6 +239,8 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.Medium,
   },
   actionsContainer: {
+    bottom: 3,
+    right: 3,
     flexDirection: "row",
     width: "25%",
     justifyContent: "flex-end",

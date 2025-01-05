@@ -138,7 +138,6 @@ const styles = () => {
       backgroundColor: "rgba(255, 255, 255, 0.2)",
     },
     filterAllText: {
-      color: colors.grayTitle,
       fontFamily: FONTS.Medium,
       textAlign: "center",
       fontSize: 15,

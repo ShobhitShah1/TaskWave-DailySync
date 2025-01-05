@@ -18,7 +18,8 @@ const ColorGroups = {
       primary: "rgba(34, 200, 66, 1)",
       background: "rgba(34, 200, 66, 0.25)",
       dark: "rgba(0, 125, 22, 1)",
-      business: "rgba(3, 97, 90, 1)",
+
+      business: "rgba(6, 224, 217, 1)",
       businessBackground: "rgba(3, 97, 90, 0.15)",
       businessDark: "rgba(11, 164, 158, 1)",
     },
@@ -68,6 +69,7 @@ const CommunicationPlatformColors = {
   whatsapp: ColorGroups.communication.whatsapp.primary,
   whatsappBackground: ColorGroups.communication.whatsapp.background,
   whatsappDark: ColorGroups.communication.whatsapp.dark,
+
   whatsappBusiness: ColorGroups.communication.whatsapp.business,
   whatsappBusinessBackground:
     ColorGroups.communication.whatsapp.businessBackground,

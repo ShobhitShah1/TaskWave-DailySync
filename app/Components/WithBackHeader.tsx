@@ -46,15 +46,22 @@ const WithBackHeader = ({ title }: IHomeHeaderProps) => {
       <View style={{ width: "71%" }}>
         <Text style={[styles.titleText, { color: colors.text }]}>{title}</Text>
       </View>
-      <View style={{ width: "18%", alignSelf: "flex-end" }}>
-        <View style={{ width: 70, height: 35, zIndex: 9999 }}>
-          <CustomSwitch
-            isOn={isSwitchOn}
-            onToggle={(state: boolean) => {
-              handleToggle(state);
-            }}
-          />
-        </View>
+      <View
+        style={{
+          width: "18%",
+          // backgroundColor: "red",
+          justifyContent: "center",
+          alignSelf: "flex-end",
+        }}
+      >
+        {/* <View style={{ width: 70, height: 35, zIndex: 9999 }}> */}
+        <CustomSwitch
+          isOn={isSwitchOn}
+          onToggle={(state: boolean) => {
+            handleToggle(state);
+          }}
+        />
+        {/* </View> */}
       </View>
     </Animated.View>
   );
