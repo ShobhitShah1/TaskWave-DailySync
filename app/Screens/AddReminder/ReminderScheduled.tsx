@@ -21,7 +21,16 @@ type ReminderScheduledProps = {
   params: { themeColor: string; notification: Notification };
 };
 
-const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const daysOfWeek = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 const monthsOfYear = [
   "Jan",
   "Feb",
@@ -48,7 +57,7 @@ export const formatDate = (date: Date) => {
   const dayName = daysOfWeek[date.getDay()];
   const day = date.getDate();
   const month = monthsOfYear[date.getMonth()];
-  return `${dayName}, ${month} ${day}`;
+  return `${dayName}, ${day} ${month}`;
 };
 
 export const formatDateTime = (date: Date) => {

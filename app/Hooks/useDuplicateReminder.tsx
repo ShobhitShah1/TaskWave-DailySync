@@ -2,7 +2,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useCallback, useState } from "react";
 import { Platform } from "react-native";
 import { showMessage } from "react-native-flash-message";
-import useDatabase, { scheduleNotification } from "../Hooks/useReminder";
+import useDatabase, { scheduleNotification } from "./useReminder";
 import { Notification, Theme } from "../Types/Interface";
 
 interface DateTimePickerState {

@@ -38,6 +38,7 @@ import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "../Home/Components/HomeHeader";
 import RenderFilterTabData from "./Components/RenderFilterTabData";
 import RenderHistoryList from "./Components/RenderHistoryList";
+import { useAppContext } from "../../Contexts/ThemeProvider";
 
 const History = () => {
   const style = styles();
@@ -417,6 +418,7 @@ export default memo(History);
 
 const styles = () => {
   const colors = useThemeColors();
+  const { theme } = useAppContext();
 
   return StyleSheet.create({
     container: {
@@ -517,7 +519,8 @@ const styles = () => {
       borderRadius: 5,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: colors.placeholderText,
+      backgroundColor:
+        theme === "light" ? "rgba(209, 209, 209, 0.5)" : colors.placeholderText,
     },
     arrowImage: {
       width: "50%",

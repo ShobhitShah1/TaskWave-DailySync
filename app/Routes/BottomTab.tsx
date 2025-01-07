@@ -6,10 +6,8 @@ import {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { useNavigation } from "@react-navigation/native";
-import { StatusBar } from "expo-status-bar";
 import React, { memo, useCallback, useRef, useState } from "react";
 import {
-  FlatList,
   Image,
   Linking,
   NativeModules,
@@ -18,20 +16,13 @@ import {
   Animated as RNAnimated,
   StyleSheet,
   Text,
-  View,
 } from "react-native";
 import { CurvedBottomBar } from "react-native-curved-bottom-bar";
 import { showMessage } from "react-native-flash-message";
 import LinearGradient from "react-native-linear-gradient";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  LinearTransition,
-} from "react-native-reanimated";
-import { useAppContext } from "../Contexts/ThemeProvider";
-import AssetsPath from "../Constants/AssetsPath";
 import TextString from "../Constants/TextString";
 import { FONTS } from "../Constants/Theme";
+import { useAppContext } from "../Contexts/ThemeProvider";
 import { useBottomSheetBackHandler } from "../Hooks/useBottomSheetBackHandler";
 import useThemeColors from "../Hooks/useThemeMode";
 import AddReminder from "../Screens/AddReminder/AddReminder";
@@ -42,12 +33,11 @@ import Setting from "../Screens/Setting/Setting";
 import {
   NotificationCategory,
   NotificationType,
-  remindersCategoriesType,
   RenderTabBarProps,
 } from "../Types/Interface";
-import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
-import RenderCategoryItem from "./Components/RenderCategoryItem";
 import { getCategories } from "../Utils/getCategories";
+import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
+import RenderSheetView from "./Components/RenderSheetView";
 
 const BottomTab = () => {
   const colors = useThemeColors();
@@ -322,67 +312,12 @@ const BottomTab = () => {
             ]}
             showsVerticalScrollIndicator={false}
           >
-            <View>
-              <StatusBar
-                translucent
-                backgroundColor={colors.background}
-                style={theme === "dark" ? "light" : "dark"}
-              />
-              <View style={styles.sheetSuggestionView}>
-                {initialCategories?.map((res) => {
-                  const isSelected = res.type === selectedCategory;
-                  return (
-                    <Pressable
-                      onPress={() => {
-                        onCategoryClick(res, true);
-                        setSelectedCategory(res.type);
-                      }}
-                      key={res.id}
-                      style={[
-                        styles.sheetSuggestionImageView,
-                        {
-                          backgroundColor: isSelected
-                            ? res.color.background
-                            : "rgba(209, 209, 209, 0.6)",
-                          opacity: isSelected ? 1 : 0.3,
-                        },
-                      ]}
-                    >
-                      <Image
-                        source={res.icon}
-                        tintColor={
-                          isSelected && res.type === "gmail"
-                            ? undefined
-                            : colors.white
-                        }
-                        style={styles.sheetSuggestionImage}
-                      />
-                    </Pressable>
-                  );
-                })}
-              </View>
-              <Animated.FlatList
-                numColumns={2}
-                entering={FadeIn}
-                itemLayoutAnimation={LinearTransition.springify()
-                  .damping(80)
-                  .stiffness(200)}
-                data={categories}
-                renderItem={({ item }) => (
-                  <RenderCategoryItem
-                    item={item}
-                    onCategoryClick={(category) =>
-                      onCategoryClick(category, false)
-                    }
-                    selectedCategory={selectedCategory}
-                    setSelectedCategory={setSelectedCategory}
-                  />
-                )}
-                keyExtractor={(item, index) => item.id?.toString()}
-                contentContainerStyle={{ rowGap: 15, paddingBottom: 90 }}
-                columnWrapperStyle={{ justifyContent: "space-between" }}
-              />
-            </View>
+            <RenderSheetView
+              categories={categories}
+              onCategoryClick={onCategoryClick}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+            />
           </BottomSheetScrollView>
         </BottomSheetModal>
       </BottomSheetModalProvider>
