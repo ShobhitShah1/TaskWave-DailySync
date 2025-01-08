@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   titleText: {
-    fontSize: 24,
+    fontSize: 22.5,
     fontFamily: FONTS.Medium,
   },
   backButton: {

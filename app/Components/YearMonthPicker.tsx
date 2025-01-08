@@ -3,6 +3,7 @@ import {
   Dimensions,
   FlatList,
   Pressable,
+  StatusBar,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -18,6 +19,7 @@ import Animated, {
 import { FONTS, SIZE } from "../Constants/Theme";
 import useThemeColors from "../Hooks/useThemeMode";
 import { BlurView } from "expo-blur";
+import { Shadow } from "react-native-shadow-2";
 
 interface YearMonthPickerProps {
   isVisible: boolean;
@@ -190,8 +192,9 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       }
       hasBackdrop
       useNativeDriverForBackdrop
-      // statusBarTranslucent
-      // deviceHeight={height + ((StatusBar.currentHeight || 30) + 50)}
+      statusBarTranslucent
+      hideModalContentWhileAnimating
+      deviceHeight={height + ((StatusBar.currentHeight || 30) + 50)}
       useNativeDriver
       onModalShow={() => {
         animationProgress.value = withTiming(1, {
@@ -212,7 +215,11 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
             styles.modalView,
             {
               backgroundColor: colors.white,
-              // shadowColor: colors.darkBlue,
+              shadowColor: colors.darkBlue,
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 1,
+              shadowRadius: 10,
+              elevation: 5,
             },
             animatedStyle,
           ]}

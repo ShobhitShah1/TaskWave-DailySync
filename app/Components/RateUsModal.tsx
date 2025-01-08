@@ -32,11 +32,9 @@ const RateUsModal: FC<RateUsModalProps> = ({ isVisible, onClose }) => {
   return (
     <ReactNativeModal
       isVisible={isVisible}
-      animationIn="fadeIn"
-      animationInTiming={300}
-      animationOutTiming={300}
+      animationInTiming={0}
+      animationOutTiming={0}
       hideModalContentWhileAnimating
-      animationOut="fadeOut"
       customBackdrop={
         <Pressable style={style.customBackdrop} onPress={onClose}>
           <BlurView
@@ -111,14 +109,14 @@ const styles = (colors: any) =>
       borderRadius: 10,
       padding: 20,
 
-      // shadowColor: "rgba(64, 93, 240, 1)",
-      // shadowOffset: {
-      //   width: 0,
-      //   height: -20,
-      // },
-      // shadowOpacity: 1,
-      // shadowRadius: 4,
-      // elevation: 15,
+      shadowColor: "rgba(64, 93, 240, 1)",
+      shadowOffset: {
+        width: 0,
+        height: -5,
+      },
+      shadowOpacity: 1,
+      shadowRadius: 10,
+      elevation: 15,
     },
     rateUsViewContainer: {
       alignItems: "center",

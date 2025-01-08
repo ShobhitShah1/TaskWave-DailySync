@@ -20,9 +20,9 @@ import {
 import { CurvedBottomBar } from "react-native-curved-bottom-bar";
 import { showMessage } from "react-native-flash-message";
 import LinearGradient from "react-native-linear-gradient";
+import { Shadow } from "react-native-shadow-2";
 import TextString from "../Constants/TextString";
 import { FONTS } from "../Constants/Theme";
-import { useAppContext } from "../Contexts/ThemeProvider";
 import { useBottomSheetBackHandler } from "../Hooks/useBottomSheetBackHandler";
 import useThemeColors from "../Hooks/useThemeMode";
 import AddReminder from "../Screens/AddReminder/AddReminder";
@@ -41,7 +41,6 @@ import RenderSheetView from "./Components/RenderSheetView";
 
 const BottomTab = () => {
   const colors = useThemeColors();
-  const { theme } = useAppContext();
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const { handleSheetPositionChange } =
@@ -219,12 +218,21 @@ const BottomTab = () => {
         borderTopLeftRight
         renderCircle={() => (
           <RNAnimated.View style={styles.btnCircleUp}>
-            <Pressable
-              style={styles.addButton}
-              onPress={handlePresentModalPress}
+            <Shadow
+              distance={4}
+              startColor={"rgba(64, 93, 240, 0.2)"}
+              endColor={"rgba(64, 93, 240, 0.1)"}
+              offset={[0, 0]}
+              paintInside
+              corners={{ bottomEnd: true, bottomStart: true }}
             >
-              <Text style={styles.addButtonText}>+</Text>
-            </Pressable>
+              <Pressable
+                style={styles.addButton}
+                onPress={handlePresentModalPress}
+              >
+                <Text style={styles.addButtonText}>+</Text>
+              </Pressable>
+            </Shadow>
           </RNAnimated.View>
         )}
         tabBar={renderTabBar}
@@ -334,10 +342,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     bottom: 30,
-    shadowOffset: { width: 0, height: -5 },
+
+    shadowColor: "rgba(64, 93, 240, 1)",
+    shadowOffset: {
+      width: 0,
+      height: -10,
+    },
     shadowOpacity: 1,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowRadius: 10,
+    elevation: 15,
   },
   tabBarItem: {
     flex: 1,
