@@ -51,10 +51,10 @@ const ColorGroups = {
       text: "rgba(29, 155, 240, 1)",
     },
     note: {
-      primary: "rgb(243, 145, 88)",
-      background: "rgba(255, 250, 200,0.5)",
-      dark: "rgb(204, 153, 0)",
-      text: "rgb(102, 85, 0)",
+      primary: "rgba(243, 145, 88, 1)",
+      background: "rgba(153, 112, 0, 0.25)",
+      dark: "rgba(204, 153, 1, 1)",
+      text: "rgba(102, 85, 0, 1)",
     },
   },
   accent: {

@@ -49,7 +49,11 @@ const HomeHeader = ({
           style={[
             styles.menuIconView,
             {
-              backgroundColor: hideGrid ? "transparent" : colors.grayBackground,
+              backgroundColor: hideGrid
+                ? "transparent"
+                : theme === "dark"
+                ? colors.grayBackground
+                : "rgba(173, 175, 176, 0.4)",
             },
           ]}
         >

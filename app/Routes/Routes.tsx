@@ -18,6 +18,7 @@ import { RootStackParamList } from "../Types/Interface";
 import BottomTab from "./BottomTab";
 import HowAppWorks from "../Screens/Setting/HowAppWorks";
 import * as SplashScreen from "expo-splash-screen";
+import NotificationSound from "../Screens/Setting/NotificationSound";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -71,6 +72,10 @@ const Routes = () => {
           <Stack.Screen name="ReminderPreview" component={ReminderPreview} />
           <Stack.Screen name="AboutApp" component={AboutApp} />
           <Stack.Screen name="HowAppWorks" component={HowAppWorks} />
+          <Stack.Screen
+            name="NotificationSound"
+            component={NotificationSound}
+          />
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>

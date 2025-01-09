@@ -39,6 +39,7 @@ export type RootStackParamList = {
   };
   AboutApp: undefined;
   HowAppWorks: undefined;
+  NotificationSound: undefined;
 };
 
 export interface AppContextProps {

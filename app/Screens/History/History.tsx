@@ -201,13 +201,22 @@ const History = () => {
   }, []);
 
   useEffect(() => {
-    const data = selectedType
-      ? notifications.filter(
-          (notification) => notification.type === selectedType
-        )
-      : notifications;
+    try {
+      setLoading(filteredNotifications?.length === 0);
 
-    setFilteredNotifications(data || []);
+      const data = selectedType
+        ? notifications.filter(
+            (notification) => notification.type === selectedType
+          )
+        : notifications;
+
+      setFilteredNotifications(data);
+    } catch (error: any) {
+      showMessage({
+        message: error?.message?.toString(),
+        type: "danger",
+      });
+    }
   }, [activeTabType, notifications, filterTabData]);
 
   const deleteReminder = useCallback(async (id?: string) => {

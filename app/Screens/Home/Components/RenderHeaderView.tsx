@@ -1,12 +1,5 @@
 import React, { FC, memo, useCallback } from "react";
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-  ViewStyle,
-} from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import AssetsPath from "../../../Constants/AssetsPath";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
 import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
@@ -14,36 +7,7 @@ import useThemeColors from "../../../Hooks/useThemeMode";
 import { headerInterface, NotificationType } from "../../../Types/Interface";
 import { getCategories } from "../../../Utils/getCategories";
 import styles from "../styles";
-
-const FilterButton = memo(
-  ({
-    filterType,
-    selectedFilter,
-    onPress,
-    icon,
-    color,
-    backgroundColor,
-    style,
-  }: any) => {
-    const isSelected = selectedFilter === filterType;
-    const shadowStyle: ViewStyle = isSelected
-      ? { opacity: 1, overflow: "hidden" }
-      : { opacity: 0.6 };
-
-    return (
-      <Pressable
-        style={[style.filterBtn, { backgroundColor }, shadowStyle]}
-        onPress={onPress}
-      >
-        <Image
-          source={icon}
-          tintColor={filterType === "gmail" ? undefined : color}
-          style={style.filterIcon}
-        />
-      </Pressable>
-    );
-  }
-);
+import { FilterButton } from "./FilterButton";
 
 const RenderHeaderView: FC<headerInterface> = ({
   selectedFilter,
@@ -75,7 +39,7 @@ const RenderHeaderView: FC<headerInterface> = ({
           <ScrollView
             showsVerticalScrollIndicator={false}
             horizontal
-            contentContainerStyle={{ gap: 5 }}
+            contentContainerStyle={{ gap: 5, alignItems: "center" }}
             style={style.filterButtonsFlex}
           >
             <Pressable
@@ -111,9 +75,7 @@ const RenderHeaderView: FC<headerInterface> = ({
                     handleSelectFilter(res.type as NotificationType)
                   }
                   icon={res.icon}
-                  color={res.color}
                   backgroundColor={getColor?.backgroundColor || ""}
-                  style={style}
                 />
               );
             })}

@@ -11,6 +11,7 @@ import {
 } from "../../Types/Interface";
 import { getCategories } from "../../Utils/getCategories";
 import RenderCategoryItem from "./RenderCategoryItem";
+import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 
 interface RenderSheetViewProps {
   categories: NotificationCategory[];
@@ -42,6 +43,8 @@ const RenderSheetView = ({
       />
       <View style={styles.sheetSuggestionView}>
         {initialCategories?.map((res) => {
+          const notificationColors = useNotificationIconColors(res.type);
+
           const isSelected = res.type === selectedCategory;
           return (
             <Pressable
@@ -53,10 +56,21 @@ const RenderSheetView = ({
               style={[
                 styles.sheetSuggestionImageView,
                 {
-                  backgroundColor: isSelected
-                    ? res.color.background
-                    : "rgba(209, 209, 209, 0.6)",
-                  opacity: isSelected ? 1 : 0.3,
+                  backgroundColor: !isSelected
+                    ? notificationColors.backgroundColor
+                    : selectedCategory === "gmail"
+                    ? notificationColors.backgroundColor
+                    : notificationColors.createViewColor,
+                  borderColor: isSelected
+                    ? notificationColors.createViewColor || "#3366FF"
+                    : "transparent",
+                  overflow: "visible",
+                  opacity:
+                    theme === "dark" && isSelected
+                      ? 1
+                      : theme === "light"
+                      ? 1
+                      : 0.5,
                 },
               ]}
             >

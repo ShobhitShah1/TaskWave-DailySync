@@ -22,7 +22,9 @@ const Settings = () => {
     {
       title: "Notification",
       icon: AssetsPath.ic_notification,
-      onPress: () => {},
+      onPress: () => {
+        navigation.navigate("NotificationSound");
+      },
     },
     {
       title: "Share",

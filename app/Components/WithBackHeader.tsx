@@ -10,9 +10,10 @@ import CustomSwitch from "./CustomSwitch";
 
 interface IHomeHeaderProps {
   title: string;
+  hideSwitch?: boolean;
 }
 
-const WithBackHeader = ({ title }: IHomeHeaderProps) => {
+const WithBackHeader = ({ title, hideSwitch }: IHomeHeaderProps) => {
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { theme, toggleTheme } = useAppContext();
@@ -34,7 +35,7 @@ const WithBackHeader = ({ title }: IHomeHeaderProps) => {
   return (
     <Animated.View style={styles.container} entering={FadeIn.duration(400)}>
       <Pressable
-        onPress={() => navigation.navigate("BottomTab", { screen: "Home" })}
+        onPress={() => navigation.goBack()}
         style={[styles.menuIconView]}
       >
         <Image
@@ -49,19 +50,19 @@ const WithBackHeader = ({ title }: IHomeHeaderProps) => {
       <View
         style={{
           width: "18%",
-          // backgroundColor: "red",
+          height: hideSwitch ? 33 : undefined,
           justifyContent: "center",
           alignSelf: "flex-end",
         }}
       >
-        {/* <View style={{ width: 70, height: 35, zIndex: 9999 }}> */}
-        <CustomSwitch
-          isOn={isSwitchOn}
-          onToggle={(state: boolean) => {
-            handleToggle(state);
-          }}
-        />
-        {/* </View> */}
+        {!hideSwitch && (
+          <CustomSwitch
+            isOn={isSwitchOn}
+            onToggle={(state: boolean) => {
+              handleToggle(state);
+            }}
+          />
+        )}
       </View>
     </Animated.View>
   );

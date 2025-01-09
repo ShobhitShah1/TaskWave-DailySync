@@ -108,25 +108,25 @@ const styles = () => {
       fontSize: 21,
     },
     fullscreenButton: {
-      width: 23,
-      height: 23,
+      width: 18,
+      height: 18,
+      right: 2,
       justifyContent: "center",
       alignItems: "center",
     },
     fullScreenIcon: {
-      width: "80%",
-      height: "80%",
+      width: "100%",
+      height: "100%",
     },
 
     filterOptionContainer: {
       flexDirection: "row",
-      gap: 13,
+      gap: 10,
       justifyContent: "center",
       alignItems: "center",
     },
     filterButtonsFlex: {
-      // flexDirection: "row",
-      // gap: 5,
+      height: 30,
     },
     filterAllBtn: {
       justifyContent: "center",
@@ -141,6 +141,7 @@ const styles = () => {
       fontFamily: FONTS.Medium,
       textAlign: "center",
       fontSize: 15,
+      right: 3,
     },
     filterBtn: {
       width: 26,

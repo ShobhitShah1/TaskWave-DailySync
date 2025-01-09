@@ -269,6 +269,7 @@ const styles = StyleSheet.create({
   dropDownContainer: {
     width: 18,
     height: 20,
+    zIndex: 999999,
     justifyContent: "center",
     alignItems: "flex-end",
   },

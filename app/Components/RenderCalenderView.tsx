@@ -60,7 +60,8 @@ const styles = () => {
     },
     calenderWeekText: {
       fontSize: 16,
-      color: colors.placeholderText,
+      letterSpacing: 1.1,
+      color: "rgba(154, 156, 156, 0.7)",
       fontFamily: FONTS.SemiBold,
       textAlign: "center",
     },
