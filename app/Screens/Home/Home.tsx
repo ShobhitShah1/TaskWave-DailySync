@@ -1,9 +1,13 @@
-import notifee from "@notifee/react-native";
+import notifee, {
+  AndroidImportance,
+  AndroidVisibility,
+} from "@notifee/react-native";
 import { useIsFocused } from "@react-navigation/native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Button,
   FlatList,
   Pressable,
   RefreshControl,
@@ -21,7 +25,11 @@ import YearMonthPicker from "../../Components/YearMonthPicker";
 import isGridView from "../../Hooks/isGridView";
 import useCalendar from "../../Hooks/useCalendar";
 import useNotificationPermission from "../../Hooks/useNotificationPermission";
-import { default as useDatabase } from "../../Hooks/useReminder";
+import {
+  CHANNEL_ID,
+  CHANNEL_NAME,
+  default as useDatabase,
+} from "../../Hooks/useReminder";
 import useThemeColors from "../../Hooks/useThemeMode";
 import {
   Notification,
@@ -108,6 +116,32 @@ const Home = () => {
       requestPermission();
     }
   }, [permissionStatus]);
+
+  useEffect(() => {
+    notifee
+      .isBatteryOptimizationEnabled()
+      .then((isBatteryOptimizationEnabled) => {
+        if (isBatteryOptimizationEnabled) {
+          Alert.alert(
+            "Restrictions Detected",
+            "To ensure notifications are delivered, please disable battery optimization for the app.",
+            [
+              {
+                text: "OK, open settings",
+                onPress: async () =>
+                  await notifee.openBatteryOptimizationSettings(),
+              },
+              {
+                text: "Cancel",
+                onPress: () => console.log("Cancel Pressed"),
+                style: "cancel",
+              },
+            ],
+            { cancelable: false }
+          );
+        }
+      });
+  }, []);
 
   const onRefresh = useCallback(async () => {
     try {

@@ -221,6 +221,7 @@ export type NotificationCategory = {
   title: string;
   description: string;
   icon: number;
+  glowIcon: number;
   color: {
     background: string;
     primary: string;

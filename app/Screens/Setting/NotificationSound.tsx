@@ -12,6 +12,7 @@ import useThemeColors from "../../Hooks/useThemeMode";
 import WithBackHeader from "../../Components/WithBackHeader";
 import { FONTS, SIZE } from "../../Constants/Theme";
 import WaveBar from "../../Components/WaveBar";
+import { useAppContext } from "../../Contexts/ThemeProvider";
 
 interface PlayingStates {
   [key: string]: boolean;
@@ -96,6 +97,7 @@ export default NotificationSound;
 
 const styles = () => {
   const colors = useThemeColors();
+  const { theme } = useAppContext();
 
   return StyleSheet.create({
     container: {
@@ -112,7 +114,6 @@ const styles = () => {
       padding: 16,
     },
     soundCard: {
-      backgroundColor: colors.reminderCardBackground,
       borderRadius: 12,
       padding: 16,
       marginBottom: 12,
@@ -123,10 +124,14 @@ const styles = () => {
       elevation: 2,
       borderWidth: 2,
       borderColor: "transparent",
+
+      backgroundColor:
+        theme === "dark" ? "rgba(43, 43, 44, 1)" : "rgba(251, 252, 255, 1)",
     },
     selectedCard: {
       borderWidth: 2,
-      borderColor: "#2196F3",
+      borderColor:
+        theme === "dark" ? "rgba(99, 99, 99, 1)" : "rgba(211, 218, 252, 1)",
     },
     cardContent: {
       flexDirection: "row",

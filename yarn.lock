@@ -2277,16 +2277,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lodev09/react-native-true-sheet@npm:^0.13.0":
-  version: 0.13.0
-  resolution: "@lodev09/react-native-true-sheet@npm:0.13.0"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 10c0/b7ee27566ac3f12e1d1cd11839a6a6f83300ac2e831cb8e8328f4479b50047668cc6bcbf445afff511244341817da32990c4c2175e5f1fb97b485dc095254d09
-  languageName: node
-  linkType: hard
-
 "@nodelib/fs.scandir@npm:2.1.5":
   version: 2.1.5
   resolution: "@nodelib/fs.scandir@npm:2.1.5"
@@ -2314,7 +2304,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@notifee/react-native@npm:^9.1.2":
+"@notifee/react-native@npm:^9.1.8":
   version: 9.1.8
   resolution: "@notifee/react-native@npm:9.1.8"
   peerDependencies:
@@ -10665,8 +10655,7 @@ __metadata:
   dependencies:
     "@babel/core": "npm:^7.20.0"
     "@gorhom/bottom-sheet": "npm:^4.6.4"
-    "@lodev09/react-native-true-sheet": "npm:^0.13.0"
-    "@notifee/react-native": "npm:^9.1.2"
+    "@notifee/react-native": "npm:^9.1.8"
     "@react-native-community/datetimepicker": "npm:8.0.1"
     "@react-native-firebase/app": "npm:^21.2.0"
     "@react-native-firebase/crashlytics": "npm:^21.2.0"

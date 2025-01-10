@@ -16,6 +16,7 @@ import {
   Animated as RNAnimated,
   StyleSheet,
   Text,
+  View,
 } from "react-native";
 import { CurvedBottomBar } from "react-native-curved-bottom-bar";
 import { showMessage } from "react-native-flash-message";
@@ -71,25 +72,48 @@ const BottomTab = () => {
 
   const renderTabBar = useCallback(
     ({ routeName, selectedTab, navigate }: RenderTabBarProps) => (
-      <Pressable
-        onPress={() => {
-          handleTabChange(selectedTab);
-          navigate(routeName);
-        }}
-        style={styles.tabBarItem}
-      >
-        <Image
-          source={getIconSourceForBottomTabs(
-            routeName,
-            selectedTab === routeName
-          )}
-          tintColor={selectedTab === routeName ? colors.white : colors.white}
-          style={styles.icon}
-        />
-        <Text style={[styles.tabLabel, { color: colors.white }]}>
-          {routeName}
-        </Text>
-      </Pressable>
+      <View style={{ flex: 1 }}>
+        {/* {selectedTab === routeName && (
+          <Image
+            resizeMode="contain"
+            source={AssetsPath.ic_bottomShape}
+            style={{
+              width: 30,
+              height: 20,
+              alignSelf: "center",
+              position: "absolute",
+              top: -7,
+            }}
+          />
+        )} */}
+        <Pressable
+          onPress={() => {
+            handleTabChange(selectedTab);
+            navigate(routeName);
+          }}
+          style={styles.tabBarItem}
+        >
+          <Image
+            source={getIconSourceForBottomTabs(
+              routeName,
+              selectedTab === routeName
+            )}
+            tintColor={selectedTab === routeName ? colors.white : colors.white}
+            style={styles.icon}
+          />
+          <Text
+            style={[
+              styles.tabLabel,
+              {
+                color:
+                  selectedTab === routeName ? colors.white : colors.grayTitle,
+              },
+            ]}
+          >
+            {routeName}
+          </Text>
+        </Pressable>
+      </View>
     ),
     [colors.white, handleTabChange]
   );
@@ -354,6 +378,7 @@ const styles = StyleSheet.create({
   },
   tabBarItem: {
     flex: 1,
+    // top: 5,
     alignItems: "center",
     justifyContent: "center",
   },

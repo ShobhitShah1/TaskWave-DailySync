@@ -21,22 +21,17 @@ const SettingItem: FC<SettingProps> = ({ icon, title, onPress }) => {
       <View style={style.iconContainer}>
         <Image
           source={icon}
-          tintColor={theme === "dark" ? colors.white : undefined}
+          tintColor={theme === "dark" ? colors.white : colors.black}
           style={style.icon}
+          resizeMode="contain"
         />
       </View>
       <Text style={style.title}>{title}</Text>
       <Image
         resizeMode="contain"
         source={AssetsPath.ic_leftArrow}
-        style={[
-          style.arrow,
-          {
-            transform: [
-              { rotate: title === "Notification" ? "180deg" : "-90deg" },
-            ],
-          },
-        ]}
+        tintColor={theme === "dark" ? colors.white : colors.black}
+        style={[style.arrow, { transform: [{ rotate: "180deg" }] }]}
       />
     </Pressable>
   );
@@ -54,13 +49,11 @@ const styles = () => {
       paddingHorizontal: 10,
       borderRadius: 15,
       alignSelf: "center",
-      backgroundColor:
-        theme === "dark"
-          ? "rgba(43, 43, 44, 1)"
-          : colors.reminderCardBackground,
-
       borderWidth: 0.5,
-      borderColor: theme === "dark" ? "rgba(99, 99, 99, 1)" : "transparent",
+      backgroundColor:
+        theme === "dark" ? "rgba(43, 43, 44, 1)" : "rgba(251, 252, 255, 1)",
+      borderColor:
+        theme === "dark" ? "rgba(99, 99, 99, 1)" : "rgba(211, 218, 252, 1)",
     },
     iconContainer: {
       width: 30,
@@ -69,14 +62,14 @@ const styles = () => {
       alignItems: "center",
     },
     icon: {
-      width: 24,
-      height: 24,
+      width: 22,
+      height: 22,
     },
     title: {
       flex: 1,
       marginLeft: 10,
-      color: colors.white,
-      fontSize: 17.5,
+      color: colors.text,
+      fontSize: 16.5,
       fontFamily: FONTS.Medium,
       justifyContent: "center",
       alignItems: "center",

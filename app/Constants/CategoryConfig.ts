@@ -8,6 +8,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => [
     type: "whatsapp" as NotificationType,
     title: "Whatsapp",
     description: "Let’s create whatsapp event",
+    glowIcon: AssetsPath.ic_whatsappGlow,
     icon: AssetsPath.ic_whatsapp,
     color: {
       background: colors.whatsappBackground,
@@ -20,6 +21,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => [
     type: "whatsappBusiness" as NotificationType,
     title: "WA Business",
     description: "Let’s create business event",
+    glowIcon: AssetsPath.ic_whatsappBusinessGlow,
     icon: AssetsPath.ic_whatsappBusiness,
     color: {
       background: colors.whatsappBusinessBackground,
@@ -45,6 +47,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => [
     title: "SMS",
     description: "Let’s create text messages event",
     icon: AssetsPath.ic_sms,
+    glowIcon: AssetsPath.ic_smsGlow,
     color: {
       background: colors.smsBackground,
       primary: colors.sms,
@@ -57,6 +60,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => [
     title: "Email",
     description: "Let’s compose mail event",
     icon: AssetsPath.ic_gmail,
+    glowIcon: AssetsPath.ic_gmailGlow,
     color: {
       background: colors.gmailBackground,
       primary: colors.gmail,
@@ -70,6 +74,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => [
     title: "Phone",
     description: "Let’s create phone event",
     icon: AssetsPath.ic_phone,
+    glowIcon: AssetsPath.ic_phoneGlow,
     color: {
       background: colors.smsBackground,
       primary: colors.sms,
@@ -82,6 +87,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => [
     title: "Telegram",
     description: "Let’s create telegram event",
     icon: AssetsPath.ic_telegram,
+    glowIcon: AssetsPath.ic_telegramGlow,
     color: {
       background: colors.telegramBackground,
       primary: colors.telegram,
@@ -94,6 +100,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => [
     title: "Note",
     description: "Let’s create note event",
     icon: AssetsPath.ic_notes,
+    glowIcon: AssetsPath.ic_notesGlow,
     color: {
       background: colors.noteBackground,
       primary: colors.note,

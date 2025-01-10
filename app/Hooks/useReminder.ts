@@ -87,7 +87,7 @@ export const scheduleNotification = async (
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
           pressAction: { id: "default" },
-          smallIcon: "notification_icon",
+          // smallIcon: "notification_icon",
         },
         data: notificationData as any,
       },
@@ -112,7 +112,7 @@ export const scheduleNotification = async (
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
           pressAction: { id: "default" },
-          smallIcon: "notification_icon",
+          // smallIcon: "notification_icon",
         },
         data: {
           ...notificationData,
@@ -121,6 +121,8 @@ export const scheduleNotification = async (
       },
       trigger
     );
+
+    console.log("notifeeNotificationId", notifeeNotificationId);
 
     return notifeeNotificationId;
   } catch (error: any) {
@@ -398,10 +400,8 @@ const useReminder = () => {
             channelId,
             visibility: AndroidVisibility.PUBLIC,
             importance: AndroidImportance.HIGH,
-            pressAction: {
-              id: "default",
-            },
-            smallIcon: "notification_icon",
+            pressAction: { id: "default" },
+            // smallIcon: "notification_icon",
           },
           data: notificationData as any,
         },

@@ -19,6 +19,15 @@ const ic_phone = require("../../assets/Icons/ic_phone.png");
 const ic_instagram = require("../../assets/Icons/ic_instagram.png");
 const ic_telegram = require("../../assets/Icons/ic_telegram.png");
 const ic_notes = require("../../assets/Icons/ic_notes.png");
+// Glow
+const ic_gmailGlow = require("../../assets/Icons/ic_gmailGlow.png");
+const ic_smsGlow = require("../../assets/Icons/ic_smsGlow.png");
+const ic_whatsappGlow = require("../../assets/Icons/ic_whatsappGlow.png");
+const ic_whatsappBusinessGlow = require("../../assets/Icons/ic_whatsappBusinessGlow.png");
+const ic_phoneGlow = require("../../assets/Icons/ic_phoneGlow.png");
+// const ic_instagramGlow = require("../../assets/Icons/ic_instagramGlow.png");
+const ic_telegramGlow = require("../../assets/Icons/ic_telegramGlow.png");
+const ic_notesGlow = require("../../assets/Icons/ic_notesGlow.png");
 
 const ic_edit = require("../../assets/Icons/ic_edit.png");
 const ic_view = require("../../assets/Icons/ic_view.png");
@@ -44,6 +53,8 @@ const ic_share = require("../../assets/Icons/ic_share.png");
 const ic_star = require("../../assets/Icons/ic_star.png");
 const ic_contact = require("../../assets/Icons/ic_contact.png");
 const ic_support = require("../../assets/Icons/ic_support.png");
+const ic_howAppWork = require("../../assets/Icons/ic_howAppWork.png");
+const ic_portfolio = require("../../assets/Icons/ic_portfolio.png");
 
 const ic_sad = require("../../assets/Icons/ic_sad.png");
 const ic_happy = require("../../assets/Icons/ic_happy.png");
@@ -54,6 +65,8 @@ const ic_play = require("../../assets/Icons/ic_play.png");
 const ic_pause = require("../../assets/Icons/ic_pause.png");
 
 const ic_delete = require("../../assets/Icons/ic_delete.png");
+
+const ic_bottomShape = require("../../assets/Icons/ic_bottomShape.png");
 
 // Images
 const ob_Email = require("../../assets/Images/ob_Email.png");
@@ -93,6 +106,15 @@ export default {
   ic_telegram,
   ic_notes,
 
+  ic_gmailGlow,
+  ic_smsGlow,
+  ic_whatsappGlow,
+  ic_whatsappBusinessGlow,
+  ic_phoneGlow,
+  // ic_instagramGlow,
+  ic_telegramGlow,
+  ic_notesGlow,
+
   ic_edit,
   ic_view,
   ic_duplicate,
@@ -114,6 +136,8 @@ export default {
   ic_star,
   ic_contact,
   ic_support,
+  ic_howAppWork,
+  ic_portfolio,
   ic_sad,
   ic_happy,
   ic_mid,
@@ -121,6 +145,7 @@ export default {
   ic_recordMic,
   ic_play,
   ic_pause,
+  ic_bottomShape,
 
   // Images
   ob_Email,
