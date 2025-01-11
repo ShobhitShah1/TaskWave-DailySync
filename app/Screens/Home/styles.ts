@@ -126,7 +126,7 @@ const styles = () => {
       alignItems: "center",
     },
     filterButtonsFlex: {
-      height: 30,
+      height: 35,
     },
     filterAllBtn: {
       justifyContent: "center",

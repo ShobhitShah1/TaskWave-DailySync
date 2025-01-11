@@ -39,7 +39,11 @@ const RenderHeaderView: FC<headerInterface> = ({
           <ScrollView
             showsVerticalScrollIndicator={false}
             horizontal
-            contentContainerStyle={{ gap: 5, alignItems: "center" }}
+            contentContainerStyle={{
+              gap: 5,
+              alignItems: "center",
+              overflow: "visible",
+            }}
             style={style.filterButtonsFlex}
           >
             <Pressable
@@ -68,13 +72,12 @@ const RenderHeaderView: FC<headerInterface> = ({
               );
               return (
                 <FilterButton
+                  data={res}
                   key={res.id}
-                  filterType={res.type}
                   selectedFilter={selectedFilter}
                   onPress={() =>
                     handleSelectFilter(res.type as NotificationType)
                   }
-                  icon={res.icon}
                   backgroundColor={getColor?.backgroundColor || ""}
                 />
               );

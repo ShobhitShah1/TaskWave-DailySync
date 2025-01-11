@@ -19,6 +19,7 @@ const AboutApp = () => {
         title="About App"
         hideGrid={true}
         hideThemeButton={true}
+        hideBackButton={false}
       />
 
       <ScrollView
@@ -36,9 +37,12 @@ const AboutApp = () => {
 
         <View style={style.section}>
           <Text style={style.description}>
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s
+            DailySync – All-in-One Reminder App for WhatsApp, Gmail, SMS & More!
+            {"\n"}
+            Boost your productivity and never miss an important task again with
+            DailySync! 🗓️✨ This powerful app lets you set reminders across
+            multiple platforms, ensuring you stay on track no matter how busy
+            life gets.
           </Text>
         </View>
 
@@ -47,7 +51,7 @@ const AboutApp = () => {
         </View>
 
         <View style={style.section}>
-          <Text style={style.versionText}>App Virson 1.0</Text>
+          <Text style={style.versionText}>App Version 1.1</Text>
         </View>
 
         <View style={[style.section, { borderBottomWidth: 0 }]}>
@@ -80,7 +84,7 @@ const styles = () => {
       flex: 1,
     },
     scrollContentContainer: {
-      flex: 1,
+      flexGrow: 1,
     },
     section: {
       borderBottomColor:
@@ -149,14 +153,14 @@ const styles = () => {
     },
     footerText: {
       position: "absolute",
-      bottom: 10,
+      bottom: 15,
       left: 0,
       right: 0,
       justifyContent: "center",
       textAlign: "center",
       fontFamily: FONTS.Medium,
       color: colors.text,
-      fontSize: 15,
+      fontSize: 15.5,
     },
   });
 };

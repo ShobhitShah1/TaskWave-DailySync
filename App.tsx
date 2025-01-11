@@ -82,6 +82,23 @@ export default function App() {
   });
 
   useEffect(() => {
+    notifee
+      .getInitialNotification()
+      .then(async (res) => {
+        if (res?.notification?.data) {
+          await handleNotificationPress(res?.notification?.data as any);
+          notifee.cancelNotification(res?.notification?.id as string);
+        }
+      })
+      .catch((error) => {
+        showMessage({
+          message: String(error?.message || error),
+          type: "danger",
+        });
+      });
+  }, []);
+
+  useEffect(() => {
     return notifee.onForegroundEvent(async ({ type, detail }) => {
       try {
         const notification: Notification = detail.notification?.data as any;

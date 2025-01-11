@@ -34,10 +34,7 @@ const ListView: FC<IListViewProps> = ({
       exiting={FadeOut}
       style={[
         styles.cardContainer,
-        {
-          width: "100%",
-          backgroundColor: cardBackgroundColor,
-        },
+        { width: "100%", backgroundColor: cardBackgroundColor },
       ]}
     >
       <Pressable
@@ -112,21 +109,24 @@ const ListView: FC<IListViewProps> = ({
             </View>
           </View>
           <View style={styles.actionsContainer}>
-            <Pressable onPress={onEditPress}>
-              <Image
-                tintColor={typeColor}
-                source={AssetsPath.ic_edit}
-                style={styles.actionIcon}
-              />
-            </Pressable>
-            <Pressable onPress={onCardPress}>
+            <Pressable onPress={onCardPress} style={{ paddingHorizontal: 5 }}>
               <Image
                 tintColor={typeColor}
                 source={AssetsPath.ic_view}
                 style={styles.actionIcon}
               />
             </Pressable>
-            <Pressable onPress={onDuplicatePress}>
+            <Pressable onPress={onEditPress} style={{ paddingHorizontal: 5 }}>
+              <Image
+                tintColor={typeColor}
+                source={AssetsPath.ic_edit}
+                style={styles.actionIcon}
+              />
+            </Pressable>
+            <Pressable
+              onPress={onDuplicatePress}
+              style={{ paddingHorizontal: 5 }}
+            >
               <Image
                 tintColor={typeColor}
                 source={AssetsPath.ic_duplicate}
@@ -144,7 +144,7 @@ export default memo(ListView);
 
 const styles = StyleSheet.create({
   cardContainer: {
-    height: 125,
+    height: 128,
     borderRadius: 15,
     marginVertical: 5,
     overflow: "hidden",
@@ -241,6 +241,7 @@ const styles = StyleSheet.create({
   actionsContainer: {
     bottom: 3,
     right: 3,
+    gap: 5,
     flexDirection: "row",
     width: "25%",
     justifyContent: "flex-end",
@@ -249,6 +250,6 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     resizeMode: "contain",
-    marginLeft: 13,
+    // paddingRight: 13,
   },
 });

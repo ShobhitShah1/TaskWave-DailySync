@@ -33,6 +33,8 @@ import { formatNotificationType } from "../../Utils/formatNotificationType";
 import { formatDate, formatTime } from "../AddReminder/ReminderScheduled";
 import { useAppContext } from "../../Contexts/ThemeProvider";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { handleNotificationPress } from "../../Hooks/handleNotificationPress";
+import { getNotificationIcon } from "../../Utils/getNotificationIcon";
 
 type NotificationProps = {
   params: { notificationData: Notification };
@@ -62,6 +64,8 @@ const ReminderPreview = () => {
   const { createViewColor, icon } = useNotificationIconColors(notificationType);
   const { formattedTimeLeft } = useCountdownTimer(notificationData?.date);
   const { deleteNotification } = useReminder();
+
+  const { timeIsOver } = useCountdownTimer(notificationData?.date);
 
   const [hours, minutes, seconds] = formattedTimeLeft.split(" : ");
 
@@ -405,13 +409,16 @@ const ReminderPreview = () => {
       </View>
 
       <View style={style.bottomButtons}>
-        <Pressable style={style.deleteButton} onPress={onDeleteClick}>
+        <Pressable
+          style={[style.baseButton, style.deleteButton]}
+          onPress={onDeleteClick}
+        >
           <Image source={AssetsPath.ic_delete} style={style.buttonIcon} />
           <Text style={style.buttonText}>Delete</Text>
         </Pressable>
 
         <Pressable
-          style={style.editButton}
+          style={[style.baseButton, style.editButton]}
           onPress={() => {
             navigation.navigate("CreateReminder", {
               notificationType: notificationData.type,
@@ -422,6 +429,21 @@ const ReminderPreview = () => {
           <Image source={AssetsPath.ic_edit} style={style.buttonIcon} />
           <Text style={style.buttonText}>Edit</Text>
         </Pressable>
+
+        {timeIsOver && (
+          <Pressable
+            style={[style.baseButton, { backgroundColor: createViewColor }]}
+            onPress={() => {
+              handleNotificationPress(notificationData);
+            }}
+          >
+            <Image
+              source={getNotificationIcon(notificationData.type)}
+              style={style.buttonIcon}
+            />
+            <Text style={style.buttonText}>Open</Text>
+          </Pressable>
+        )}
       </View>
 
       <ImagePreviewModal
@@ -590,6 +612,11 @@ const styles = () => {
       overflow: "hidden",
       borderRadius: 8,
     },
+    recorderContainer: {
+      marginTop: 15,
+      justifyContent: "center",
+      overflow: "visible",
+    },
 
     bottomButtons: {
       bottom: 0,
@@ -598,43 +625,36 @@ const styles = () => {
       alignSelf: "center",
       justifyContent: "space-between",
       paddingVertical: 15,
+      gap: 8,
+      width: "100%",
+      paddingHorizontal: 16,
+    },
+    baseButton: {
+      flex: 1,
+      paddingVertical: 13,
+      borderRadius: 20,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      minWidth: 100,
     },
     deleteButton: {
-      width: "46%",
       backgroundColor: "#ff4c4c",
-      paddingHorizontal: 20,
-      paddingVertical: 13,
-      borderRadius: 20,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
     },
     editButton: {
-      width: "46%",
       backgroundColor: "#4c8dff",
-      paddingHorizontal: 20,
-      paddingVertical: 13,
-      borderRadius: 20,
-      alignItems: "center",
-      flexDirection: "row",
-      justifyContent: "center",
     },
     buttonIcon: {
       width: 18,
       height: 18,
       alignItems: "center",
       resizeMode: "contain",
-      marginHorizontal: 5,
+      marginRight: 5,
     },
     buttonText: {
       color: "white",
       fontSize: 19,
       fontFamily: FONTS.Medium,
-    },
-    recorderContainer: {
-      marginTop: 15,
-      justifyContent: "center",
-      overflow: "visible",
     },
   });
 };

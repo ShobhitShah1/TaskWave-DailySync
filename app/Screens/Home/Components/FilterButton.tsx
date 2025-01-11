@@ -11,27 +11,20 @@ import { NotificationType } from "../../../Types/Interface";
 import styles from "../styles";
 
 interface FilterButtonProps {
-  filterType: NotificationType | "all";
+  data: any;
   selectedFilter: NotificationType | "all";
   onPress: () => void;
-  icon: any;
   backgroundColor: string;
 }
 
 export const FilterButton = memo(
-  ({
-    icon,
-    onPress,
-    filterType,
-    selectedFilter,
-    backgroundColor,
-  }: FilterButtonProps) => {
+  ({ onPress, data, selectedFilter, backgroundColor }: FilterButtonProps) => {
     const style = styles();
     const { theme } = useAppContext();
 
-    const isSelected = selectedFilter === filterType;
+    const isSelected = selectedFilter === data?.type;
     const scale = useSharedValue(isSelected ? 1.05 : 1);
-    const notificationColors = useNotificationIconColors(filterType);
+    const notificationColors = useNotificationIconColors(data?.type);
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
@@ -40,11 +33,11 @@ export const FilterButton = memo(
     });
 
     useEffect(() => {
-      scale.value = withSpring(isSelected ? 1.1 : 1);
+      scale.value = withSpring(isSelected ? 1.05 : 1);
     }, [isSelected]);
 
     return (
-      <Pressable onPress={onPress} style={{ right: 2 }}>
+      <Pressable onPress={onPress} style={{ right: 2, overflow: "visible" }}>
         <Animated.View
           style={[
             style.filterBtn,
@@ -52,15 +45,14 @@ export const FilterButton = memo(
               backgroundColor: isSelected
                 ? notificationColors.backgroundColor || "#DDEEFF"
                 : backgroundColor,
-              borderColor: isSelected
-                ? notificationColors.createViewColor || "#3366FF"
-                : "transparent",
-              borderWidth: 1.5,
+              // borderColor: isSelected
+              //   ? notificationColors.createViewColor || "#3366FF"
+              //   : "transparent",
+              // borderWidth: 1.5,
               shadowColor: isSelected ? "#000" : "transparent",
               shadowOffset: { width: 0, height: isSelected ? 2 : 0 },
               shadowOpacity: isSelected ? 0.3 : 0,
               shadowRadius: isSelected ? 4 : 0,
-              overflow: "visible",
               opacity:
                 theme === "dark" && isSelected
                   ? 1
@@ -72,17 +64,14 @@ export const FilterButton = memo(
           ]}
         >
           <Image
-            source={icon}
-            tintColor={
-              selectedFilter === "gmail"
-                ? undefined
-                : filterType === "gmail"
-                ? "white"
-                : isSelected
-                ? notificationColors.createViewColor
-                : "white"
-            }
-            style={style.filterIcon}
+            source={isSelected ? data?.glowIcon : data?.icon}
+            style={[
+              style.filterIcon,
+              {
+                width: isSelected ? "130%" : "50%",
+                height: isSelected ? "130%" : "50%",
+              },
+            ]}
           />
         </Animated.View>
       </Pressable>

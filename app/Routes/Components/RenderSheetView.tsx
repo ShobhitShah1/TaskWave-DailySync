@@ -3,6 +3,7 @@ import React, { memo } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import { useAppContext } from "../../Contexts/ThemeProvider";
+import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useThemeColors from "../../Hooks/useThemeMode";
 import {
   NotificationCategory,
@@ -11,7 +12,6 @@ import {
 } from "../../Types/Interface";
 import { getCategories } from "../../Utils/getCategories";
 import RenderCategoryItem from "./RenderCategoryItem";
-import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 
 interface RenderSheetViewProps {
   categories: NotificationCategory[];
@@ -60,11 +60,7 @@ const RenderSheetView = ({
                     ? notificationColors.backgroundColor
                     : selectedCategory === "gmail"
                     ? notificationColors.backgroundColor
-                    : notificationColors.createViewColor,
-                  borderColor: isSelected
-                    ? notificationColors.createViewColor || "#3366FF"
                     : "transparent",
-                  overflow: "visible",
                   opacity:
                     theme === "dark" && isSelected
                       ? 1
@@ -75,11 +71,16 @@ const RenderSheetView = ({
               ]}
             >
               <Image
-                source={res.icon}
-                tintColor={
-                  isSelected && res.type === "gmail" ? undefined : colors.white
-                }
-                style={styles.sheetSuggestionImage}
+                resizeMode="contain"
+                source={isSelected ? res.glowIcon : res.icon}
+                style={[
+                  styles.sheetSuggestionImage,
+                  {
+                    width: isSelected ? "130%" : "55%",
+                    height: isSelected ? "130%" : "55%",
+                    overflow: "visible",
+                  },
+                ]}
               />
             </Pressable>
           );
@@ -101,7 +102,7 @@ const RenderSheetView = ({
             setSelectedCategory={setSelectedCategory}
           />
         )}
-        keyExtractor={(item, index) => index?.toString()}
+        keyExtractor={(item) => item?.id?.toString()}
         contentContainerStyle={{ rowGap: 15, paddingBottom: 90 }}
         columnWrapperStyle={{ justifyContent: "space-between" }}
       />
@@ -115,9 +116,10 @@ const styles = StyleSheet.create({
   sheetSuggestionView: {
     alignSelf: "center",
     marginBottom: 20,
+    marginTop: 5,
     gap: 15,
     flexDirection: "row",
-    overflow: "hidden",
+    overflow: "visible",
   },
   sheetSuggestionImageView: {
     width: 35,
@@ -129,10 +131,9 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     borderRadius: 500,
     justifyContent: "center",
+    overflow: "visible",
   },
   sheetSuggestionImage: {
-    width: "55%",
-    height: "55%",
     alignSelf: "center",
   },
 });

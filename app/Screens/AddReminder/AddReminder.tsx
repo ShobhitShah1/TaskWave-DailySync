@@ -709,7 +709,7 @@ const AddReminder = () => {
                     >
                       <Animated.Image
                         resizeMode="contain"
-                        tintColor={colors.white}
+                        tintColor={createViewColor}
                         source={AssetsPath.ic_recordMic}
                         style={[{ width: "100%", height: "100%" }]}
                       />

@@ -98,7 +98,9 @@ const BottomTab = () => {
               routeName,
               selectedTab === routeName
             )}
-            tintColor={selectedTab === routeName ? colors.white : colors.white}
+            tintColor={
+              selectedTab === routeName ? colors.white : colors.grayTitle
+            }
             style={styles.icon}
           />
           <Text

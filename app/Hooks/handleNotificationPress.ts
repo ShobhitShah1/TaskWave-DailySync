@@ -55,7 +55,7 @@ const showError = (message: string) => {
 };
 
 const notificationHandlers = {
-  whatsapp: (data: Notification, isWhatsApp: boolean = true) => {
+  whatsapp: async (data: Notification, isWhatsApp: boolean = true) => {
     try {
       const numbers = parseContacts(data.toContact);
       if (!numbers.length) {
@@ -69,7 +69,7 @@ const notificationHandlers = {
 
       const attachments = parseAttachments(data.attachments);
       const audioPath = parseAudioMemo(data.memo);
-      SendMessagesModule.sendWhatsapp(
+      await SendMessagesModule.sendWhatsapp(
         numbers.join(","),
         String(data.message),
         attachments.join(","),
@@ -81,7 +81,7 @@ const notificationHandlers = {
     }
   },
 
-  SMS: (data: Notification) => {
+  SMS: async (data: Notification) => {
     try {
       const numbers = parseContacts(data.toContact);
       if (!numbers.length) {
@@ -90,7 +90,7 @@ const notificationHandlers = {
       }
 
       const attachments = parseAttachments(data.attachments);
-      SendMessagesModule.sendSms(
+      await SendMessagesModule.sendSms(
         numbers,
         String(data.message),
         attachments.join(",")
@@ -100,11 +100,11 @@ const notificationHandlers = {
     }
   },
 
-  gmail: (data: Notification) => {
+  gmail: async (data: Notification) => {
     try {
       const emails = parseEmails(data.toMail);
       const attachments = parseAttachments(data.attachments);
-      SendMessagesModule.sendMail(
+      await SendMessagesModule.sendMail(
         emails,
         String(data.subject),
         String(data.message),
@@ -115,7 +115,7 @@ const notificationHandlers = {
     }
   },
 
-  phone: (data: Notification) => {
+  phone: async (data: Notification) => {
     try {
       const numbers = parseContacts(data.toContact);
       Linking.openURL(`tel:${numbers}`);
@@ -124,7 +124,7 @@ const notificationHandlers = {
     }
   },
 
-  telegram: (data: Notification) => {
+  telegram: async (data: Notification) => {
     const numbers = parseContacts(data.toContact);
     const recipient = data.telegramUsername || numbers[0];
 
@@ -134,7 +134,7 @@ const notificationHandlers = {
     }
 
     try {
-      SendMessagesModule.sendTelegramMessage(recipient, data.message);
+      await SendMessagesModule.sendTelegramMessage(recipient, data.message);
     } catch (error: any) {
       showError(error?.message?.toString());
     }
@@ -143,14 +143,14 @@ const notificationHandlers = {
   note: () => {},
 };
 
-export const handleNotificationPress = (notification: any) => {
+export const handleNotificationPress = async (notification: any) => {
   try {
     const handler =
       notificationHandlers[
         notification.type as keyof typeof notificationHandlers
       ];
     if (handler) {
-      handler(notification as Notification);
+      await handler(notification as Notification);
     } else {
       showError("Unsupported notification type.");
     }

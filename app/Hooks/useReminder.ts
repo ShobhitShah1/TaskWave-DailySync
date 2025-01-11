@@ -122,8 +122,6 @@ export const scheduleNotification = async (
       trigger
     );
 
-    console.log("notifeeNotificationId", notifeeNotificationId);
-
     return notifeeNotificationId;
   } catch (error: any) {
     throw new Error(error);

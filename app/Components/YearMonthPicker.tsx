@@ -60,7 +60,7 @@ const MONTHS = [
 const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
   isVisible,
   startYear = 2024,
-  endYear = 2040,
+  endYear = new Date().getFullYear(),
   selectedYear: initialSelectedYear,
   selectedMonth: initialSelectedMonth,
   onConfirm,
