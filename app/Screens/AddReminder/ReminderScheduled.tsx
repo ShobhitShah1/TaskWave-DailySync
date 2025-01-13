@@ -31,6 +31,8 @@ const daysOfWeek = [
   "Saturday",
 ];
 
+const sortDaysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 const monthsOfYear = [
   "Jan",
   "Feb",
@@ -53,10 +55,13 @@ export const formatTime = (date: Date) => {
   return `${hours}:${minutes} ${ampm}`;
 };
 
-export const formatDate = (date: Date) => {
-  const dayName = daysOfWeek[date.getDay()];
+export const formatDate = (date: Date, isSortDayName: boolean = false) => {
+  const dayName = isSortDayName
+    ? sortDaysOfWeek[date.getDay()]
+    : daysOfWeek[date.getDay()];
   const day = date.getDate();
   const month = monthsOfYear[date.getMonth()];
+
   return `${dayName}, ${day} ${month}`;
 };
 

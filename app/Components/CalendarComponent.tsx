@@ -4,6 +4,7 @@ import Animated from "react-native-reanimated";
 import { FONTS } from "../Constants/Theme";
 import useCalendar from "../Hooks/useCalendar";
 import useThemeColors from "../Hooks/useThemeMode";
+import { useAppContext } from "../Contexts/ThemeProvider";
 
 interface CalendarProps {
   selectedDate: string;
@@ -63,6 +64,7 @@ const CalendarComponent: React.FC<CalendarProps> = ({
 export default CalendarComponent;
 
 const styles = () => {
+  const { theme } = useAppContext();
   const colors = useThemeColors();
 
   return StyleSheet.create({
@@ -92,7 +94,10 @@ const styles = () => {
     },
     dateText: {
       fontSize: 16,
-      color: colors.text,
+      color:
+        theme === "light"
+          ? "rgba(255, 255, 255, 0.8)"
+          : "rgba(255, 255, 255, 0.7)",
       fontFamily: FONTS.Medium,
       textAlign: "center",
     },

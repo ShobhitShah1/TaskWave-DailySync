@@ -162,9 +162,9 @@ const GridView: FC<IListViewProps> = ({
 
 const styles = StyleSheet.create({
   cardContainer: {
-    margin: 5,
+    marginVertical: 5,
     height: 130,
-    width: "48%",
+    width: "48.5%",
     borderRadius: 15,
     overflow: "hidden",
   },

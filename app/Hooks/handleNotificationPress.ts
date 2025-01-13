@@ -1,12 +1,15 @@
 import { Linking, NativeModules } from "react-native";
 import { showMessage } from "react-native-flash-message";
-import { Contact, Notification } from "../Types/Interface";
+import { Notification } from "../Types/Interface";
 
 const { SendMessagesModule } = NativeModules;
 
 const parseContacts = (toContact: any): string[] => {
   try {
-    const contacts: Contact[] = JSON.parse(toContact);
+    const contacts = Array.isArray(toContact)
+      ? toContact
+      : JSON.parse(toContact);
+
     return Array.isArray(contacts)
       ? contacts.map((contact) => contact.number)
       : [];

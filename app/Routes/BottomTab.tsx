@@ -253,7 +253,7 @@ const BottomTab = () => {
               corners={{ bottomEnd: true, bottomStart: true }}
             >
               <Pressable
-                style={styles.addButton}
+                style={[styles.addButton, { backgroundColor: colors.darkBlue }]}
                 onPress={handlePresentModalPress}
               >
                 <Text style={styles.addButtonText}>+</Text>
@@ -394,7 +394,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "rgba(64, 93, 240, 1)",
     shadowColor: "rgba(71, 134, 249, 1)",
 
     justifyContent: "center",

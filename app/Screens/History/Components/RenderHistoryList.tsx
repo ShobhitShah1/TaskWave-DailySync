@@ -135,7 +135,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                         },
                       ]}
                     >
-                      {formatDate(notification.date)}
+                      {formatDate(notification.date, true)}
                     </Text>
                   </View>
                   <View style={styles.timeIconContainer}>

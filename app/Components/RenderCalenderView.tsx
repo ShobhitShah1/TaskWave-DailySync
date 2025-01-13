@@ -21,7 +21,7 @@ const RenderCalenderView: FC<CalenderProps> = ({
   const colors = useThemeColors();
 
   const isSelected = item.formattedDate === selectedDate;
-  const backgroundColor = isSelected ? "rgba(38, 107, 235, 1)" : "transparent";
+  const backgroundColor = isSelected ? colors.lightBlue : "transparent";
 
   return (
     <Pressable

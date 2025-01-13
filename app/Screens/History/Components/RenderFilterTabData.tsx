@@ -96,6 +96,10 @@ const styles = () => {
     },
     tabTitle: {
       rowGap: 10,
+      width: "100%",
+      alignSelf: "center",
+      textAlign: "center",
+      justifyContent: "center",
       fontFamily: FONTS.Medium,
     },
     badgeContainer: {

@@ -9101,9 +9101,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-curved-bottom-bar@npm:^3.3.1":
-  version: 3.4.0
-  resolution: "react-native-curved-bottom-bar@npm:3.4.0"
+"react-native-curved-bottom-bar@npm:^3.4.1":
+  version: 3.4.1
+  resolution: "react-native-curved-bottom-bar@npm:3.4.1"
   dependencies:
     d3-shape: "npm:^3.2.0"
     react-native-size-scaling: "npm:^0.5.1"
@@ -9112,7 +9112,7 @@ __metadata:
     react: "*"
     react-native: "*"
     react-native-svg: "*"
-  checksum: 10c0/7d8fb02c221ea13175efbd4b2a7de0c1016ff22a13381e4627fe3285815e403cd884b44d8a036b9bc3cbc28b29d494682ab5d6214622993346f71d0af8ce9135
+  checksum: 10c0/5e5b4f34912f071847fe678dafe40da265abca772e53b4c708b8912e6f8a9d35e9763f5cce0d2bb2efb33bd94d4195c9a8026dc7694cd6b4dff688a7d93c926b
   languageName: node
   linkType: hard
 
@@ -10678,7 +10678,7 @@ __metadata:
     react-native: "npm:0.74.5"
     react-native-blob-util: "npm:^0.19.11"
     react-native-contacts: "npm:^8.0.4"
-    react-native-curved-bottom-bar: "npm:^3.3.1"
+    react-native-curved-bottom-bar: "npm:^3.4.1"
     react-native-document-picker: "npm:^9.3.1"
     react-native-flash-message: "npm:^0.4.2"
     react-native-gesture-handler: "npm:~2.16.1"

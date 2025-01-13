@@ -32,7 +32,7 @@
     "react-native": "0.74.5",
     "react-native-blob-util": "^0.19.11",
     "react-native-contacts": "^8.0.4",
-    "react-native-curved-bottom-bar": "^3.3.1",
+    "react-native-curved-bottom-bar": "^3.4.1",
     "react-native-document-picker": "^9.3.1",
     "react-native-flash-message": "^0.4.2",
     "react-native-gesture-handler": "~2.16.1",

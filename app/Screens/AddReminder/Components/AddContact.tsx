@@ -23,7 +23,10 @@ const AddContact: FC<AddContactProps> = ({
       onPress={onContactPress}
       style={[
         style.container,
-        { backgroundColor: colors.scheduleReminderCardBackground },
+        {
+          backgroundColor: colors.scheduleReminderCardBackground,
+          paddingLeft: selectedContacts.length === 0 ? 15 : 5,
+        },
       ]}
     >
       {selectedContacts.length === 0 ? (
@@ -69,7 +72,7 @@ const styles = () => {
       width: "100%",
       marginBottom: 15,
       alignItems: "center",
-      paddingHorizontal: 15,
+      paddingRight: 15,
       flexDirection: "row",
       justifyContent: "space-between",
       borderRadius: SIZE.listBorderRadius,

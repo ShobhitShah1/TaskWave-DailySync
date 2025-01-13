@@ -19,6 +19,7 @@ const ic_phone = require("../../assets/Icons/ic_phone.png");
 const ic_instagram = require("../../assets/Icons/ic_instagram.png");
 const ic_telegram = require("../../assets/Icons/ic_telegram.png");
 const ic_notes = require("../../assets/Icons/ic_notes.png");
+
 // Glow
 const ic_gmailGlow = require("../../assets/Icons/ic_gmailGlow.png");
 const ic_smsGlow = require("../../assets/Icons/ic_smsGlow.png");
@@ -83,6 +84,9 @@ const HIW_whatsapp_dark = require("../../assets/Images/HIW_whatsapp_dark.png");
 
 // Animation
 const success_animation = require("../../assets/Animations/success_animation.json");
+
+// Sound
+const sound1 = require("../../assets/Sound/sound1.mp3");
 
 export default {
   ic_home,
@@ -162,4 +166,7 @@ export default {
 
   // Animation
   success_animation,
+
+  // Sound
+  sound1,
 };

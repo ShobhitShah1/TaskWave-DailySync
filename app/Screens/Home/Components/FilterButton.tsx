@@ -9,6 +9,7 @@ import { useAppContext } from "../../../Contexts/ThemeProvider";
 import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
 import { NotificationType } from "../../../Types/Interface";
 import styles from "../styles";
+import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface FilterButtonProps {
   data: any;
@@ -20,6 +21,7 @@ interface FilterButtonProps {
 export const FilterButton = memo(
   ({ onPress, data, selectedFilter, backgroundColor }: FilterButtonProps) => {
     const style = styles();
+    const colors = useThemeColors();
     const { theme } = useAppContext();
 
     const isSelected = selectedFilter === data?.type;
@@ -65,6 +67,11 @@ export const FilterButton = memo(
         >
           <Image
             source={isSelected ? data?.glowIcon : data?.icon}
+            tintColor={
+              selectedFilter !== "gmail" && data.type === "gmail"
+                ? colors.white
+                : undefined
+            }
             style={[
               style.filterIcon,
               {

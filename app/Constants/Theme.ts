@@ -30,7 +30,7 @@ const ColorGroups = {
     },
     gmail: {
       primary: "rgba(255, 248, 248, 1)",
-      background: "rgba(241, 68, 64, 0.3)",
+      background: "rgba(241, 68, 64, 0.5)",
       dark: "rgba(190, 11, 7, 0.4)",
       text: "rgba(241, 68, 64, 1)",
       lightDark: "rgba(241, 68, 64, 1)",
@@ -62,6 +62,7 @@ const ColorGroups = {
     yellow: "rgba(246, 255, 0, 1)",
     blue: "rgba(48, 169, 255, 1)",
     darkBlue: "rgba(64, 93, 240, 1)",
+    lightBlue: "rgba(38, 107, 235, 1)",
   },
 };
 
@@ -124,6 +125,7 @@ export const LightThemeColors = {
   yellow: ColorGroups.accent.yellow,
   blue: ColorGroups.accent.blue,
   darkBlue: ColorGroups.accent.darkBlue,
+  lightBlue: ColorGroups.accent.lightBlue,
   previewBackground: "rgba(236, 236, 236, 1)",
   ...CommunicationPlatformColors,
 };
@@ -151,6 +153,7 @@ export const DarkThemeColors = {
   yellow: ColorGroups.accent.yellow,
   blue: ColorGroups.accent.blue,
   darkBlue: ColorGroups.accent.darkBlue,
+  lightBlue: ColorGroups.accent.lightBlue,
   previewBackground: "rgba(63, 65, 69, 1)",
   ...CommunicationPlatformColors,
 };

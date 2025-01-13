@@ -69,7 +69,7 @@ const styles = () => {
       justifyContent: "center",
     },
     emptyTextContainer: {
-      marginVertical: 10,
+      marginBottom: 10,
       height: "50%",
       justifyContent: "center",
       alignItems: "center",

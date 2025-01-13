@@ -72,12 +72,17 @@ const RenderSheetView = ({
             >
               <Image
                 resizeMode="contain"
+                tintColor={
+                  selectedCategory !== "gmail" && res.type === "gmail"
+                    ? colors.white
+                    : undefined
+                }
                 source={isSelected ? res.glowIcon : res.icon}
                 style={[
                   styles.sheetSuggestionImage,
                   {
-                    width: isSelected ? "130%" : "55%",
-                    height: isSelected ? "130%" : "55%",
+                    width: isSelected ? "135%" : "55%",
+                    height: isSelected ? "135%" : "55%",
                     overflow: "visible",
                   },
                 ]}

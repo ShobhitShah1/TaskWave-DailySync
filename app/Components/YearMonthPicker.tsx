@@ -1,3 +1,4 @@
+import { BlurView } from "expo-blur";
 import React, { memo, useCallback, useMemo, useState } from "react";
 import {
   Dimensions,
@@ -17,9 +18,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { FONTS, SIZE } from "../Constants/Theme";
+import { useAppContext } from "../Contexts/ThemeProvider";
 import useThemeColors from "../Hooks/useThemeMode";
-import { BlurView } from "expo-blur";
-import { Shadow } from "react-native-shadow-2";
 
 interface YearMonthPickerProps {
   isVisible: boolean;
@@ -100,6 +100,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
     isSelected,
     onSelect,
   }) => {
+    const { theme } = useAppContext();
     const itemScale = useSharedValue(1);
 
     const itemAnimatedStyle = useAnimatedStyle(() => ({
@@ -110,7 +111,11 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       <Pressable
         style={[
           styles.pickerItem,
-          isSelected && { backgroundColor: "rgba(209, 209, 209, 0.5)" },
+          isSelected && {
+            backgroundColor: `rgba(209, 209, 209, ${
+              theme === "dark" ? 0.1 : 0.5
+            })`,
+          },
         ]}
         onPress={() => {
           itemScale.value = withTiming(1.1, { duration: 100 }, () => {
@@ -126,7 +131,13 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
           <Text
             style={[
               styles.pickerItemText,
-              { color: isSelected ? colors.darkBlue : "rgba(48, 51, 52, 0.7)" },
+              {
+                color: isSelected
+                  ? colors.darkBlue
+                  : theme === "dark"
+                  ? colors.white
+                  : "rgba(48, 51, 52, 0.7)",
+              },
               isSelected && styles.selectedItemText,
             ]}
           >
@@ -143,32 +154,37 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       selectedValue: number,
       onSelectValue: (value: number) => void,
       valueToLabel: (value: number) => string
-    ) => (
-      <FlatList
-        data={data}
-        renderItem={({ item }) => (
-          <PickerItem
-            label={valueToLabel(item)}
-            value={item}
-            isSelected={item === selectedValue}
-            onSelect={onSelectValue}
-          />
-        )}
-        keyExtractor={(item) => item.toString()}
-        showsVerticalScrollIndicator={false}
-        snapToInterval={ITEM_HEIGHT}
-        decelerationRate="fast"
-        style={styles.pickerColumn}
-        getItemLayout={(_, index) => ({
-          length: ITEM_HEIGHT,
-          offset: ITEM_HEIGHT * index,
-          index,
-        })}
-        initialScrollIndex={
-          data.indexOf(selectedValue) - Math.floor(VISIBLE_ITEMS / 2)
-        }
-      />
-    ),
+    ) => {
+      const initialScrollIndex =
+        data.indexOf(selectedValue) - Math.floor(VISIBLE_ITEMS / 2) >= 0
+          ? data.indexOf(selectedValue) - Math.floor(VISIBLE_ITEMS / 2)
+          : 0;
+
+      return (
+        <FlatList
+          data={data}
+          renderItem={({ item }) => (
+            <PickerItem
+              label={valueToLabel(item)}
+              value={item}
+              isSelected={item === selectedValue}
+              onSelect={onSelectValue}
+            />
+          )}
+          keyExtractor={(item) => item.toString()}
+          showsVerticalScrollIndicator={false}
+          snapToInterval={ITEM_HEIGHT}
+          decelerationRate="fast"
+          style={styles.pickerColumn}
+          getItemLayout={(_, index) => ({
+            length: ITEM_HEIGHT,
+            offset: ITEM_HEIGHT * index,
+            index,
+          })}
+          initialScrollIndex={initialScrollIndex}
+        />
+      );
+    },
     [colors]
   );
 
@@ -178,8 +194,8 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       onBackdropPress={onCancel}
       onBackButtonPress={onCancel}
       backdropOpacity={1}
-      animationIn="fadeIn"
-      animationOut="fadeOut"
+      animationIn="slideInUp"
+      animationOut="slideOutDown"
       customBackdrop={
         <Pressable onPress={onCancel} style={{ flex: 1, height: height }}>
           <BlurView
@@ -192,7 +208,6 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       }
       hasBackdrop
       useNativeDriverForBackdrop
-      statusBarTranslucent
       hideModalContentWhileAnimating
       deviceHeight={height + ((StatusBar.currentHeight || 30) + 50)}
       useNativeDriver
@@ -214,9 +229,9 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
           style={[
             styles.modalView,
             {
-              backgroundColor: colors.white,
+              backgroundColor: colors.background,
               shadowColor: colors.darkBlue,
-              shadowOffset: { width: 0, height: 0 },
+              shadowOffset: { width: 0, height: -10 },
               shadowOpacity: 1,
               shadowRadius: 10,
               elevation: 5,
@@ -269,13 +284,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalView: {
+    backgroundColor: "red",
     borderRadius: SIZE.listBorderRadius,
     padding: 20,
     alignItems: "center",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    // elevation: 5,
     width: SCREEN_WIDTH * 0.85,
   },
   pickerContainer: {
