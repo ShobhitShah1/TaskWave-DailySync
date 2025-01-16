@@ -109,25 +109,25 @@ const ListView: FC<IListViewProps> = ({
             </View>
           </View>
           <View style={styles.actionsContainer}>
-            <Pressable onPress={onCardPress} style={{ paddingHorizontal: 5 }}>
+            <Pressable onPress={onCardPress}>
               <Image
+                resizeMode="contain"
                 tintColor={typeColor}
                 source={AssetsPath.ic_view}
                 style={styles.actionIcon}
               />
             </Pressable>
-            <Pressable onPress={onEditPress} style={{ paddingHorizontal: 5 }}>
+            <Pressable onPress={onEditPress} style={{ paddingHorizontal: 6 }}>
               <Image
+                resizeMode="contain"
                 tintColor={typeColor}
                 source={AssetsPath.ic_edit}
                 style={styles.actionIcon}
               />
             </Pressable>
-            <Pressable
-              onPress={onDuplicatePress}
-              style={{ paddingHorizontal: 5 }}
-            >
+            <Pressable onPress={onDuplicatePress}>
               <Image
+                resizeMode="contain"
                 tintColor={typeColor}
                 source={AssetsPath.ic_duplicate}
                 style={styles.actionIcon}

@@ -14,19 +14,21 @@ import {
   FlatList,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { showMessage } from "react-native-flash-message";
-import Animated from "react-native-reanimated";
+import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import RenderCalenderView from "../../Components/RenderCalenderView";
 import YearMonthPicker from "../../Components/YearMonthPicker";
 import AssetsPath from "../../Constants/AssetsPath";
 import { categoriesConfig } from "../../Constants/CategoryConfig";
 import { FONTS, SIZE } from "../../Constants/Theme";
+import { useAppContext } from "../../Contexts/ThemeProvider";
 import useCalendar from "../../Hooks/useCalendar";
 import useReminder from "../../Hooks/useReminder";
 import useThemeColors from "../../Hooks/useThemeMode";
@@ -38,7 +40,6 @@ import { formatDate } from "../AddReminder/ReminderScheduled";
 import HomeHeader from "../Home/Components/HomeHeader";
 import RenderFilterTabData from "./Components/RenderFilterTabData";
 import RenderHistoryList from "./Components/RenderHistoryList";
-import { useAppContext } from "../../Contexts/ThemeProvider";
 
 const History = () => {
   const style = styles();
@@ -53,6 +54,7 @@ const History = () => {
   const [activeTabType, setActiveTabType] = useState("all");
   const [loading, setLoading] = useState(true);
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const notificationCounts = useMemo(
     () => countNotificationsByType(notifications),
@@ -114,101 +116,143 @@ const History = () => {
   );
 
   const findSelectedIndex = () => {
-    return daysArray.findIndex((item) => item.formattedDate === selectedDate);
+    const index = daysArray.findIndex(
+      (item) => item.formattedDate === selectedDate
+    );
+    return index !== -1 ? index : 0;
   };
 
-  const scrollToIndex = async () => {
-    if (flatListRef.current && isFocus) {
-      const index = findSelectedIndex();
-      if (index !== -1) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+  const scrollToIndex = useCallback(() => {
+    try {
+      if (flatListRef.current && isFocus) {
+        const index = findSelectedIndex();
         flatListRef.current.scrollToIndex({
           animated: true,
-          index,
+          index: index !== -1 ? index : 0,
           viewPosition: 0.5,
         });
       }
-    }
-  };
+    } catch (error) {}
+  }, [flatListRef, isFocus]);
+
+  const handleScrollToIndexFailed = useCallback(
+    (info: {
+      index: number;
+      highestMeasuredFrameIndex: number;
+      averageItemLength: number;
+    }) => {
+      if (flatListRef.current) {
+        setTimeout(() => {
+          if (flatListRef.current) {
+            flatListRef.current.scrollToIndex({
+              index: info.index,
+              animated: true,
+              viewPosition: 0.5,
+            });
+          }
+        }, 100);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
-    scrollToIndex();
+    if (isFocus) {
+      scrollToIndex();
+    }
   }, [selectedDate, isFocus, daysArray]);
 
   useEffect(() => {
-    setLoading(filteredNotifications?.length === 0);
-    loadNotifications();
-  }, [selectedDate, activeTabType]);
-
-  const loadNotifications = async () => {
-    try {
-      const allNotifications = await getAllNotifications();
-
-      if (allNotifications && allNotifications.length > 0) {
-        const [day, month, year] = selectedDate.split("-");
-        const selectedDateObj = new Date(`${year}-${month}-${day}`);
-
-        if (isNaN(selectedDateObj.getTime())) {
-          showMessage({
-            message: `Invalid selected date: ${selectedDate?.toString()}`,
-            type: "danger",
-          });
-          return;
-        }
-
-        const filteredByDate = allNotifications.filter((notification) => {
-          const notificationDate = new Date(
-            notification.date
-          ).toLocaleDateString();
-          const selected = selectedDateObj.toLocaleDateString();
-          return notificationDate === selected;
-        });
-
-        setNotifications(filteredByDate);
-
-        if (filteredByDate.length !== 0) {
-          setNotifications(filteredByDate);
-
-          const data =
-            activeTabType === "all"
-              ? filteredByDate
-              : selectedType
-              ? filteredByDate.filter(
-                  (notification) => notification.type === selectedType
-                )
-              : filteredByDate;
-
-          setFilteredNotifications(data);
-        } else {
-          setNotifications([]);
-          setFilteredNotifications([]);
-        }
-      } else {
-        setNotifications([]);
-      }
-    } catch (error: any) {
-      showMessage({
-        message: error?.message?.toString(),
-        type: "danger",
-      });
-    } finally {
-      setLoading(false);
+    if (isFocus) {
+      setLoading(notifications?.length === 0);
+      loadNotifications();
     }
-  };
-
-  const handleTabPress = useCallback((type: string) => {
-    setActiveTabType(type);
-  }, []);
+  }, [selectedDate, activeTabType, isFocus]);
 
   useEffect(() => {
-    try {
-      setLoading(filteredNotifications?.length === 0);
+    filterNotifications();
+  }, [activeTabType, filterTabData]);
 
-      const data = selectedType
+  const filterNotificationsByDate = useCallback(
+    (allNotifications: Notification[]) => {
+      const [day, month, year] = selectedDate.split("-");
+      const selectedDateObj = new Date(`${year}-${month}-${day}`);
+
+      if (isNaN(selectedDateObj.getTime())) {
+        showMessage({
+          message: `Invalid selected date: ${selectedDate}`,
+          type: "danger",
+        });
+        return [];
+      }
+
+      return allNotifications.filter((notification) => {
+        const notificationDate = new Date(
+          notification.date
+        ).toLocaleDateString();
+        const selected = selectedDateObj.toLocaleDateString();
+        return notificationDate === selected;
+      });
+    },
+    [selectedDate]
+  );
+
+  const applyTypeFilter = useCallback(
+    (notifications: Notification[]) => {
+      if (activeTabType === "all") return notifications;
+      return selectedType
         ? notifications.filter(
             (notification) => notification.type === selectedType
           )
         : notifications;
+    },
+    [activeTabType, selectedType]
+  );
+
+  const loadNotifications = useCallback(async () => {
+    try {
+      const allNotifications = await getAllNotifications();
+      if (!allNotifications?.length) {
+        setNotifications([]);
+        setFilteredNotifications([]);
+        return;
+      }
+
+      const dateFiltered = filterNotificationsByDate(allNotifications);
+      const typeFiltered = applyTypeFilter(dateFiltered);
+
+      setNotifications(dateFiltered);
+      setFilteredNotifications(typeFiltered);
+
+      return typeFiltered;
+    } catch (error) {
+      showMessage({
+        message: error instanceof Error ? error.message : "An error occurred",
+        type: "danger",
+      });
+      setNotifications([]);
+      setFilteredNotifications([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    selectedDate,
+    activeTabType,
+    selectedType,
+    filterNotificationsByDate,
+    applyTypeFilter,
+  ]);
+
+  const filterNotifications = useCallback(async () => {
+    try {
+      const data =
+        activeTabType === "all"
+          ? notifications
+          : selectedType
+          ? notifications.filter(
+              (notification) => notification.type === selectedType
+            )
+          : notifications;
 
       setFilteredNotifications(data);
     } catch (error: any) {
@@ -217,7 +261,11 @@ const History = () => {
         type: "danger",
       });
     }
-  }, [activeTabType, notifications, filterTabData]);
+  }, [activeTabType, selectedType, notifications]);
+
+  const handleTabPress = useCallback((type: string) => {
+    setActiveTabType(type);
+  }, []);
 
   const deleteReminder = useCallback(async (id?: string) => {
     if (!id) {
@@ -240,7 +288,7 @@ const History = () => {
           text: "Delete",
           onPress: async () => {
             await deleteNotification(id);
-            loadNotifications();
+            await loadNotifications();
           },
         },
       ]
@@ -248,18 +296,30 @@ const History = () => {
   }, []);
 
   const handleDateChange = (year: number, month: number) => {
-    const currentDay = selectedDateObject.getDate();
+    try {
+      const currentDay = selectedDateObject.getDate();
 
-    const newDate = new Date(year, month - 1, currentDay);
+      const newDate = new Date(year, month - 1, currentDay);
 
-    const formattedDate = newDate
-      .toLocaleDateString("en-GB")
-      .replace(/\//g, "-");
+      const formattedDate = newDate
+        .toLocaleDateString("en-GB")
+        .replace(/\//g, "-");
 
-    setSelectedDate(formattedDate);
-    setSelectedDateObject(newDate);
-    setCurrentMonth(newDate);
-    setShowDateAndYearModal(false);
+      setSelectedDate(formattedDate);
+      setSelectedDateObject(newDate);
+      setCurrentMonth(newDate);
+      setShowDateAndYearModal(false);
+    } catch (error: any) {
+      showMessage({ message: error?.message?.toString(), type: "danger" });
+    }
+  };
+
+  const RenderEmptyView = () => {
+    return (
+      <View style={style.emptyListView}>
+        <Text style={style.emptyListText}>No Notifications Found</Text>
+      </View>
+    );
   };
 
   return (
@@ -309,6 +369,7 @@ const History = () => {
               ref={flatListRef}
               data={daysArray}
               onLayout={() => scrollToIndex()}
+              onScrollToIndexFailed={handleScrollToIndexFailed}
               onContentSizeChange={() => scrollToIndex()}
               contentContainerStyle={{ gap: 20 }}
               renderItem={({ index, item }) => {
@@ -330,12 +391,8 @@ const History = () => {
             <View style={style.loaderView}>
               <ActivityIndicator color={colors.text} size="large" />
             </View>
-          ) : filteredNotifications?.length === 0 ? (
-            <View style={style.emptyListView}>
-              <Text style={style.emptyListText}>No Notifications Found</Text>
-            </View>
           ) : (
-            <FlashList
+            <Animated.FlatList
               ref={flashListRef}
               extraData={
                 selectedDate ||
@@ -343,11 +400,36 @@ const History = () => {
                 filteredNotifications ||
                 notifications
               }
-              estimatedItemSize={300}
+              refreshControl={
+                <RefreshControl
+                  onRefresh={async () => {
+                    try {
+                      setRefreshing(true);
+                      await loadNotifications();
+                      setRefreshing(false);
+                    } catch (error) {
+                      setRefreshing(false);
+                    }
+                  }}
+                  colors={[colors.text]}
+                  refreshing={refreshing}
+                  progressBackgroundColor={colors.background}
+                />
+              }
+              layout={LinearTransition}
+              itemLayoutAnimation={LinearTransition.springify()
+                .damping(80)
+                .stiffness(200)}
               data={filteredNotifications}
+              onScrollToIndexFailed={() => {}}
               stickyHeaderHiddenOnScroll={true}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 120 }}
+              scrollEventThrottle={16}
+              keyExtractor={(item, index) => item?.id?.toString()}
+              contentContainerStyle={{
+                paddingBottom: 120,
+                flex: filteredNotifications?.length === 0 ? 1 : undefined,
+              }}
               renderItem={({ item }) => (
                 <RenderHistoryList
                   notification={item}
@@ -355,6 +437,7 @@ const History = () => {
                   loadNotifications={loadNotifications}
                 />
               )}
+              ListEmptyComponent={<RenderEmptyView />}
             />
           )}
         </View>

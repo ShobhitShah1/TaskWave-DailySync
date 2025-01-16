@@ -1,5 +1,5 @@
+import * as SystemUI from "expo-system-ui";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { AppState } from "react-native";
 import { MMKV } from "react-native-mmkv";
 import {
   AppContextProps,
@@ -22,6 +22,7 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
   useEffect(() => {
     // setThemeBasedOnTime();
     storeViewMode();
+    storeTheme();
   }, []);
 
   // useEffect(() => {
@@ -48,6 +49,9 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
     try {
       const storedTheme = storage.getString("themeMode");
       const MyTheme: Theme = (storedTheme as Theme) || "light";
+      await SystemUI.setBackgroundColorAsync(
+        MyTheme === "light" ? "#ffffff" : "#303334"
+      );
       setTheme(MyTheme);
     } catch (error: any) {
       throw new Error("Error storing theme mode: " + error.message);
@@ -61,7 +65,7 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
         setViewMode(storedViewMode as ViewMode);
       }
     } catch (error: any) {
-      console.error("Error loading stored preferences:", error.message);
+      throw new Error("Error storing view mode: " + error?.message);
     }
   };
 

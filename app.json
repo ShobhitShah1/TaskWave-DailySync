@@ -7,15 +7,15 @@
     "icon": "./assets/Images/Dailysync_square.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "runtimeVersion": {
         "policy": "appVersion"
       }
     },
     "splash": {
       "image": "./assets/Images/Splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "resizeMode": "cover",
+      "backgroundColor": "#000000"
     },
     "android": {
       "adaptiveIcon": {
@@ -27,15 +27,18 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      "runtimeVersion": "1.0.0"
+      "runtimeVersion": "1.0.0",
+      "splash": {
+        "image": "./assets/Images/Splash.png",
+        "resizeMode": "cover",
+        "backgroundColor": "#000000"
+      }
     },
     "plugins": [
       "expo-font",
       [
         "expo-av",
-        {
-          "microphonePermission": "Allow to access your microphone."
-        }
+        { "microphonePermission": "Allow to access your microphone." }
       ],
       [
         "react-native-permissions",

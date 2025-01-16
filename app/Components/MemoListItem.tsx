@@ -5,6 +5,7 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
+  interpolateColor,
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { useAppContext } from "../Contexts/ThemeProvider";
@@ -17,15 +18,24 @@ const AudioMemoItem = ({
   memo,
   themeColor,
   renderRightIcon,
+  gradientStart = "#FF6B6B",
+  gradientEnd = "#4ECDC4",
 }: {
   memo: Memo;
   themeColor: string;
   renderRightIcon: React.ReactNode;
+  gradientStart?: string;
+  gradientEnd?: string;
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
   const [sound, setSound] = useState<Sound>();
   const [status, setStatus] = useState<AVPlaybackStatus>();
+
+  const getColorForIndex = (index: number, totalLines: number) => {
+    const progress = index / totalLines;
+    return interpolateColor(progress, [0, 1], [gradientStart, gradientEnd]);
+  };
 
   useEffect(() => {
     const loadSound = async () => {
@@ -63,7 +73,7 @@ const AudioMemoItem = ({
 
     status?.isLoaded && status.isPlaying
       ? await sound.pauseAsync()
-      : await sound.replayAsync();
+      : await sound.playAsync();
   };
 
   const formatMillis = (millis: number) => {
@@ -82,7 +92,7 @@ const AudioMemoItem = ({
       );
       const values = metering.slice(meteringIndex, nextMeteringIndex);
       const average = values.reduce((sum, a) => sum + a, 0) / values.length;
-      lines.push(average);
+      lines.push({ value: average, color: getColorForIndex(i, numLines) });
     }
     return lines;
   };
@@ -133,17 +143,17 @@ const AudioMemoItem = ({
                     styles.waveLine,
                     {
                       height: interpolate(
-                        db,
+                        db.value,
                         [-50, 0],
                         [5, 40],
                         Extrapolation.CLAMP
                       ),
                       backgroundColor:
                         progress > index / waveformData.length
-                          ? themeColor
+                          ? db.color // Use gradient color when played
                           : theme === "dark"
-                          ? "rgba(255, 255, 255, 0.7)"
-                          : "rgba(91, 87, 87, 0.7)",
+                          ? "rgba(255, 255, 255, 0.3)"
+                          : "rgba(91, 87, 87, 0.3)",
                     },
                   ]}
                 />
@@ -163,15 +173,7 @@ const AudioMemoItem = ({
         <View>{renderRightIcon}</View>
       </View>
       {memo.uri && (
-        <Text
-          style={{
-            marginTop: 10,
-            fontFamily: FONTS.Medium,
-            textAlign: "right",
-            color: colors.text,
-            fontSize: 12,
-          }}
-        >
+        <Text style={[styles.durationText, { color: colors.text }]}>
           {formatMillis(position || 0)} / {formatMillis(duration || 0)}
         </Text>
       )}
@@ -215,6 +217,12 @@ const styles = StyleSheet.create({
     height: 30,
     backgroundColor: "gainsboro",
     borderRadius: 20,
+  },
+  durationText: {
+    marginTop: 10,
+    fontFamily: FONTS.Medium,
+    textAlign: "right",
+    fontSize: 12,
   },
 });
 

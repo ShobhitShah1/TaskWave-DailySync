@@ -139,7 +139,8 @@ const AddReminder = () => {
     isLoading: false,
     isRefreshing: false,
   });
-  const { createViewColor } = useNotificationIconColors(notificationType);
+  const { createViewColor, iconColor } =
+    useNotificationIconColors(notificationType);
   const { requestPermission, checkPermissionStatus } = useContactPermission();
 
   const getExistingNotificationData = async () => {
@@ -263,7 +264,7 @@ const AddReminder = () => {
       bottom: size,
       left: size,
       right: size,
-      backgroundColor: `rgba(34, 200, 66, ${interpolate(
+      backgroundColor: `rgba(${createViewColor}, ${interpolate(
         metering.value,
         [-160, -60, -10],
         [0.7, 0.3, 0.7]
@@ -691,10 +692,29 @@ const AddReminder = () => {
 
           {(notificationType === "whatsapp" ||
             notificationType === "whatsappBusiness") && (
-            <View style={style.recorderContainer}>
+            <Animated.View
+              layout={LinearTransition}
+              style={[
+                style.recorderContainer,
+                { marginTop: memos.length === 0 ? 0 : 5 },
+              ]}
+            >
+              {memos.length !== 0 && (
+                <Pressable
+                  onPress={() => setMemos([])}
+                  style={[
+                    style.memoRemoveButton,
+                    { backgroundColor: createViewColor },
+                  ]}
+                >
+                  <Text style={style.memoClose}>X</Text>
+                </Pressable>
+              )}
               <AudioMemoItem
                 memo={memos?.[0] || []}
                 themeColor={createViewColor}
+                gradientEnd={createViewColor}
+                gradientStart={iconColor}
                 renderRightIcon={
                   <View>
                     {recording && (
@@ -717,7 +737,7 @@ const AddReminder = () => {
                   </View>
                 }
               />
-            </View>
+            </Animated.View>
           )}
 
           <AddScheduleFrequency

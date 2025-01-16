@@ -4,21 +4,22 @@ import {
   Theme,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import * as ExpoSplashScreen from "expo-splash-screen";
+import * as SystemUI from "expo-system-ui";
 import React from "react";
 import { StatusBar, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { storage, useAppContext } from "../Contexts/ThemeProvider";
+import useThemeColors from "../Hooks/useThemeMode";
 import AddReminder from "../Screens/AddReminder/AddReminder";
 import ReminderScheduled from "../Screens/AddReminder/ReminderScheduled";
 import OnBoarding from "../Screens/OnBoarding/Index";
 import ReminderPreview from "../Screens/Preview/ReminderPreview";
 import AboutApp from "../Screens/Setting/AboutApp";
-import useThemeColors from "../Hooks/useThemeMode";
+import HowAppWorks from "../Screens/Setting/HowAppWorks";
+import NotificationSound from "../Screens/Setting/NotificationSound";
 import { RootStackParamList } from "../Types/Interface";
 import BottomTab from "./BottomTab";
-import HowAppWorks from "../Screens/Setting/HowAppWorks";
-import * as SplashScreen from "expo-splash-screen";
-import NotificationSound from "../Screens/Setting/NotificationSound";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -42,8 +43,9 @@ const Routes = () => {
       theme={MyTheme}
       onReady={() => {
         setTimeout(() => {
-          SplashScreen.hideAsync();
+          ExpoSplashScreen.hideAsync();
         }, 500);
+        SystemUI.setBackgroundColorAsync(colors.background);
       }}
     >
       <SafeAreaView style={styles.container}>

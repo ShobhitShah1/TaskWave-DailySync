@@ -1,8 +1,8 @@
 import notifee, { EventType } from "@notifee/react-native";
 import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
+import * as ExpoSplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { LogBox, StatusBar, StyleSheet, Text } from "react-native";
+import { StatusBar, StyleSheet, Text } from "react-native";
 import FlashMessage, { showMessage } from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,8 +14,12 @@ import updateToNextDate from "./app/Hooks/updateToNextDate";
 import useReminder from "./app/Hooks/useReminder";
 import Routes from "./app/Routes/Routes";
 import { Notification } from "./app/Types/Interface";
+import * as SystemUI from "expo-system-ui";
+import SplashScreen from "./app/Screens/OnBoarding/SplashScreen";
 
-SplashScreen.preventAutoHideAsync();
+ExpoSplashScreen.preventAutoHideAsync();
+
+SystemUI.setBackgroundColorAsync("transparent");
 
 interface TextWithDefaultProps extends Text {
   defaultProps?: { allowFontScaling?: boolean };
@@ -25,10 +29,6 @@ interface TextWithDefaultProps extends Text {
   ...((Text as unknown as TextWithDefaultProps).defaultProps || {}),
   allowFontScaling: false,
 };
-
-if (__DEV__) {
-  LogBox.ignoreAllLogs();
-}
 
 notifee.onBackgroundEvent(async ({ type, detail }) => {
   try {
@@ -75,27 +75,33 @@ export default function App() {
 
   const [loaded, error] = useFonts({
     "ClashGrotesk-Bold": require("./assets/Fonts/ClashGrotesk-Bold.otf"),
-    "ClashGrotesk-Light": require("./assets/Fonts/ClashGrotesk-Light.otf"),
     "ClashGrotesk-Medium": require("./assets/Fonts/ClashGrotesk-Medium.otf"),
     "ClashGrotesk-Regular": require("./assets/Fonts/ClashGrotesk-Regular.otf"),
     "ClashGrotesk-Semibold": require("./assets/Fonts/ClashGrotesk-Semibold.otf"),
   });
 
   useEffect(() => {
-    notifee
-      .getInitialNotification()
-      .then(async (res) => {
-        if (res?.notification?.data) {
-          await handleNotificationPress(res?.notification?.data as any);
-          notifee.cancelNotification(res?.notification?.id as string);
-        }
-      })
-      .catch((error) => {
-        showMessage({
-          message: String(error?.message || error),
-          type: "danger",
+    try {
+      notifee
+        .getInitialNotification()
+        .then(async (res) => {
+          if (res?.notification?.data) {
+            await handleNotificationPress(res?.notification?.data as any);
+            notifee.cancelNotification(res?.notification?.id as string);
+          }
+        })
+        .catch((error) => {
+          showMessage({
+            message: String(error?.message || error),
+            type: "danger",
+          });
         });
+    } catch (error: any) {
+      showMessage({
+        message: String(error?.message || error),
+        type: "danger",
       });
+    }
   }, []);
 
   useEffect(() => {
@@ -138,7 +144,7 @@ export default function App() {
   }, []);
 
   if (!loaded || error) {
-    return;
+    return <SplashScreen />;
   }
 
   return (

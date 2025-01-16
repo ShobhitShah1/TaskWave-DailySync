@@ -149,6 +149,22 @@ const styles = () => {
       fontFamily: FONTS.Medium,
       textAlign: "center",
     },
+    memoRemoveButton: {
+      width: 20,
+      height: 20,
+      top: -10,
+      right: 0,
+      justifyContent: "center",
+      alignItems: "center",
+      position: "absolute",
+      borderRadius: 500,
+      zIndex: 99999,
+    },
+    memoClose: {
+      color: colors.text,
+      fontFamily: FONTS.SemiBold,
+      fontSize: 12,
+    },
 
     // recorder
     recorderContainer: {

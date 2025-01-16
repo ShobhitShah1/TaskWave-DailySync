@@ -26,6 +26,7 @@
     "expo-splash-screen": "~0.27.7",
     "expo-sqlite": "15.0.5",
     "expo-status-bar": "~1.12.1",
+    "expo-system-ui": "~3.0.7",
     "lottie-react-native": "6.7.0",
     "moment": "^2.30.1",
     "react": "18.2.0",

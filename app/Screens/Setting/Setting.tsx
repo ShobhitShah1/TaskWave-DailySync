@@ -38,14 +38,18 @@ const Settings = () => {
       title: "Share",
       icon: AssetsPath.ic_share,
       onPress: () => {
-        Share.open({ message: SHARE_MESSAGE });
+        try {
+          Share.open({ message: SHARE_MESSAGE });
+        } catch (error) {}
       },
     },
     {
       title: "Privacy Policy",
       icon: AssetsPath.ic_support,
       onPress: () => {
-        Linking.openURL(PRIVACY_POLICY);
+        try {
+          Linking.openURL(PRIVACY_POLICY);
+        } catch (error) {}
       },
     },
     {
@@ -58,7 +62,9 @@ const Settings = () => {
       title: "Contact us",
       icon: AssetsPath.ic_contact,
       onPress: () => {
-        Linking.openURL(CONTACT_US);
+        try {
+          Linking.openURL(CONTACT_US);
+        } catch (error) {}
       },
     },
     {
@@ -77,7 +83,9 @@ const Settings = () => {
       title: "Portfolio",
       icon: AssetsPath.ic_portfolio,
       onPress: () => {
-        Linking.openURL(PORTFOLIO_URL);
+        try {
+          Linking.openURL(PORTFOLIO_URL);
+        } catch (error) {}
       },
     },
   ];

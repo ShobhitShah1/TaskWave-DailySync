@@ -1,13 +1,9 @@
-import notifee, {
-  AndroidImportance,
-  AndroidVisibility,
-} from "@notifee/react-native";
+import notifee from "@notifee/react-native";
 import { useIsFocused } from "@react-navigation/native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Button,
   FlatList,
   Pressable,
   RefreshControl,
@@ -25,11 +21,7 @@ import YearMonthPicker from "../../Components/YearMonthPicker";
 import isGridView from "../../Hooks/isGridView";
 import useCalendar from "../../Hooks/useCalendar";
 import useNotificationPermission from "../../Hooks/useNotificationPermission";
-import {
-  CHANNEL_ID,
-  CHANNEL_NAME,
-  default as useDatabase,
-} from "../../Hooks/useReminder";
+import { default as useDatabase } from "../../Hooks/useReminder";
 import useThemeColors from "../../Hooks/useThemeMode";
 import {
   Notification,
@@ -118,29 +110,31 @@ const Home = () => {
   }, [permissionStatus]);
 
   useEffect(() => {
-    notifee
-      .isBatteryOptimizationEnabled()
-      .then((isBatteryOptimizationEnabled) => {
-        if (isBatteryOptimizationEnabled) {
-          Alert.alert(
-            "Restrictions Detected",
-            "To ensure notifications are delivered, please disable battery optimization for the app.",
-            [
-              {
-                text: "OK, open settings",
-                onPress: async () =>
-                  await notifee.openBatteryOptimizationSettings(),
-              },
-              {
-                text: "Cancel",
-                onPress: () => {},
-                style: "cancel",
-              },
-            ],
-            { cancelable: false }
-          );
-        }
-      });
+    try {
+      notifee
+        .isBatteryOptimizationEnabled()
+        .then((isBatteryOptimizationEnabled) => {
+          if (isBatteryOptimizationEnabled) {
+            Alert.alert(
+              "Restrictions Detected",
+              "To ensure notifications are delivered, please disable battery optimization for the app.",
+              [
+                {
+                  text: "OK, open settings",
+                  onPress: async () =>
+                    await notifee.openBatteryOptimizationSettings(),
+                },
+                {
+                  text: "Cancel",
+                  onPress: () => {},
+                  style: "cancel",
+                },
+              ],
+              { cancelable: false }
+            );
+          }
+        });
+    } catch (error) {}
   }, []);
 
   const onRefresh = useCallback(async () => {

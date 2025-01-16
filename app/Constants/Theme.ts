@@ -163,7 +163,6 @@ export const FONTS = {
   Medium: "ClashGrotesk-Medium",
   Bold: "ClashGrotesk-Bold",
   SemiBold: "ClashGrotesk-Semibold",
-  Light: "ClashGrotesk-Light",
 };
 
 export const SIZE = {

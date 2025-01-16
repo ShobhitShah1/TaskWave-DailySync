@@ -5598,6 +5598,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-system-ui@npm:~3.0.7":
+  version: 3.0.7
+  resolution: "expo-system-ui@npm:3.0.7"
+  dependencies:
+    "@react-native/normalize-colors": "npm:0.74.85"
+    debug: "npm:^4.3.2"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/f0aa251852319d3b8942ef8b01a661f2fa6b21892b2d95a5025231e1c545d419aa46fff8e25f08a2e659a130557810ea28bfff0730129cb307394c80860a9482
+  languageName: node
+  linkType: hard
+
 "expo@npm:~51.0.38":
   version: 51.0.39
   resolution: "expo@npm:51.0.39"
@@ -10672,6 +10684,7 @@ __metadata:
     expo-splash-screen: "npm:~0.27.7"
     expo-sqlite: "npm:15.0.5"
     expo-status-bar: "npm:~1.12.1"
+    expo-system-ui: "npm:~3.0.7"
     lottie-react-native: "npm:6.7.0"
     moment: "npm:^2.30.1"
     react: "npm:18.2.0"

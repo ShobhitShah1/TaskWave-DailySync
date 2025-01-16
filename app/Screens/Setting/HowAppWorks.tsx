@@ -67,7 +67,12 @@ const HowAppWorks = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <HomeHeader hideGrid={true} title="How app works" hideThemeButton />
+      <HomeHeader
+        hideBackButton={false}
+        hideGrid={true}
+        title="How app works"
+        hideThemeButton
+      />
 
       <View style={{ flex: 1, marginVertical: 10 }}>
         <FlatList
