@@ -25,9 +25,9 @@ interface CustomSwitchProps {
 const CustomSwitch: React.FC<CustomSwitchProps> = ({
   isOn,
   onToggle,
-  width = 65,
-  height = 33,
-  iconSize = 18,
+  width = 70,
+  height = 31,
+  iconSize = 16,
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();

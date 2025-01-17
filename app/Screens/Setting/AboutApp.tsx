@@ -11,6 +11,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const AboutApp = () => {
   const style = styles();
   const navigation = useNavigation();
+  const colors = useThemeColors();
+  const { theme } = useAppContext();
 
   return (
     <SafeAreaView style={style.container}>
@@ -47,7 +49,14 @@ const AboutApp = () => {
         </View>
 
         <View style={style.section}>
-          <Text style={style.subtitle}>Just Schedule it</Text>
+          <Text
+            style={[
+              style.subtitle,
+              { color: theme === "dark" ? colors.white : colors.darkBlue },
+            ]}
+          >
+            Just Schedule it
+          </Text>
         </View>
 
         <View style={style.section}>
@@ -129,7 +138,6 @@ const styles = () => {
       alignSelf: "center",
       textAlign: "center",
       fontFamily: FONTS.SemiBold,
-      color: "rgba(64, 93, 240, 1)",
     },
     versionText: {
       fontSize: 18,

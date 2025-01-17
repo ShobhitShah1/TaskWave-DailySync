@@ -15,6 +15,7 @@ const SettingItem: FC<SettingProps> = ({ icon, title, onPress }) => {
   const style = styles();
   const { theme } = useAppContext();
   const colors = useThemeColors();
+  const isLastItems = title === "Portfolio" || title === "How app works";
 
   return (
     <Pressable style={style.itemContainer} onPress={onPress}>
@@ -22,7 +23,10 @@ const SettingItem: FC<SettingProps> = ({ icon, title, onPress }) => {
         <Image
           source={icon}
           tintColor={theme === "dark" ? colors.white : colors.black}
-          style={style.icon}
+          style={{
+            width: isLastItems ? 20 : 22,
+            height: isLastItems ? 20 : 22,
+          }}
           resizeMode="contain"
         />
       </View>
@@ -51,19 +55,17 @@ const styles = () => {
       alignSelf: "center",
       borderWidth: 0.5,
       backgroundColor:
-        theme === "dark" ? "rgba(43, 43, 44, 1)" : "rgba(251, 252, 255, 1)",
+        theme === "dark"
+          ? "rgba(255, 255, 255, 0.1)"
+          : "rgba(251, 252, 255, 1)",
       borderColor:
-        theme === "dark" ? "rgba(99, 99, 99, 1)" : "rgba(211, 218, 252, 1)",
+        theme === "dark" ? "rgba(159, 165, 170, 1)" : "rgba(211, 218, 252, 1)",
     },
     iconContainer: {
       width: 30,
       height: 30,
       justifyContent: "center",
       alignItems: "center",
-    },
-    icon: {
-      width: 22,
-      height: 22,
     },
     title: {
       flex: 1,
