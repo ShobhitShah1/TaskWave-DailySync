@@ -99,7 +99,9 @@ const BottomTab = () => {
               selectedTab === routeName
             )}
             tintColor={
-              selectedTab === routeName ? colors.white : colors.grayTitle
+              selectedTab === routeName
+                ? colors.white
+                : "rgba(255, 255, 255, 0.6)"
             }
             style={styles.icon}
           />
@@ -108,7 +110,9 @@ const BottomTab = () => {
               styles.tabLabel,
               {
                 color:
-                  selectedTab === routeName ? colors.white : colors.grayTitle,
+                  selectedTab === routeName
+                    ? colors.white
+                    : "rgba(255, 255, 255, 0.6)",
               },
             ]}
           >
@@ -367,20 +371,10 @@ const styles = StyleSheet.create({
   btnCircleUp: {
     alignItems: "center",
     justifyContent: "center",
-    bottom: 30,
-
-    shadowColor: "rgba(64, 93, 240, 1)",
-    shadowOffset: {
-      width: 0,
-      height: -10,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 15,
+    bottom: 28,
   },
   tabBarItem: {
     flex: 1,
-    // top: 5,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -394,7 +388,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    shadowColor: "rgba(71, 134, 249, 1)",
 
     justifyContent: "center",
     alignItems: "center",

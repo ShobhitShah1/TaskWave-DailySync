@@ -83,20 +83,46 @@ const History = () => {
   }, [currentMonth]);
 
   const goToPrevMonth = useCallback(() => {
-    const newDate = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() - 1
-    );
-    setCurrentMonth(newDate);
-  }, [currentMonth]);
+    try {
+      const currentDay = selectedDateObject.getDate();
+      const newDate = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth() - 1,
+        currentDay
+      );
+
+      const formattedDate = newDate
+        .toLocaleDateString("en-GB")
+        .replace(/\//g, "-");
+
+      setSelectedDate(formattedDate);
+      setSelectedDateObject(newDate);
+      setCurrentMonth(newDate);
+    } catch (error: any) {
+      showMessage({ message: error?.message?.toString(), type: "danger" });
+    }
+  }, [currentMonth, selectedDateObject]);
 
   const goToNextMonth = useCallback(() => {
-    const newDate = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() + 1
-    );
-    setCurrentMonth(newDate);
-  }, [currentMonth]);
+    try {
+      const currentDay = selectedDateObject.getDate();
+      const newDate = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth() + 1,
+        currentDay
+      );
+
+      const formattedDate = newDate
+        .toLocaleDateString("en-GB")
+        .replace(/\//g, "-");
+
+      setSelectedDate(formattedDate);
+      setSelectedDateObject(newDate);
+      setCurrentMonth(newDate);
+    } catch (error: any) {
+      showMessage({ message: error?.message?.toString(), type: "danger" });
+    }
+  }, [currentMonth, selectedDateObject]);
 
   const filterTabData = useMemo(() => {
     const enrichedCategories = categoriesConfig(colors).map((category) => ({

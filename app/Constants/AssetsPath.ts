@@ -74,8 +74,8 @@ const ob_Email = require("../../assets/Images/ob_Email.png");
 const ob_TextMessage = require("../../assets/Images/ob_TextMessage.png");
 const ob_Whatsapp = require("../../assets/Images/ob_Whatsapp.png");
 const ob_WhatsappBusiness = require("../../assets/Images/ob_WhatsappBusiness.png");
-const appLogoRound = require("../../assets/Images/Dailysync_round.png");
-const appLogoSquare = require("../../assets/Images/Dailysync_square.png");
+
+const appLogoAndroid = require("../../assets/Images/Dailysync_Android.png");
 
 const HIW_home_dark = require("../../assets/Images/HIW_home_dark.png");
 const HIW_create_dark = require("../../assets/Images/HIW_create_dark.png");
@@ -156,8 +156,8 @@ export default {
   ob_TextMessage,
   ob_Whatsapp,
   ob_WhatsappBusiness,
-  appLogoRound,
-  appLogoSquare,
+
+  appLogoAndroid,
 
   HIW_home_dark,
   HIW_create_dark,

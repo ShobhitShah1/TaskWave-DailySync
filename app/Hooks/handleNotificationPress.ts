@@ -83,6 +83,31 @@ const notificationHandlers = {
       showError(error?.message?.toString());
     }
   },
+  whatsappBusiness: async (data: Notification, isWhatsApp: boolean = false) => {
+    try {
+      const numbers = parseContacts(data.toContact);
+      if (!numbers.length) {
+        showError(
+          `No valid contact found for ${
+            isWhatsApp ? "WhatsApp" : "WhatsApp Business"
+          }.`
+        );
+        return;
+      }
+
+      const attachments = parseAttachments(data.attachments);
+      const audioPath = parseAudioMemo(data.memo);
+      await SendMessagesModule.sendWhatsapp(
+        numbers.join(","),
+        String(data.message),
+        attachments.join(","),
+        audioPath,
+        isWhatsApp
+      );
+    } catch (error: any) {
+      showError(error?.message?.toString());
+    }
+  },
 
   SMS: async (data: Notification) => {
     try {

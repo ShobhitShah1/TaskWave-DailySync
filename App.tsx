@@ -1,6 +1,7 @@
 import notifee, { EventType } from "@notifee/react-native";
 import { useFonts } from "expo-font";
 import * as ExpoSplashScreen from "expo-splash-screen";
+import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
 import { StatusBar, StyleSheet, Text } from "react-native";
 import FlashMessage, { showMessage } from "react-native-flash-message";
@@ -14,8 +15,6 @@ import updateToNextDate from "./app/Hooks/updateToNextDate";
 import useReminder from "./app/Hooks/useReminder";
 import Routes from "./app/Routes/Routes";
 import { Notification } from "./app/Types/Interface";
-import * as SystemUI from "expo-system-ui";
-import SplashScreen from "./app/Screens/OnBoarding/SplashScreen";
 
 ExpoSplashScreen.preventAutoHideAsync();
 
@@ -144,7 +143,7 @@ export default function App() {
   }, []);
 
   if (!loaded || error) {
-    return <SplashScreen />;
+    return null;
   }
 
   return (

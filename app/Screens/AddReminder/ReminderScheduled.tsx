@@ -157,7 +157,7 @@ const ReminderScheduled = () => {
                 <View style={style.userInfo}>
                   <Image
                     resizeMode="cover"
-                    source={AssetsPath.appLogoRound}
+                    source={AssetsPath.appLogoAndroid}
                     style={style.userImage}
                   />
                   <Text

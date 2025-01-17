@@ -4,7 +4,7 @@
     "slug": "DailySync",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Images/Dailysync_square.png",
+    "icon": "./assets/Images/Dailysync_Android.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
@@ -14,12 +14,12 @@
     },
     "splash": {
       "image": "./assets/Images/Splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#000000"
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/Images/Dailysync_square.png",
+        "foregroundImage": "./assets/Images/Dailysync_Android.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.taskwave.dailysync",
@@ -30,8 +30,8 @@
       "runtimeVersion": "1.0.0",
       "splash": {
         "image": "./assets/Images/Splash.png",
-        "resizeMode": "cover",
-        "backgroundColor": "#000000"
+        "resizeMode": "contain",
+        "backgroundColor": "#FFFFFF"
       }
     },
     "plugins": [

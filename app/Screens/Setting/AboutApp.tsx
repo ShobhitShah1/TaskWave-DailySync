@@ -29,7 +29,7 @@ const AboutApp = () => {
       >
         <View style={style.section}>
           <View style={style.logoContainer}>
-            <Image style={style.logo} source={AssetsPath.appLogoRound} />
+            <Image style={style.logo} source={AssetsPath.appLogoAndroid} />
           </View>
 
           <Text style={style.appTitle}>Dailysync</Text>
