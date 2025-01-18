@@ -4,7 +4,6 @@
     "slug": "DailySync",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Images/Dailysync_Android.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
@@ -18,32 +17,40 @@
       "backgroundColor": "#FFFFFF"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/Images/Dailysync_Android.png",
-        "backgroundColor": "#ffffff"
-      },
       "package": "com.taskwave.dailysync",
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      "runtimeVersion": "1.0.0",
-      "splash": {
-        "image": "./assets/Images/Splash.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#FFFFFF"
-      }
+      "runtimeVersion": "1.0.0"
     },
     "plugins": [
       "expo-font",
       [
         "expo-av",
-        { "microphonePermission": "Allow to access your microphone." }
+        {
+          "microphonePermission": "Allow to access your microphone."
+        }
       ],
       [
         "react-native-permissions",
         {
           "iosPermissions": ["Microphone"]
+        }
+      ],
+      [
+        "expo-quick-actions",
+        {
+          "androidIcons": {
+            "wave_icon": {
+              "foregroundImage": "./assets/Icons/ic_wave.png",
+              "backgroundColor": "#151616"
+            },
+            "plus_icon": {
+              "foregroundImage": "./assets/Icons/ic_plus.png",
+              "backgroundColor": "#151616"
+            }
+          }
         }
       ]
     ]

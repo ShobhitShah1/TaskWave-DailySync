@@ -3,4 +3,6 @@
   <color name="colorPrimary">#023c69</color>
   <color name="colorPrimaryDark">#FFFFFF</color>
   <color name="splashscreen_background">#FFFFFF</color>
+  <color name="plus_icon_background_color">#151616</color>
+  <color name="wave_icon_background_color">#151616</color>
 </resources>
