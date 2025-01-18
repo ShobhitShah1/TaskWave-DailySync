@@ -66,8 +66,8 @@ const ic_play = require("../../assets/Icons/ic_play.png");
 const ic_pause = require("../../assets/Icons/ic_pause.png");
 
 const ic_delete = require("../../assets/Icons/ic_delete.png");
-
 const ic_bottomShape = require("../../assets/Icons/ic_bottomShape.png");
+const ic_wave = require("../../assets/Icons/ic_wave.png");
 
 // Images
 const ob_Email = require("../../assets/Images/ob_Email.png");
@@ -150,6 +150,7 @@ export default {
   ic_play,
   ic_pause,
   ic_bottomShape,
+  ic_wave,
 
   // Images
   ob_Email,

@@ -3,7 +3,7 @@ import { useFonts } from "expo-font";
 import * as ExpoSplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
-import { StatusBar, StyleSheet, Text } from "react-native";
+import { Platform, StatusBar, StyleSheet, Text } from "react-native";
 import FlashMessage, { showMessage } from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,6 +15,12 @@ import updateToNextDate from "./app/Hooks/updateToNextDate";
 import useReminder from "./app/Hooks/useReminder";
 import Routes from "./app/Routes/Routes";
 import { Notification } from "./app/Types/Interface";
+import * as QuickActions from "expo-quick-actions";
+import { useQuickActionCallback } from "expo-quick-actions/hooks";
+import {
+  BottomSheetProvider,
+  useBottomSheet,
+} from "./app/Contexts/BottomSheetProvider";
 
 ExpoSplashScreen.preventAutoHideAsync();
 
@@ -142,6 +148,25 @@ export default function App() {
     });
   }, []);
 
+  useEffect(() => {
+    QuickActions.setItems([
+      {
+        title: "Add Reminder",
+        subtitle: "Schedule a reminder to take your medication",
+        icon: "plus_icon",
+        id: "0",
+        params: { href: "/schedule" },
+      },
+      {
+        title: "Wait! Don't delete me!",
+        subtitle: "We're here to help",
+        icon: "wave_icon",
+        id: "1",
+        params: { href: "/help" },
+      },
+    ]);
+  }, []);
+
   if (!loaded || error) {
     return null;
   }
@@ -150,15 +175,17 @@ export default function App() {
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={styles.container}>
         <AppProvider>
-          <Routes />
-          <FlashMessage
-            position="top"
-            floating={true}
-            duration={3500}
-            titleStyle={styles.flashTextStyle}
-            textStyle={[styles.flashTextStyle, { fontSize: 13.5 }]}
-            statusBarHeight={(StatusBar.currentHeight || 20) + 5}
-          />
+          <BottomSheetProvider>
+            <Routes />
+            <FlashMessage
+              position="top"
+              floating={true}
+              duration={3500}
+              titleStyle={styles.flashTextStyle}
+              textStyle={[styles.flashTextStyle, { fontSize: 13.5 }]}
+              statusBarHeight={(StatusBar.currentHeight || 20) + 5}
+            />
+          </BottomSheetProvider>
         </AppProvider>
       </SafeAreaView>
     </GestureHandlerRootView>

@@ -20,12 +20,15 @@ import HowAppWorks from "../Screens/Setting/HowAppWorks";
 import NotificationSound from "../Screens/Setting/NotificationSound";
 import { RootStackParamList } from "../Types/Interface";
 import BottomTab from "./BottomTab";
+import { useQuickActionCallback } from "expo-quick-actions/hooks";
+import { useBottomSheet } from "../Contexts/BottomSheetProvider";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const Routes = () => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
+  const { bottomSheetModalRef } = useBottomSheet();
 
   const MyTheme: Theme = {
     ...DefaultTheme,
@@ -35,6 +38,14 @@ const Routes = () => {
       card: colors.background,
     },
   };
+
+  useQuickActionCallback((action) => {
+    console.log("action:", action);
+    console.log("bottomSheetModalRef:", bottomSheetModalRef);
+    if (action.id === "0") {
+      bottomSheetModalRef.current?.present();
+    }
+  });
 
   const showOnboarding = storage.getString("onboardingShown");
 

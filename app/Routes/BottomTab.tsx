@@ -2,11 +2,10 @@ import {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
   BottomSheetModal,
-  BottomSheetModalProvider,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { useNavigation } from "@react-navigation/native";
-import React, { memo, useCallback, useRef, useState } from "react";
+import React, { memo, useCallback, useState } from "react";
 import {
   Image,
   Linking,
@@ -24,6 +23,10 @@ import LinearGradient from "react-native-linear-gradient";
 import { Shadow } from "react-native-shadow-2";
 import TextString from "../Constants/TextString";
 import { FONTS } from "../Constants/Theme";
+import {
+  BottomSheetProvider,
+  useBottomSheet,
+} from "../Contexts/BottomSheetProvider";
 import { useBottomSheetBackHandler } from "../Hooks/useBottomSheetBackHandler";
 import useThemeColors from "../Hooks/useThemeMode";
 import AddReminder from "../Screens/AddReminder/AddReminder";
@@ -43,7 +46,7 @@ import RenderSheetView from "./Components/RenderSheetView";
 const BottomTab = () => {
   const colors = useThemeColors();
   const navigation = useNavigation();
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const { bottomSheetModalRef } = useBottomSheet();
   const { handleSheetPositionChange } =
     useBottomSheetBackHandler(bottomSheetModalRef);
 
@@ -300,7 +303,7 @@ const BottomTab = () => {
         />
       </CurvedBottomBar.Navigator>
 
-      <BottomSheetModalProvider>
+      <BottomSheetProvider>
         <BottomSheetModal
           enablePanDownToClose
           footerComponent={() => {
@@ -358,7 +361,7 @@ const BottomTab = () => {
             />
           </BottomSheetScrollView>
         </BottomSheetModal>
-      </BottomSheetModalProvider>
+      </BottomSheetProvider>
     </React.Fragment>
   );
 };
@@ -371,7 +374,7 @@ const styles = StyleSheet.create({
   btnCircleUp: {
     alignItems: "center",
     justifyContent: "center",
-    bottom: 28,
+    bottom: 26,
   },
   tabBarItem: {
     flex: 1,
