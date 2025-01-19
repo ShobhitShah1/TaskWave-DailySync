@@ -52,6 +52,7 @@ import AddMailTo from "./Components/AddMailTo";
 import AddMessage from "./Components/AddMessage";
 import AddScheduleFrequency, {
   FrequencyType,
+  WeekDayType,
 } from "./Components/AddScheduleFrequency";
 import AddTelegramUsername from "./Components/AddTelegramUsername";
 import AttachFile from "./Components/AttachFile";
@@ -126,6 +127,7 @@ const AddReminder = () => {
 
   const [scheduleFrequency, setScheduleFrequency] =
     useState<FrequencyType | null>(null);
+  const [selectedDays, setSelectedDays] = useState<WeekDayType[]>([]);
 
   const [recording, setRecording] = useState<Recording | undefined>();
   const [memos, setMemos] = useState<Memo[]>([]);
@@ -741,7 +743,9 @@ const AddReminder = () => {
           )}
 
           <AddScheduleFrequency
+            selectedDays={selectedDays}
             themeColor={createViewColor}
+            setSelectedDays={setSelectedDays}
             scheduleFrequency={scheduleFrequency}
             setScheduleFrequency={setScheduleFrequency}
           />
