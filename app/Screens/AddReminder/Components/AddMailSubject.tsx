@@ -37,7 +37,7 @@ const AddMailSubject: FC<AddMailSubjectProps> = ({
         scrollEnabled
         value={subject}
         onChangeText={onChangeText}
-        textAlignVertical="top"
+        // textAlignVertical="top"
         selectionColor={themeColor}
         placeholder="Subject:"
         placeholderTextColor={colors.text}
@@ -53,7 +53,7 @@ const styles = () => {
   return StyleSheet.create({
     container: {
       width: "100%",
-      height: 50,
+      minHeight: 50,
       paddingHorizontal: 15,
       flexDirection: "row",
       justifyContent: "space-between",
@@ -63,7 +63,7 @@ const styles = () => {
     textInputStyle: {
       flex: 1,
       fontSize: 18,
-      paddingVertical: 15,
+      paddingVertical: 10,
       fontFamily: FONTS.Medium,
     },
   });
