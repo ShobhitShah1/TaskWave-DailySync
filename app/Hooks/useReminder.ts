@@ -10,6 +10,7 @@ import * as SQLite from "expo-sqlite";
 import { useEffect, useState } from "react";
 import { showMessage } from "react-native-flash-message";
 import { Contact, Notification } from "../Types/Interface";
+import { storage } from "../Contexts/ThemeProvider";
 
 export const CHANNEL_ID = "reminder";
 export const CHANNEL_NAME = "Reminder";
@@ -34,11 +35,14 @@ export const scheduleNotification = async (
 
     await notifee.requestPermission();
 
+    const soundName = storage.getString("notificationSound");
+
     const channelId = await notifee.createChannel({
       id: CHANNEL_ID,
       name: CHANNEL_NAME,
       visibility: AndroidVisibility.PUBLIC,
       importance: AndroidImportance.HIGH,
+      sound: soundName?.toString() || "default",
     });
 
     const trigger: TimestampTrigger = {
@@ -356,11 +360,14 @@ const useReminder = () => {
       toMailArray = [];
     }
 
+    const soundName = storage.getString("notificationSound");
+
     const channelId = await notifee.createChannel({
       id: CHANNEL_ID,
       name: CHANNEL_NAME,
       visibility: AndroidVisibility.PUBLIC,
       importance: AndroidImportance.HIGH,
+      sound: soundName?.toString() || "default",
     });
 
     const trigger: TimestampTrigger = {

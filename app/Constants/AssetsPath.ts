@@ -86,7 +86,13 @@ const HIW_whatsapp_dark = require("../../assets/Images/HIW_whatsapp_dark.png");
 const success_animation = require("../../assets/Animations/success_animation.json");
 
 // Sound
-const sound1 = require("../../assets/Sound/sound1.mp3");
+const correct_answer_tone = require("../../assets/Sound/correctAnswerTone.wav");
+const long_pop = require("../../assets/Sound/longPop.wav");
+const positive_notification = require("../../assets/Sound/positiveNotification.wav");
+const software_interface_back = require("../../assets/Sound/softwareInterfaceBack.wav");
+const software_interface_remove = require("../../assets/Sound/softwareInterfaceRemove.wav");
+const ting_tong = require("../../assets/Sound/ting_tong.mp3");
+const tink_tink = require("../../assets/Sound/tink_tink.mp3");
 
 export default {
   ic_home,
@@ -169,5 +175,11 @@ export default {
   success_animation,
 
   // Sound
-  sound1,
+  correct_answer_tone,
+  long_pop,
+  positive_notification,
+  software_interface_back,
+  software_interface_remove,
+  ting_tong,
+  tink_tink,
 };

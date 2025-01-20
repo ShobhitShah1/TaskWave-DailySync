@@ -9,6 +9,7 @@ import notifee, {
   TimestampTrigger,
   TriggerType,
 } from "@notifee/react-native";
+import { storage } from "../Contexts/ThemeProvider";
 
 export const updateNotification = async (
   notification: Notification
@@ -54,11 +55,14 @@ export const updateNotification = async (
     toMailArray = [];
   }
 
+  const soundName = storage.getString("notificationSound");
+
   const channelId = await notifee.createChannel({
     id: CHANNEL_ID,
     name: CHANNEL_NAME,
     visibility: AndroidVisibility.PUBLIC,
     importance: AndroidImportance.HIGH,
+    sound: soundName || "default",
   });
 
   const trigger: TimestampTrigger = {

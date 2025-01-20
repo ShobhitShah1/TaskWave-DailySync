@@ -1,9 +1,13 @@
-import notifee from "@notifee/react-native";
+import notifee, {
+  AndroidImportance,
+  AndroidVisibility,
+} from "@notifee/react-native";
 import { useIsFocused } from "@react-navigation/native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Button,
   FlatList,
   Pressable,
   RefreshControl,
@@ -21,7 +25,11 @@ import YearMonthPicker from "../../Components/YearMonthPicker";
 import isGridView from "../../Hooks/isGridView";
 import useCalendar from "../../Hooks/useCalendar";
 import useNotificationPermission from "../../Hooks/useNotificationPermission";
-import { default as useDatabase } from "../../Hooks/useReminder";
+import {
+  CHANNEL_ID,
+  CHANNEL_NAME,
+  default as useDatabase,
+} from "../../Hooks/useReminder";
 import useThemeColors from "../../Hooks/useThemeMode";
 import {
   Notification,
@@ -34,6 +42,7 @@ import HomeHeader from "./Components/HomeHeader";
 import RenderEmptyView from "./Components/RenderEmptyView";
 import RenderHeaderView from "./Components/RenderHeaderView";
 import styles from "./styles";
+import { storage } from "../../Contexts/ThemeProvider";
 
 const Home = () => {
   const style = styles();

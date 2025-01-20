@@ -1,6 +1,12 @@
+import notifee, {
+  AndroidImportance,
+  AndroidVisibility,
+} from "@notifee/react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Audio } from "expo-av";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { FlatList, Pressable, Text } from "react-native";
+import { showMessage } from "react-native-flash-message";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -8,64 +14,41 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import WithBackHeader from "../../Components/WithBackHeader";
+import { sounds } from "../../Constants/Data";
+import { storage } from "../../Contexts/ThemeProvider";
+import { CHANNEL_ID, CHANNEL_NAME } from "../../Hooks/useReminder";
+import { Sound } from "../../Types/Interface";
 import SoundItem from "./Components/SoundItem";
 import styles from "./styles";
 
-export interface Sound {
-  id: string;
-  name: string;
-  duration: string;
-  category?: string;
-  uri: string;
-}
+const formatDuration = (milliseconds: number): string => {
+  if (!milliseconds || isNaN(milliseconds)) return "0:00";
 
-const sounds: Sound[] = [
-  {
-    id: "1",
-    name: "Default",
-    duration: "0:03",
-    category: "System",
-    uri: "https://codeskulptor-demos.commondatastorage.googleapis.com/pang/paza-moduless.mp3",
-  },
-  {
-    id: "2",
-    name: "Classic",
-    duration: "0:04",
-    category: "System",
-    uri: "https://codeskulptor-demos.commondatastorage.googleapis.com/pang/paza-moduless.mp3",
-  },
-  {
-    id: "3",
-    name: "Chime",
-    duration: "0:02",
-    category: "Nature",
-    uri: "https://codeskulptor-demos.commondatastorage.googleapis.com/pang/paza-moduless.mp3",
-  },
-  {
-    id: "4",
-    name: "Bell",
-    duration: "0:03",
-    category: "Classic",
-    uri: "https://codeskulptor-demos.commondatastorage.googleapis.com/pang/paza-moduless.mp3",
-  },
-  {
-    id: "5",
-    name: "Digital",
-    duration: "0:02",
-    category: "Modern",
-    uri: "https://codeskulptor-demos.commondatastorage.googleapis.com/pang/paza-moduless.mp3",
-  },
-];
+  const totalSeconds = Math.round(milliseconds / 1000);
+
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  const paddedSeconds = seconds.toString().padStart(2, "0");
+
+  return `${minutes}:${paddedSeconds}`;
+};
 
 const NotificationSound = () => {
   const style = styles();
-  const [selectedSound, setSelectedSound] = useState("1");
+
+  const navigation = useNavigation();
+  const [selectedSound, setSelectedSound] = useState(
+    storage.getString("notificationSound") || "default"
+  );
   const [playingSound, setPlayingSound] = useState<string | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [soundsWithDuration, setSoundsWithDuration] = useState(sounds);
   const buttonTranslateY = useSharedValue(100);
 
   useEffect(() => {
     buttonTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+    loadSoundDurations();
 
     return () => {
       if (sound) {
@@ -74,22 +57,52 @@ const NotificationSound = () => {
     };
   }, []);
 
+  const loadSoundDurations = async () => {
+    const updatedSounds = await Promise.all(
+      sounds.map(async (soundItem) => {
+        if (!soundItem.uri || !soundItem.canPlay) return soundItem;
+
+        try {
+          const { sound } = await Audio.Sound.createAsync(soundItem.uri, {
+            shouldPlay: false,
+          });
+          const status = await sound.getStatusAsync();
+
+          await sound.unloadAsync();
+
+          if (status.isLoaded) {
+            return {
+              ...soundItem,
+              duration: formatDuration(status.durationMillis || 0),
+            };
+          }
+        } catch (error) {
+          console.warn(`Error loading duration for ${soundItem.name}:`, error);
+        }
+        return soundItem;
+      })
+    );
+
+    setSoundsWithDuration(updatedSounds);
+  };
+
   const playSound = async (soundId: string) => {
     try {
       if (sound) {
         await sound.unloadAsync();
       }
 
-      const selectedSoundData = sounds.find((s) => s.id === soundId);
-      if (!selectedSoundData) return;
+      const selectedSoundData = soundsWithDuration.find(
+        (s) => s.soundKeyName === soundId
+      );
+      if (!selectedSoundData?.uri) return;
 
-      const { sound: newSound } = await Audio.Sound.createAsync({
-        uri: selectedSoundData.uri,
-      });
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        selectedSoundData.uri,
+        { shouldPlay: true }
+      );
 
       setSound(newSound);
-
-      await newSound.playAsync();
       setPlayingSound(soundId);
 
       newSound.setOnPlaybackStatusUpdate((status) => {
@@ -97,8 +110,11 @@ const NotificationSound = () => {
           setPlayingSound(null);
         }
       });
-    } catch (error) {
-      console.error("Error playing sound:", error);
+    } catch (error: any) {
+      showMessage({
+        message: error?.message?.toString(),
+        type: "danger",
+      });
     }
   };
 
@@ -121,29 +137,59 @@ const NotificationSound = () => {
     ({ item }: { item: Sound }) => (
       <SoundItem
         item={item}
-        isSelected={selectedSound === item.id}
-        isPlaying={playingSound === item.id}
-        onSelect={() => setSelectedSound(item.id)}
-        onPlay={() => handlePlay(item.id)}
+        isSelected={selectedSound === item.soundKeyName}
+        isPlaying={playingSound === item.soundKeyName}
+        onSelect={() => setSelectedSound(item.soundKeyName)}
+        onPlay={() => handlePlay(item.soundKeyName)}
       />
     ),
     [selectedSound, playingSound]
   );
+
+  const handleOnPressSave = async () => {
+    try {
+      (await notifee.getChannels()).map(async (res) => {
+        await notifee.deleteChannel(res.id);
+      });
+
+      storage.set("notificationSound", selectedSound);
+
+      await notifee.createChannel({
+        id: CHANNEL_ID,
+        name: CHANNEL_NAME,
+        visibility: AndroidVisibility.PUBLIC,
+        importance: AndroidImportance.HIGH,
+        sound: selectedSound,
+      });
+
+      showMessage({
+        message: "Notification sound changed successfully",
+        type: "success",
+      });
+
+      navigation.goBack();
+    } catch (error: any) {
+      showMessage({
+        message: error?.message?.toString(),
+        type: "danger",
+      });
+    }
+  };
 
   return (
     <SafeAreaView style={style.soundContainer}>
       <WithBackHeader title="Notification Sounds" hideSwitch={true} />
 
       <FlatList
-        data={sounds}
+        data={soundsWithDuration}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.soundKeyName}
         contentContainerStyle={[style.list, { paddingBottom: 100 }]}
         showsVerticalScrollIndicator={false}
       />
 
       <Animated.View style={[style.bottomButton, saveButtonStyle]}>
-        <Pressable style={style.saveButton} onPress={() => {}}>
+        <Pressable style={style.saveButton} onPress={handleOnPressSave}>
           <Text style={style.saveButtonText}>Save Changes</Text>
         </Pressable>
       </Animated.View>

@@ -228,3 +228,13 @@ export type NotificationCategory = {
     dark: string;
   };
 };
+
+export interface Sound {
+  id: string;
+  name: string;
+  duration: string | null;
+  category?: string;
+  uri: any;
+  canPlay: boolean;
+  soundKeyName: string;
+}

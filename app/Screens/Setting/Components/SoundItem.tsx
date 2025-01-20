@@ -7,8 +7,8 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { Sound } from "../NotificationSound";
 import styles from "../styles";
+import { Sound } from "../../../Types/Interface";
 
 interface SoundItemProps {
   item: Sound;
@@ -86,41 +86,46 @@ const SoundItem = ({
       style={[style.soundCard, isSelected && style.selectedCard]}
     >
       <View style={style.cardContent}>
-        <Animated.View style={[style.playButtonContainer, buttonStyle]}>
-          <Pressable
-            style={[style.playButton, isPlaying && style.playingButton]}
-            onPress={handlePlay}
-          >
-            <Text
-              style={[
-                style.playButtonText,
-                isPlaying && style.playingButtonText,
-              ]}
+        {item.canPlay && (
+          <Animated.View style={[style.playButtonContainer, buttonStyle]}>
+            <Pressable
+              style={[style.playButton, isPlaying && style.playingButton]}
+              onPress={handlePlay}
             >
-              {isPlaying ? "■" : "▶"}
-            </Text>
-          </Pressable>
-        </Animated.View>
+              <Text
+                style={[
+                  style.playButtonText,
+                  isPlaying && style.playingButtonText,
+                ]}
+              >
+                {isPlaying ? "■" : "▶"}
+              </Text>
+            </Pressable>
+          </Animated.View>
+        )}
 
         <View style={style.soundInfo}>
           <Text style={style.soundName}>{item.name}</Text>
-          <View style={style.durationContainer}>
-            <Text style={style.duration}>{item.duration}</Text>
-            {item.category && (
-              <View style={style.categoryBadge}>
-                <Text style={style.categoryText}>{item.category}</Text>
-              </View>
-            )}
-          </View>
+          {item.canPlay && (
+            <View style={style.durationContainer}>
+              <Text style={style.duration}>{item.duration}</Text>
+              {item.category && (
+                <View style={style.categoryBadge}>
+                  <Text style={style.categoryText}>{item.category}</Text>
+                </View>
+              )}
+            </View>
+          )}
         </View>
 
         <View style={style.rightSection}>
           {/* <AudioVisualizer uri={item.uri} isPlaying={isPlaying} theme={theme} /> */}
 
           {isPlaying &&
+            item.canPlay &&
             waveAnimation.current[item.id]?.map((anim, index) => (
               <RNAnimated.View
-                key={item.id}
+                key={index}
                 style={[
                   style.waveBar,
                   {

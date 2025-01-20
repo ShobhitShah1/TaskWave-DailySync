@@ -1,3 +1,4 @@
+import { Sound } from "../Types/Interface";
 import AssetsPath from "./AssetsPath";
 
 export const OnBoardingData = [
@@ -30,3 +31,70 @@ export const OnBoardingData = [
     image: AssetsPath.ob_WhatsappBusiness,
   },
 ];
+
+export const sounds: Sound[] = [
+  {
+    name: "System default",
+    duration: null,
+    category: "System",
+    soundKeyName: "default",
+    uri: null,
+    canPlay: false,
+  },
+  // {
+  //   name: "Correct answer tone",
+  //   duration: "0:02",
+  //   category: "Classic",
+  //   soundKeyName: "correct_answer_tone",
+  //   uri: AssetsPath.correct_answer_tone,
+  //   canPlay: true,
+  // },
+  // {
+  //   name: "Long pop",
+  //   duration: "0:00",
+  //   category: "Classic",
+  //   soundKeyName: "long_pop",
+  //   uri: AssetsPath.long_pop,
+  //   canPlay: true,
+  // },
+  // {
+  //   name: "Positive notification",
+  //   duration: "0:03",
+  //   category: "Nature",
+  //   soundKeyName: "positive_notification",
+  //   uri: AssetsPath.positive_notification,
+  //   canPlay: true,
+  // },
+  // {
+  //   name: "Software interface back",
+  //   duration: "0:01",
+  //   category: "Classic",
+  //   soundKeyName: "software_interface_back",
+  //   uri: AssetsPath.software_interface_back,
+  //   canPlay: true,
+  // },
+  // {
+  //   name: "Software interface remove",
+  //   duration: "0:02",
+  //   category: "Modern",
+  //   soundKeyName: "software_interface_remove",
+  //   uri: AssetsPath.software_interface_remove,
+  //   canPlay: true,
+  // },
+  {
+    name: "Ting tong",
+    duration: "0:02",
+    soundKeyName: "ting_tong",
+    category: "Modern",
+    uri: AssetsPath.ting_tong,
+    canPlay: true,
+  },
+  {
+    name: "Tink tink",
+    duration: "0:02",
+    soundKeyName: "tink_tink",
+    category: "Modern",
+    uri: AssetsPath.tink_tink,
+    canPlay: true,
+  },
+].map((item, index) => ({ ...item, id: index.toString() }));

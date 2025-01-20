@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "965182017324",
+    "project_id": "dailysync-9a3bd",
+    "storage_bucket": "dailysync-9a3bd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:965182017324:android:4c790f9ac2b7ce398ae689",
+        "android_client_info": {
+          "package_name": "com.taskwave.dailysync"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKiCVsXWSGRi1XFoRc2O7WedJ7yRr1iKw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

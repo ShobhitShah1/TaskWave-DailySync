@@ -1,13 +1,15 @@
 import notifee, { EventType } from "@notifee/react-native";
 import { useFonts } from "expo-font";
+import * as QuickActions from "expo-quick-actions";
 import * as ExpoSplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
-import { Platform, StatusBar, StyleSheet, Text } from "react-native";
+import { StatusBar, StyleSheet, Text } from "react-native";
 import FlashMessage, { showMessage } from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FONTS } from "./app/Constants/Theme";
+import { BottomSheetProvider } from "./app/Contexts/BottomSheetProvider";
 import { AppProvider } from "./app/Contexts/ThemeProvider";
 import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
 import { updateNotification } from "./app/Hooks/updateNotification";
@@ -15,12 +17,6 @@ import updateToNextDate from "./app/Hooks/updateToNextDate";
 import useReminder from "./app/Hooks/useReminder";
 import Routes from "./app/Routes/Routes";
 import { Notification } from "./app/Types/Interface";
-import * as QuickActions from "expo-quick-actions";
-import { useQuickActionCallback } from "expo-quick-actions/hooks";
-import {
-  BottomSheetProvider,
-  useBottomSheet,
-} from "./app/Contexts/BottomSheetProvider";
 
 ExpoSplashScreen.preventAutoHideAsync();
 
