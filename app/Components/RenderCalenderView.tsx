@@ -29,7 +29,15 @@ const RenderCalenderView: FC<CalenderProps> = ({
       style={style.calenderContainer}
       onPress={() => handleDayClick(item?.formattedDate, index)}
     >
-      <Text numberOfLines={1} style={style.calenderWeekText}>
+      <Text
+        numberOfLines={1}
+        style={[
+          style.calenderWeekText,
+          {
+            color: isSelected ? colors.text : "rgba(154, 156, 156, 0.7)",
+          },
+        ]}
+      >
         {item?.dayOfWeek}
       </Text>
       <View style={[style.calenderDateTextView, { backgroundColor }]}>
@@ -61,7 +69,6 @@ const styles = () => {
     calenderWeekText: {
       fontSize: 16,
       letterSpacing: 1.1,
-      color: "rgba(154, 156, 156, 0.7)",
       fontFamily: FONTS.SemiBold,
       textAlign: "center",
     },
