@@ -40,8 +40,6 @@ const Routes = () => {
   };
 
   useQuickActionCallback((action) => {
-    console.log("action:", action);
-    console.log("bottomSheetModalRef:", bottomSheetModalRef);
     if (action.id === "0") {
       bottomSheetModalRef.current?.present();
     }

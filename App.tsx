@@ -4,7 +4,7 @@ import * as QuickActions from "expo-quick-actions";
 import * as ExpoSplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
-import { StatusBar, StyleSheet, Text } from "react-native";
+import { LogBox, StatusBar, StyleSheet, Text } from "react-native";
 import FlashMessage, { showMessage } from "react-native-flash-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,6 +21,10 @@ import { Notification } from "./app/Types/Interface";
 ExpoSplashScreen.preventAutoHideAsync();
 
 SystemUI.setBackgroundColorAsync("transparent");
+
+if (__DEV__) {
+  LogBox.ignoreAllLogs();
+}
 
 interface TextWithDefaultProps extends Text {
   defaultProps?: { allowFontScaling?: boolean };
