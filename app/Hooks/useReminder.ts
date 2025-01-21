@@ -18,6 +18,12 @@ export const CHANNEL_NAME = "Reminder";
 
 export const createNotificationChannel = async () => {
   try {
+    const channelId = storage.getString("notificationSound");
+
+    if (!channelId) {
+      storage.set("notificationSound", "default");
+    }
+
     sounds.map(async (notification) => {
       await notifee.createChannel({
         id: notification?.soundKeyName,

@@ -33,7 +33,10 @@ import AudioMemoItem from "../../Components/MemoListItem";
 import AssetsPath from "../../Constants/AssetsPath";
 import useContactPermission from "../../Hooks/useContactPermission";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
-import useDatabase, { scheduleNotification } from "../../Hooks/useReminder";
+import useDatabase, {
+  createNotificationChannel,
+  scheduleNotification,
+} from "../../Hooks/useReminder";
 import useThemeColors from "../../Hooks/useThemeMode";
 import {
   Contact,
@@ -539,6 +542,8 @@ const AddReminder = () => {
         };
 
         let notificationScheduleId;
+
+        await createNotificationChannel();
 
         if (id) {
           const updated = await updateNotification({ ...notificationData, id });
