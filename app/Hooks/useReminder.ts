@@ -11,9 +11,30 @@ import { useEffect, useState } from "react";
 import { showMessage } from "react-native-flash-message";
 import { Contact, Notification } from "../Types/Interface";
 import { storage } from "../Contexts/ThemeProvider";
+import { sounds } from "../Constants/Data";
 
 export const CHANNEL_ID = "reminder";
 export const CHANNEL_NAME = "Reminder";
+
+export const createNotificationChannel = async () => {
+  try {
+    sounds.map(async (notification) => {
+      await notifee.createChannel({
+        id: notification?.soundKeyName,
+        name:
+          CHANNEL_NAME + " " + notification.soundKeyName?.toLocaleUpperCase(),
+        visibility: AndroidVisibility.PUBLIC,
+        importance: AndroidImportance.HIGH,
+        sound: notification?.soundKeyName,
+      });
+    });
+  } catch (error: any) {
+    showMessage({
+      message: error?.message?.toString(),
+      type: "danger",
+    });
+  }
+};
 
 export const scheduleNotification = async (
   notification: Notification
@@ -35,15 +56,9 @@ export const scheduleNotification = async (
 
     await notifee.requestPermission();
 
-    const soundName = storage.getString("notificationSound");
+    await createNotificationChannel();
 
-    const channelId = await notifee.createChannel({
-      id: CHANNEL_ID,
-      name: CHANNEL_NAME,
-      visibility: AndroidVisibility.PUBLIC,
-      importance: AndroidImportance.HIGH,
-      sound: soundName?.toString() || "default",
-    });
+    const channelId = storage.getString("notificationSound");
 
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
@@ -88,6 +103,7 @@ export const scheduleNotification = async (
           }. Please check details or contact them if needed.`,
         android: {
           channelId,
+          sound: channelId,
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
           pressAction: { id: "default" },
@@ -113,6 +129,7 @@ export const scheduleNotification = async (
           }. Please check details or contact them if needed.`,
         android: {
           channelId,
+          sound: channelId,
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
           pressAction: { id: "default" },
@@ -360,15 +377,11 @@ const useReminder = () => {
       toMailArray = [];
     }
 
-    const soundName = storage.getString("notificationSound");
+    // const soundName = storage.getString("notificationSound");
 
-    const channelId = await notifee.createChannel({
-      id: CHANNEL_ID,
-      name: CHANNEL_NAME,
-      visibility: AndroidVisibility.PUBLIC,
-      importance: AndroidImportance.HIGH,
-      sound: soundName?.toString() || "default",
-    });
+    await createNotificationChannel();
+
+    const channelId = storage.getString("notificationSound");
 
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
@@ -403,6 +416,7 @@ const useReminder = () => {
             )}. Please check details or contact them if needed.`,
           android: {
             channelId,
+            sound: channelId,
             visibility: AndroidVisibility.PUBLIC,
             importance: AndroidImportance.HIGH,
             pressAction: { id: "default" },

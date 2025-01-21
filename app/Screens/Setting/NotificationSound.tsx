@@ -1,7 +1,4 @@
-import notifee, {
-  AndroidImportance,
-  AndroidVisibility,
-} from "@notifee/react-native";
+import notifee from "@notifee/react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Audio } from "expo-av";
 import React, { memo, useCallback, useEffect, useState } from "react";
@@ -16,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import WithBackHeader from "../../Components/WithBackHeader";
 import { sounds } from "../../Constants/Data";
 import { storage } from "../../Contexts/ThemeProvider";
-import { CHANNEL_ID, CHANNEL_NAME } from "../../Hooks/useReminder";
+import { createNotificationChannel } from "../../Hooks/useReminder";
 import { Sound } from "../../Types/Interface";
 import SoundItem from "./Components/SoundItem";
 import styles from "./styles";
@@ -154,13 +151,7 @@ const NotificationSound = () => {
 
       storage.set("notificationSound", selectedSound);
 
-      await notifee.createChannel({
-        id: CHANNEL_ID,
-        name: CHANNEL_NAME,
-        visibility: AndroidVisibility.PUBLIC,
-        importance: AndroidImportance.HIGH,
-        sound: selectedSound,
-      });
+      await createNotificationChannel();
 
       showMessage({
         message: "Notification sound changed successfully",
