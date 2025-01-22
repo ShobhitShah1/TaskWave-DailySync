@@ -47,7 +47,18 @@ export interface AppContextProps {
 }
 
 export type Theme = "light" | "dark";
+
 export type ViewMode = "grid" | "list";
+
+export type NotificationType =
+  | "whatsapp"
+  | "whatsappBusiness"
+  | "SMS"
+  | "gmail"
+  | "phone"
+  | "instagram"
+  | "telegram"
+  | "note";
 
 export interface AppContextType {
   theme: Theme;
@@ -62,16 +73,6 @@ export interface ReusableBottomSheetProps {
   onChange?: (index: number) => void;
   children: React.ReactNode;
 }
-
-export type NotificationType =
-  | "whatsapp"
-  | "whatsappBusiness"
-  | "SMS"
-  | "gmail"
-  | "phone"
-  | "instagram"
-  | "telegram"
-  | "note";
 
 export interface Contact {
   name: string;

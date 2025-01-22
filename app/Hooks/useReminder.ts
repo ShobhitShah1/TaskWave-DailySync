@@ -1,6 +1,7 @@
 import notifee, {
   AlarmType,
   AndroidImportance,
+  AndroidStyle,
   AndroidVisibility,
   RepeatFrequency,
   TimestampTrigger,
@@ -95,6 +96,10 @@ export const scheduleNotification = async (
       telegramUsername: telegramUsername || "",
     };
 
+    const imageAttachment = attachments?.find((attachment) =>
+      attachment.type?.startsWith("image/")
+    );
+
     const notifeeNotificationId = await notifee.createTriggerNotification(
       {
         title:
@@ -113,7 +118,6 @@ export const scheduleNotification = async (
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
           pressAction: { id: "default" },
-          // smallIcon: "notification_icon",
         },
         data: notificationData as any,
       },
@@ -139,8 +143,14 @@ export const scheduleNotification = async (
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
           pressAction: { id: "default" },
-          // smallIcon: "notification_icon",
+          ...(imageAttachment?.fileCopyUri && {
+            style: {
+              type: AndroidStyle.BIGPICTURE,
+              picture: imageAttachment?.fileCopyUri || "",
+            },
+          }),
         },
+
         data: {
           ...notificationData,
           id: notifeeNotificationId,
@@ -383,8 +393,6 @@ const useReminder = () => {
       toMailArray = [];
     }
 
-    // const soundName = storage.getString("notificationSound");
-
     await createNotificationChannel();
 
     const channelId = storage.getString("notificationSound");
@@ -407,6 +415,10 @@ const useReminder = () => {
       memo: JSON.stringify(memo || []),
     };
 
+    const imageAttachment = attachments?.find((attachment) =>
+      attachment.type?.startsWith("image/")
+    );
+
     try {
       await notifee.createTriggerNotification(
         {
@@ -426,8 +438,14 @@ const useReminder = () => {
             visibility: AndroidVisibility.PUBLIC,
             importance: AndroidImportance.HIGH,
             pressAction: { id: "default" },
-            // smallIcon: "notification_icon",
+            ...(imageAttachment?.fileCopyUri && {
+              style: {
+                type: AndroidStyle.BIGPICTURE,
+                picture: imageAttachment?.fileCopyUri || "",
+              },
+            }),
           },
+
           data: notificationData as any,
         },
         trigger
