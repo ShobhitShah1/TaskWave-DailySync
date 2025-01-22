@@ -43,6 +43,7 @@ import RenderEmptyView from "./Components/RenderEmptyView";
 import RenderHeaderView from "./Components/RenderHeaderView";
 import styles from "./styles";
 import { storage } from "../../Contexts/ThemeProvider";
+import TextString from "../../Constants/TextString";
 
 const Home = () => {
   const style = styles();
@@ -270,9 +271,9 @@ const Home = () => {
   return (
     <SafeAreaView style={style.container}>
       <HomeHeader
-        hideThemeButton={false}
-        hideBackButton={true}
-        hideGrid={notificationsState.allByDate?.length === 0}
+        title={TextString.DailySync}
+        titleAlignment="center"
+        leftIconType="grid"
       />
 
       <View style={style.homeContainContainer}>

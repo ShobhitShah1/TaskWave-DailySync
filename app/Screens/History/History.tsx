@@ -1,5 +1,4 @@
 import { useIsFocused } from "@react-navigation/native";
-import { FlashList } from "@shopify/flash-list";
 import React, {
   memo,
   useCallback,
@@ -351,9 +350,10 @@ const History = () => {
   return (
     <SafeAreaView style={style.container}>
       <HomeHeader
-        hideGrid={true}
-        hideThemeButton={true}
-        hideBackButton={false}
+        title={"History"}
+        titleAlignment="center"
+        leftIconType="back"
+        showThemeSwitch={false}
       />
 
       <View style={style.contentView}>

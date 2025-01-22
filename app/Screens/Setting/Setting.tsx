@@ -1,14 +1,14 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { memo, useState } from "react";
 import { Linking, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Share from "react-native-share";
 import RateUsModal from "../../Components/RateUsModal";
-import WithBackHeader from "../../Components/WithBackHeader";
 import AssetsPath from "../../Constants/AssetsPath";
 import { SIZE } from "../../Constants/Theme";
 import useThemeColors from "../../Hooks/useThemeMode";
+import HomeHeader from "../Home/Components/HomeHeader";
 import SettingItem from "./Components/SettingItem";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const SHARE_MESSAGE =
   "🗓️ Boost your productivity with DailySync! 🎯\n\nSet reminders for WhatsApp, WhatsApp Business, SMS, Gmail, and phone calls all in one app. 💬📧📞\n\nDownload now and never miss a task again! ⏰👇\nhttps://play.google.com/store/apps/details?id=com.taskwave.dailysync";
@@ -92,7 +92,12 @@ const Settings = () => {
 
   return (
     <SafeAreaView style={style.container}>
-      <WithBackHeader title={"Setting"} />
+      <HomeHeader
+        title={"Setting"}
+        titleAlignment="left"
+        leftIconType="back"
+        showThemeSwitch={false}
+      />
 
       <View style={style.wrapper}>
         {settingsData.map((item, index) => (

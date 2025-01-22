@@ -1,27 +1,24 @@
 import React, { memo } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import AssetsPath from "../../Constants/AssetsPath";
 import { FONTS, SIZE } from "../../Constants/Theme";
+import { useAppContext } from "../../Contexts/ThemeProvider";
 import useThemeColors from "../../Hooks/useThemeMode";
 import HomeHeader from "../Home/Components/HomeHeader";
-import { useAppContext } from "../../Contexts/ThemeProvider";
-import { useNavigation } from "@react-navigation/native";
-import AssetsPath from "../../Constants/AssetsPath";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const AboutApp = () => {
   const style = styles();
-  const navigation = useNavigation();
   const colors = useThemeColors();
   const { theme } = useAppContext();
 
   return (
     <SafeAreaView style={style.container}>
       <HomeHeader
-        onBackPress={() => navigation.goBack()}
-        title="About App"
-        hideGrid={true}
-        hideThemeButton={true}
-        hideBackButton={false}
+        title={"About App"}
+        titleAlignment="center"
+        leftIconType="back"
+        showThemeSwitch={false}
       />
 
       <ScrollView

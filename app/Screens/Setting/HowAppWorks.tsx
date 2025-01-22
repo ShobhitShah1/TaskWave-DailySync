@@ -68,10 +68,10 @@ const HowAppWorks = () => {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <HomeHeader
-        hideBackButton={false}
-        hideGrid={true}
-        title="How app works"
-        hideThemeButton
+        title={"How app works"}
+        titleAlignment="center"
+        leftIconType="back"
+        showThemeSwitch={false}
       />
 
       <View style={{ flex: 1, marginVertical: 10 }}>

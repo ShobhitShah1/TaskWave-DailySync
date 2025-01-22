@@ -10,11 +10,11 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import WithBackHeader from "../../Components/WithBackHeader";
 import { sounds } from "../../Constants/Data";
 import { storage } from "../../Contexts/ThemeProvider";
 import { createNotificationChannel } from "../../Hooks/useReminder";
 import { Sound } from "../../Types/Interface";
+import HomeHeader from "../Home/Components/HomeHeader";
 import SoundItem from "./Components/SoundItem";
 import styles from "./styles";
 
@@ -169,8 +169,12 @@ const NotificationSound = () => {
 
   return (
     <SafeAreaView style={style.soundContainer}>
-      <WithBackHeader title="Notification Sounds" hideSwitch={true} />
-
+      <HomeHeader
+        title={"Notification Sounds"}
+        titleAlignment="left"
+        leftIconType="back"
+        showThemeSwitch={false}
+      />
       <FlatList
         data={soundsWithDuration}
         renderItem={renderItem}
