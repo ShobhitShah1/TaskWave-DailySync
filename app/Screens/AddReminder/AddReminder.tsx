@@ -699,8 +699,7 @@ const AddReminder = () => {
 
           {(notificationType === "whatsapp" ||
             notificationType === "whatsappBusiness") && (
-            <Animated.View
-              layout={LinearTransition}
+            <View
               style={[
                 style.recorderContainer,
                 { marginTop: memos.length === 0 ? 0 : 5 },
@@ -744,7 +743,7 @@ const AddReminder = () => {
                   </View>
                 }
               />
-            </Animated.View>
+            </View>
           )}
 
           <AddScheduleFrequency

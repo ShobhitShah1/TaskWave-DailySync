@@ -440,6 +440,7 @@ const ReminderPreview = () => {
             <Image
               source={getNotificationIcon(notificationData.type)}
               style={style.buttonIcon}
+              tintColor={colors.white}
             />
             <Text style={style.buttonText}>Open</Text>
           </Pressable>

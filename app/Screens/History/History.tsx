@@ -126,7 +126,10 @@ const History = () => {
   const filterTabData = useMemo(() => {
     const enrichedCategories = categoriesConfig(colors).map((category) => ({
       ...category,
-      title: formatNotificationType(category.type),
+      title:
+        category.type === "whatsappBusiness"
+          ? "WA Business"
+          : formatNotificationType(category.type),
       reminders: notificationCounts[category.type] || 0,
     }));
     return enrichedCategories;
@@ -246,8 +249,12 @@ const History = () => {
       const dateFiltered = filterNotificationsByDate(allNotifications);
       const typeFiltered = applyTypeFilter(dateFiltered);
 
+      const sortedTypeFiltered = typeFiltered.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
       setNotifications(dateFiltered);
-      setFilteredNotifications(typeFiltered);
+      setFilteredNotifications(sortedTypeFiltered);
 
       return typeFiltered;
     } catch (error) {
@@ -469,7 +476,13 @@ const History = () => {
         </View>
 
         <View style={style.tabsContainer}>
-          <View style={{ width: "20%" }}>
+          <View
+            style={{
+              width: "17.5%",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <RenderFilterTabData
               index={0}
               isActive={activeTabType === "all"}

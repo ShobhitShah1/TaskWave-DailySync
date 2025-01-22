@@ -19,7 +19,7 @@ const ColorGroups = {
       background: "rgba(34, 200, 66, 0.25)",
       dark: "rgba(0, 125, 22, 1)",
 
-      business: "rgba(6, 224, 217, 1)",
+      business: "rgba(5, 159, 154, 1)",
       businessBackground: "rgba(3, 97, 90, 0.15)",
       businessDark: "rgba(11, 164, 158, 1)",
     },
@@ -30,8 +30,8 @@ const ColorGroups = {
     },
     gmail: {
       primary: "rgba(255, 248, 248, 1)",
-      background: "rgba(241, 68, 64, 0.5)",
-      dark: "rgba(190, 11, 7, 0.4)",
+      background: "rgba(241, 68, 64, 0.2)",
+      dark: "rgba(241, 68, 64, 0.5)",
       text: "rgba(241, 68, 64, 1)",
       lightDark: "rgba(241, 68, 64, 1)",
     },

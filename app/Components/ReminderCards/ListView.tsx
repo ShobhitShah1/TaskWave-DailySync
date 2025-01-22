@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   senderName: {
-    fontSize: 20,
+    fontSize: 18.5,
     fontFamily: FONTS.SemiBold,
   },
   typeContainer: {
