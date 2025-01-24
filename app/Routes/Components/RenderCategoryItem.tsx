@@ -32,13 +32,12 @@ const RenderCategoryItem = ({
 
   return (
     <Animated.View
-      // entering={FadeIn}
       style={[
         styles.pressableContainer,
         {
           borderColor: isSelected
             ? item?.type === "gmail"
-              ? item?.color?.background
+              ? item?.color?.dark
               : item?.color?.primary
             : colors.borderColor,
         },
@@ -57,7 +56,7 @@ const RenderCategoryItem = ({
           tintColor={
             isSelected
               ? item?.type === "gmail"
-                ? item?.color?.background
+                ? item?.color?.dark
                 : item?.color?.primary
               : undefined
           }

@@ -48,7 +48,7 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
   const storeTheme = async () => {
     try {
       const storedTheme = storage.getString("themeMode");
-      const MyTheme: Theme = (storedTheme as Theme) || "light";
+      const MyTheme: Theme = (storedTheme as Theme) || "dark";
       await SystemUI.setBackgroundColorAsync(
         MyTheme === "light" ? "#ffffff" : "#303334"
       );

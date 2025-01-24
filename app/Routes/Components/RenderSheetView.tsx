@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import React, { memo } from "react";
-import { Image, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import { useAppContext } from "../../Contexts/ThemeProvider";
 import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
@@ -41,11 +41,15 @@ const RenderSheetView = ({
         backgroundColor={colors.background}
         style={theme === "dark" ? "light" : "dark"}
       />
-      <View style={styles.sheetSuggestionView}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.contentContainerStyle}
+      >
         {initialCategories?.map((res) => {
           const notificationColors = useNotificationIconColors(res.type);
-
           const isSelected = res.type === selectedCategory;
+
           return (
             <Pressable
               onPress={() => {
@@ -70,7 +74,8 @@ const RenderSheetView = ({
                 },
               ]}
             >
-              <Image
+              <Animated.Image
+                entering={FadeIn}
                 resizeMode="contain"
                 tintColor={
                   selectedCategory !== "gmail" && res.type === "gmail"
@@ -90,7 +95,7 @@ const RenderSheetView = ({
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
       <Animated.FlatList
         numColumns={2}
         entering={FadeIn}
@@ -110,6 +115,7 @@ const RenderSheetView = ({
         keyExtractor={(item) => item?.id?.toString()}
         contentContainerStyle={{ rowGap: 15, paddingBottom: 90 }}
         columnWrapperStyle={{ justifyContent: "space-between" }}
+        removeClippedSubviews
       />
     </View>
   );
@@ -118,13 +124,15 @@ const RenderSheetView = ({
 export default memo(RenderSheetView);
 
 const styles = StyleSheet.create({
-  sheetSuggestionView: {
-    alignSelf: "center",
-    marginBottom: 20,
-    marginTop: 5,
-    gap: 15,
-    flexDirection: "row",
+  contentContainerStyle: {
+    columnGap: 13,
+    flexGrow: 1,
+    paddingTop: 5,
+    paddingBottom: 15,
+    alignItems: "center",
     overflow: "visible",
+    justifyContent: "center",
+    alignContent: "center",
   },
   sheetSuggestionImageView: {
     width: 35,

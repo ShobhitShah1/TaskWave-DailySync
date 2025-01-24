@@ -404,7 +404,9 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   contentContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    paddingTop: 10,
   },
   flatListContainer: {
     rowGap: 15,

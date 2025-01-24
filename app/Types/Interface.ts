@@ -35,7 +35,7 @@ export type RootStackParamList = {
     notification: Notification;
   };
   ReminderPreview: {
-    notificationData: Notification;
+    notificationData: Notification | { id: string };
   };
   AboutApp: undefined;
   HowAppWorks: undefined;

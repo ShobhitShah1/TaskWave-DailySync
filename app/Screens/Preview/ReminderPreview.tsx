@@ -71,6 +71,7 @@ const ReminderPreview = () => {
 
   const documentPreviews = useMemo(
     () =>
+      notificationData?.attachments &&
       notificationData?.attachments?.map(
         (document: DocumentPickerResponse, index) => {
           const isImage = document.type?.startsWith("image");

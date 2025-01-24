@@ -22,6 +22,7 @@ import { RootStackParamList } from "../Types/Interface";
 import BottomTab from "./BottomTab";
 import { useQuickActionCallback } from "expo-quick-actions/hooks";
 import { useBottomSheet } from "../Contexts/BottomSheetProvider";
+import { navigationRef } from "./RootNavigation";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -49,6 +50,7 @@ const Routes = () => {
 
   return (
     <NavigationContainer
+      ref={navigationRef}
       theme={MyTheme}
       onReady={() => {
         setTimeout(() => {
@@ -68,7 +70,11 @@ const Routes = () => {
             headerShown: false,
             animation: "ios",
             navigationBarColor:
-              route?.name === "OnBoarding" ? colors.white : colors.bottomTab,
+              route?.name === "OnBoarding"
+                ? colors.white
+                : route?.name === "BottomTab"
+                ? colors?.bottomTab
+                : colors?.background,
           })}
         >
           {showOnboarding !== "no" && (

@@ -57,8 +57,8 @@ export const formatTime = (date: Date) => {
 
 export const formatDate = (date: Date, isSortDayName: boolean = false) => {
   const dayName = isSortDayName
-    ? sortDaysOfWeek[date.getDay()]
-    : daysOfWeek[date.getDay()];
+    ? sortDaysOfWeek[date?.getDay()]
+    : daysOfWeek[date?.getDay()];
   const day = date.getDate();
   const month = monthsOfYear[date.getMonth()];
 

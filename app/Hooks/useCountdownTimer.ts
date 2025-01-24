@@ -40,10 +40,15 @@ export function useCountdownTimer(
         const secondsLeft = Math.floor((diff % (1000 * 60)) / 1000);
 
         setTimeLeft(
-          `${String(hoursLeft).padStart(2, "0")}:${String(minutesLeft).padStart(2, "0")}:${String(secondsLeft).padStart(2, "0")}`
+          `${String(hoursLeft).padStart(2, "0")}:${String(minutesLeft).padStart(
+            2,
+            "0"
+          )}:${String(secondsLeft).padStart(2, "0")}`
         );
         setFormattedTimeLeft(
-          `${String(hoursLeft).padStart(2, "0")}Hrs : ${String(minutesLeft).padStart(2, "0")}Min : ${String(secondsLeft).padStart(2, "0")}Sec`
+          `${String(hoursLeft).padStart(2, "0")}Hrs : ${String(
+            minutesLeft
+          ).padStart(2, "0")}Min : ${String(secondsLeft).padStart(2, "0")}Sec`
         );
       }
     };
