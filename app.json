@@ -44,11 +44,11 @@
           "androidIcons": {
             "wave_icon": {
               "foregroundImage": "./assets/Icons/ic_wave.png",
-              "backgroundColor": "#151616"
+              "backgroundColor": "#ffffff"
             },
             "plus_icon": {
               "foregroundImage": "./assets/Icons/ic_plus.png",
-              "backgroundColor": "#151616"
+              "backgroundColor": "#ffffff"
             }
           }
         }
