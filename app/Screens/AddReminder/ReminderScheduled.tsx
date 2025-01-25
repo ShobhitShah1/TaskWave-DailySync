@@ -16,6 +16,7 @@ import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useThemeColors from "../../Hooks/useThemeMode";
 import { Notification } from "../../Types/Interface";
 import { getNotificationTitle } from "../../Utils/getNotificationTitle";
+import { showMessage } from "react-native-flash-message";
 
 type ReminderScheduledProps = {
   params: { themeColor: string; notification: Notification };
@@ -49,26 +50,47 @@ const monthsOfYear = [
 ];
 
 export const formatTime = (date: Date) => {
-  const hours = date.getHours() % 12 || 12;
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  const ampm = date.getHours() >= 12 ? "PM" : "AM";
-  return `${hours}:${minutes} ${ampm}`;
+  try {
+    if (!date) {
+      return null;
+    }
+
+    const formatDate = new Date(date);
+
+    const hours = formatDate?.getHours() % 12 || 12;
+    const minutes = formatDate?.getMinutes()?.toString()?.padStart(2, "0");
+    const ampm = formatDate?.getHours() >= 12 ? "PM" : "AM";
+    return `${hours || "00"}:${minutes || "00"} ${ampm || "00"}`;
+  } catch (error) {}
 };
 
 export const formatDate = (date: Date, isSortDayName: boolean = false) => {
-  const dayName = isSortDayName
-    ? sortDaysOfWeek[date?.getDay()]
-    : daysOfWeek[date?.getDay()];
-  const day = date.getDate();
-  const month = monthsOfYear[date.getMonth()];
+  try {
+    if (!date) {
+      return null;
+    }
 
-  return `${dayName}, ${day} ${month}`;
+    const formatDate = new Date(date);
+
+    const dayName = isSortDayName
+      ? sortDaysOfWeek?.[formatDate?.getDay()]
+      : daysOfWeek?.[formatDate?.getDay()];
+    const day = formatDate?.getDate();
+    const month = monthsOfYear?.[formatDate.getMonth()];
+
+    return `${dayName || ""}, ${day || ""} ${month || ""}`;
+  } catch (error) {}
 };
 
 export const formatDateTime = (date: Date) => {
-  const formattedTime = formatTime(date);
-  const formattedDate = formatDate(date);
-  return `${formattedTime} on ${formattedDate}`;
+  try {
+    if (!date) {
+      return null;
+    }
+    const formattedTime = formatTime(date);
+    const formattedDate = formatDate(date);
+    return `${formattedTime} on ${formattedDate}`;
+  } catch (error) {}
 };
 
 const ReminderScheduled = () => {

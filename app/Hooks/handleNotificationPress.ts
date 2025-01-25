@@ -1,6 +1,8 @@
 import { Linking, NativeModules } from "react-native";
 import { showMessage } from "react-native-flash-message";
 import { Notification } from "../Types/Interface";
+import { parseNotificationData } from "../Utils/notificationParser";
+import { navigationRef } from "../Routes/RootNavigation";
 
 const { SendMessagesModule } = NativeModules;
 
@@ -168,7 +170,17 @@ const notificationHandlers = {
     }
   },
 
-  note: () => {},
+  note: (data: Notification) => {
+    try {
+      const parseData = parseNotificationData(data);
+
+      navigationRef.navigate("ReminderPreview", {
+        notificationData: parseData,
+      });
+    } catch (error: any) {
+      showError(error?.message?.toString());
+    }
+  },
 };
 
 export const handleNotificationPress = async (notification: any) => {

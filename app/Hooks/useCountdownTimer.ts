@@ -7,7 +7,7 @@ interface CountdownTimerHook {
 }
 
 export function useCountdownTimer(
-  endDate: Date,
+  endDate: Date | string | undefined | null,
   onTimeOver?: () => void
 ): CountdownTimerHook {
   const [timeLeft, setTimeLeft] = useState("00:00:00");
@@ -18,9 +18,16 @@ export function useCountdownTimer(
   const intervalId = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    if (!endDate) {
+      setTimeIsOver(true);
+      return;
+    }
+
+    const parsedEndDate = endDate instanceof Date ? endDate : new Date(endDate);
+
     const updateTimer = () => {
       const now = new Date();
-      const diff = endDate?.getTime() - now?.getTime();
+      const diff = parsedEndDate.getTime() - now.getTime();
 
       if (diff <= 0) {
         setTimeLeft("00:00:00");

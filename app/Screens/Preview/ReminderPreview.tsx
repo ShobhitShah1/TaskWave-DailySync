@@ -62,10 +62,10 @@ const ReminderPreview = () => {
   }, [params, notificationData]);
 
   const { createViewColor, icon } = useNotificationIconColors(notificationType);
-  const { formattedTimeLeft } = useCountdownTimer(notificationData?.date);
+  const { formattedTimeLeft, timeIsOver } = useCountdownTimer(
+    notificationData?.date || ""
+  );
   const { deleteNotification } = useReminder();
-
-  const { timeIsOver } = useCountdownTimer(notificationData?.date);
 
   const [hours, minutes, seconds] = formattedTimeLeft.split(" : ");
 
