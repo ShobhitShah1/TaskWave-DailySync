@@ -40,6 +40,11 @@ type NotificationProps = {
   params: { notificationData: Notification };
 };
 
+const LIGHT_COLORS = "rgba(255, 255, 255, 0.8)";
+const DARK_COLORS = "rgba(48, 51, 52, 1)";
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 const ReminderPreview = () => {
   let imageIndexCounter = 0;
   const style = styles();
@@ -316,12 +321,7 @@ const ReminderPreview = () => {
               <Text
                 style={[
                   style.dateTimeText,
-                  {
-                    color:
-                      theme === "dark"
-                        ? "rgba(255, 255, 255, 0.8)"
-                        : "rgba(48, 51, 52, 1)",
-                  },
+                  { color: theme === "dark" ? LIGHT_COLORS : DARK_COLORS },
                 ]}
               >
                 {formatDate(notificationData.date)}
@@ -329,12 +329,7 @@ const ReminderPreview = () => {
               <Text
                 style={[
                   style.dateTimeText,
-                  {
-                    color:
-                      theme === "dark"
-                        ? "rgba(255, 255, 255, 0.8)"
-                        : "rgba(48, 51, 52, 1)",
-                  },
+                  { color: theme === "dark" ? LIGHT_COLORS : DARK_COLORS },
                 ]}
               >
                 {formatTime(notificationData.date)}
@@ -410,15 +405,17 @@ const ReminderPreview = () => {
       </View>
 
       <View style={style.bottomButtons}>
-        <Pressable
+        <AnimatedPressable
+          layout={LinearTransition}
           style={[style.baseButton, style.deleteButton]}
           onPress={onDeleteClick}
         >
           <Image source={AssetsPath.ic_delete} style={style.buttonIcon} />
           <Text style={style.buttonText}>Delete</Text>
-        </Pressable>
+        </AnimatedPressable>
 
-        <Pressable
+        <AnimatedPressable
+          layout={LinearTransition}
           style={[style.baseButton, style.editButton]}
           onPress={() => {
             navigation.navigate("CreateReminder", {
@@ -429,10 +426,11 @@ const ReminderPreview = () => {
         >
           <Image source={AssetsPath.ic_edit} style={style.buttonIcon} />
           <Text style={style.buttonText}>Edit</Text>
-        </Pressable>
+        </AnimatedPressable>
 
-        {timeIsOver && (
-          <Pressable
+        {timeIsOver && notificationType !== "note" && (
+          <AnimatedPressable
+            layout={LinearTransition}
             style={[style.baseButton, { backgroundColor: createViewColor }]}
             onPress={() => {
               handleNotificationPress(notificationData);
@@ -444,7 +442,7 @@ const ReminderPreview = () => {
               tintColor={colors.white}
             />
             <Text style={style.buttonText}>Open</Text>
-          </Pressable>
+          </AnimatedPressable>
         )}
       </View>
 
