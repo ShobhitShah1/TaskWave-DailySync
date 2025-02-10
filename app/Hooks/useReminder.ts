@@ -10,12 +10,17 @@ import notifee, {
 import * as SQLite from "expo-sqlite";
 import { useEffect, useState } from "react";
 import { showMessage } from "react-native-flash-message";
-import { Contact, Notification } from "../Types/Interface";
+import { Contact, Notification, RescheduleConfig } from "../Types/Interface";
 import { storage } from "../Contexts/ThemeProvider";
 import { sounds } from "../Constants/Data";
 
 export const CHANNEL_ID = "reminder";
 export const CHANNEL_NAME = "Reminder";
+
+export const RESCHEDULE_CONFIG: RescheduleConfig = {
+  defaultDelay: 1, // default 1 minutes
+  maxRetries: 3, // optional: limit number of reschedules
+};
 
 export const createNotificationChannel = async () => {
   try {
@@ -43,8 +48,19 @@ export const createNotificationChannel = async () => {
   }
 };
 
+const createFutureDate = (delayMinutes: number) => {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() + delayMinutes);
+  return date;
+};
+
 export const scheduleNotification = async (
-  notification: Notification
+  notification: Notification,
+  rescheduleOptions?: {
+    isReschedule?: boolean;
+    delayMinutes?: number;
+    retryCount?: number;
+  }
 ): Promise<string | null> => {
   try {
     const {
@@ -62,15 +78,20 @@ export const scheduleNotification = async (
     } = notification;
 
     await notifee.requestPermission();
-
     await createNotificationChannel();
-
     const channelId = storage.getString("notificationSound");
+
+    const notificationDate = rescheduleOptions?.isReschedule
+      ? createFutureDate(
+          rescheduleOptions.delayMinutes || RESCHEDULE_CONFIG.defaultDelay
+        )
+      : date instanceof Date
+      ? date
+      : new Date(date);
 
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
-      timestamp:
-        date instanceof Date ? date.getTime() : new Date(date).getTime(),
+      timestamp: notificationDate.getTime(),
       repeatFrequency:
         scheduleFrequency === "Daily"
           ? RepeatFrequency.DAILY
@@ -82,18 +103,29 @@ export const scheduleNotification = async (
       },
     };
 
+    // Create rescheduleInfo as a string if it exists
+    const rescheduleInfoString = rescheduleOptions?.isReschedule
+      ? JSON.stringify({
+          isRescheduled: true,
+          retryCount: (rescheduleOptions.retryCount || 0) + 1,
+          delayMinutes:
+            rescheduleOptions.delayMinutes || RESCHEDULE_CONFIG.defaultDelay,
+        })
+      : "";
+
     const notificationData = {
       ...notification,
       id: id || "",
       type,
       message,
-      date: date.toISOString(),
+      date: notificationDate.toISOString(),
       subject: subject || "",
       toContact: JSON.stringify(toContact),
       toMail: JSON.stringify(toMail),
       attachments: JSON.stringify(attachments),
       memo: JSON.stringify(memo),
       telegramUsername: telegramUsername || "",
+      rescheduleInfo: rescheduleInfoString,
     };
 
     const imageAttachment = attachments?.find((attachment) =>
@@ -118,31 +150,6 @@ export const scheduleNotification = async (
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
           pressAction: { id: "default" },
-        },
-        data: notificationData as any,
-      },
-      trigger
-    );
-
-    await notifee.createTriggerNotification(
-      {
-        id: notifeeNotificationId,
-        title:
-          type === "gmail"
-            ? subject
-            : `Reminder: ${subject || "You have an upcoming task"}`,
-        body:
-          message.toString() ||
-          `Don't forget! You have a task with ${
-            toContact?.map((contact) => contact.name).join(", ") ||
-            toMail.join(", ")
-          }. Please check details or contact them if needed.`,
-        android: {
-          channelId,
-          sound: channelId,
-          visibility: AndroidVisibility.PUBLIC,
-          importance: AndroidImportance.HIGH,
-          pressAction: { id: "default" },
           ...(imageAttachment?.fileCopyUri && {
             style: {
               type: AndroidStyle.BIGPICTURE,
@@ -150,11 +157,7 @@ export const scheduleNotification = async (
             },
           }),
         },
-
-        data: {
-          ...notificationData,
-          id: notifeeNotificationId,
-        } as any,
+        data: notificationData as any,
       },
       trigger
     );

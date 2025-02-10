@@ -93,6 +93,11 @@ export interface Notification {
   scheduleFrequency: FrequencyType | null;
   memo?: Memo[];
   telegramUsername: string;
+  rescheduleInfo?: {
+    isReschedule?: boolean;
+    delayMinutes?: number;
+    retryCount?: number;
+  };
 }
 
 export interface SimplifiedContact {
@@ -238,4 +243,9 @@ export interface Sound {
   uri: any;
   canPlay: boolean;
   soundKeyName: string;
+}
+
+export interface RescheduleConfig {
+  defaultDelay: number; // minutes
+  maxRetries?: number; // optional maximum number of reschedules
 }

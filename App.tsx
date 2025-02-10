@@ -14,9 +14,13 @@ import { AppProvider } from "./app/Contexts/ThemeProvider";
 import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
 import { updateNotification } from "./app/Hooks/updateNotification";
 import updateToNextDate from "./app/Hooks/updateToNextDate";
-import useReminder from "./app/Hooks/useReminder";
+import useReminder, {
+  RESCHEDULE_CONFIG,
+  scheduleNotification,
+} from "./app/Hooks/useReminder";
 import Routes from "./app/Routes/Routes";
 import { Notification } from "./app/Types/Interface";
+import { parseNotificationData } from "./app/Utils/notificationParser";
 
 ExpoSplashScreen.preventAutoHideAsync();
 
@@ -41,6 +45,37 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
 
     switch (type) {
       case EventType.DISMISSED:
+        if (notification) {
+          const parseData = parseNotificationData(notification);
+
+          const rescheduleInfo = parseData.rescheduleInfo
+            ? JSON.parse(
+                typeof parseData.rescheduleInfo === "string"
+                  ? parseData.rescheduleInfo
+                  : JSON.stringify(parseData.rescheduleInfo)
+              )
+            : null;
+
+          const retryCount = rescheduleInfo?.retryCount || 0;
+
+          if (
+            !RESCHEDULE_CONFIG.maxRetries ||
+            retryCount < RESCHEDULE_CONFIG.maxRetries
+          ) {
+            try {
+              const res = await scheduleNotification(parseData, {
+                isReschedule: true,
+                delayMinutes: RESCHEDULE_CONFIG.defaultDelay,
+                retryCount: retryCount,
+              });
+            } catch (error: any) {
+              showMessage({
+                message: String(error?.message || error),
+                type: "danger",
+              });
+            }
+          }
+        }
         break;
       case EventType.PRESS:
         handleNotificationPress(notification);
@@ -116,6 +151,37 @@ export default function App() {
 
         switch (type) {
           case EventType.DISMISSED:
+            if (notification) {
+              const parseData = parseNotificationData(notification);
+
+              const rescheduleInfo = parseData.rescheduleInfo
+                ? JSON.parse(
+                    typeof parseData.rescheduleInfo === "string"
+                      ? parseData.rescheduleInfo
+                      : JSON.stringify(parseData.rescheduleInfo)
+                  )
+                : null;
+
+              const retryCount = rescheduleInfo?.retryCount || 0;
+
+              if (
+                !RESCHEDULE_CONFIG.maxRetries ||
+                retryCount < RESCHEDULE_CONFIG.maxRetries
+              ) {
+                try {
+                  const res = await scheduleNotification(parseData, {
+                    isReschedule: true,
+                    delayMinutes: RESCHEDULE_CONFIG.defaultDelay,
+                    retryCount: retryCount,
+                  });
+                } catch (error: any) {
+                  showMessage({
+                    message: String(error?.message || error),
+                    type: "danger",
+                  });
+                }
+              }
+            }
             break;
           case EventType.PRESS:
             handleNotificationPress(notification);
