@@ -41,10 +41,12 @@ export const createNotificationChannel = async () => {
       });
     });
   } catch (error: any) {
-    showMessage({
-      message: error?.message?.toString(),
-      type: "danger",
-    });
+    if (!error.message?.toString()?.includes("invalid notification ID")) {
+      showMessage({
+        message: error?.message?.toString(),
+        type: "danger",
+      });
+    }
   }
 };
 
@@ -164,6 +166,9 @@ export const scheduleNotification = async (
 
     return notifeeNotificationId;
   } catch (error: any) {
+    if (error.message?.toString()?.includes("invalid notification ID")) {
+      return null;
+    }
     throw new Error(error);
   }
 };
@@ -423,6 +428,10 @@ const useReminder = () => {
     );
 
     try {
+      if (!id?.toString()) {
+        return false;
+      }
+
       await notifee.createTriggerNotification(
         {
           id: id?.toString(),
@@ -454,10 +463,12 @@ const useReminder = () => {
         trigger
       );
     } catch (error: any) {
-      showMessage({
-        message: String(error?.message || error),
-        type: "danger",
-      });
+      if (!error.message?.includes("invalid notification ID")) {
+        showMessage({
+          message: String(error?.message || error),
+          type: "danger",
+        });
+      }
       return false;
     }
 
@@ -546,10 +557,12 @@ const useReminder = () => {
       await database.execAsync(`DELETE FROM notifications WHERE id = '${id}'`);
       return true;
     } catch (error: any) {
-      showMessage({
-        message: String(error?.message || error),
-        type: "danger",
-      });
+      if (!error.message?.includes("invalid notification ID")) {
+        showMessage({
+          message: String(error?.message || error),
+          type: "danger",
+        });
+      }
       return false;
     }
   };
@@ -591,10 +604,12 @@ const useReminder = () => {
 
       return result;
     } catch (error: any) {
-      showMessage({
-        message: String(error?.message || error),
-        type: "danger",
-      });
+      if (!error.message?.includes("invalid notification ID")) {
+        showMessage({
+          message: String(error?.message || error),
+          type: "danger",
+        });
+      }
       return [];
     }
   };
@@ -641,10 +656,12 @@ const useReminder = () => {
 
       return result;
     } catch (error: any) {
-      showMessage({
-        message: String(error?.message || error),
-        type: "danger",
-      });
+      if (!error.message?.includes("invalid notification ID")) {
+        showMessage({
+          message: String(error?.message || error),
+          type: "danger",
+        });
+      }
       return null;
     }
   };

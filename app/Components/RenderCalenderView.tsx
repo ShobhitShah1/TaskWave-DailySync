@@ -67,7 +67,7 @@ const styles = () => {
       justifyContent: "center",
     },
     calenderWeekText: {
-      fontSize: 16,
+      fontSize: 14,
       letterSpacing: 1.1,
       fontFamily: FONTS.SemiBold,
       textAlign: "center",
@@ -80,7 +80,7 @@ const styles = () => {
       borderRadius: 500,
     },
     calenderDayText: {
-      fontSize: 16,
+      fontSize: 14,
       color: colors.text,
       fontFamily: FONTS.Medium,
       textAlign: "center",

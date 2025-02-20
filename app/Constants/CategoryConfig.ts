@@ -10,6 +10,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       description: "Let’s create whatsapp event",
       glowIcon: AssetsPath.ic_whatsappGlow,
       icon: AssetsPath.ic_whatsapp,
+      history_icon: AssetsPath.ic_whatsapp_history,
       color: {
         background: colors.whatsappBackground,
         primary: colors.whatsapp,
@@ -22,6 +23,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       description: "Let’s create business event",
       glowIcon: AssetsPath.ic_whatsappBusinessGlow,
       icon: AssetsPath.ic_whatsappBusiness,
+      history_icon: AssetsPath.ic_whatsappBusiness_history,
       color: {
         background: colors.whatsappBusinessBackground,
         primary: colors.whatsappBusiness,
@@ -34,6 +36,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       description: "Let’s create text messages event",
       icon: AssetsPath.ic_sms,
       glowIcon: AssetsPath.ic_smsGlow,
+      history_icon: AssetsPath.ic_sms_history,
       color: {
         background: colors.smsBackground,
         primary: colors.sms,
@@ -46,6 +49,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       description: "Let’s compose mail event",
       icon: AssetsPath.ic_gmail,
       glowIcon: AssetsPath.ic_gmailGlow,
+      history_icon: AssetsPath.ic_gmail_history,
       color: {
         background: colors.gmailBackground,
         primary: colors.gmail,
@@ -59,6 +63,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       description: "Let’s create phone event",
       icon: AssetsPath.ic_phone,
       glowIcon: AssetsPath.ic_phoneGlow,
+      history_icon: AssetsPath.ic_phone_history,
       color: {
         background: colors.smsBackground,
         primary: colors.sms,
@@ -71,6 +76,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       description: "Let’s create telegram event",
       icon: AssetsPath.ic_telegram,
       glowIcon: AssetsPath.ic_telegramGlow,
+      history_icon: AssetsPath.ic_telegram_history,
       color: {
         background: colors.telegramBackground,
         primary: colors.telegram,
@@ -83,6 +89,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       description: "Let’s create note event",
       icon: AssetsPath.ic_notes,
       glowIcon: AssetsPath.ic_notesGlow,
+      history_icon: AssetsPath.ic_notes_history,
       color: {
         background: colors.noteBackground,
         primary: colors.note,

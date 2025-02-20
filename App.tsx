@@ -63,16 +63,18 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
             retryCount < RESCHEDULE_CONFIG.maxRetries
           ) {
             try {
-              const res = await scheduleNotification(parseData, {
+              await scheduleNotification(parseData, {
                 isReschedule: true,
                 delayMinutes: RESCHEDULE_CONFIG.defaultDelay,
                 retryCount: retryCount,
               });
             } catch (error: any) {
-              showMessage({
-                message: String(error?.message || error),
-                type: "danger",
-              });
+              if (!error.message?.includes("invalid notification ID")) {
+                showMessage({
+                  message: String(error?.message || error),
+                  type: "danger",
+                });
+              }
             }
           }
         }
@@ -90,10 +92,12 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
               await updateNotification(updatedNotification);
             }
           } catch (error: any) {
-            showMessage({
-              message: String(error?.message || error),
-              type: "danger",
-            });
+            if (!error.message?.includes("invalid notification ID")) {
+              showMessage({
+                message: String(error?.message || error),
+                type: "danger",
+              });
+            }
           }
         }
 
@@ -103,10 +107,12 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
         return;
     }
   } catch (error: any) {
-    showMessage({
-      message: String(error?.message || error),
-      type: "danger",
-    });
+    if (!error.message?.includes("invalid notification ID")) {
+      showMessage({
+        message: String(error?.message || error),
+        type: "danger",
+      });
+    }
   }
 });
 
@@ -131,16 +137,20 @@ export default function App() {
           }
         })
         .catch((error) => {
-          showMessage({
-            message: String(error?.message || error),
-            type: "danger",
-          });
+          if (!error.message?.includes("invalid notification ID")) {
+            showMessage({
+              message: String(error?.message || error),
+              type: "danger",
+            });
+          }
         });
     } catch (error: any) {
-      showMessage({
-        message: String(error?.message || error),
-        type: "danger",
-      });
+      if (!error.message?.includes("invalid notification ID")) {
+        showMessage({
+          message: String(error?.message || error),
+          type: "danger",
+        });
+      }
     }
   }, []);
 
@@ -169,16 +179,18 @@ export default function App() {
                 retryCount < RESCHEDULE_CONFIG.maxRetries
               ) {
                 try {
-                  const res = await scheduleNotification(parseData, {
+                  await scheduleNotification(parseData, {
                     isReschedule: true,
                     delayMinutes: RESCHEDULE_CONFIG.defaultDelay,
                     retryCount: retryCount,
                   });
                 } catch (error: any) {
-                  showMessage({
-                    message: String(error?.message || error),
-                    type: "danger",
-                  });
+                  if (!error.message?.includes("invalid notification ID")) {
+                    showMessage({
+                      message: String(error?.message || error),
+                      type: "danger",
+                    });
+                  }
                 }
               }
             }
@@ -197,19 +209,23 @@ export default function App() {
                   await updateNotification(updatedNotification);
                 }
               } catch (error: any) {
-                showMessage({
-                  message: String(error?.message || error),
-                  type: "danger",
-                });
+                if (!error.message?.includes("invalid notification ID")) {
+                  showMessage({
+                    message: String(error?.message || error),
+                    type: "danger",
+                  });
+                }
               }
             }
             break;
         }
       } catch (error: any) {
-        showMessage({
-          message: String(error?.message || error),
-          type: "danger",
-        });
+        if (!error.message?.includes("invalid notification ID")) {
+          showMessage({
+            message: String(error?.message || error),
+            type: "danger",
+          });
+        }
       }
     });
   }, []);
@@ -265,3 +281,193 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.SemiBold,
   },
 });
+
+// import React, { useState } from "react";
+// import { SafeAreaView, StyleSheet, TouchableOpacity, View } from "react-native";
+// import Animated, {
+//   CurvedTransition,
+//   Easing,
+//   EntryExitTransition,
+//   FadeOut,
+//   FadingTransition,
+//   FlipInEasyY,
+//   FlipOutYLeft,
+//   JumpingTransition,
+//   LinearTransition,
+//   SequencedTransition,
+// } from "react-native-reanimated";
+
+// const INITIAL_LIST = [
+//   { id: 1, emoji: "🍌", color: "#b58df1" },
+//   { id: 2, emoji: "🍎", color: "#ffe780" },
+//   { id: 3, emoji: "🥛", color: "#fa7f7c" },
+//   { id: 4, emoji: "🍙", color: "#82cab2" },
+//   { id: 5, emoji: "🍇", color: "#fa7f7c" },
+//   { id: 6, emoji: "🍕", color: "#b58df1" },
+//   { id: 7, emoji: "🍔", color: "#ffe780" },
+//   { id: 8, emoji: "🍟", color: "#b58df1" },
+// ];
+
+// interface TRANSITION {
+//   label: string;
+//   value: any;
+// }
+
+// const LAYOUT_TRANSITIONS = [
+//   { label: "Linear Transition", value: LinearTransition },
+//   { label: "Sequenced Transition", value: SequencedTransition },
+//   { label: "Fading Transition", value: FadingTransition },
+//   { label: "Jumping Transition", value: JumpingTransition },
+//   {
+//     label: "Curved Transition",
+//     value: CurvedTransition.easingX(Easing.sin).easingY(Easing.exp),
+//   },
+//   {
+//     label: "Entry/Exit Transition",
+//     value: EntryExitTransition.entering(FlipInEasyY).exiting(FlipOutYLeft),
+//   },
+// ];
+
+// export default function App() {
+//   const [items, setItems] = useState(INITIAL_LIST);
+//   const [selected, setSelected] = useState(LAYOUT_TRANSITIONS[0]);
+
+//   const removeItem = (idToRemove) => {
+//     const updatedItems = items.filter((item) => item.id !== idToRemove);
+//     setItems(updatedItems);
+//   };
+
+//   const onSelect = (index) => {
+//     setSelected(LAYOUT_TRANSITIONS[index]);
+//     setItems(INITIAL_LIST);
+//   };
+
+//   return (
+//     <SafeAreaView style={styles.container}>
+//       <View style={styles.dropdownContainer}>
+//         {LAYOUT_TRANSITIONS.map((transition, index) => (
+//           <TouchableOpacity
+//             key={transition.label}
+//             style={[
+//               styles.transitionButton,
+//               selected.label === transition.label && {
+//                 backgroundColor: "#4a90e2",
+//               },
+//             ]}
+//             onPress={() => onSelect(index)}
+//           >
+//             <Animated.Text
+//               style={[
+//                 styles.buttonText,
+//                 selected.label === transition.label && { color: "#fff" },
+//               ]}
+//             >
+//               {transition.label.split(" ")[0]}
+//             </Animated.Text>
+//           </TouchableOpacity>
+//         ))}
+//       </View>
+//       <View style={styles.mainContainer}>
+//         <Items selected={selected} items={items} onRemove={removeItem} />
+//       </View>
+//     </SafeAreaView>
+//   );
+// }
+
+// function Items({ selected, items, onRemove }) {
+//   // Create a flat layout where we manually position items in a 2x2 grid
+//   // This approach preserves the animation context better than nested views
+//   return (
+//     <Animated.View style={styles.gridContainer}>
+//       {items.map((item, index) => {
+//         // Calculate row and column positions
+//         const row = Math.floor(index / 2);
+//         const col = index % 2;
+
+//         return (
+//           <Animated.View
+//             key={item.id}
+//             layout={selected.value}
+//             exiting={FadeOut}
+//             style={[
+//               styles.tileContainer,
+//               {
+//                 backgroundColor: item.color,
+//                 left: col === 0 ? "3%" : "52%",
+//                 top: row * 100,
+//               },
+//             ]}
+//           >
+//             <Tile emoji={item.emoji} onRemove={() => onRemove(item.id)} />
+//           </Animated.View>
+//         );
+//       })}
+//     </Animated.View>
+//   );
+// }
+
+// function Tile({ emoji, onRemove }) {
+//   return (
+//     <TouchableOpacity onPress={onRemove} style={styles.tile}>
+//       <Animated.Text style={styles.tileLabel}>{emoji}</Animated.Text>
+//     </TouchableOpacity>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     padding: 32,
+//     width: "auto",
+//     display: "flex",
+//     minHeight: 300,
+//   },
+//   mainContainer: {
+//     flex: 1,
+//     position: "relative",
+//   },
+//   gridContainer: {
+//     position: "relative",
+//     width: "100%",
+//     height: "100%",
+//   },
+//   dropdownContainer: {
+//     display: "flex",
+//     flexDirection: "row",
+//     flexWrap: "wrap",
+//     justifyContent: "center",
+//     marginBottom: 16,
+//     gap: 8,
+//   },
+//   transitionButton: {
+//     paddingVertical: 8,
+//     paddingHorizontal: 12,
+//     backgroundColor: "#f0f0f0",
+//     borderRadius: 8,
+//     marginHorizontal: 4,
+//     marginBottom: 8,
+//   },
+//   buttonText: {
+//     fontSize: 12,
+//     color: "#333",
+//   },
+//   tileContainer: {
+//     width: "45%",
+//     aspectRatio: 1,
+//     borderRadius: 16,
+//     position: "absolute",
+//     justifyContent: "center",
+//     alignItems: "center",
+//   },
+//   tile: {
+//     flex: 1,
+//     height: "100%",
+//     width: "100%",
+//     justifyContent: "center",
+//     alignItems: "center",
+//   },
+//   tileLabel: {
+//     color: "#f8f9ff",
+//     fontSize: 24,
+//   },
+// });

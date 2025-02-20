@@ -20,6 +20,7 @@ const useNotificationIconColors = (
             ? category.color.lightDark || category.color.background
             : category.color.primary,
         icon: category.icon,
+        history_icon: category.history_icon,
       };
       return map;
     }, {});

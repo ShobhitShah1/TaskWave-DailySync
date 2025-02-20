@@ -1,5 +1,13 @@
-import React, { FC, memo, useMemo, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { MenuComponentRef, MenuView } from "@react-native-menu/menu";
+import React, { FC, memo, useMemo, useRef } from "react";
+import {
+  Image,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import AssetsPath from "../../Constants/AssetsPath";
 import { FONTS } from "../../Constants/Theme";
@@ -8,30 +16,10 @@ import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
 import useThemeColors from "../../Hooks/useThemeMode";
 import { formatTime } from "../../Screens/AddReminder/ReminderScheduled";
 import { IListViewProps } from "../../Types/Interface";
-import DropMenu from "../DropMenu";
 
 const LOGO_SIZE = 25;
 
 export type MenuItem = "view" | "edit" | "duplicate" | "delete";
-
-const dropMenuItem = [
-  {
-    key: "view" as MenuItem,
-    title: "View",
-  },
-  {
-    key: "edit" as MenuItem,
-    title: "Edit",
-  },
-  {
-    key: "duplicate" as MenuItem,
-    title: "Duplicate",
-  },
-  {
-    key: "delete" as MenuItem,
-    title: "Delete",
-  },
-];
 
 const GridView: FC<IListViewProps> = ({
   cardBackgroundColor,
@@ -46,6 +34,7 @@ const GridView: FC<IListViewProps> = ({
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
+  const menuRef = useRef<MenuComponentRef>(null);
   const { timeLeft } = useCountdownTimer(notification.date);
 
   const description = useMemo(
@@ -56,8 +45,18 @@ const GridView: FC<IListViewProps> = ({
     [notification]
   );
 
-  const menuListPress = (menuItem: MenuItem) => {
-    switch (menuItem) {
+  const onMenuPress = () => {
+    if (menuRef.current) {
+      menuRef.current?.show();
+    }
+  };
+
+  const handleMenuAction = ({
+    nativeEvent,
+  }: {
+    nativeEvent: { event: string };
+  }) => {
+    switch (nativeEvent.event) {
       case "view":
         onCardPress();
         break;
@@ -73,17 +72,38 @@ const GridView: FC<IListViewProps> = ({
     }
   };
 
+  const menuActions = useMemo(
+    () => [
+      {
+        id: "view",
+        title: "View",
+      },
+      {
+        id: "edit",
+        title: "Edit",
+      },
+      {
+        id: "duplicate",
+        title: "Duplicate",
+      },
+      {
+        id: "delete",
+        title: "Delete",
+        attributes: {
+          destructive: true,
+        },
+      },
+    ],
+    [colors.text]
+  );
+
   return (
     <Animated.View
       entering={FadeIn}
       exiting={FadeOut}
       style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}
     >
-      <Pressable
-        onPress={onCardPress}
-        onLongPress={() => deleteReminder(notification?.id)}
-        style={styles.pressableContainer}
-      >
+      <Pressable onPress={onCardPress} style={styles.pressableContainer}>
         <View style={styles.headerContainer}>
           <Text
             numberOfLines={1}
@@ -147,12 +167,22 @@ const GridView: FC<IListViewProps> = ({
               </Text>
             </View>
           </View>
-          <Pressable style={styles.dropDownContainer}>
-            <DropMenu
-              items={dropMenuItem}
-              color={colors.text}
-              onPress={(key) => menuListPress(key)}
-            />
+          <Pressable onPress={onMenuPress}>
+            <MenuView
+              ref={menuRef}
+              actions={menuActions}
+              style={{ zIndex: 99999999999 }}
+              onPressAction={handleMenuAction}
+              shouldOpenOnLongPress={true}
+              hitSlop={{ bottom: 25, left: 25, right: 25, top: 25 }}
+            >
+              <View style={styles.dropDownContainer}>
+                <Image
+                  source={AssetsPath.ic_dotMenu}
+                  style={[styles.menu, { tintColor: colors.text }]}
+                />
+              </View>
+            </MenuView>
           </Pressable>
         </View>
       </Pressable>
@@ -162,9 +192,9 @@ const GridView: FC<IListViewProps> = ({
 
 const styles = StyleSheet.create({
   cardContainer: {
-    marginVertical: 5,
+    marginVertical: 4.5,
     height: 130,
-    width: "48.5%",
+    width: "49%",
     borderRadius: 15,
     overflow: "hidden",
   },
@@ -262,8 +292,8 @@ const styles = StyleSheet.create({
     borderRightWidth: 1.5,
   },
   menu: {
-    width: 12.5,
-    height: 12.5,
+    width: 14,
+    height: 14,
     resizeMode: "contain",
   },
   dropDownContainer: {

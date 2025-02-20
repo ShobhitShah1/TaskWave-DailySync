@@ -383,19 +383,23 @@ const Home = () => {
         </View>
       </View>
 
-      <FullScreenPreviewModal
-        isVisible={fullScreenPreview}
-        notifications={notificationsState?.allByDate}
-        onClose={() => setFullScreenPreview(false)}
-      />
+      {fullScreenPreview && (
+        <FullScreenPreviewModal
+          isVisible={fullScreenPreview}
+          notifications={notificationsState?.allByDate}
+          onClose={() => setFullScreenPreview(false)}
+        />
+      )}
 
-      <YearMonthPicker
-        isVisible={showDateAndYearModal}
-        selectedYear={selectedDateObject.getFullYear()}
-        selectedMonth={selectedDateObject.getMonth()}
-        onConfirm={handleDateChange}
-        onCancel={() => setShowDateAndYearModal(false)}
-      />
+      {showDateAndYearModal && (
+        <YearMonthPicker
+          isVisible={showDateAndYearModal}
+          selectedYear={selectedDateObject.getFullYear()}
+          selectedMonth={selectedDateObject.getMonth()}
+          onConfirm={handleDateChange}
+          onCancel={() => setShowDateAndYearModal(false)}
+        />
+      )}
     </SafeAreaView>
   );
 };

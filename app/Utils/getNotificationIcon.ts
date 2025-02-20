@@ -4,21 +4,19 @@ import { NotificationType } from "../Types/Interface";
 export const getNotificationIcon = (type: NotificationType) => {
   switch (type) {
     case "whatsapp":
-      return AssetsPath.ic_whatsapp;
+      return AssetsPath.ic_whatsapp_history;
     case "whatsappBusiness":
-      return AssetsPath.ic_whatsappBusiness;
+      return AssetsPath.ic_whatsappBusiness_history;
     case "SMS":
-      return AssetsPath.ic_sms;
+      return AssetsPath.ic_sms_history;
     case "gmail":
-      return AssetsPath.ic_gmail;
+      return AssetsPath.ic_gmail_history;
     case "phone":
-      return AssetsPath.ic_phone;
-    case "instagram":
-      return AssetsPath.ic_instagram;
+      return AssetsPath.ic_phone_history;
     case "telegram":
-      return AssetsPath.ic_telegram;
+      return AssetsPath.ic_telegram_history;
     case "note":
-      return AssetsPath.ic_notes;
+      return AssetsPath.ic_notes_history;
     default:
       return null;
   }

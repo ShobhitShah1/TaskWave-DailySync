@@ -5,7 +5,13 @@ import { FONTS } from "../../../Constants/Theme";
 import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface filterTabProps {
-  res: { title: string; reminders: number; icon: any; type: any };
+  res: {
+    title: string;
+    reminders: number;
+    history_icon: any;
+    icon: any;
+    type: any;
+  };
   index: number;
   onTabPress: () => void;
   isActive: boolean;
@@ -31,7 +37,7 @@ const RenderFilterTabData: FC<filterTabProps> = ({
           <Image
             resizeMode="contain"
             tintColor={colors.grayTitle}
-            source={res.icon}
+            source={res.history_icon}
             style={style.iconStyle}
           />
         )}

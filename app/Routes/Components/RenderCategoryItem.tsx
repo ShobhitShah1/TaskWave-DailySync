@@ -10,18 +10,17 @@ import {
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import AssetsPath from "../../Constants/AssetsPath";
 import { FONTS } from "../../Constants/Theme";
-import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
 import useThemeColors from "../../Hooks/useThemeMode";
 import { CategoryItemType } from "../../Types/Interface";
 
 const RenderCategoryItem = ({
   item,
+  index,
   selectedCategory,
   setSelectedCategory,
   onCategoryClick,
 }: CategoryItemType) => {
   const colors = useThemeColors();
-  const { typeColor } = useNotificationIconColors(item.type);
 
   const isSelected = useMemo(
     () =>
@@ -42,7 +41,7 @@ const RenderCategoryItem = ({
             : colors.borderColor,
         },
       ]}
-      layout={LinearTransition.springify().damping(20).stiffness(300)}
+      entering={FadeIn.delay(80 * index)}
     >
       <Pressable
         style={{ flex: 1 }}
@@ -66,10 +65,9 @@ const RenderCategoryItem = ({
           <View style={styles.innerContainer}>
             <View style={styles.iconContainer}>
               <Image
-                source={item.icon}
+                source={item.glowIcon}
                 style={styles.icon}
                 resizeMode="contain"
-                tintColor={item.type === "gmail" ? undefined : typeColor}
               />
             </View>
 
@@ -90,7 +88,7 @@ const RenderCategoryItem = ({
 
 const styles = StyleSheet.create({
   pressableContainer: {
-    width: "48%",
+    width: "100%",
     height: 180,
     borderRadius: 10,
     borderWidth: 1,
@@ -114,8 +112,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   icon: {
-    width: 25,
-    height: 25,
+    width: 55,
+    height: 55,
   },
   textContainer: {
     marginVertical: 10,

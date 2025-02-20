@@ -286,7 +286,11 @@ const History = () => {
             )
           : notifications;
 
-      setFilteredNotifications(data);
+      const filterData = data?.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      setFilteredNotifications(filterData);
     } catch (error: any) {
       showMessage({
         message: error?.message?.toString(),
@@ -494,6 +498,7 @@ const History = () => {
                 title: "All",
                 type: null,
                 icon: null,
+                history_icon: null,
                 reminders: notifications?.length,
               }}
             />

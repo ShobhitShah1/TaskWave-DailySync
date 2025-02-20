@@ -59,7 +59,10 @@ const ListView: FC<IListViewProps> = ({
           <View style={styles.textContainer}>
             <Text
               numberOfLines={1}
-              style={[styles.senderName, { color: colors.text }]}
+              style={[
+                styles.senderName,
+                { color: theme == "light" ? "#151616" : colors.text },
+              ]}
             >
               {title}
             </Text>
@@ -181,7 +184,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   senderName: {
-    fontSize: 18.5,
+    fontSize: 17.5,
     fontFamily: FONTS.SemiBold,
   },
   typeContainer: {

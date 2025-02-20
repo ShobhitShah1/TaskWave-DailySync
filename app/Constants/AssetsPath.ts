@@ -16,9 +16,16 @@ const ic_sms = require("../../assets/Icons/ic_sms.png");
 const ic_whatsapp = require("../../assets/Icons/ic_whatsapp.png");
 const ic_whatsappBusiness = require("../../assets/Icons/ic_whatsappBusiness.png");
 const ic_phone = require("../../assets/Icons/ic_phone.png");
-const ic_instagram = require("../../assets/Icons/ic_instagram.png");
 const ic_telegram = require("../../assets/Icons/ic_telegram.png");
 const ic_notes = require("../../assets/Icons/ic_notes.png");
+
+const ic_gmail_history = require("../../assets/Icons/ic_gmail_history.png");
+const ic_sms_history = require("../../assets/Icons/ic_sms_history.png");
+const ic_whatsapp_history = require("../../assets/Icons/ic_whatsapp_history.png");
+const ic_whatsappBusiness_history = require("../../assets/Icons/ic_whatsappBusiness_history.png");
+const ic_phone_history = require("../../assets/Icons/ic_phone_history.png");
+const ic_telegram_history = require("../../assets/Icons/ic_telegram_history.png");
+const ic_notes_history = require("../../assets/Icons/ic_notes_history.png");
 
 // Glow
 const ic_gmailGlow = require("../../assets/Icons/ic_gmailGlow.png");
@@ -26,7 +33,6 @@ const ic_smsGlow = require("../../assets/Icons/ic_smsGlow.png");
 const ic_whatsappGlow = require("../../assets/Icons/ic_whatsappGlow.png");
 const ic_whatsappBusinessGlow = require("../../assets/Icons/ic_whatsappBusinessGlow.png");
 const ic_phoneGlow = require("../../assets/Icons/ic_phoneGlow.png");
-// const ic_instagramGlow = require("../../assets/Icons/ic_instagramGlow.png");
 const ic_telegramGlow = require("../../assets/Icons/ic_telegramGlow.png");
 const ic_notesGlow = require("../../assets/Icons/ic_notesGlow.png");
 
@@ -112,16 +118,24 @@ export default {
   ic_whatsapp,
   ic_whatsappBusiness,
   ic_phone,
-  ic_instagram,
+  // ic_instagram,
   ic_telegram,
   ic_notes,
+
+  ic_gmail_history,
+  ic_sms_history,
+  ic_whatsapp_history,
+  ic_whatsappBusiness_history,
+  ic_phone_history,
+  // ic_instagram_history,
+  ic_telegram_history,
+  ic_notes_history,
 
   ic_gmailGlow,
   ic_smsGlow,
   ic_whatsappGlow,
   ic_whatsappBusinessGlow,
   ic_phoneGlow,
-  // ic_instagramGlow,
   ic_telegramGlow,
   ic_notesGlow,
 

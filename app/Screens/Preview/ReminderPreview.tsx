@@ -66,7 +66,8 @@ const ReminderPreview = () => {
     return notificationData?.type;
   }, [params, notificationData]);
 
-  const { createViewColor, icon } = useNotificationIconColors(notificationType);
+  const { createViewColor, history_icon } =
+    useNotificationIconColors(notificationType);
   const { formattedTimeLeft, timeIsOver } = useCountdownTimer(
     notificationData?.date || ""
   );
@@ -280,7 +281,7 @@ const ReminderPreview = () => {
               },
             ]}
           >
-            <Image source={icon} style={style.notificationIcon} />
+            <Image source={history_icon} style={style.notificationIcon} />
           </View>
 
           <Text style={[style.notificationText, { color: colors.text }]}>

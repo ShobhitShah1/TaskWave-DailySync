@@ -108,10 +108,12 @@ export const updateNotification = async (
       trigger
     );
   } catch (error: any) {
-    showMessage({
-      message: String(error?.message || error),
-      type: "danger",
-    });
+    if (!error.message?.includes("invalid notification ID")) {
+      showMessage({
+        message: String(error?.message || error),
+        type: "danger",
+      });
+    }
     return false;
   }
 
@@ -177,6 +179,10 @@ export const updateNotification = async (
     await database.execAsync(transactionSQL);
     return true;
   } catch (error: any) {
+    if (!error.message?.includes("invalid notification ID")) {
+      return false;
+    }
+
     throw new Error(String(error?.message || error));
   }
 };

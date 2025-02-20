@@ -6,10 +6,8 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
-import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
 import { NotificationType } from "../../../Types/Interface";
 import styles from "../styles";
-import useThemeColors from "../../../Hooks/useThemeMode";
 
 interface FilterButtonProps {
   data: any;
@@ -19,14 +17,12 @@ interface FilterButtonProps {
 }
 
 export const FilterButton = memo(
-  ({ onPress, data, selectedFilter, backgroundColor }: FilterButtonProps) => {
+  ({ onPress, data, selectedFilter }: FilterButtonProps) => {
     const style = styles();
-    const colors = useThemeColors();
     const { theme } = useAppContext();
 
     const isSelected = selectedFilter === data?.type;
     const scale = useSharedValue(isSelected ? 1.05 : 1);
-    const notificationColors = useNotificationIconColors(data?.type);
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
@@ -44,13 +40,6 @@ export const FilterButton = memo(
           style={[
             style.filterBtn,
             {
-              backgroundColor: isSelected
-                ? notificationColors.backgroundColor || "#DDEEFF"
-                : backgroundColor,
-              // borderColor: isSelected
-              //   ? notificationColors.createViewColor || "#3366FF"
-              //   : "transparent",
-              // borderWidth: 1.5,
               shadowColor: isSelected ? "#000" : "transparent",
               shadowOffset: { width: 0, height: isSelected ? 2 : 0 },
               shadowOpacity: isSelected ? 0.3 : 0,
@@ -67,16 +56,11 @@ export const FilterButton = memo(
         >
           <Image
             source={isSelected ? data?.glowIcon : data?.icon}
-            tintColor={
-              selectedFilter !== "gmail" && data.type === "gmail"
-                ? colors.white
-                : undefined
-            }
             style={[
               style.filterIcon,
               {
-                width: isSelected ? "130%" : "50%",
-                height: isSelected ? "130%" : "50%",
+                width: isSelected ? "155%" : "150%",
+                height: isSelected ? "155%" : "150%",
               },
             ]}
           />

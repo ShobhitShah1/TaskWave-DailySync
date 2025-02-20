@@ -1,27 +1,25 @@
 import { StatusBar } from "expo-status-bar";
 import React, { memo } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
-import { useAppContext } from "../../Contexts/ThemeProvider";
-import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
-import useThemeColors from "../../Hooks/useThemeMode";
 import {
-  NotificationCategory,
-  NotificationType,
-  remindersCategoriesType,
-} from "../../Types/Interface";
+  Dimensions,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  SequencedTransition,
+} from "react-native-reanimated";
+import { useAppContext } from "../../Contexts/ThemeProvider";
+import useThemeColors from "../../Hooks/useThemeMode";
+import { RenderSheetViewProps } from "../../Types/Interface";
 import { getCategories } from "../../Utils/getCategories";
 import RenderCategoryItem from "./RenderCategoryItem";
 
-interface RenderSheetViewProps {
-  categories: NotificationCategory[];
-  onCategoryClick: (
-    category: remindersCategoriesType,
-    isSelected: boolean
-  ) => void;
-  selectedCategory: NotificationType;
-  setSelectedCategory: (category: NotificationType) => void;
-}
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const ITEM_WIDTH = SCREEN_WIDTH / 2 - 24;
 
 const RenderSheetView = ({
   categories,
@@ -34,20 +32,36 @@ const RenderSheetView = ({
 
   const initialCategories = getCategories(colors);
 
+  const createRows = (items: any) => {
+    const rows = [];
+    for (let i = 0; i < items.length; i += 2) {
+      const row = [items[i]];
+      if (i + 1 < items.length) {
+        row.push(items[i + 1]);
+      } else {
+        row.push(null);
+      }
+      rows.push(row);
+    }
+    return rows;
+  };
+
+  const rows = createRows(categories);
+
   return (
-    <View>
+    <View style={styles.container}>
       <StatusBar
         translucent
         backgroundColor={colors.background}
         style={theme === "dark" ? "light" : "dark"}
       />
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.contentContainerStyle}
       >
         {initialCategories?.map((res) => {
-          const notificationColors = useNotificationIconColors(res.type);
           const isSelected = res.type === selectedCategory;
 
           return (
@@ -60,34 +74,23 @@ const RenderSheetView = ({
               style={[
                 styles.sheetSuggestionImageView,
                 {
-                  backgroundColor: !isSelected
-                    ? notificationColors.backgroundColor
-                    : selectedCategory === "gmail"
-                    ? notificationColors.backgroundColor
-                    : "transparent",
                   opacity:
-                    theme === "dark" && isSelected
-                      ? 1
-                      : theme === "light"
+                    (theme === "dark" && isSelected) || theme === "light"
                       ? 1
                       : 0.5,
                 },
               ]}
             >
               <Animated.Image
-                entering={FadeIn}
+                entering={FadeIn.delay(100 * res.id)}
                 resizeMode="contain"
-                tintColor={
-                  selectedCategory !== "gmail" && res.type === "gmail"
-                    ? colors.white
-                    : undefined
-                }
+                fadeDuration={300}
                 source={isSelected ? res.glowIcon : res.icon}
                 style={[
                   styles.sheetSuggestionImage,
                   {
-                    width: isSelected ? "135%" : "55%",
-                    height: isSelected ? "135%" : "55%",
+                    width: isSelected ? "160%" : "155%",
+                    height: isSelected ? "160%" : "155%",
                     overflow: "visible",
                   },
                 ]}
@@ -96,27 +99,39 @@ const RenderSheetView = ({
           );
         })}
       </ScrollView>
-      <Animated.FlatList
-        numColumns={2}
-        entering={FadeIn}
-        layout={LinearTransition.springify().damping(80).stiffness(200)}
-        itemLayoutAnimation={LinearTransition.springify()
-          .damping(80)
-          .stiffness(200)}
-        data={categories}
-        renderItem={({ item }) => (
-          <RenderCategoryItem
-            item={item}
-            onCategoryClick={(category) => onCategoryClick(category, false)}
-            selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
-          />
-        )}
-        keyExtractor={(item) => item?.id?.toString()}
-        contentContainerStyle={{ rowGap: 15, paddingBottom: 90 }}
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        removeClippedSubviews
-      />
+
+      <View style={styles.gridContainer}>
+        {rows.map((row, rowIndex) => (
+          <View key={`row-${rowIndex}`} style={styles.row}>
+            {row.map((item, itemIndex) =>
+              item ? (
+                <Animated.View
+                  key={item?.id?.toString()}
+                  layout={SequencedTransition}
+                  exiting={FadeOut}
+                  style={styles.itemContainer}
+                >
+                  <RenderCategoryItem
+                    item={item}
+                    index={itemIndex}
+                    onCategoryClick={(category) =>
+                      onCategoryClick(category, false)
+                    }
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                  />
+                </Animated.View>
+              ) : (
+                <Animated.View
+                  key={`empty-${rowIndex}-${itemIndex}`}
+                  style={styles.emptyItem}
+                  layout={SequencedTransition}
+                />
+              )
+            )}
+          </View>
+        ))}
+      </View>
     </View>
   );
 };
@@ -124,13 +139,15 @@ const RenderSheetView = ({
 export default memo(RenderSheetView);
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   contentContainerStyle: {
-    columnGap: 13,
     flexGrow: 1,
+    columnGap: 13,
     paddingTop: 5,
     paddingBottom: 15,
     alignItems: "center",
-    overflow: "visible",
     justifyContent: "center",
     alignContent: "center",
   },
@@ -148,5 +165,25 @@ const styles = StyleSheet.create({
   },
   sheetSuggestionImage: {
     alignSelf: "center",
+  },
+  gridContainer: {
+    paddingTop: 10,
+    paddingBottom: 90,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 15,
+    width: "100%",
+  },
+  itemContainer: {
+    width: ITEM_WIDTH,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  emptyItem: {
+    width: ITEM_WIDTH,
   },
 });

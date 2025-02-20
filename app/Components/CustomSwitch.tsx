@@ -25,7 +25,7 @@ interface CustomSwitchProps {
 const CustomSwitch: React.FC<CustomSwitchProps> = ({
   isOn,
   onToggle,
-  width = 70,
+  width = 65,
   height = 31,
   iconSize = 16,
 }) => {

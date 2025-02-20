@@ -148,6 +148,16 @@ export interface NotificationStatus {
   inactive: Notification[];
 }
 
+export interface RenderSheetViewProps {
+  categories: NotificationCategory[];
+  onCategoryClick: (
+    category: remindersCategoriesType,
+    isSelected: boolean
+  ) => void;
+  selectedCategory: NotificationType;
+  setSelectedCategory: (category: NotificationType) => void;
+}
+
 export interface headerInterface {
   selectedFilter: NotificationType | "all";
   setSelectedFilter: (category: NotificationType | "all") => void;
@@ -157,6 +167,7 @@ export interface headerInterface {
 
 export interface CategoryItemType {
   item: remindersCategoriesType;
+  index: number;
   setSelectedCategory: (category: NotificationType) => void;
   selectedCategory: NotificationType | null | undefined;
   onCategoryClick: (category: remindersCategoriesType) => void;
@@ -175,6 +186,7 @@ export interface NotificationColor {
   iconColor: string;
   createViewColor: string;
   icon: number;
+  history_icon: number;
 }
 
 export interface AddContactProps {
@@ -214,6 +226,8 @@ export type remindersCategoriesType = {
   title: string;
   description: string;
   icon: ImageSourcePropType;
+  glowIcon: number;
+  history_icon: number;
   color: {
     background: string;
     primary: string;
@@ -228,6 +242,7 @@ export type NotificationCategory = {
   description: string;
   icon: number;
   glowIcon: number;
+  history_icon: number;
   color: {
     background: string;
     primary: string;
