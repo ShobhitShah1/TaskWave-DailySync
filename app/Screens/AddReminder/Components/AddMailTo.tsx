@@ -36,7 +36,7 @@ const AddMailTo: FC<AddMailToProps> = ({ themeColor, to, setTo }) => {
         textAlignVertical="top"
         onChangeText={onChangeText}
         selectionColor={themeColor}
-        placeholderTextColor={colors.text}
+        placeholderTextColor={colors.placeholderText}
         style={[style.textInputStyle, { color: colors.text }]}
       />
     </View>

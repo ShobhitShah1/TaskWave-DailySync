@@ -60,7 +60,7 @@ const MONTHS = [
 const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
   isVisible,
   startYear = 2024,
-  endYear = new Date().getFullYear(),
+  endYear = new Date().getFullYear() + 10,
   selectedYear: initialSelectedYear,
   selectedMonth: initialSelectedMonth,
   onConfirm,
@@ -68,6 +68,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
 }) => {
   const { height } = useWindowDimensions();
   const colors = useThemeColors();
+  const { theme } = useAppContext();
 
   const years = useMemo(
     () =>
@@ -91,7 +92,6 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: animationProgress.value,
-    // transform: [{ scale: modalScale.value }],
   }));
 
   const PickerItem: React.FC<PickerItemProps> = ({
@@ -100,7 +100,6 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
     isSelected,
     onSelect,
   }) => {
-    const { theme } = useAppContext();
     const itemScale = useSharedValue(1);
 
     const itemAnimatedStyle = useAnimatedStyle(() => ({
@@ -112,10 +111,14 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
         style={[
           styles.pickerItem,
           isSelected && {
-            backgroundColor: `rgba(209, 209, 209, ${
-              theme === "dark" ? 0.1 : 0.5
-            })`,
+            backgroundColor:
+              theme === "dark" ? colors.white : `rgba(209, 209, 209, ${0.5})`,
           },
+          // isSelected && {
+          //   backgroundColor: `rgba(209, 209, 209, ${
+          //     theme === "dark" ? 0.1 : 0.5
+          //   })`,
+          // },
         ]}
         onPress={() => {
           itemScale.value = withTiming(1.1, { duration: 100 }, () => {
@@ -229,12 +232,13 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
           style={[
             styles.modalView,
             {
-              backgroundColor: colors.background,
+              backgroundColor:
+                theme === "dark" ? "rgba(30, 31, 31, 1)" : colors.background,
               shadowColor: colors.darkBlue,
               shadowOffset: { width: 0, height: -10 },
               shadowOpacity: 1,
-              shadowRadius: 10,
-              elevation: 5,
+              shadowRadius: 0,
+              elevation: 10,
             },
             animatedStyle,
           ]}
@@ -284,13 +288,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalView: {
-    backgroundColor: "red",
     borderRadius: SIZE.listBorderRadius,
     padding: 20,
     alignItems: "center",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowOpacity: 1,
+    shadowRadius: 10,
     width: SCREEN_WIDTH * 0.85,
   },
   pickerContainer: {

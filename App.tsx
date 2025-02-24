@@ -205,11 +205,29 @@ export default function App() {
                   notification
                 );
 
-                if (updatedNotification) {
+                if (!updatedNotification) {
+                  return;
+                }
+
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+
+                const notificationDate = new Date(updatedNotification.date);
+                notificationDate.setHours(0, 0, 0, 0);
+
+                if (
+                  notificationDate >= now &&
+                  updatedNotification &&
+                  updatedNotification.date
+                ) {
                   await updateNotification(updatedNotification);
+                } else {
                 }
               } catch (error: any) {
-                if (!error.message?.includes("invalid notification ID")) {
+                if (
+                  !error.message?.includes("invalid notification ID") ||
+                  !error.message.includes("FOREIGN KEY constraint failed")
+                ) {
                   showMessage({
                     message: String(error?.message || error),
                     type: "danger",
@@ -261,7 +279,6 @@ export default function App() {
             <Routes />
             <FlashMessage
               position="top"
-              floating={true}
               duration={3500}
               titleStyle={styles.flashTextStyle}
               textStyle={[styles.flashTextStyle, { fontSize: 13.5 }]}

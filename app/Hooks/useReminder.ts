@@ -72,6 +72,7 @@ export const scheduleNotification = async (
       message,
       subject,
       scheduleFrequency,
+      days,
       toContact,
       toMail,
       attachments,
@@ -105,7 +106,6 @@ export const scheduleNotification = async (
       },
     };
 
-    // Create rescheduleInfo as a string if it exists
     const rescheduleInfoString = rescheduleOptions?.isReschedule
       ? JSON.stringify({
           isRescheduled: true,
@@ -122,6 +122,7 @@ export const scheduleNotification = async (
       message,
       date: notificationDate.toISOString(),
       subject: subject || "",
+      days: JSON.stringify(days || []),
       toContact: JSON.stringify(toContact),
       toMail: JSON.stringify(toMail),
       attachments: JSON.stringify(attachments),
@@ -160,6 +161,40 @@ export const scheduleNotification = async (
           }),
         },
         data: notificationData as any,
+      },
+      trigger
+    );
+
+    await notifee.createTriggerNotification(
+      {
+        id: notifeeNotificationId,
+        title:
+          type === "gmail"
+            ? subject
+            : `Reminder: ${subject || "You have an upcoming task"}`,
+        body:
+          message.toString() ||
+          `Don't forget! You have a task with ${
+            toContact?.map((contact) => contact.name).join(", ") ||
+            toMail.join(", ")
+          }. Please check details or contact them if needed.`,
+        android: {
+          channelId,
+          sound: channelId,
+          visibility: AndroidVisibility.PUBLIC,
+          importance: AndroidImportance.HIGH,
+          pressAction: { id: "default" },
+          ...(imageAttachment?.fileCopyUri && {
+            style: {
+              type: AndroidStyle.BIGPICTURE,
+              picture: imageAttachment?.fileCopyUri || "",
+            },
+          }),
+        },
+        data: {
+          ...(notificationData as any),
+          id: notifeeNotificationId,
+        },
       },
       trigger
     );
@@ -257,6 +292,24 @@ const useReminder = () => {
         await database.execAsync(`PRAGMA user_version = 2;`);
       }
 
+      if (currentVersion < 3) {
+        const columnCheckResult = await database.getAllAsync<ColumnInfo>(
+          `PRAGMA table_info(notifications);`
+        );
+
+        const daysExists = columnCheckResult.some(
+          (column) => column.name === "days"
+        );
+
+        if (!daysExists) {
+          await database.execAsync(`
+          ALTER TABLE notifications ADD COLUMN days TEXT;
+        `);
+        }
+
+        await database.execAsync(`PRAGMA user_version = 3;`);
+      }
+
       await database.execAsync("COMMIT;");
     } catch (error) {
       await database.execAsync("ROLLBACK;");
@@ -287,6 +340,7 @@ const useReminder = () => {
       toMail,
       subject,
       attachments,
+      days,
       id,
       memo,
       telegramUsername,
@@ -301,9 +355,10 @@ const useReminder = () => {
     }
 
     const toMailString = JSON.stringify(toMail || []);
+    const daysString = JSON.stringify(days || []);
 
     const insertNotificationSQL = `
-    INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail, telegramUsername)
+    INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail, telegramUsername, days)
     VALUES (
       '${id}',
       '${type}',
@@ -314,7 +369,8 @@ const useReminder = () => {
       '${notification.scheduleFrequency}',
       '${JSON.stringify(memo || [])}',
       '${toMailString}',
-      '${telegramUsername?.toString().replace(/'/g, "''") || ""}'
+      '${telegramUsername?.toString().replace(/'/g, "''") || ""}',
+      '${daysString}'
     )`;
 
     let insertContactsSQL = "";
@@ -380,6 +436,7 @@ const useReminder = () => {
       toMail,
       subject,
       attachments,
+      days,
       memo,
       telegramUsername,
     } = notification;
@@ -403,65 +460,8 @@ const useReminder = () => {
 
     await createNotificationChannel();
 
-    const channelId = storage.getString("notificationSound");
-
-    const trigger: TimestampTrigger = {
-      type: TriggerType.TIMESTAMP,
-      timestamp:
-        date instanceof Date ? date.getTime() : new Date(date).getTime(),
-      alarmManager: {
-        type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
-      },
-    };
-
-    const notificationData = {
-      ...notification,
-      subject: subject || "",
-      toContact: JSON.stringify(toContact || []),
-      toMail: JSON.stringify(toMailArray),
-      attachments: JSON.stringify(attachments || []),
-      memo: JSON.stringify(memo || []),
-    };
-
-    const imageAttachment = attachments?.find((attachment) =>
-      attachment.type?.startsWith("image/")
-    );
-
     try {
-      if (!id?.toString()) {
-        return false;
-      }
-
-      await notifee.createTriggerNotification(
-        {
-          id: id?.toString(),
-          title:
-            type === "gmail"
-              ? subject
-              : `Reminder: ${subject || "You have an upcoming task"}`,
-          body:
-            message?.toString() ||
-            `Don't forget! You have a task with ${toMailArray.join(
-              ", "
-            )}. Please check details or contact them if needed.`,
-          android: {
-            channelId,
-            sound: channelId,
-            visibility: AndroidVisibility.PUBLIC,
-            importance: AndroidImportance.HIGH,
-            pressAction: { id: "default" },
-            ...(imageAttachment?.fileCopyUri && {
-              style: {
-                type: AndroidStyle.BIGPICTURE,
-                picture: imageAttachment?.fileCopyUri || "",
-              },
-            }),
-          },
-
-          data: notificationData as any,
-        },
-        trigger
-      );
+      await scheduleNotification(notification);
     } catch (error: any) {
       if (!error.message?.includes("invalid notification ID")) {
         showMessage({
@@ -472,7 +472,19 @@ const useReminder = () => {
       return false;
     }
 
+    const exists = await database.getAllAsync(
+      `SELECT 1 FROM notifications WHERE id = '${id}'`
+    );
+
+    if (exists.length === 0) {
+      await createNotification(notification);
+      await database.execAsync("COMMIT;");
+      return true;
+    }
+
     const escapedToMail = JSON.stringify(toMailArray).replace(/'/g, "''");
+    const escapedDays = JSON.stringify(days || []).replace(/'/g, "''");
+
     const updateNotificationSQL = `
       UPDATE notifications
       SET
@@ -482,6 +494,7 @@ const useReminder = () => {
         subject = '${(subject || "").replace(/'/g, "''")}',
         attachments = '${JSON.stringify(attachments || [])}',
         scheduleFrequency = '${notification.scheduleFrequency || ""}',
+        days = '${escapedDays}',
         memo = '${JSON.stringify(memo || [])}',
         toMail = '${escapedToMail}',
         telegramUsername = '${(telegramUsername || "")
@@ -589,10 +602,18 @@ const useReminder = () => {
           `SELECT name, number, recordID, thumbnailPath FROM contacts WHERE notification_id = '${notification.id}'`
         );
 
+        let days = [];
+        try {
+          days = notification.days ? JSON.parse(notification.days) : [];
+        } catch (e) {
+          days = [];
+        }
+
         result.push({
           ...notification,
           date: new Date(notification.date),
           scheduleFrequency: notification.scheduleFrequency,
+          days,
           toContact: contacts.filter((contact) => contact.number !== null),
           toMail: contacts
             .filter((contact) => contact.number === null)
@@ -642,10 +663,18 @@ const useReminder = () => {
         `SELECT name, number, recordID, thumbnailPath FROM contacts WHERE notification_id = '${notification.id}'`
       );
 
+      let days = [];
+      try {
+        days = notification.days ? JSON.parse(notification.days) : [];
+      } catch (e) {
+        days = [];
+      }
+
       const result: Notification = {
         ...notification,
         date: new Date(notification.date),
         scheduleFrequency: notification.scheduleFrequency,
+        days,
         toContact: contacts.filter((contact) => contact.number !== null),
         toMail: contacts
           .filter((contact) => contact.number === null)

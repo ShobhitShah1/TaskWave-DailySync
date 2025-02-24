@@ -10,6 +10,8 @@ import {
 import { FONTS } from "../../../Constants/Theme";
 import useThemeColors from "../../../Hooks/useThemeMode";
 import Animated, {
+  FadeIn,
+  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -119,7 +121,11 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
     >
       <Text style={[styles.title, { color: colors.text }]}>Reminder:</Text>
 
-      <View style={styles.frequencyContainer}>
+      <Animated.View
+        entering={FadeIn}
+        exiting={FadeOut}
+        style={styles.frequencyContainer}
+      >
         {frequencies.map((frequency, index) => (
           <SelectionItem
             key={index}
@@ -130,10 +136,14 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
             onToggle={() => toggleFrequency(frequency)}
           />
         ))}
-      </View>
+      </Animated.View>
 
-      {/* {scheduleFrequency === "Weekly" && (
-        <View style={styles.weekDaysContainer}>
+      {scheduleFrequency === "Weekly" && (
+        <Animated.View
+          entering={FadeIn}
+          exiting={FadeOut}
+          style={styles.weekDaysContainer}
+        >
           {weekDays.map((day) => (
             <SelectionItem
               key={day}
@@ -144,8 +154,8 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
               onToggle={() => toggleDay(day as WeekDayType)}
             />
           ))}
-        </View>
-      )} */}
+        </Animated.View>
+      )}
     </ScrollView>
   );
 };

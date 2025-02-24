@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 17,
     alignSelf: "center",
-    fontFamily: FONTS.Bold,
+    fontFamily: FONTS.SemiBold,
     textAlign: "center",
   },
   descriptionText: {

@@ -23,7 +23,6 @@ import { showMessage } from "react-native-flash-message";
 import { check, PERMISSIONS, request } from "react-native-permissions";
 import Animated, {
   interpolate,
-  LinearTransition,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -155,6 +154,7 @@ const AddReminder = () => {
       setTo(response?.toMail?.[0]);
       setSubject(response?.subject || "");
       setScheduleFrequency(response?.scheduleFrequency);
+      setSelectedDays(response?.days);
       setSelectedDateAndTime({
         date: new Date(response?.date),
         time: new Date(response?.date),
@@ -537,6 +537,7 @@ const AddReminder = () => {
           toMail: [to],
           attachments: selectedDocuments,
           scheduleFrequency: scheduleFrequency || "",
+          days: selectedDays,
           memo: memos || [],
           telegramUsername: telegramUsername?.toString() || "",
         };

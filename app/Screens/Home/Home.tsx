@@ -160,6 +160,7 @@ const Home = () => {
   const loadNotifications = async () => {
     try {
       const allNotifications = await getAllNotifications();
+
       const now = new Date();
 
       const active = allNotifications

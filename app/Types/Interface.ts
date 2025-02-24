@@ -91,6 +91,7 @@ export interface Notification {
   subject: string | undefined;
   attachments: DocumentPickerResponse[];
   scheduleFrequency: FrequencyType | null;
+  days: string[];
   memo?: Memo[];
   telegramUsername: string;
   rescheduleInfo?: {

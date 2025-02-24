@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 20,
     marginBottom: 5,
-    fontFamily: FONTS.Medium,
+    fontFamily: FONTS.SemiBold,
   },
   descriptionText: {
     fontSize: 14,

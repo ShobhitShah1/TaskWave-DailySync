@@ -131,11 +131,11 @@ const BottomTab = () => {
     (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
         {...props}
-        style={[props.style, { backgroundColor: "rgba(0,0,0,0.7)" }]}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
         opacity={0.5}
+        // appearsOnIndex={0}
         pressBehavior="close"
+        // disappearsOnIndex={-1}
+        style={[props.style, { backgroundColor: "rgba(0,0,0,0.7)" }]}
       />
     ),
     []

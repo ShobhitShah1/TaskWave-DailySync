@@ -40,7 +40,7 @@ const AddMailSubject: FC<AddMailSubjectProps> = ({
         // textAlignVertical="top"
         selectionColor={themeColor}
         placeholder="Subject:"
-        placeholderTextColor={colors.text}
+        placeholderTextColor={colors.placeholderText}
         style={[style.textInputStyle, { color: colors.text }]}
       />
     </View>

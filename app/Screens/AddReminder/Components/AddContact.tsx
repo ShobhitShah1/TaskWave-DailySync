@@ -30,7 +30,7 @@ const AddContact: FC<AddContactProps> = ({
       ]}
     >
       {selectedContacts.length === 0 ? (
-        <Text style={[style.titleText, { color: colors.text }]}>
+        <Text style={[style.titleText, { color: colors.placeholderText }]}>
           {TextString.Contact}
         </Text>
       ) : (
