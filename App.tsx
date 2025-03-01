@@ -15,12 +15,14 @@ import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
 import { updateNotification } from "./app/Hooks/updateNotification";
 import updateToNextDate from "./app/Hooks/updateToNextDate";
 import useReminder, {
+  createNotificationChannel,
   RESCHEDULE_CONFIG,
   scheduleNotification,
 } from "./app/Hooks/useReminder";
 import Routes from "./app/Routes/Routes";
 import { Notification } from "./app/Types/Interface";
 import { parseNotificationData } from "./app/Utils/notificationParser";
+import { checkIfConfigIsValid } from "react-native-reanimated/lib/typescript/reanimated2/animation/springUtils";
 
 ExpoSplashScreen.preventAutoHideAsync();
 
@@ -45,39 +47,39 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
 
     switch (type) {
       case EventType.DISMISSED:
-        if (notification) {
-          const parseData = parseNotificationData(notification);
+        // if (notification) {
+        //   const parseData = parseNotificationData(notification);
 
-          const rescheduleInfo = parseData.rescheduleInfo
-            ? JSON.parse(
-                typeof parseData.rescheduleInfo === "string"
-                  ? parseData.rescheduleInfo
-                  : JSON.stringify(parseData.rescheduleInfo)
-              )
-            : null;
+        //   const rescheduleInfo = parseData.rescheduleInfo
+        //     ? JSON.parse(
+        //         typeof parseData.rescheduleInfo === "string"
+        //           ? parseData.rescheduleInfo
+        //           : JSON.stringify(parseData.rescheduleInfo)
+        //       )
+        //     : null;
 
-          const retryCount = rescheduleInfo?.retryCount || 0;
+        //   const retryCount = rescheduleInfo?.retryCount || 0;
 
-          if (
-            !RESCHEDULE_CONFIG.maxRetries ||
-            retryCount < RESCHEDULE_CONFIG.maxRetries
-          ) {
-            try {
-              await scheduleNotification(parseData, {
-                isReschedule: true,
-                delayMinutes: RESCHEDULE_CONFIG.defaultDelay,
-                retryCount: retryCount,
-              });
-            } catch (error: any) {
-              if (!error.message?.includes("invalid notification ID")) {
-                showMessage({
-                  message: String(error?.message || error),
-                  type: "danger",
-                });
-              }
-            }
-          }
-        }
+        //   if (
+        //     !RESCHEDULE_CONFIG.maxRetries ||
+        //     retryCount < RESCHEDULE_CONFIG.maxRetries
+        //   ) {
+        //     try {
+        //       await scheduleNotification(parseData, {
+        //         isReschedule: true,
+        //         delayMinutes: RESCHEDULE_CONFIG.defaultDelay,
+        //         retryCount: retryCount,
+        //       });
+        //     } catch (error: any) {
+        //       if (!error.message?.includes("invalid notification ID")) {
+        //         showMessage({
+        //           message: String(error?.message || error),
+        //           type: "danger",
+        //         });
+        //       }
+        //     }
+        //   }
+        // }
         break;
       case EventType.PRESS:
         handleNotificationPress(notification);
@@ -117,7 +119,8 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
 });
 
 export default function App() {
-  const { updateNotification } = useReminder();
+  const { updateNotification, deleteNotification, createNotification } =
+    useReminder();
 
   const [loaded, error] = useFonts({
     "ClashGrotesk-Bold": require("./assets/Fonts/ClashGrotesk-Bold.otf"),
@@ -161,39 +164,39 @@ export default function App() {
 
         switch (type) {
           case EventType.DISMISSED:
-            if (notification) {
-              const parseData = parseNotificationData(notification);
+            // if (notification) {
+            //   const parseData = parseNotificationData(notification);
 
-              const rescheduleInfo = parseData.rescheduleInfo
-                ? JSON.parse(
-                    typeof parseData.rescheduleInfo === "string"
-                      ? parseData.rescheduleInfo
-                      : JSON.stringify(parseData.rescheduleInfo)
-                  )
-                : null;
+            //   const rescheduleInfo = parseData.rescheduleInfo
+            //     ? JSON.parse(
+            //         typeof parseData.rescheduleInfo === "string"
+            //           ? parseData.rescheduleInfo
+            //           : JSON.stringify(parseData.rescheduleInfo)
+            //       )
+            //     : null;
 
-              const retryCount = rescheduleInfo?.retryCount || 0;
+            //   const retryCount = rescheduleInfo?.retryCount || 0;
 
-              if (
-                !RESCHEDULE_CONFIG.maxRetries ||
-                retryCount < RESCHEDULE_CONFIG.maxRetries
-              ) {
-                try {
-                  await scheduleNotification(parseData, {
-                    isReschedule: true,
-                    delayMinutes: RESCHEDULE_CONFIG.defaultDelay,
-                    retryCount: retryCount,
-                  });
-                } catch (error: any) {
-                  if (!error.message?.includes("invalid notification ID")) {
-                    showMessage({
-                      message: String(error?.message || error),
-                      type: "danger",
-                    });
-                  }
-                }
-              }
-            }
+            //   if (
+            //     !RESCHEDULE_CONFIG.maxRetries ||
+            //     retryCount < RESCHEDULE_CONFIG.maxRetries
+            //   ) {
+            //     try {
+            //       await scheduleNotification(parseData, {
+            //         isReschedule: true,
+            //         delayMinutes: RESCHEDULE_CONFIG.defaultDelay,
+            //         retryCount: retryCount,
+            //       });
+            //     } catch (error: any) {
+            //       if (!error.message?.includes("invalid notification ID")) {
+            //         showMessage({
+            //           message: String(error?.message || error),
+            //           type: "danger",
+            //         });
+            //       }
+            //     }
+            //   }
+            // }
             break;
           case EventType.PRESS:
             handleNotificationPress(notification);
@@ -209,6 +212,8 @@ export default function App() {
                   return;
                 }
 
+                const id = updatedNotification.id;
+
                 const now = new Date();
                 now.setHours(0, 0, 0, 0);
 
@@ -220,20 +225,30 @@ export default function App() {
                   updatedNotification &&
                   updatedNotification.date
                 ) {
-                  await updateNotification(updatedNotification);
-                } else {
+                  let notificationScheduleId;
+
+                  await createNotificationChannel();
+
+                  if (id) {
+                    await updateNotification({
+                      ...updatedNotification,
+                      id,
+                    });
+                  } else {
+                    notificationScheduleId = await scheduleNotification(
+                      updatedNotification
+                    );
+
+                    if (notificationScheduleId?.trim()) {
+                      const data = {
+                        ...updatedNotification,
+                        id: notificationScheduleId,
+                      };
+                      await createNotification(data);
+                    }
+                  }
                 }
-              } catch (error: any) {
-                if (
-                  !error.message?.includes("invalid notification ID") ||
-                  !error.message.includes("FOREIGN KEY constraint failed")
-                ) {
-                  showMessage({
-                    message: String(error?.message || error),
-                    type: "danger",
-                  });
-                }
-              }
+              } catch (error: any) {}
             }
             break;
         }

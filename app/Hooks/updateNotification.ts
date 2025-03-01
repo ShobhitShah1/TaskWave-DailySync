@@ -38,6 +38,10 @@ export const updateNotification = async (
     memo,
   } = notification;
 
+  if (!id) {
+    return false;
+  }
+
   let toMailArray;
   try {
     if (Array.isArray(toMail)) {

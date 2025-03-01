@@ -8,11 +8,11 @@ import notifee, {
   TriggerType,
 } from "@notifee/react-native";
 import * as SQLite from "expo-sqlite";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { showMessage } from "react-native-flash-message";
-import { Contact, Notification, RescheduleConfig } from "../Types/Interface";
-import { storage } from "../Contexts/ThemeProvider";
 import { sounds } from "../Constants/Data";
+import { storage } from "../Contexts/ThemeProvider";
+import { Contact, Notification, RescheduleConfig } from "../Types/Interface";
 
 export const CHANNEL_ID = "reminder";
 export const CHANNEL_NAME = "Reminder";
@@ -137,6 +137,9 @@ export const scheduleNotification = async (
 
     const notifeeNotificationId = await notifee.createTriggerNotification(
       {
+        ...(id && {
+          id: id,
+        }),
         title:
           type === "gmail"
             ? subject
@@ -165,41 +168,45 @@ export const scheduleNotification = async (
       trigger
     );
 
-    await notifee.createTriggerNotification(
-      {
-        id: notifeeNotificationId,
-        title:
-          type === "gmail"
-            ? subject
-            : `Reminder: ${subject || "You have an upcoming task"}`,
-        body:
-          message.toString() ||
-          `Don't forget! You have a task with ${
-            toContact?.map((contact) => contact.name).join(", ") ||
-            toMail.join(", ")
-          }. Please check details or contact them if needed.`,
-        android: {
-          channelId,
-          sound: channelId,
-          visibility: AndroidVisibility.PUBLIC,
-          importance: AndroidImportance.HIGH,
-          pressAction: { id: "default" },
-          ...(imageAttachment?.fileCopyUri && {
-            style: {
-              type: AndroidStyle.BIGPICTURE,
-              picture: imageAttachment?.fileCopyUri || "",
-            },
-          }),
-        },
-        data: {
-          ...(notificationData as any),
+    if (!id) {
+      await notifee.createTriggerNotification(
+        {
           id: notifeeNotificationId,
+          title:
+            type === "gmail"
+              ? subject
+              : `Reminder: ${subject || "You have an upcoming task"}`,
+          body:
+            message.toString() ||
+            `Don't forget! You have a task with ${
+              toContact?.map((contact) => contact.name).join(", ") ||
+              toMail.join(", ")
+            }. Please check details or contact them if needed.`,
+          android: {
+            channelId,
+            sound: channelId,
+            visibility: AndroidVisibility.PUBLIC,
+            importance: AndroidImportance.HIGH,
+            pressAction: { id: "default" },
+            ...(imageAttachment?.fileCopyUri && {
+              style: {
+                type: AndroidStyle.BIGPICTURE,
+                picture: imageAttachment?.fileCopyUri || "",
+              },
+            }),
+          },
+          data: {
+            ...(notificationData as any),
+            id: notifeeNotificationId,
+          },
         },
-      },
-      trigger
-    );
+        trigger
+      );
 
-    return notifeeNotificationId;
+      return notifeeNotificationId;
+    }
+
+    return id;
   } catch (error: any) {
     if (error.message?.toString()?.includes("invalid notification ID")) {
       return null;
@@ -209,13 +216,10 @@ export const scheduleNotification = async (
 };
 
 const useReminder = () => {
-  const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null);
-
   async function openDatabase() {
     const database = await SQLite.openDatabaseAsync("notifications.db", {
       useNewConnection: true,
     });
-    setDb(database);
     await initializeDatabase(database);
     return database;
   }
@@ -324,7 +328,7 @@ const useReminder = () => {
     const database = await openDatabase();
     await initializeDatabase(database);
 
-    if (!db) {
+    if (!database) {
       showMessage({
         message: "Database connection error. Please try again.",
         type: "danger",
@@ -345,6 +349,8 @@ const useReminder = () => {
       memo,
       telegramUsername,
     } = notification;
+
+    console.info("N create:", notification);
 
     if (!id) {
       showMessage({
@@ -407,7 +413,7 @@ const useReminder = () => {
   `.trim();
 
     try {
-      await db.execAsync(transactionSQL);
+      await database.execAsync(transactionSQL);
       return id;
     } catch (error: any) {
       throw new Error(error.message || error);
@@ -460,27 +466,7 @@ const useReminder = () => {
 
     await createNotificationChannel();
 
-    try {
-      await scheduleNotification(notification);
-    } catch (error: any) {
-      if (!error.message?.includes("invalid notification ID")) {
-        showMessage({
-          message: String(error?.message || error),
-          type: "danger",
-        });
-      }
-      return false;
-    }
-
-    const exists = await database.getAllAsync(
-      `SELECT 1 FROM notifications WHERE id = '${id}'`
-    );
-
-    if (exists.length === 0) {
-      await createNotification(notification);
-      await database.execAsync("COMMIT;");
-      return true;
-    }
+    await scheduleNotification(notification);
 
     const escapedToMail = JSON.stringify(toMailArray).replace(/'/g, "''");
     const escapedDays = JSON.stringify(days || []).replace(/'/g, "''");
