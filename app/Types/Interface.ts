@@ -178,7 +178,7 @@ export interface ReminderCardProps {
   notification: Notification;
   deleteReminder: (id?: string) => void;
   onRefreshData?: () => void;
-  loadNotifications: () => void;
+  setFullScreenPreview?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export interface NotificationColor {
@@ -213,6 +213,8 @@ export interface FullScreenProps {
   isVisible: boolean;
   onClose: () => void;
   notifications: Notification[];
+  onRefreshData: () => void;
+  setFullScreenPreview: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export interface RenderTabBarProps {

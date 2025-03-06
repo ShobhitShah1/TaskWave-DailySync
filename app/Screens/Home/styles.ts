@@ -102,31 +102,51 @@ const styles = () => {
       justifyContent: "space-between",
       alignItems: "center",
     },
-    headerScheduleText: {
-      color: colors.text,
-      fontFamily: FONTS.Medium,
-      fontSize: 21,
-    },
-    fullscreenButton: {
-      width: 18,
-      height: 18,
-      right: 2,
+    loaderContainer: {
+      flex: 1,
       justifyContent: "center",
       alignItems: "center",
+    },
+
+    // RenderHeaderView.tsx
+    renderHeaderContainer: {
+      width: "100%",
+      marginVertical: 8,
+      paddingVertical: 5,
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    renderHeaderTitleView: {
+      width: "30%",
+    },
+    renderHeaderListContainer: {
+      top: -1,
+      width: "65%",
+      flexDirection: "row",
+      alignItems: "center",
+      alignContent: "flex-end",
+      justifyContent: "flex-end",
+    },
+    headerScheduleText: {
+      fontSize: 21,
+      color: colors.text,
+      fontFamily: FONTS.Medium,
+    },
+    fullscreenButton: {
+      top: -1,
+      width: 18,
+      height: 18,
+      marginHorizontal: 5,
+      alignItems: "center",
+      justifyContent: "center",
     },
     fullScreenIcon: {
       width: "100%",
       height: "100%",
     },
-
-    filterOptionContainer: {
-      flexDirection: "row",
-      gap: 10,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    filterButtonsFlex: {
-      height: 35,
+    categoryFlatListContainContainer: {
+      gap: 5,
+      alignSelf: "flex-end",
     },
     filterAllBtn: {
       justifyContent: "center",
@@ -153,11 +173,6 @@ const styles = () => {
     filterIcon: {
       width: "50%",
       height: "50%",
-    },
-    loaderContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
     },
   });
 };

@@ -248,7 +248,15 @@ export default function App() {
                     }
                   }
                 }
-              } catch (error: any) {}
+              } catch (error: any) {
+                console.log("APP ERROR:", error);
+                if (!error.message?.includes("invalid notification ID")) {
+                  showMessage({
+                    message: String(error?.message || error),
+                    type: "danger",
+                  });
+                }
+              }
             }
             break;
         }

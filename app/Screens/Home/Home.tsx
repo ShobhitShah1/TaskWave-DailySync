@@ -372,7 +372,6 @@ const Home = () => {
                   notification={item}
                   onRefreshData={loadNotifications}
                   deleteReminder={deleteReminder}
-                  loadNotifications={loadNotifications}
                 />
               )}
             />
@@ -389,6 +388,8 @@ const Home = () => {
           isVisible={fullScreenPreview}
           notifications={notificationsState?.allByDate}
           onClose={() => setFullScreenPreview(false)}
+          onRefreshData={loadNotifications}
+          setFullScreenPreview={setFullScreenPreview}
         />
       )}
 

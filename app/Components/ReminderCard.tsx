@@ -19,6 +19,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   notification,
   deleteReminder,
   onRefreshData,
+  setFullScreenPreview,
 }) => {
   const isGrid = isGridView();
   const colors = useThemeColors();
@@ -73,6 +74,8 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
     navigation.navigate("ReminderPreview", {
       notificationData: notification,
     });
+
+    setFullScreenPreview && setFullScreenPreview(false);
   }, [notification]);
 
   const onEditPress = useCallback(() => {

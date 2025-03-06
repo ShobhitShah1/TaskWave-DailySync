@@ -1,4 +1,4 @@
-import React, { FC, memo, useCallback } from "react";
+import React, { FC, memo, useCallback, useMemo } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import AssetsPath from "../../../Constants/AssetsPath";
 import { useAppContext } from "../../../Contexts/ThemeProvider";
@@ -31,20 +31,23 @@ const RenderHeaderView: FC<headerInterface> = ({
     }
   }, [notificationsState, setFullScreenPreview]);
 
+  const selectedColor = useMemo(
+    () => (selectedFilter === "all" ? colors.text : colors.grayTitle),
+    [selectedFilter]
+  );
+
   return (
-    <View style={style.listHeaderView}>
-      <Text style={style.headerScheduleText}>Schedule</Text>
-      <View style={style.filterOptionContainer}>
+    <View style={style.renderHeaderContainer}>
+      <View style={style.renderHeaderTitleView}>
+        <Text style={style.headerScheduleText}>Schedule</Text>
+      </View>
+
+      <View style={style.renderHeaderListContainer}>
         <View>
           <ScrollView
-            showsVerticalScrollIndicator={false}
             horizontal
-            contentContainerStyle={{
-              gap: 5,
-              alignItems: "center",
-              overflow: "visible",
-            }}
-            style={style.filterButtonsFlex}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={style.categoryFlatListContainContainer}
           >
             <Pressable
               style={[
@@ -53,15 +56,7 @@ const RenderHeaderView: FC<headerInterface> = ({
               ]}
               onPress={() => setSelectedFilter("all")}
             >
-              <Text
-                style={[
-                  style.filterAllText,
-                  {
-                    color:
-                      selectedFilter === "all" ? colors.text : colors.grayTitle,
-                  },
-                ]}
-              >
+              <Text style={[style.filterAllText, { color: selectedColor }]}>
                 All
               </Text>
             </Pressable>
@@ -84,7 +79,6 @@ const RenderHeaderView: FC<headerInterface> = ({
             })}
           </ScrollView>
         </View>
-
         <Pressable
           style={style.fullscreenButton}
           onPress={handleFullScreenPreview}

@@ -22,6 +22,8 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
   isVisible,
   onClose,
   notifications,
+  onRefreshData,
+  setFullScreenPreview,
 }) => {
   const style = styles();
   const isGrid = isGridView();
@@ -117,7 +119,12 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
               ListEmptyComponent={renderEmptyView}
               contentContainerStyle={{ paddingBottom: 30 }}
               renderItem={({ item }) => (
-                <ReminderCard notification={item} deleteReminder={() => {}} />
+                <ReminderCard
+                  notification={item}
+                  deleteReminder={() => {}}
+                  onRefreshData={onRefreshData}
+                  setFullScreenPreview={setFullScreenPreview}
+                />
               )}
             />
           </View>

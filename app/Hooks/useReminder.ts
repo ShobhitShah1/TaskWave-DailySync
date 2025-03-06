@@ -122,7 +122,7 @@ export const scheduleNotification = async (
       message,
       date: notificationDate.toISOString(),
       subject: subject || "",
-      days: JSON.stringify(days || []),
+      days: JSON.stringify(days),
       toContact: JSON.stringify(toContact),
       toMail: JSON.stringify(toMail),
       attachments: JSON.stringify(attachments),
@@ -208,6 +208,7 @@ export const scheduleNotification = async (
 
     return id;
   } catch (error: any) {
+    console.log("SCHEDULE EROR:", error);
     if (error.message?.toString()?.includes("invalid notification ID")) {
       return null;
     }
@@ -368,14 +369,14 @@ const useReminder = () => {
     VALUES (
       '${id}',
       '${type}',
-      '${message?.toString() || ""}',
+      '${(message || "").toString().replace(/'/g, "''")?.trim()}',
       '${date.toISOString()}',
-      '${subject || ""}',
+      '${(subject || "").toString().replace(/'/g, "''")?.trim()}',
       '${JSON.stringify(attachments || [])}',
       '${notification.scheduleFrequency}',
       '${JSON.stringify(memo || [])}',
       '${toMailString}',
-      '${telegramUsername?.toString().replace(/'/g, "''") || ""}',
+      '${telegramUsername?.toString().replace(/'/g, "''")?.trim() || ""}',
       '${daysString}'
     )`;
 
@@ -416,6 +417,7 @@ const useReminder = () => {
       await database.execAsync(transactionSQL);
       return id;
     } catch (error: any) {
+      console.log("CREATE CATCh:", error);
       throw new Error(error.message || error);
     }
   };
@@ -475,9 +477,9 @@ const useReminder = () => {
       UPDATE notifications
       SET
         type = '${type}',
-        message = '${(message || "").toString().replace(/'/g, "''")}',
+        message = '${(message || "").toString().replace(/'/g, "''")?.trim()}',
         date = '${date.toISOString()}',
-        subject = '${(subject || "").replace(/'/g, "''")}',
+        subject = '${(subject || "").replace(/'/g, "''")?.trim()}',
         attachments = '${JSON.stringify(attachments || [])}',
         scheduleFrequency = '${notification.scheduleFrequency || ""}',
         days = '${escapedDays}',
@@ -485,7 +487,8 @@ const useReminder = () => {
         toMail = '${escapedToMail}',
         telegramUsername = '${(telegramUsername || "")
           .toString()
-          .replace(/'/g, "''")}'
+          .replace(/'/g, "''")
+          ?.trim()}'
       WHERE id = '${id}'
     `;
 

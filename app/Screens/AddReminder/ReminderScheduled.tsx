@@ -178,7 +178,7 @@ const ReminderScheduled = () => {
               <View style={style.cardHeader}>
                 <View style={style.userInfo}>
                   <Image
-                    resizeMode="cover"
+                    resizeMode="contain"
                     source={AssetsPath.appLogoAndroid}
                     style={style.userImage}
                   />
@@ -186,7 +186,7 @@ const ReminderScheduled = () => {
                     numberOfLines={2}
                     style={[style.userName, { color: colors.text }]}
                   >
-                    {title?.toString()}
+                    {title?.toString()?.trim()}
                   </Text>
                   <Text
                     style={[style.timeAgo, { color: colors.placeholderText }]}
@@ -203,8 +203,8 @@ const ReminderScheduled = () => {
                 ]}
                 numberOfLines={3}
               >
-                {notificationData.message ||
-                  notificationData.subject ||
+                {notificationData.message?.trim() ||
+                  notificationData.subject?.trim() ||
                   "No Message Available"}
               </Text>
 
@@ -271,16 +271,16 @@ const styles = () => {
       maxWidth: "100%",
       flexDirection: "row",
       justifyContent: "space-between",
-      alignItems: "center",
+      // alignItems: "center",
     },
     userInfo: {
       flexDirection: "row",
-      alignItems: "center",
+      // alignItems: "center",
       justifyContent: "space-between",
     },
     userImage: {
-      width: 40,
-      height: 40,
+      width: 38,
+      height: 38,
       borderRadius: 5,
     },
     userName: {
@@ -295,9 +295,10 @@ const styles = () => {
       alignItems: "flex-end",
     },
     notificationText: {
-      marginVertical: 5,
       width: "85%",
+      marginLeft: -8,
       fontSize: 16,
+      marginTop: -10,
       alignSelf: "flex-end",
       fontFamily: FONTS.Medium,
     },
