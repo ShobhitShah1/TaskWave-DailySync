@@ -76,19 +76,6 @@ const BottomTab = () => {
   const renderTabBar = useCallback(
     ({ routeName, selectedTab, navigate }: RenderTabBarProps) => (
       <View style={{ flex: 1 }}>
-        {/* {selectedTab === routeName && (
-          <Image
-            resizeMode="contain"
-            source={AssetsPath.ic_bottomShape}
-            style={{
-              width: 30,
-              height: 20,
-              alignSelf: "center",
-              position: "absolute",
-              top: -7,
-            }}
-          />
-        )} */}
         <Pressable
           onPress={() => {
             handleTabChange(selectedTab);

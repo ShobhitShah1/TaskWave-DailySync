@@ -142,7 +142,6 @@ const AttachFile: FC<AttachFileProps> = ({
       {selectedDocuments.length !== 0 && (
         <ScrollView
           horizontal
-          removeClippedSubviews={true}
           style={styles.previewContainer}
           contentContainerStyle={styles.scrollContent}
           showsHorizontalScrollIndicator={false}
