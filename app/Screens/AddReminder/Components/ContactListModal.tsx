@@ -9,7 +9,6 @@ import {
   StatusBar,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
@@ -99,13 +98,13 @@ const ContactListModal: FC<ContactListModalProps> = ({
     >
       <View style={[style.contactModalContainer, { paddingTop: 50 }]}>
         <View style={style.contactHeaderContainer}>
-          <TouchableOpacity onPress={onClose}>
+          <Pressable hitSlop={10} onPress={onClose}>
             <Image
               tintColor={colors.text}
               source={AssetsPath.ic_leftArrow}
               style={style.contactHeaderIcon}
             />
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         <TextInput

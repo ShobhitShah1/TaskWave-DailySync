@@ -76,7 +76,7 @@ const styles = () => {
     contactSearchInput: {
       height: 45,
       marginHorizontal: 10,
-      marginVertical: 25,
+      marginVertical: 20,
       paddingHorizontal: 15,
       borderRadius: 20,
       backgroundColor: colors.contactBackground,
@@ -85,7 +85,7 @@ const styles = () => {
     },
     contactListContainer: {
       flex: 1,
-      marginTop: 10,
+      marginTop: 5,
     },
     contactItemContainer: {
       width: SIZE.appContainWidth,

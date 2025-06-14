@@ -48,7 +48,7 @@ const HomeHeader = ({
         : () => onBackPress?.() || navigation.goBack();
 
     return (
-      <Pressable style={styles.iconButton} onPress={onPress}>
+      <Pressable hitSlop={10} style={styles.iconButton} onPress={onPress}>
         <Image
           source={icon}
           style={styles.icon}

@@ -75,6 +75,7 @@ const AddMessage: FC<AddMessageProps> = ({
 
         {title !== "Note" && (
           <Pressable
+            hitSlop={8}
             onPress={() => setFullScreen(true)}
             style={style.fullScreen}
           >

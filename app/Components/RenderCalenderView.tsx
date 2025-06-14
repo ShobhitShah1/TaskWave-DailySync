@@ -26,6 +26,7 @@ const RenderCalenderView: FC<CalenderProps> = ({
   return (
     <Pressable
       key={item.date}
+      hitSlop={{ left: 5, right: 5 }}
       style={style.calenderContainer}
       onPress={() => handleDayClick(item?.formattedDate, index)}
     >

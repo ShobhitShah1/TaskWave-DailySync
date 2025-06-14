@@ -71,8 +71,16 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   );
 
   const onCardPress = useCallback(() => {
+    const notificationData = {
+      ...notification,
+      date:
+        notification.date instanceof Date
+          ? notification.date.toISOString()
+          : notification.date,
+    };
+
     navigation.navigate("ReminderPreview", {
-      notificationData: notification,
+      notificationData,
     });
 
     setFullScreenPreview && setFullScreenPreview(false);
@@ -185,7 +193,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
       <DateTimePicker
         mode={dateTimePickerState.mode}
         display="default"
-        value={dateTimePickerState.value}
+        value={new Date(dateTimePickerState.value)}
         minimumDate={new Date()}
         themeVariant={theme === "dark" ? "dark" : "light"}
         onChange={handleDateTimeChange}

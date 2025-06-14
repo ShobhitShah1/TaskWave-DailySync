@@ -58,7 +58,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
         notification: notification,
         theme: theme,
         onSuccess() {
-          loadNotifications();
+          loadNotifications && loadNotifications();
         },
       });
 
@@ -153,21 +153,37 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                         },
                       ]}
                     >
-                      {formatTime(notification.date)}
+                      {formatTime(new Date(notification.date))}
                     </Text>
                   </View>
                 </View>
               </View>
 
               <View style={styles.actionsContainer}>
-                <Pressable onPress={onCardPress}>
+                <Pressable
+                  style={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingHorizontal: 5,
+                  }}
+                  hitSlop={{ top: 10, bottom: 10 }}
+                  onPress={onCardPress}
+                >
                   <Image
                     tintColor={theme === "dark" ? colors.white : typeColor}
                     source={AssetsPath.ic_view}
                     style={styles.actionIcon}
                   />
                 </Pressable>
-                <Pressable onPress={openDuplicateModal}>
+                <Pressable
+                  style={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingHorizontal: 5,
+                  }}
+                  hitSlop={{ top: 10, bottom: 10 }}
+                  onPress={openDuplicateModal}
+                >
                   <Image
                     tintColor={theme === "dark" ? colors.white : typeColor}
                     source={AssetsPath.ic_duplicate}
@@ -175,6 +191,12 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                   />
                 </Pressable>
                 <Pressable
+                  style={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingHorizontal: 5,
+                  }}
+                  hitSlop={{ top: 10, bottom: 10 }}
                   onPress={() =>
                     notification?.id && deleteReminder(notification?.id)
                   }
@@ -285,15 +307,17 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.Medium,
   },
   actionsContainer: {
+    gap: 6,
+    // right: 5,
     width: "25%",
     alignItems: "center",
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "center",
   },
   actionIcon: {
     width: 20,
     height: 20,
     resizeMode: "contain",
-    marginLeft: 13,
+    // marginLeft: 13,
   },
 });

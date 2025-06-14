@@ -97,7 +97,7 @@ const ListView: FC<IListViewProps> = ({
         <View style={styles.footerContainer}>
           <View style={styles.timeContainer}>
             <Text style={[styles.timeText, { color: typeColor }]}>
-              {formatTime(notification.date)}
+              {formatTime(new Date(notification.date))}
             </Text>
             <View style={[styles.separator, { borderColor: typeColor }]} />
             <View style={styles.countdownContainer}>

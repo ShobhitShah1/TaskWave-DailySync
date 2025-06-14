@@ -50,6 +50,7 @@ const RenderHeaderView: FC<headerInterface> = ({
             contentContainerStyle={style.categoryFlatListContainContainer}
           >
             <Pressable
+              hitSlop={4}
               style={[
                 style.filterAllBtn,
                 { backgroundColor: colors.background },
@@ -80,6 +81,7 @@ const RenderHeaderView: FC<headerInterface> = ({
           </ScrollView>
         </View>
         <Pressable
+          hitSlop={4}
           style={style.fullscreenButton}
           onPress={handleFullScreenPreview}
         >

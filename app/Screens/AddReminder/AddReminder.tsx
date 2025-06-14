@@ -587,7 +587,11 @@ const AddReminder = () => {
 
         navigation.navigate("ReminderScheduled", {
           themeColor: createViewColor,
-          notification: { ...notificationData, id: notificationScheduleId },
+          notification: {
+            ...notificationData,
+            id: notificationScheduleId,
+            date: new Date(notificationData.date).toISOString(),
+          },
         });
 
         setIsLoading(false);
@@ -610,7 +614,7 @@ const AddReminder = () => {
 
     return (
       <View style={style.headerContainer}>
-        <Pressable onPress={onBackPress}>
+        <Pressable hitSlop={10} onPress={onBackPress}>
           <Image
             tintColor={colors.text}
             source={AssetsPath.ic_leftArrow}

@@ -64,7 +64,10 @@ export const formatTime = (date: Date) => {
   } catch (error) {}
 };
 
-export const formatDate = (date: Date, isSortDayName: boolean = false) => {
+export const formatDate = (
+  date: Date | string,
+  isSortDayName: boolean = false
+) => {
   try {
     if (!date) {
       return null;
@@ -79,18 +82,24 @@ export const formatDate = (date: Date, isSortDayName: boolean = false) => {
     const month = monthsOfYear?.[formatDate.getMonth()];
 
     return `${dayName || ""}, ${day || ""} ${month || ""}`;
-  } catch (error) {}
+  } catch (error) {
+    console.error("[Date] Failed to format date:", error);
+    return null;
+  }
 };
 
-export const formatDateTime = (date: Date) => {
+export const formatDateTime = (date: Date | string) => {
   try {
     if (!date) {
       return null;
     }
-    const formattedTime = formatTime(date);
+    const formattedTime = formatTime(new Date(date));
     const formattedDate = formatDate(date);
     return `${formattedTime} on ${formattedDate}`;
-  } catch (error) {}
+  } catch (error) {
+    console.error("[Date] Failed to format date time:", error);
+    return null;
+  }
 };
 
 const ReminderScheduled = () => {

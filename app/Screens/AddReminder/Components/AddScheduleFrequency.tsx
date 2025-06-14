@@ -66,7 +66,7 @@ const SelectionItem: FC<SelectionItemProps> = ({
   }));
 
   return (
-    <Pressable style={styles.checkboxContainer} onPress={onToggle}>
+    <Pressable hitSlop={5} style={styles.checkboxContainer} onPress={onToggle}>
       <Animated.View
         style={[
           styles.checkbox,

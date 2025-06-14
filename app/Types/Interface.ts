@@ -85,7 +85,7 @@ export interface Notification {
   id: string;
   type: NotificationType;
   message: string;
-  date: Date;
+  date: Date | string;
   toContact: Contact[];
   toMail: string[];
   subject: string | undefined;
@@ -179,6 +179,7 @@ export interface ReminderCardProps {
   deleteReminder: (id?: string) => void;
   onRefreshData?: () => void;
   setFullScreenPreview?: React.Dispatch<React.SetStateAction<boolean>>;
+  loadNotifications?: () => Promise<Notification[] | undefined>;
 }
 
 export interface NotificationColor {

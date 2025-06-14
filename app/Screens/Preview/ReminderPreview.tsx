@@ -194,6 +194,7 @@ const ReminderPreview = () => {
       <View style={style.innerContainer}>
         <View style={style.backView}>
           <Pressable
+            hitSlop={10}
             onPress={() => navigation.goBack()}
             style={style.menuIconView}
           >
@@ -333,7 +334,7 @@ const ReminderPreview = () => {
                   { color: theme === "dark" ? LIGHT_COLORS : DARK_COLORS },
                 ]}
               >
-                {formatTime(notificationData.date)}
+                {formatTime(new Date(notificationData.date))}
               </Text>
             </View>
 

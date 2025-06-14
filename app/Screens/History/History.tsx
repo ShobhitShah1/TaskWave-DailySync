@@ -370,13 +370,17 @@ const History = () => {
       <View style={style.contentView}>
         <View style={{ flex: 1 }}>
           <View style={style.headerContainer}>
-            <Pressable onPress={() => setShowDateAndYearModal(true)}>
+            <Pressable
+              hitSlop={6}
+              onPress={() => setShowDateAndYearModal(true)}
+            >
               <Text style={style.dateText}>
                 {formatDate(selectedDateObject)}
               </Text>
             </Pressable>
             <View style={style.arrowContainer}>
               <Pressable
+                hitSlop={5}
                 onPress={() => goToPrevMonth()}
                 style={style.arrowButton}
               >
@@ -386,6 +390,7 @@ const History = () => {
                 />
               </Pressable>
               <Pressable
+                hitSlop={5}
                 onPress={() => goToNextMonth()}
                 style={style.arrowButton}
               >
