@@ -1,8 +1,8 @@
-import { FlashList } from "@shopify/flash-list";
 import React, { FC, memo, useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
+  FlatList,
   Image,
   Pressable,
   RefreshControl,
@@ -129,9 +129,8 @@ const ContactListModal: FC<ContactListModalProps> = ({
             </Text>
           </Animated.View>
         ) : (
-          <FlashList
+          <FlatList
             data={filteredContacts}
-            extraData={selectedContacts || filteredContacts || isContactLoading}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -140,7 +139,6 @@ const ContactListModal: FC<ContactListModalProps> = ({
                 progressBackgroundColor={colors.background}
               />
             }
-            estimatedItemSize={200}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: 80 }}
             renderItem={({ item }) => (
