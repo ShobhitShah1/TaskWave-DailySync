@@ -1,13 +1,9 @@
-import notifee, {
-  AndroidImportance,
-  AndroidVisibility,
-} from "@notifee/react-native";
+import notifee from "@notifee/react-native";
 import { useIsFocused } from "@react-navigation/native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import * as React from "react";
 import {
   ActivityIndicator,
   Alert,
-  Button,
   FlatList,
   Pressable,
   RefreshControl,
@@ -22,14 +18,11 @@ import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
 import ReminderCard from "../../Components/ReminderCard";
 import RenderCalenderView from "../../Components/RenderCalenderView";
 import YearMonthPicker from "../../Components/YearMonthPicker";
+import TextString from "../../Constants/TextString";
 import isGridView from "../../Hooks/isGridView";
 import useCalendar from "../../Hooks/useCalendar";
 import useNotificationPermission from "../../Hooks/useNotificationPermission";
-import {
-  CHANNEL_ID,
-  CHANNEL_NAME,
-  default as useDatabase,
-} from "../../Hooks/useReminder";
+import { default as useDatabase } from "../../Hooks/useReminder";
 import useThemeColors from "../../Hooks/useThemeMode";
 import {
   Notification,
@@ -42,8 +35,7 @@ import HomeHeader from "./Components/HomeHeader";
 import RenderEmptyView from "./Components/RenderEmptyView";
 import RenderHeaderView from "./Components/RenderHeaderView";
 import styles from "./styles";
-import { storage } from "../../Contexts/ThemeProvider";
-import TextString from "../../Constants/TextString";
+import BatteryOptimizationModal from "../../Components/BatteryOptimizationModal";
 
 const Home = () => {
   const style = styles();
@@ -52,7 +44,7 @@ const Home = () => {
   const isFocus = useIsFocused();
   const { height } = useWindowDimensions();
 
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = React.useRef<FlatList>(null);
   const { getAllNotifications, deleteNotification } = useDatabase();
   const { permissionStatus, requestPermission } = useNotificationPermission();
 
@@ -66,19 +58,21 @@ const Home = () => {
     setCurrentMonth,
   } = useCalendar(new Date());
 
-  const [fullScreenPreview, setFullScreenPreview] = useState(false);
-  const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [fullScreenPreview, setFullScreenPreview] = React.useState(false);
+  const [showDateAndYearModal, setShowDateAndYearModal] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [showBatteryModal, setShowBatteryModal] = React.useState(false);
+  const batteryModalConfirmRef = React.useRef<() => void>(() => {});
 
   const [notificationsState, setNotificationsState] =
-    useState<NotificationStatus>({
+    React.useState<NotificationStatus>({
       all: [] as Notification[],
       allByDate: [] as Notification[],
       active: [] as Notification[],
       inactive: [] as Notification[],
     });
   const [refreshing, setRefreshing] = React.useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<
+  const [selectedFilter, setSelectedFilter] = React.useState<
     NotificationType | "all"
   >("all");
 
@@ -102,52 +96,40 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     scrollToIndex();
   }, [selectedDate, isFocus, notificationsState, flatListRef.current]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (isFocus) {
       setIsLoading(notificationsState?.allByDate?.length === 0);
       loadNotifications();
     }
   }, [isFocus, selectedDate, selectedFilter]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (permissionStatus !== "granted") {
       requestPermission();
     }
   }, [permissionStatus]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     try {
       notifee
         .isBatteryOptimizationEnabled()
         .then((isBatteryOptimizationEnabled) => {
           if (isBatteryOptimizationEnabled) {
-            Alert.alert(
-              "Restrictions Detected",
-              "To ensure notifications are delivered, please disable battery optimization for the app.",
-              [
-                {
-                  text: "OK, open settings",
-                  onPress: async () =>
-                    await notifee.openBatteryOptimizationSettings(),
-                },
-                {
-                  text: "Cancel",
-                  onPress: () => {},
-                  style: "cancel",
-                },
-              ],
-              { cancelable: false }
-            );
+            batteryModalConfirmRef.current = async () => {
+              setShowBatteryModal(false);
+              await notifee.openBatteryOptimizationSettings();
+            };
+            setShowBatteryModal(true);
           }
         });
     } catch (error) {}
   }, []);
 
-  const onRefresh = useCallback(async () => {
+  const onRefresh = React.useCallback(async () => {
     try {
       setRefreshing(true);
       await loadNotifications();
@@ -226,7 +208,7 @@ const Home = () => {
     }
   };
 
-  const deleteReminder = useCallback(async (id?: string) => {
+  const deleteReminder = React.useCallback(async (id?: string) => {
     if (!id) {
       showMessage({
         message: "Invalid reminder ID",
@@ -400,6 +382,14 @@ const Home = () => {
           selectedMonth={selectedDateObject.getMonth()}
           onConfirm={handleDateChange}
           onCancel={() => setShowDateAndYearModal(false)}
+        />
+      )}
+
+      {showBatteryModal && (
+        <BatteryOptimizationModal
+          visible={showBatteryModal}
+          onConfirm={batteryModalConfirmRef.current}
+          onCancel={() => setShowBatteryModal(false)}
         />
       )}
     </SafeAreaView>
