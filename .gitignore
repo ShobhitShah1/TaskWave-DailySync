@@ -39,3 +39,8 @@ scripts/setup-env.js
 
 # android apk
 android/app/release
+
+# Yarn lockfile
+yarn.lock
+# Yarn install state
+.install-state.gz
