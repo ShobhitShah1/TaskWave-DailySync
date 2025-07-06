@@ -44,3 +44,5 @@ android/app/release
 yarn.lock
 # Yarn install state
 .install-state.gz
+
+android/
