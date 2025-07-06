@@ -13022,16 +13022,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"send-message@file:./send-message::locator=taskwave-dailysync%40workspace%3A.":
-  version: 0.1.0
-  resolution: "send-message@file:./send-message#./send-message::hash=37dccc&locator=taskwave-dailysync%40workspace%3A."
+"send-message@portal:./send-message::locator=taskwave-dailysync%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "send-message@portal:./send-message::locator=taskwave-dailysync%40workspace%3A."
   peerDependencies:
     expo: "*"
     react: "*"
     react-native: "*"
-  checksum: 10c0/2b612c5a62e2a2b61990a1748511543a2f21a2465a5022e5735d2c12a865a8560e35f2a21d905a9c7cd28426cb735911e7a014e34174d4b9bf9946e3e78b7a39
   languageName: node
-  linkType: hard
+  linkType: soft
 
 "send-message@workspace:send-message":
   version: 0.0.0-use.local
@@ -13990,7 +13989,7 @@ __metadata:
     react-native-share: "npm:^12.1.0"
     react-native-svg: "npm:15.11.2"
     react-test-renderer: "npm:^19.1.0"
-    send-message: ./send-message
+    send-message: "portal:./send-message"
     ts-jest: "npm:^29.4.0"
     typescript: "npm:^5.8.3"
   languageName: unknown

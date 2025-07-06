@@ -58,7 +58,7 @@
     "react-native-shadow-2": "^7.1.1",
     "react-native-share": "^12.1.0",
     "react-native-svg": "15.11.2",
-    "send-message": "./send-message"
+    "send-message": "portal:./send-message"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
