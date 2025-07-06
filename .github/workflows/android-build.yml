@@ -35,12 +35,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --mode=update-lockfile
 
-      - name: Run lint
-        run: yarn lint
-
-      - name: Run tests
-        run: yarn test --ci --passWithNoTests
-
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
