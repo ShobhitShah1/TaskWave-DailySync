@@ -35,13 +35,27 @@ jobs:
       - name: Install dependencies
         run: yarn install --mode=update-lockfile
 
+      - name: Debug environment
+        run: |
+          echo "Node version:"
+          node -v
+          echo "Yarn version:"
+          yarn -v
+          echo "Checking node_modules:"
+          ls -la node_modules/react-native
+          ls -la node_modules/expo
+          echo "Current directory:"
+          pwd
+          echo "Directory contents:"
+          ls -la
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Build APK
         run: |
           cd android
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease --stacktrace --info
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
