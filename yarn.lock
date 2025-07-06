@@ -13024,12 +13024,12 @@ __metadata:
 
 "send-message@file:./send-message::locator=taskwave-dailysync%40workspace%3A.":
   version: 0.1.0
-  resolution: "send-message@file:./send-message#./send-message::hash=be63ed&locator=taskwave-dailysync%40workspace%3A."
+  resolution: "send-message@file:./send-message#./send-message::hash=37dccc&locator=taskwave-dailysync%40workspace%3A."
   peerDependencies:
     expo: "*"
     react: "*"
     react-native: "*"
-  checksum: 10c0/b3b6bf3f91ef6434846573c790235a93d20573970ed7322f21e24905e5e1cc804d0b3380af8e67e194678b43fde857dda1d44f4e3c059af2816f97759739e56b
+  checksum: 10c0/2b612c5a62e2a2b61990a1748511543a2f21a2465a5022e5735d2c12a865a8560e35f2a21d905a9c7cd28426cb735911e7a014e34174d4b9bf9946e3e78b7a39
   languageName: node
   linkType: hard
 
