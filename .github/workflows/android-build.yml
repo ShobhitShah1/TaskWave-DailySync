@@ -33,7 +33,9 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install dependencies
-        run: yarn install --mode=update-lockfile
+        run: |
+          yarn install --mode=update-lockfile
+          yarn workspaces focus --all
 
       - name: Debug environment
         run: |
