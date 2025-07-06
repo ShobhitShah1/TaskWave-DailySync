@@ -1,20 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
-import * as React from "react";
-import {
-  Dimensions,
-  Modal,
-  Pressable,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Ionicons } from '@expo/vector-icons';
+import * as React from 'react';
+import { Dimensions, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
+import Modal from 'react-native-modal';
 import Animated, {
   Easing,
   FadeIn,
-  FadeOut,
-  interpolate,
-  SlideInUp,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -22,11 +12,11 @@ import Animated, {
   withSequence,
   withSpring,
   withTiming,
-} from "react-native-reanimated";
+} from 'react-native-reanimated';
 
-import { FONTS } from "../Constants/Theme";
-import { useAppContext } from "../Contexts/ThemeProvider";
-import useThemeColors from "../Hooks/useThemeMode";
+import { FONTS } from '../Constants/Theme';
+import { useAppContext } from '../Contexts/ThemeProvider';
+import useThemeColors from '../Hooks/useThemeMode';
 
 interface BatteryOptimizationModalProps {
   visible: boolean;
@@ -34,7 +24,7 @@ interface BatteryOptimizationModalProps {
   onCancel: () => void;
 }
 
-const { width: screenWidth } = Dimensions.get("window");
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const BatteryOptimizationModal = ({
   visible,
@@ -43,7 +33,7 @@ const BatteryOptimizationModal = ({
 }: BatteryOptimizationModalProps) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
 
   const glowAnimation = useSharedValue(0);
   const iconRotate = useSharedValue(0);
@@ -60,52 +50,46 @@ const BatteryOptimizationModal = ({
       glowAnimation.value = withRepeat(
         withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.sin) }),
         -1,
-        true
+        true,
       );
 
       iconRotate.value = withRepeat(
         withSequence(
           withTiming(5, { duration: 800 }),
           withTiming(-5, { duration: 800 }),
-          withTiming(0, { duration: 400 })
+          withTiming(0, { duration: 400 }),
         ),
         -1,
-        false
+        false,
       );
 
       iconScale.value = withRepeat(
         withSequence(
           withTiming(1.2, { duration: 1000, easing: Easing.out(Easing.quad) }),
-          withTiming(1, { duration: 1000, easing: Easing.in(Easing.quad) })
+          withTiming(1, { duration: 1000, easing: Easing.in(Easing.quad) }),
         ),
         -1,
-        true
+        true,
       );
 
       floatingParticles.value = withRepeat(
         withTiming(1, { duration: 4000, easing: Easing.inOut(Easing.ease) }),
         -1,
-        true
+        true,
       );
 
       backgroundWave.value = withRepeat(
         withTiming(1, { duration: 6000, easing: Easing.linear }),
         -1,
-        false
+        false,
       );
 
-      titleShimmer.value = withDelay(
-        500,
-        withRepeat(withTiming(1, { duration: 2000 }), -1, true)
-      );
+      titleShimmer.value = withDelay(500, withRepeat(withTiming(1, { duration: 2000 }), -1, true));
 
       pulseRing.value = withRepeat(
-        withSequence(
-          withTiming(1, { duration: 1500 }),
-          withTiming(0, { duration: 500 })
-        ),
+        withSequence(withTiming(1, { duration: 1500 }), withTiming(0, { duration: 500 })),
         -1,
-        false
+        false,
       );
     } else {
       glowAnimation.value = 0;
@@ -118,35 +102,8 @@ const BatteryOptimizationModal = ({
     }
   }, [visible]);
 
-  const animatedGlowStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(glowAnimation.value, [0, 1], [0.1, 0.8]),
-    transform: [
-      { scale: interpolate(glowAnimation.value, [0, 1], [0.8, 1.3]) },
-      { rotate: `${interpolate(backgroundWave.value, [0, 1], [0, 360])}deg` },
-    ],
-  }));
-
   const animatedIconStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: iconScale.value },
-      { rotate: `${iconRotate.value}deg` },
-    ],
-  }));
-
-  const animatedFloatingStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY: interpolate(floatingParticles.value, [0, 1], [0, -20]),
-      },
-      {
-        translateX: interpolate(
-          floatingParticles.value,
-          [0, 0.5, 1],
-          [0, 5, -5]
-        ),
-      },
-    ],
-    opacity: interpolate(floatingParticles.value, [0, 0.5, 1], [0.6, 1, 0.6]),
+    transform: [{ scale: iconScale.value }, { rotate: `${iconRotate.value}deg` }],
   }));
 
   const animatedConfirmStyle = useAnimatedStyle(() => ({
@@ -159,198 +116,143 @@ const BatteryOptimizationModal = ({
 
   const handleConfirmPress = () => {
     confirmButtonScale.value = withSequence(
-      withSpring(0.9, { damping: 20, stiffness: 300 }),
-      withSpring(1.05, { damping: 20, stiffness: 300 }),
-      withSpring(1, { damping: 20, stiffness: 300 })
+      withSpring(0.9, { damping: 22, stiffness: 260 }),
+      withSpring(1.08, { damping: 22, stiffness: 260 }),
+      withSpring(1, { damping: 22, stiffness: 260 }),
     );
-    setTimeout(onConfirm, 200);
+    setTimeout(onConfirm, 220);
   };
 
   const handleCancelPress = () => {
     cancelButtonScale.value = withSequence(
-      withSpring(0.9, { damping: 20, stiffness: 300 }),
-      withSpring(1, { damping: 20, stiffness: 300 })
+      withSpring(0.9, { damping: 22, stiffness: 260 }),
+      withSpring(1, { damping: 22, stiffness: 260 }),
     );
-    setTimeout(onCancel, 150);
+    setTimeout(onCancel, 170);
   };
-
-  const FloatingParticle = ({
-    delay = 0,
-    size = 4,
-    color = colors.instagram,
-  }) => (
-    <Animated.View
-      entering={FadeIn.delay(delay + 800)}
-      style={[
-        animatedFloatingStyle,
-        {
-          position: "absolute",
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: color,
-        },
-      ]}
-    />
-  );
 
   return (
     <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      onRequestClose={onCancel}
+      isVisible={visible}
+      style={{ margin: 0 }}
+      animationInTiming={700}
+      animationOutTiming={400}
+      backdropOpacity={1}
+      backdropColor="rgba(0,0,0,0.5)"
+      backdropTransitionOutTiming={400}
+      backdropTransitionInTiming={700}
+      hasBackdrop={true}
       statusBarTranslucent
+      animationIn="slideInDown"
+      animationOut="slideOutUp"
+      useNativeDriver
+      deviceHeight={screenHeight + (StatusBar.currentHeight || 15)}
+      useNativeDriverForBackdrop
+      onBackdropPress={onCancel}
+      hideModalContentWhileAnimating
     >
-      <View style={styles.overlay}>
+      <View
+        style={[
+          styles.modalContainer,
+          {
+            backgroundColor: isDark ? 'rgba(63, 65, 69, 1)' : 'rgba(255, 255, 255, 1)',
+            borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
+            shadowColor: isDark ? colors.instagram : colors.darkBlue,
+          },
+        ]}
+      >
         <Animated.View
-          entering={FadeIn.duration(400)}
-          exiting={FadeOut.duration(300)}
+          entering={FadeIn.delay(400).duration(800)}
           style={[
-            styles.backdrop,
+            styles.iconContainer,
             {
-              backgroundColor: isDark ? "rgba(0,0,0,0.92)" : "rgba(0,0,0,0.75)",
-            },
-          ]}
-        />
-
-        <FloatingParticle delay={0} size={6} color={colors.instagram} />
-        <FloatingParticle delay={200} size={4} color={colors.yellow} />
-        <FloatingParticle delay={400} size={5} color={colors.blue} />
-        <FloatingParticle delay={600} size={3} color={colors.green} />
-
-        <Animated.View
-          entering={SlideInUp.delay(150)
-            .springify()
-            .damping(25)
-            .stiffness(400)
-            .mass(1)}
-          exiting={FadeOut.duration(250)}
-          style={[
-            styles.modalContainer,
-            {
-              backgroundColor: isDark
-                ? "rgba(63, 65, 69, 0.95)"
-                : "rgba(255, 255, 255, 0.95)",
-              borderColor: isDark
-                ? "rgba(255, 255, 255, 0.15)"
-                : "rgba(0, 0, 0, 0.08)",
+              backgroundColor: isDark ? 'rgba(225, 48, 108, 0.2)' : 'rgba(64, 93, 240, 0.15)',
+              borderColor: isDark ? 'rgba(225, 48, 108, 0.4)' : 'rgba(64, 93, 240, 0.3)',
               shadowColor: isDark ? colors.instagram : colors.darkBlue,
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.3,
+              shadowRadius: 16,
+              elevation: 8,
             },
           ]}
         >
-          <Animated.View
-            entering={FadeIn.delay(400).duration(800)}
-            style={[
-              styles.iconContainer,
-              {
-                backgroundColor: isDark
-                  ? "rgba(225, 48, 108, 0.2)"
-                  : "rgba(64, 93, 240, 0.15)",
-                borderColor: isDark
-                  ? "rgba(225, 48, 108, 0.4)"
-                  : "rgba(64, 93, 240, 0.3)",
-                shadowColor: isDark ? colors.instagram : colors.darkBlue,
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.3,
-                shadowRadius: 16,
-                elevation: 8,
-              },
-            ]}
-          >
-            <Animated.View style={animatedIconStyle}>
-              <Ionicons
-                name="battery-charging"
-                size={42}
-                color={isDark ? colors.instagram : colors.darkBlue}
-              />
-            </Animated.View>
+          <Animated.View style={animatedIconStyle}>
+            <Ionicons
+              name="battery-charging"
+              size={42}
+              color={isDark ? colors.instagram : colors.darkBlue}
+            />
+          </Animated.View>
+        </Animated.View>
+
+        <Animated.Text
+          entering={FadeIn.delay(500)}
+          style={[styles.title, { color: colors.text, fontFamily: FONTS.Bold }]}
+        >
+          Battery Optimization Detected
+        </Animated.Text>
+
+        <Animated.Text
+          entering={FadeIn.delay(600)}
+          style={[
+            styles.message,
+            {
+              color: isDark ? colors.grayTitle : 'rgba(0,0,0,0.75)',
+              fontFamily: FONTS.Medium,
+            },
+          ]}
+        >
+          To ensure you receive all notifications on time, please disable battery optimization for
+          this app. This will allow the app to run reliably in the background.
+        </Animated.Text>
+
+        <Animated.View entering={FadeIn.delay(700)} style={styles.buttonContainer}>
+          <Animated.View style={[styles.buttonWrapper, animatedCancelStyle]}>
+            <Pressable
+              style={[
+                styles.button,
+                styles.cancelButton,
+                {
+                  borderColor: isDark ? colors.instagram : colors.darkBlue,
+                  backgroundColor: isDark ? 'rgba(225, 48, 108, 0.1)' : 'rgba(64, 93, 240, 0.08)',
+                },
+              ]}
+              onPress={handleCancelPress}
+            >
+              <Text
+                style={[
+                  styles.cancelText,
+                  {
+                    color: isDark ? colors.instagram : colors.darkBlue,
+                    fontFamily: FONTS.SemiBold,
+                  },
+                ]}
+              >
+                Skip
+              </Text>
+            </Pressable>
           </Animated.View>
 
-          <Animated.Text
-            entering={FadeIn.delay(500)}
-            style={[
-              styles.title,
-              { color: colors.text, fontFamily: FONTS.Bold },
-            ]}
-          >
-            ⚡ Power Mode Locked
-          </Animated.Text>
-
-          <Animated.Text
-            entering={FadeIn.delay(600)}
-            style={[
-              styles.message,
-              {
-                color: isDark ? colors.grayTitle : "rgba(0,0,0,0.75)",
-                fontFamily: FONTS.Medium,
-              },
-            ]}
-          >
-            bestie, your phone is gatekeeping us rn 💀{"\n"}
-            let's fix this so we can serve you the hottest notifications! ✨🔥
-          </Animated.Text>
-
-          <Animated.View
-            entering={FadeIn.delay(700)}
-            style={styles.buttonContainer}
-          >
-            <Animated.View style={[styles.buttonWrapper, animatedCancelStyle]}>
-              <Pressable
-                style={[
-                  styles.button,
-                  styles.cancelButton,
-                  {
-                    borderColor: isDark ? colors.instagram : colors.darkBlue,
-                    backgroundColor: isDark
-                      ? "rgba(225, 48, 108, 0.1)"
-                      : "rgba(64, 93, 240, 0.08)",
-                  },
-                ]}
-                onPress={handleCancelPress}
-              >
-                <Text
-                  style={[
-                    styles.cancelText,
-                    {
-                      color: isDark ? colors.instagram : colors.darkBlue,
-                      fontFamily: FONTS.SemiBold,
-                    },
-                  ]}
-                >
-                  skip
-                </Text>
-              </Pressable>
-            </Animated.View>
-
-            <Animated.View style={[styles.buttonWrapper, animatedConfirmStyle]}>
-              <Pressable
-                style={[
-                  styles.button,
-                  styles.confirmButton,
-                  {
-                    backgroundColor: isDark
-                      ? colors.instagram
-                      : colors.darkBlue,
-                    shadowColor: isDark ? colors.instagram : colors.darkBlue,
-                    shadowOffset: { width: 0, height: 8 },
-                    shadowOpacity: 0.4,
-                    shadowRadius: 16,
-                    elevation: 12,
-                  },
-                ]}
-                onPress={handleConfirmPress}
-              >
-                <Text
-                  style={[
-                    styles.confirmText,
-                    { color: colors.white, fontFamily: FONTS.Bold },
-                  ]}
-                >
-                  🚀 let's goooo
-                </Text>
-              </Pressable>
-            </Animated.View>
+          <Animated.View style={[styles.buttonWrapper, animatedConfirmStyle]}>
+            <Pressable
+              style={[
+                styles.button,
+                styles.confirmButton,
+                {
+                  backgroundColor: isDark ? colors.instagram : colors.darkBlue,
+                  shadowColor: isDark ? colors.instagram : colors.darkBlue,
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 16,
+                  elevation: 12,
+                },
+              ]}
+              onPress={handleConfirmPress}
+            >
+              <Text style={[styles.confirmText, { color: colors.white, fontFamily: FONTS.Bold }]}>
+                Continue
+              </Text>
+            </Pressable>
           </Animated.View>
         </Animated.View>
       </View>
@@ -361,29 +263,25 @@ const BatteryOptimizationModal = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: StatusBar.currentHeight || 0,
     paddingBottom: 40,
   },
-  backdrop: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
+
   backgroundPattern: {
-    position: "absolute",
+    position: 'absolute',
     width: screenWidth * 0.8,
     height: screenWidth * 0.8,
     borderRadius: screenWidth * 0.4,
-    top: "20%",
-    left: "60%",
+    top: '20%',
+    left: '60%',
   },
   glowContainer: {
-    position: "absolute",
+    position: 'absolute',
     width: 400,
     height: 400,
     borderRadius: 200,
@@ -398,62 +296,62 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   secondaryGlow: {
-    position: "absolute",
+    position: 'absolute',
     width: 300,
     height: 300,
     borderRadius: 150,
   },
   pulseRing: {
-    position: "absolute",
+    position: 'absolute',
     width: 120,
     height: 120,
     borderRadius: 60,
     borderWidth: 2,
     top: 15,
-    left: "50%",
+    left: '50%',
     marginLeft: -60,
   },
   modalContainer: {
-    width: "100%",
+    width: 360,
     maxWidth: 360,
+    alignSelf: 'center',
     borderRadius: 32,
     paddingHorizontal: 28,
     paddingVertical: 20,
-    alignItems: "center",
+    alignItems: 'center',
     shadowOffset: { width: 0, height: 20 },
     shadowOpacity: 0.35,
     shadowRadius: 40,
     elevation: 25,
     borderWidth: 1.5,
-    overflow: "hidden",
   },
   iconContainer: {
     width: 85,
     height: 85,
     borderRadius: 42.5,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 28,
     borderWidth: 2,
   },
   title: {
     fontSize: 26,
-    fontWeight: "900",
+    fontWeight: '900',
     marginBottom: 18,
-    textAlign: "center",
+    textAlign: 'center',
     letterSpacing: 0.5,
   },
   message: {
     fontSize: 16.5,
-    textAlign: "center",
+    textAlign: 'center',
     marginBottom: 36,
     lineHeight: 24,
     letterSpacing: 0.2,
     paddingHorizontal: 8,
   },
   buttonContainer: {
-    flexDirection: "row",
-    width: "100%",
+    flexDirection: 'row',
+    width: '100%',
     gap: 14,
   },
   buttonWrapper: {
@@ -461,8 +359,8 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     minHeight: 56,
     paddingHorizontal: 18,
   },
@@ -472,12 +370,12 @@ const styles = StyleSheet.create({
   confirmButton: {},
   cancelText: {
     fontSize: 15.5,
-    fontWeight: "600",
+    fontWeight: '600',
     letterSpacing: 0.3,
   },
   confirmText: {
     fontSize: 15.5,
-    fontWeight: "800",
+    fontWeight: '800',
     letterSpacing: 0.4,
   },
 });

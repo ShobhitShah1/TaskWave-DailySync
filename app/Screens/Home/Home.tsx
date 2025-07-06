@@ -1,6 +1,6 @@
-import notifee from "@notifee/react-native";
-import { useIsFocused } from "@react-navigation/native";
-import * as React from "react";
+import notifee from '@notifee/react-native';
+import { useIsFocused } from '@react-navigation/native';
+import * as React from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -11,31 +11,28 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from "react-native";
-import { showMessage } from "react-native-flash-message";
-import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
-import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
-import ReminderCard from "../../Components/ReminderCard";
-import RenderCalenderView from "../../Components/RenderCalenderView";
-import YearMonthPicker from "../../Components/YearMonthPicker";
-import TextString from "../../Constants/TextString";
-import isGridView from "../../Hooks/isGridView";
-import useCalendar from "../../Hooks/useCalendar";
-import useNotificationPermission from "../../Hooks/useNotificationPermission";
-import { default as useDatabase } from "../../Hooks/useReminder";
-import useThemeColors from "../../Hooks/useThemeMode";
-import {
-  Notification,
-  NotificationStatus,
-  NotificationType,
-} from "../../Types/Interface";
-import { fromNowText } from "../../Utils/isSameDat";
-import { formatDate } from "../AddReminder/ReminderScheduled";
-import HomeHeader from "./Components/HomeHeader";
-import RenderEmptyView from "./Components/RenderEmptyView";
-import RenderHeaderView from "./Components/RenderHeaderView";
-import styles from "./styles";
-import BatteryOptimizationModal from "../../Components/BatteryOptimizationModal";
+} from 'react-native';
+import { showMessage } from 'react-native-flash-message';
+import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
+
+import BatteryOptimizationModal from '../../Components/BatteryOptimizationModal';
+import FullScreenPreviewModal from '../../Components/FullScreenPreviewModal';
+import ReminderCard from '../../Components/ReminderCard';
+import RenderCalenderView from '../../Components/RenderCalenderView';
+import YearMonthPicker from '../../Components/YearMonthPicker';
+import TextString from '../../Constants/TextString';
+import isGridView from '../../Hooks/isGridView';
+import useCalendar from '../../Hooks/useCalendar';
+import useNotificationPermission from '../../Hooks/useNotificationPermission';
+import { default as useDatabase } from '../../Hooks/useReminder';
+import useThemeColors from '../../Hooks/useThemeMode';
+import { Notification, NotificationStatus, NotificationType } from '../../Types/Interface';
+import { fromNowText } from '../../Utils/isSameDat';
+import { formatDate } from '../AddReminder/ReminderScheduled';
+import HomeHeader from './Components/HomeHeader';
+import RenderEmptyView from './Components/RenderEmptyView';
+import RenderHeaderView from './Components/RenderHeaderView';
+import styles from './styles';
 
 const Home = () => {
   const style = styles();
@@ -64,17 +61,14 @@ const Home = () => {
   const [showBatteryModal, setShowBatteryModal] = React.useState(false);
   const batteryModalConfirmRef = React.useRef<() => void>(() => {});
 
-  const [notificationsState, setNotificationsState] =
-    React.useState<NotificationStatus>({
-      all: [] as Notification[],
-      allByDate: [] as Notification[],
-      active: [] as Notification[],
-      inactive: [] as Notification[],
-    });
+  const [notificationsState, setNotificationsState] = React.useState<NotificationStatus>({
+    all: [] as Notification[],
+    allByDate: [] as Notification[],
+    active: [] as Notification[],
+    inactive: [] as Notification[],
+  });
   const [refreshing, setRefreshing] = React.useState(false);
-  const [selectedFilter, setSelectedFilter] = React.useState<
-    NotificationType | "all"
-  >("all");
+  const [selectedFilter, setSelectedFilter] = React.useState<NotificationType | 'all'>('all');
 
   const findSelectedIndex = () => {
     return daysArray.findIndex((item) => item.formattedDate === selectedDate);
@@ -108,24 +102,22 @@ const Home = () => {
   }, [isFocus, selectedDate, selectedFilter]);
 
   React.useEffect(() => {
-    if (permissionStatus !== "granted") {
+    if (permissionStatus !== 'granted') {
       requestPermission();
     }
   }, [permissionStatus]);
 
   React.useEffect(() => {
     try {
-      notifee
-        .isBatteryOptimizationEnabled()
-        .then((isBatteryOptimizationEnabled) => {
-          if (isBatteryOptimizationEnabled) {
-            batteryModalConfirmRef.current = async () => {
-              setShowBatteryModal(false);
-              await notifee.openBatteryOptimizationSettings();
-            };
-            setShowBatteryModal(true);
-          }
-        });
+      notifee.isBatteryOptimizationEnabled().then((isBatteryOptimizationEnabled) => {
+        if (isBatteryOptimizationEnabled) {
+          batteryModalConfirmRef.current = async () => {
+            setShowBatteryModal(false);
+            await notifee.openBatteryOptimizationSettings();
+          };
+          setShowBatteryModal(true);
+        }
+      });
     } catch (error) {}
   }, []);
 
@@ -146,45 +138,31 @@ const Home = () => {
       const now = new Date();
 
       const active = allNotifications
-        .filter(
-          (notification) =>
-            new Date(notification.date).getTime() >= now.getTime()
-        )
-        .sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
+        .filter((notification) => new Date(notification.date).getTime() >= now.getTime())
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       const inactive = allNotifications
-        .filter(
-          (notification) =>
-            new Date(notification.date).getTime() < now.getTime()
-        )
-        .sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
+        .filter((notification) => new Date(notification.date).getTime() < now.getTime())
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-      const [day, month, year] = selectedDate.split("-");
+      const [day, month, year] = selectedDate.split('-');
       const selectedDateObj = new Date(`${year}-${month}-${day}`);
 
       if (isNaN(selectedDateObj.getTime())) {
-        console.error("Invalid selectedDate:", selectedDate);
+        console.error('Invalid selectedDate:', selectedDate);
         showMessage({
           message: `Invalid selected date: ${selectedDate?.toString()}`,
-          type: "danger",
+          type: 'danger',
         });
         return;
       }
 
       const filteredByType =
-        selectedFilter === "all"
+        selectedFilter === 'all'
           ? [...active, ...inactive]
           : [
-              ...active.filter(
-                (notification) => notification.type === selectedFilter
-              ),
-              ...inactive.filter(
-                (notification) => notification.type === selectedFilter
-              ),
+              ...active.filter((notification) => notification.type === selectedFilter),
+              ...inactive.filter((notification) => notification.type === selectedFilter),
             ];
 
       const filteredByDate = filteredByType.filter((notification) => {
@@ -211,28 +189,28 @@ const Home = () => {
   const deleteReminder = React.useCallback(async (id?: string) => {
     if (!id) {
       showMessage({
-        message: "Invalid reminder ID",
-        type: "danger",
+        message: 'Invalid reminder ID',
+        type: 'danger',
       });
       return;
     }
 
     Alert.alert(
-      "Confirmation",
+      'Confirmation',
       `Are you sure you want to delete this event? This action cannot be undone.`,
       [
         {
-          text: "Cancel",
-          style: "cancel",
+          text: 'Cancel',
+          style: 'cancel',
         },
         {
-          text: "Delete",
+          text: 'Delete',
           onPress: async () => {
             await deleteNotification(id);
             loadNotifications();
           },
         },
-      ]
+      ],
     );
   }, []);
 
@@ -241,9 +219,7 @@ const Home = () => {
 
     const newDate = new Date(year, month - 1, currentDay);
 
-    const formattedDate = newDate
-      .toLocaleDateString("en-GB")
-      .replace(/\//g, "-");
+    const formattedDate = newDate.toLocaleDateString('en-GB').replace(/\//g, '-');
 
     setSelectedDate(formattedDate);
     setSelectedDateObject(newDate);
@@ -253,38 +229,23 @@ const Home = () => {
 
   return (
     <SafeAreaView style={style.container}>
-      <HomeHeader
-        title={TextString.DailySync}
-        titleAlignment="center"
-        leftIconType="grid"
-      />
+      <HomeHeader title={TextString.DailySync} titleAlignment="center" leftIconType="grid" />
 
       <View style={style.homeContainContainer}>
         <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>
-          <Pressable
-            onPress={() => setShowDateAndYearModal(true)}
-            style={style.dateContainer}
-          >
-            <Text style={style.todayText}>
-              {fromNowText(selectedDateObject)}
-            </Text>
+          <Pressable onPress={() => setShowDateAndYearModal(true)} style={style.dateContainer}>
+            <Text style={style.todayText}>{fromNowText(selectedDateObject)}</Text>
             <Text style={style.dateText}>{formatDate(selectedDateObject)}</Text>
           </Pressable>
 
           <View style={style.statusContainer}>
             <View style={style.statusItem}>
-              <View
-                style={[style.statusDot, { backgroundColor: colors.green }]}
-              />
-              <Text style={style.statusText}>
-                {notificationsState?.active.length}
-              </Text>
+              <View style={[style.statusDot, { backgroundColor: colors.green }]} />
+              <Text style={style.statusText}>{notificationsState?.active.length}</Text>
             </View>
             <View style={style.statusItem}>
-              <View style={[style.statusDot, { backgroundColor: "gray" }]} />
-              <Text style={style.statusText}>
-                {notificationsState?.inactive.length}
-              </Text>
+              <View style={[style.statusDot, { backgroundColor: 'gray' }]} />
+              <Text style={style.statusText}>{notificationsState?.inactive.length}</Text>
             </View>
           </View>
         </Animated.View>
@@ -323,18 +284,14 @@ const Home = () => {
         <View style={{ flex: 1, height }}>
           {isLoading && notificationsState?.allByDate?.length !== 0 ? (
             <View style={style.loaderContainer}>
-              <ActivityIndicator color={colors.text} size={"large"} />
+              <ActivityIndicator color={colors.text} size={'large'} />
             </View>
           ) : notificationsState.allByDate?.length !== 0 ? (
             <Animated.FlatList
               layout={LinearTransition}
-              itemLayoutAnimation={LinearTransition.springify()
-                .damping(80)
-                .stiffness(200)}
-              columnWrapperStyle={
-                isGrid ? { justifyContent: "space-between" } : undefined
-              }
-              key={isGrid ? "grid" : "list"}
+              itemLayoutAnimation={LinearTransition.springify().damping(80).stiffness(200)}
+              columnWrapperStyle={isGrid ? { justifyContent: 'space-between' } : undefined}
+              key={isGrid ? 'grid' : 'list'}
               numColumns={isGrid ? 2 : undefined}
               data={notificationsState?.allByDate}
               extraData={notificationsState?.allByDate}
@@ -358,7 +315,7 @@ const Home = () => {
               )}
             />
           ) : (
-            <View style={{ height: "80%" }}>
+            <View style={{ height: '80%' }}>
               <RenderEmptyView />
             </View>
           )}

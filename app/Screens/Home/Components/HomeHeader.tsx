@@ -1,28 +1,29 @@
-import { useNavigation } from "@react-navigation/native";
-import React, { memo, useCallback } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
-import CustomSwitch from "../../../Components/CustomSwitch";
-import { useAppContext } from "../../../Contexts/ThemeProvider";
-import AssetsPath from "../../../Constants/AssetsPath";
-import TextString from "../../../Constants/TextString";
-import { FONTS, SIZE } from "../../../Constants/Theme";
-import useThemeColors from "../../../Hooks/useThemeMode";
+import { useNavigation } from '@react-navigation/native';
+import React, { memo, useCallback } from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
-type LeftIconType = "grid" | "back" | "none";
+import CustomSwitch from '../../../Components/CustomSwitch';
+import AssetsPath from '../../../Constants/AssetsPath';
+import TextString from '../../../Constants/TextString';
+import { FONTS, SIZE } from '../../../Constants/Theme';
+import { useAppContext } from '../../../Contexts/ThemeProvider';
+import useThemeColors from '../../../Hooks/useThemeMode';
+
+type LeftIconType = 'grid' | 'back' | 'none';
 
 interface IHomeHeaderProps {
   title?: string;
   leftIconType?: LeftIconType;
-  titleAlignment?: "left" | "center";
+  titleAlignment?: 'left' | 'center';
   showThemeSwitch?: boolean;
   onBackPress?: () => void;
 }
 
 const HomeHeader = ({
   title,
-  leftIconType = "grid",
-  titleAlignment = "left",
+  leftIconType = 'grid',
+  titleAlignment = 'left',
   showThemeSwitch = true,
   onBackPress,
 }: IHomeHeaderProps) => {
@@ -32,19 +33,18 @@ const HomeHeader = ({
 
   const handleToggle = useCallback(
     (state: boolean) => {
-      toggleTheme(state ? "light" : "dark");
+      toggleTheme(state ? 'light' : 'dark');
     },
-    [toggleTheme]
+    [toggleTheme],
   );
 
   const renderLeftIcon = () => {
-    if (leftIconType === "none") return null;
+    if (leftIconType === 'none') return null;
 
-    const icon =
-      leftIconType === "grid" ? AssetsPath.ic_menu : AssetsPath.ic_leftArrow;
+    const icon = leftIconType === 'grid' ? AssetsPath.ic_menu : AssetsPath.ic_leftArrow;
     const onPress =
-      leftIconType === "grid"
-        ? () => toggleViewMode(viewMode === "grid" ? "list" : "grid")
+      leftIconType === 'grid'
+        ? () => toggleViewMode(viewMode === 'grid' ? 'list' : 'grid')
         : () => onBackPress?.() || navigation.goBack();
 
     return (
@@ -52,7 +52,7 @@ const HomeHeader = ({
         <Image
           source={icon}
           style={styles.icon}
-          tintColor={leftIconType === "back" ? colors.text : undefined}
+          tintColor={leftIconType === 'back' ? colors.text : undefined}
         />
       </Pressable>
     );
@@ -66,11 +66,11 @@ const HomeHeader = ({
             styles.leftIconContainer,
             {
               backgroundColor:
-                leftIconType === "grid"
-                  ? theme === "dark"
+                leftIconType === 'grid'
+                  ? theme === 'dark'
                     ? colors.grayBackground
-                    : "rgba(173, 175, 176, 0.4)"
-                  : "transparent",
+                    : 'rgba(173, 175, 176, 0.4)'
+                  : 'transparent',
             },
           ]}
         >
@@ -80,7 +80,7 @@ const HomeHeader = ({
         <Text
           style={[
             styles.titleText,
-            titleAlignment === "center" && styles.titleCenter,
+            titleAlignment === 'center' && styles.titleCenter,
             { color: colors.text },
           ]}
         >
@@ -88,9 +88,7 @@ const HomeHeader = ({
         </Text>
 
         <View style={styles.switchContainer}>
-          {showThemeSwitch && (
-            <CustomSwitch isOn={theme !== "dark"} onToggle={handleToggle} />
-          )}
+          {showThemeSwitch && <CustomSwitch isOn={theme !== 'dark'} onToggle={handleToggle} />}
         </View>
       </View>
     </Animated.View>
@@ -101,22 +99,22 @@ const styles = StyleSheet.create({
   container: {
     width: SIZE.appContainWidth,
     paddingVertical: 10,
-    alignSelf: "center",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   leftIconContainer: {
     width: 28,
     height: 28,
     borderRadius: 5,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   icon: {
     width: 18,
     height: 18,
-    resizeMode: "contain",
+    resizeMode: 'contain',
   },
   titleText: {
     flex: 1,
@@ -126,13 +124,13 @@ const styles = StyleSheet.create({
   },
   titleCenter: {
     left: 15,
-    textAlign: "center",
+    textAlign: 'center',
   },
   iconButton: {
     width: 28,
     height: 28,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   switchContainer: {
     width: 70,

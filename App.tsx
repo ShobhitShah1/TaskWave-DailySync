@@ -1,32 +1,27 @@
-import notifee, { EventType } from "@notifee/react-native";
-import { useFonts } from "expo-font";
-import * as QuickActions from "expo-quick-actions";
-import * as ExpoSplashScreen from "expo-splash-screen";
-import * as SystemUI from "expo-system-ui";
-import { useEffect } from "react";
-import { LogBox, StatusBar, StyleSheet, Text } from "react-native";
-import FlashMessage, { showMessage } from "react-native-flash-message";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { FONTS } from "./app/Constants/Theme";
-import { BottomSheetProvider } from "./app/Contexts/BottomSheetProvider";
-import { AppProvider } from "./app/Contexts/ThemeProvider";
-import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
-import { updateNotification } from "./app/Hooks/updateNotification";
-import updateToNextDate from "./app/Hooks/updateToNextDate";
+import notifee, { EventType } from '@notifee/react-native';
+import { useFonts } from 'expo-font';
+import * as QuickActions from 'expo-quick-actions';
+import * as SystemUI from 'expo-system-ui';
+import { useEffect } from 'react';
+import { LogBox, StatusBar, StyleSheet, Text } from 'react-native';
+import FlashMessage, { showMessage } from 'react-native-flash-message';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { FONTS } from './app/Constants/Theme';
+import { BottomSheetProvider } from './app/Contexts/BottomSheetProvider';
+import { AppProvider } from './app/Contexts/ThemeProvider';
+import { handleNotificationPress } from './app/Hooks/handleNotificationPress';
+import { updateNotification } from './app/Hooks/updateNotification';
+import updateToNextDate from './app/Hooks/updateToNextDate';
 import useReminder, {
   createNotificationChannel,
-  RESCHEDULE_CONFIG,
   scheduleNotification,
-} from "./app/Hooks/useReminder";
-import Routes from "./app/Routes/Routes";
-import { Notification } from "./app/Types/Interface";
-import { parseNotificationData } from "./app/Utils/notificationParser";
-import { checkIfConfigIsValid } from "react-native-reanimated/lib/typescript/reanimated2/animation/springUtils";
+} from './app/Hooks/useReminder';
+import Routes from './app/Routes/Routes';
+import { Notification } from './app/Types/Interface';
 
-ExpoSplashScreen.preventAutoHideAsync();
-
-SystemUI.setBackgroundColorAsync("transparent");
+SystemUI.setBackgroundColorAsync('transparent');
 
 if (__DEV__) {
   LogBox.ignoreAllLogs();
@@ -87,17 +82,15 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
       case EventType.DELIVERED:
         if (notification && notification?.scheduleFrequency?.length !== 0) {
           try {
-            const { updatedNotification } = await updateToNextDate(
-              notification
-            );
+            const { updatedNotification } = await updateToNextDate(notification);
             if (updatedNotification) {
               await updateNotification(updatedNotification);
             }
           } catch (error: any) {
-            if (!error.message?.includes("invalid notification ID")) {
+            if (!error.message?.includes('invalid notification ID')) {
               showMessage({
                 message: String(error?.message || error),
-                type: "danger",
+                type: 'danger',
               });
             }
           }
@@ -109,24 +102,23 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
         return;
     }
   } catch (error: any) {
-    if (!error.message?.includes("invalid notification ID")) {
+    if (!error.message?.includes('invalid notification ID')) {
       showMessage({
         message: String(error?.message || error),
-        type: "danger",
+        type: 'danger',
       });
     }
   }
 });
 
 export default function App() {
-  const { updateNotification, deleteNotification, createNotification } =
-    useReminder();
+  const { updateNotification, createNotification } = useReminder();
 
   const [loaded, error] = useFonts({
-    "ClashGrotesk-Bold": require("./assets/Fonts/ClashGrotesk-Bold.otf"),
-    "ClashGrotesk-Medium": require("./assets/Fonts/ClashGrotesk-Medium.otf"),
-    "ClashGrotesk-Regular": require("./assets/Fonts/ClashGrotesk-Regular.otf"),
-    "ClashGrotesk-Semibold": require("./assets/Fonts/ClashGrotesk-Semibold.otf"),
+    'ClashGrotesk-Bold': require('./assets/Fonts/ClashGrotesk-Bold.otf'),
+    'ClashGrotesk-Medium': require('./assets/Fonts/ClashGrotesk-Medium.otf'),
+    'ClashGrotesk-Regular': require('./assets/Fonts/ClashGrotesk-Regular.otf'),
+    'ClashGrotesk-Semibold': require('./assets/Fonts/ClashGrotesk-Semibold.otf'),
   });
 
   useEffect(() => {
@@ -140,18 +132,18 @@ export default function App() {
           }
         })
         .catch((error) => {
-          if (!error.message?.includes("invalid notification ID")) {
+          if (!error.message?.includes('invalid notification ID')) {
             showMessage({
               message: String(error?.message || error),
-              type: "danger",
+              type: 'danger',
             });
           }
         });
     } catch (error: any) {
-      if (!error.message?.includes("invalid notification ID")) {
+      if (!error.message?.includes('invalid notification ID')) {
         showMessage({
           message: String(error?.message || error),
-          type: "danger",
+          type: 'danger',
         });
       }
     }
@@ -204,9 +196,7 @@ export default function App() {
           case EventType.DELIVERED:
             if (notification && notification?.scheduleFrequency?.length !== 0) {
               try {
-                const { updatedNotification } = await updateToNextDate(
-                  notification
-                );
+                const { updatedNotification } = await updateToNextDate(notification);
 
                 if (!updatedNotification) {
                   return;
@@ -220,11 +210,7 @@ export default function App() {
                 const notificationDate = new Date(updatedNotification.date);
                 notificationDate.setHours(0, 0, 0, 0);
 
-                if (
-                  notificationDate >= now &&
-                  updatedNotification &&
-                  updatedNotification.date
-                ) {
+                if (notificationDate >= now && updatedNotification && updatedNotification.date) {
                   let notificationScheduleId;
 
                   await createNotificationChannel();
@@ -235,9 +221,7 @@ export default function App() {
                       id,
                     });
                   } else {
-                    notificationScheduleId = await scheduleNotification(
-                      updatedNotification
-                    );
+                    notificationScheduleId = await scheduleNotification(updatedNotification);
 
                     if (notificationScheduleId?.trim()) {
                       const data = {
@@ -249,10 +233,10 @@ export default function App() {
                   }
                 }
               } catch (error: any) {
-                if (!error.message?.includes("invalid notification ID")) {
+                if (!error.message?.includes('invalid notification ID')) {
                   showMessage({
                     message: String(error?.message || error),
-                    type: "danger",
+                    type: 'danger',
                   });
                 }
               }
@@ -260,10 +244,10 @@ export default function App() {
             break;
         }
       } catch (error: any) {
-        if (!error.message?.includes("invalid notification ID")) {
+        if (!error.message?.includes('invalid notification ID')) {
           showMessage({
             message: String(error?.message || error),
-            type: "danger",
+            type: 'danger',
           });
         }
       }
@@ -273,18 +257,18 @@ export default function App() {
   useEffect(() => {
     QuickActions.setItems([
       {
-        title: "Add Reminder",
-        subtitle: "Schedule a reminder to take your medication",
-        icon: "plus_icon",
-        id: "0",
-        params: { href: "/schedule" },
+        title: 'Add Reminder',
+        subtitle: 'Schedule a reminder to take your medication',
+        icon: 'plus_icon',
+        id: '0',
+        params: { href: '/schedule' },
       },
       {
         title: "Wait! Don't delete me!",
         subtitle: "We're here to help",
-        icon: "wave_icon",
-        id: "1",
-        params: { href: "/help" },
+        icon: 'wave_icon',
+        id: '1',
+        params: { href: '/help' },
       },
     ]);
   }, []);

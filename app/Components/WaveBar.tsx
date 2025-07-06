@@ -1,11 +1,10 @@
-import React from "react";
-import { View } from "react-native";
+import React from 'react';
 import Animated, {
   useAnimatedStyle,
   withRepeat,
   withSequence,
   withTiming,
-} from "react-native-reanimated";
+} from 'react-native-reanimated';
 
 interface WaveBarProps {
   delay: number;
@@ -14,12 +13,9 @@ interface WaveBarProps {
 const WaveBar = ({ delay }: WaveBarProps) => {
   const animatedStyle = useAnimatedStyle(() => ({
     height: withRepeat(
-      withSequence(
-        withTiming(16, { duration: 500 }),
-        withTiming(4, { duration: 500 })
-      ),
+      withSequence(withTiming(16, { duration: 500 }), withTiming(4, { duration: 500 })),
       -1,
-      true
+      true,
     ),
   }));
 
@@ -28,7 +24,7 @@ const WaveBar = ({ delay }: WaveBarProps) => {
       style={[
         {
           width: 3,
-          backgroundColor: "#2196F3",
+          backgroundColor: '#2196F3',
           borderRadius: 1.5,
         },
         animatedStyle,

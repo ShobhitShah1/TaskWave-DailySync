@@ -1,14 +1,9 @@
-import React, { FC } from "react";
-import {
-  Image,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from "react-native";
-import useThemeColors from "../../../Hooks/useThemeMode";
-import { FONTS } from "../../../Constants/Theme";
-import { useAppContext } from "../../../Contexts/ThemeProvider";
+import React, { FC } from 'react';
+import { Image, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+
+import { FONTS } from '../../../Constants/Theme';
+import { useAppContext } from '../../../Contexts/ThemeProvider';
+import useThemeColors from '../../../Hooks/useThemeMode';
 
 interface HowItWorkViewProps {
   item: any;
@@ -20,30 +15,22 @@ const HowItWorkView: FC<HowItWorkViewProps> = ({ item }) => {
   const colors = useThemeColors();
 
   return (
-    <View
-      key={item.id}
-      style={[styles.container, { width, backgroundColor: colors.background }]}
-    >
+    <View key={item.id} style={[styles.container, { width, backgroundColor: colors.background }]}>
       <Image
         resizeMode="contain"
         source={item?.image?.[theme]}
         style={[styles.backgroundImage, { width }]}
       />
 
-      <View style={{ flex: 0.1, justifyContent: "center", top: 10 }} />
+      <View style={{ flex: 0.1, justifyContent: 'center', top: 10 }} />
 
       <View style={styles.textViewContainer}>
-        <Text style={[styles.titleText, { color: colors.text }]}>
-          {item.title}
-        </Text>
+        <Text style={[styles.titleText, { color: colors.text }]}>{item.title}</Text>
         <Text
           style={[
             styles.descriptionText,
             {
-              color:
-                theme === "dark"
-                  ? "rgba(139, 142, 142, 1)"
-                  : "rgba(78, 78, 79, 1)",
+              color: theme === 'dark' ? 'rgba(139, 142, 142, 1)' : 'rgba(78, 78, 79, 1)',
             },
           ]}
         >
@@ -62,25 +49,25 @@ const styles = StyleSheet.create({
   },
   backgroundImage: {
     flex: 1,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   textViewContainer: {
     flex: 0.15,
-    overflow: "hidden",
-    justifyContent: "center",
+    overflow: 'hidden',
+    justifyContent: 'center',
   },
   titleText: {
     fontSize: 17,
-    alignSelf: "center",
+    alignSelf: 'center',
     fontFamily: FONTS.SemiBold,
-    textAlign: "center",
+    textAlign: 'center',
   },
   descriptionText: {
-    width: "85%",
+    width: '85%',
     fontSize: 15,
     marginVertical: 5,
-    alignSelf: "center",
-    textAlign: "center",
+    alignSelf: 'center',
+    textAlign: 'center',
     fontFamily: FONTS.Regular,
   },
 });

@@ -1,4 +1,4 @@
-import React, { FC, memo } from "react";
+import React, { FC, memo } from 'react';
 import {
   FlatList,
   Image,
@@ -7,16 +7,17 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from "react-native";
-import ReactNativeModal from "react-native-modal";
-import { useAppContext } from "../Contexts/ThemeProvider";
-import AssetsPath from "../Constants/AssetsPath";
-import TextString from "../Constants/TextString";
-import { FONTS, SIZE } from "../Constants/Theme";
-import isGridView from "../Hooks/isGridView";
-import useThemeColors from "../Hooks/useThemeMode";
-import { FullScreenProps } from "../Types/Interface";
-import ReminderCard from "./ReminderCard";
+} from 'react-native';
+import ReactNativeModal from 'react-native-modal';
+
+import AssetsPath from '../Constants/AssetsPath';
+import TextString from '../Constants/TextString';
+import { FONTS, SIZE } from '../Constants/Theme';
+import { useAppContext } from '../Contexts/ThemeProvider';
+import isGridView from '../Hooks/isGridView';
+import useThemeColors from '../Hooks/useThemeMode';
+import { FullScreenProps } from '../Types/Interface';
+import ReminderCard from './ReminderCard';
 
 const FullScreenPreviewModal: FC<FullScreenProps> = ({
   isVisible,
@@ -34,17 +35,10 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
   const renderEmptyView = () => {
     return (
       <View style={[style.emptyViewContainer, { width, height: height - 50 }]}>
-        <Image
-          style={style.emptyDateTimeImage}
-          source={AssetsPath.ic_emptyDateTime}
-        />
+        <Image style={style.emptyDateTimeImage} source={AssetsPath.ic_emptyDateTime} />
         <View style={style.emptyTextContainer}>
-          <Text style={style.emptyNoEventTitle}>
-            {TextString.NoScheduleYet}
-          </Text>
-          <Text style={style.emptyListText}>
-            {TextString.LetsScheduleYourDailyEvents}
-          </Text>
+          <Text style={style.emptyNoEventTitle}>{TextString.NoScheduleYet}</Text>
+          <Text style={style.emptyListText}>{TextString.LetsScheduleYourDailyEvents}</Text>
         </View>
         <Image
           source={AssetsPath.ic_emptyRocket}
@@ -60,18 +54,18 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
       isVisible={isVisible}
       onBackButtonPress={onClose}
       onBackdropPress={onClose}
-      animationIn={"fadeInUp"}
+      animationIn={'fadeInUp'}
       animationInTiming={800}
       // statusBarTranslucent
       // deviceHeight={height + (StatusBar.currentHeight || 20)}
       animationOutTiming={300}
       hideModalContentWhileAnimating
-      animationOut={"fadeOutDown"}
+      animationOut={'fadeOutDown'}
       customBackdrop={
         <Pressable
           onPress={onClose}
           style={{
-            backgroundColor: "rgba(48, 51, 52, 0.9)",
+            backgroundColor: 'rgba(48, 51, 52, 0.9)',
             opacity: 0.5,
             flex: 1,
           }}
@@ -88,17 +82,14 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
           style={[
             style.listHeaderView,
             {
-              backgroundColor:
-                theme === "dark"
-                  ? "rgba(48, 51, 52, 0.9)"
-                  : "rgba(255,255,255,0.9)",
+              backgroundColor: theme === 'dark' ? 'rgba(48, 51, 52, 0.9)' : 'rgba(255,255,255,0.9)',
             },
           ]}
         >
           <Pressable onPress={onClose}>
             <Image
               resizeMode="contain"
-              tintColor={theme === "light" ? colors.sms : colors.white}
+              tintColor={theme === 'light' ? colors.sms : colors.white}
               source={AssetsPath.ic_minimize}
               style={style.fullScreenIcon}
             />
@@ -109,10 +100,8 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
           <View style={style.listView}>
             <FlatList
               data={notifications}
-              columnWrapperStyle={
-                isGrid ? { justifyContent: "space-between" } : undefined
-              }
-              key={isGrid ? "grid" : "list"}
+              columnWrapperStyle={isGrid ? { justifyContent: 'space-between' } : undefined}
+              key={isGrid ? 'grid' : 'list'}
               numColumns={isGrid ? 2 : undefined}
               stickyHeaderHiddenOnScroll={true}
               showsVerticalScrollIndicator={false}
@@ -143,28 +132,28 @@ const styles = () => {
     container: {
       flex: 0,
       margin: 0,
-      height: "100%",
-      width: "100%",
+      height: '100%',
+      width: '100%',
     },
     mainContainer: {
       flex: 1,
-      width: "100%",
-      alignSelf: "center",
+      width: '100%',
+      alignSelf: 'center',
     },
     emptyViewContainer: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     emptyDateTimeImage: {
       width: 90,
       height: 90,
-      justifyContent: "center",
+      justifyContent: 'center',
     },
     emptyTextContainer: {
       marginVertical: 10,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     emptyNoEventTitle: {
       fontSize: 25,
@@ -183,15 +172,15 @@ const styles = () => {
       top: 10,
       marginTop: 20,
       marginVertical: 10,
-      alignSelf: "flex-end",
+      alignSelf: 'flex-end',
     },
     listHeaderView: {
-      height: "10%",
-      width: "100%",
+      height: '10%',
+      width: '100%',
       paddingHorizontal: 10,
-      justifyContent: "center",
-      alignSelf: "flex-end",
-      alignItems: "flex-end",
+      justifyContent: 'center',
+      alignSelf: 'flex-end',
+      alignItems: 'flex-end',
     },
     headerScheduleText: {
       color: colors.text,
@@ -203,12 +192,12 @@ const styles = () => {
       height: 35,
     },
     listContainer: {
-      height: "90%",
+      height: '90%',
       backgroundColor: colors.background,
     },
     listView: {
       flex: 1,
-      alignSelf: "center",
+      alignSelf: 'center',
       width: SIZE.appContainWidth,
     },
   });

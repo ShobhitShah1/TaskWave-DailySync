@@ -1,16 +1,11 @@
-import React, { memo, useRef } from "react";
-import {
-  Animated,
-  FlatList,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import AssetsPath from "../../Constants/AssetsPath";
-import useThemeColors from "../../Hooks/useThemeMode";
-import HomeHeader from "../Home/Components/HomeHeader";
-import HowItWorkView from "./Components/HowItWorkView";
+import React, { memo, useRef } from 'react';
+import { Animated, FlatList, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import AssetsPath from '../../Constants/AssetsPath';
+import useThemeColors from '../../Hooks/useThemeMode';
+import HomeHeader from '../Home/Components/HomeHeader';
+import HowItWorkView from './Components/HowItWorkView';
 
 const HowAppWorks = () => {
   const colors = useThemeColors();
@@ -34,8 +29,8 @@ const HowAppWorks = () => {
         light: AssetsPath.HIW_create_dark,
         dark: AssetsPath.HIW_create_dark,
       },
-      title: "Select app for schedule event",
-      description: "Select which app you want to schedule a message with.",
+      title: 'Select app for schedule event',
+      description: 'Select which app you want to schedule a message with.',
     },
     {
       id: 3,
@@ -43,9 +38,8 @@ const HowAppWorks = () => {
         light: AssetsPath.HIW_whatsapp_dark,
         dark: AssetsPath.HIW_whatsapp_dark,
       },
-      title: "Fill details to schedule",
-      description:
-        "Just select contact, date, time and write message and you good to go.",
+      title: 'Fill details to schedule',
+      description: 'Just select contact, date, time and write message and you good to go.',
     },
     {
       id: 4,
@@ -53,9 +47,8 @@ const HowAppWorks = () => {
         light: AssetsPath.HIW_Notification,
         dark: AssetsPath.HIW_Notification,
       },
-      title: "Tap on notification to confirm",
-      description:
-        "Just tap on attachments to attach any types of media like photo, vides, doc..",
+      title: 'Tap on notification to confirm',
+      description: 'Just tap on attachments to attach any types of media like photo, vides, doc..',
     },
   ];
 
@@ -64,11 +57,9 @@ const HowAppWorks = () => {
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <HomeHeader
-        title={"How app works"}
+        title={'How app works'}
         titleAlignment="center"
         leftIconType="back"
         showThemeSwitch={false}
@@ -86,12 +77,9 @@ const HowAppWorks = () => {
           renderItem={({ item }: any) => {
             return <HowItWorkView item={item} />;
           }}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-            {
-              useNativeDriver: false,
-            }
-          )}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+            useNativeDriver: false,
+          })}
           scrollEventThrottle={32}
           onViewableItemsChanged={viewableItemsChanged}
           viewabilityConfig={viewConfig}
@@ -103,21 +91,18 @@ const HowAppWorks = () => {
           const dotWidth = scrollX.interpolate({
             inputRange,
             outputRange: [11, 11, 11],
-            extrapolate: "clamp",
+            extrapolate: 'clamp',
           });
 
           const opacity = scrollX.interpolate({
             inputRange,
             outputRange: [0.3, 1, 0.3],
-            extrapolate: "clamp",
+            extrapolate: 'clamp',
           });
 
           return (
             <Animated.View
-              style={[
-                styles.dot,
-                { width: dotWidth, opacity, backgroundColor: colors.darkBlue },
-              ]}
+              style={[styles.dot, { width: dotWidth, opacity, backgroundColor: colors.darkBlue }]}
               key={i.toString()}
             />
           );
@@ -135,18 +120,18 @@ const styles = StyleSheet.create({
   },
   contentView: {
     flex: 1,
-    width: "90%",
+    width: '90%',
     marginVertical: 15,
-    alignSelf: "center",
+    alignSelf: 'center',
   },
   paginatorContainer: {
-    justifyContent: "center",
-    flexDirection: "row",
-    position: "absolute",
-    bottom: "14%",
-    alignItems: "center",
-    alignContent: "center",
-    alignSelf: "center",
+    justifyContent: 'center',
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: '14%',
+    alignItems: 'center',
+    alignContent: 'center',
+    alignSelf: 'center',
   },
   dot: {
     height: 11,

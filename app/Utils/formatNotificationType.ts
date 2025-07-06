@@ -1,7 +1,7 @@
 export const formatNotificationType = (type: string) => {
-  if (type === "whatsappBusiness") return "Whatsapp Business";
+  if (type === 'whatsappBusiness') return 'Whatsapp Business';
   return type
-    .split(" ")
+    .split(' ')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+    .join(' ');
 };

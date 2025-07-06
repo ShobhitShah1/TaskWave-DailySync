@@ -1,13 +1,14 @@
-import { useNavigation } from "@react-navigation/native";
-import React, { useEffect, useRef, useState } from "react";
-import { Animated, FlatList, StatusBar, StyleSheet, View } from "react-native";
-import { OnBoardingData } from "../../Constants/Data";
-import useThemeColors from "../../Hooks/useThemeMode";
-import NextButton from "./Components/NextButton";
-import OnBoardingListView from "./Components/OnBoardingListView";
-import Paginator from "./Components/Paginator";
-import { storage, useAppContext } from "../../Contexts/ThemeProvider";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, FlatList, StatusBar, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { OnBoardingData } from '../../Constants/Data';
+import { storage, useAppContext } from '../../Contexts/ThemeProvider';
+import useThemeColors from '../../Hooks/useThemeMode';
+import NextButton from './Components/NextButton';
+import OnBoardingListView from './Components/OnBoardingListView';
+import Paginator from './Components/Paginator';
 
 const OnBoarding = () => {
   const navigation = useNavigation<any>();
@@ -27,17 +28,17 @@ const OnBoarding = () => {
     if (CurrentIndex < OnBoardingData.length - 1) {
       sliderRef.current?.scrollToIndex({ index: CurrentIndex + 1 });
     } else {
-      storage.set("onboardingShown", "no");
-      navigation.replace("BottomTab");
+      storage.set('onboardingShown', 'no');
+      navigation.replace('BottomTab');
     }
   };
 
   useEffect(() => {
-    const unSub = navigation.addListener("blur", () => {
+    const unSub = navigation.addListener('blur', () => {
       <StatusBar
         translucent
         backgroundColor={colors.background}
-        barStyle={theme === "dark" ? "light-content" : "dark-content"}
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
       />;
     });
     return unSub;
@@ -45,7 +46,7 @@ const OnBoarding = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
-      <StatusBar barStyle={"dark-content"} backgroundColor={colors.white} />
+      <StatusBar barStyle={'dark-content'} backgroundColor={colors.white} />
       <View style={{ flex: 2 }}>
         <FlatList
           horizontal
@@ -58,10 +59,9 @@ const OnBoarding = () => {
           renderItem={({ item }: any) => {
             return <OnBoardingListView item={item} />;
           }}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-            { useNativeDriver: false }
-          )}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+            useNativeDriver: false,
+          })}
           scrollEventThrottle={32}
           onViewableItemsChanged={viewableItemsChanged}
           viewabilityConfig={viewConfig}

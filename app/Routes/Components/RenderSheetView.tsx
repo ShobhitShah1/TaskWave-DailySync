@@ -1,24 +1,15 @@
-import { StatusBar } from "expo-status-bar";
-import React, { memo } from "react";
-import {
-  Dimensions,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  SequencedTransition,
-} from "react-native-reanimated";
-import { useAppContext } from "../../Contexts/ThemeProvider";
-import useThemeColors from "../../Hooks/useThemeMode";
-import { RenderSheetViewProps } from "../../Types/Interface";
-import { getCategories } from "../../Utils/getCategories";
-import RenderCategoryItem from "./RenderCategoryItem";
+import { StatusBar } from 'expo-status-bar';
+import React, { memo } from 'react';
+import { Dimensions, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, SequencedTransition } from 'react-native-reanimated';
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+import { useAppContext } from '../../Contexts/ThemeProvider';
+import useThemeColors from '../../Hooks/useThemeMode';
+import { RenderSheetViewProps } from '../../Types/Interface';
+import { getCategories } from '../../Utils/getCategories';
+import RenderCategoryItem from './RenderCategoryItem';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ITEM_WIDTH = SCREEN_WIDTH / 2 - 24;
 
 const RenderSheetView = ({
@@ -53,7 +44,7 @@ const RenderSheetView = ({
       <StatusBar
         translucent
         backgroundColor={colors.background}
-        style={theme === "dark" ? "light" : "dark"}
+        style={theme === 'dark' ? 'light' : 'dark'}
       />
 
       <ScrollView
@@ -74,10 +65,7 @@ const RenderSheetView = ({
               style={[
                 styles.sheetSuggestionImageView,
                 {
-                  opacity:
-                    (theme === "dark" && isSelected) || theme === "light"
-                      ? 1
-                      : 0.5,
+                  opacity: (theme === 'dark' && isSelected) || theme === 'light' ? 1 : 0.5,
                 },
               ]}
             >
@@ -89,9 +77,9 @@ const RenderSheetView = ({
                 style={[
                   styles.sheetSuggestionImage,
                   {
-                    width: isSelected ? "160%" : "155%",
-                    height: isSelected ? "160%" : "155%",
-                    overflow: "visible",
+                    width: isSelected ? '160%' : '155%',
+                    height: isSelected ? '160%' : '155%',
+                    overflow: 'visible',
                   },
                 ]}
               />
@@ -114,9 +102,7 @@ const RenderSheetView = ({
                   <RenderCategoryItem
                     item={item}
                     index={itemIndex}
-                    onCategoryClick={(category) =>
-                      onCategoryClick(category, false)
-                    }
+                    onCategoryClick={(category) => onCategoryClick(category, false)}
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
                   />
@@ -127,7 +113,7 @@ const RenderSheetView = ({
                   style={styles.emptyItem}
                   layout={SequencedTransition}
                 />
-              )
+              ),
             )}
           </View>
         ))}
@@ -147,41 +133,41 @@ const styles = StyleSheet.create({
     columnGap: 13,
     paddingTop: 5,
     paddingBottom: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    alignContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignContent: 'center',
   },
   sheetSuggestionImageView: {
     width: 35,
     height: 35,
     elevation: 5,
-    shadowColor: "rgba(0, 0, 0, 0.1)",
+    shadowColor: 'rgba(0, 0, 0, 0.1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 3,
     borderRadius: 500,
-    justifyContent: "center",
-    overflow: "visible",
+    justifyContent: 'center',
+    overflow: 'visible',
   },
   sheetSuggestionImage: {
-    alignSelf: "center",
+    alignSelf: 'center',
   },
   gridContainer: {
     paddingTop: 10,
     paddingBottom: 90,
   },
   row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 15,
-    width: "100%",
+    width: '100%',
   },
   itemContainer: {
     width: ITEM_WIDTH,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: 'rgba(255,255,255,0.1)',
     borderRadius: 8,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   emptyItem: {
     width: ITEM_WIDTH,

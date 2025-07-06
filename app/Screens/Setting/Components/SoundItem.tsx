@@ -1,14 +1,15 @@
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, Animated as RNAnimated, Text, View } from "react-native";
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { Animated as RNAnimated, Pressable, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSequence,
   withSpring,
   withTiming,
-} from "react-native-reanimated";
-import styles from "../styles";
-import { Sound } from "../../../Types/Interface";
+} from 'react-native-reanimated';
+
+import { Sound } from '../../../Types/Interface';
+import styles from '../styles';
 
 interface SoundItemProps {
   item: Sound;
@@ -18,13 +19,7 @@ interface SoundItemProps {
   onPlay: () => void;
 }
 
-const SoundItem = ({
-  item,
-  isSelected,
-  isPlaying,
-  onSelect,
-  onPlay,
-}: SoundItemProps) => {
+const SoundItem = ({ item, isSelected, isPlaying, onSelect, onPlay }: SoundItemProps) => {
   const style = styles();
   const scaleButton = useSharedValue(1);
   const [animationsReady, setAnimationsReady] = useState(false);
@@ -57,7 +52,7 @@ const SoundItem = ({
               duration: 500,
               useNativeDriver: true,
             }),
-          ])
+          ]),
         ),
       ]).start();
     });
@@ -70,7 +65,7 @@ const SoundItem = ({
   const animateButton = useCallback(() => {
     scaleButton.value = withSequence(
       withTiming(0.9, { duration: 100 }),
-      withSpring(1, { damping: 4 })
+      withSpring(1, { damping: 4 }),
     );
   }, []);
 
@@ -81,10 +76,7 @@ const SoundItem = ({
   };
 
   return (
-    <Pressable
-      onPress={onSelect}
-      style={[style.soundCard, isSelected && style.selectedCard]}
-    >
+    <Pressable onPress={onSelect} style={[style.soundCard, isSelected && style.selectedCard]}>
       <View style={style.cardContent}>
         {item.canPlay && (
           <Animated.View style={[style.playButtonContainer, buttonStyle]}>
@@ -92,13 +84,8 @@ const SoundItem = ({
               style={[style.playButton, isPlaying && style.playingButton]}
               onPress={handlePlay}
             >
-              <Text
-                style={[
-                  style.playButtonText,
-                  isPlaying && style.playingButtonText,
-                ]}
-              >
-                {isPlaying ? "■" : "▶"}
+              <Text style={[style.playButtonText, isPlaying && style.playingButtonText]}>
+                {isPlaying ? '■' : '▶'}
               </Text>
             </Pressable>
           </Animated.View>

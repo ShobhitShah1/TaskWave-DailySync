@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { FrequencyType, WeekDayType } from "../Components/AddScheduleFrequency";
+import { useState } from 'react';
+
+import { FrequencyType, WeekDayType } from '../Components/AddScheduleFrequency';
 
 const useScheduleFrequency = () => {
   const [scheduleFrequency, setScheduleFrequency] = useState<FrequencyType | null>(null);
@@ -13,4 +14,4 @@ const useScheduleFrequency = () => {
   };
 };
 
-export default useScheduleFrequency; 
+export default useScheduleFrequency;

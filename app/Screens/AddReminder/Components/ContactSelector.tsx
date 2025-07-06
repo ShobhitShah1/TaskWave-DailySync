@@ -1,10 +1,11 @@
-import React from "react";
-import { Text, View } from "react-native";
-import AddContact from "../Components/AddContact";
-import AddTelegramUsername from "../Components/AddTelegramUsername";
-import ContactListModal from "../Components/ContactListModal";
-import { ContactSelectorProps } from "../types";
-import styles from "../styles";
+import React from 'react';
+import { Text, View } from 'react-native';
+
+import AddContact from '../Components/AddContact';
+import AddTelegramUsername from '../Components/AddTelegramUsername';
+import ContactListModal from '../Components/ContactListModal';
+import styles from '../styles';
+import { ContactSelectorProps } from '../types';
 
 const ContactSelector: React.FC<ContactSelectorProps> = ({
   contacts,
@@ -27,11 +28,9 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
 
   return (
     <>
-      {notificationType !== "gmail" &&
-        notificationType !== "note" &&
-        (notificationType === "telegram"
-          ? telegramUsername?.length === 0
-          : true) && (
+      {notificationType !== 'gmail' &&
+        notificationType !== 'note' &&
+        (notificationType === 'telegram' ? telegramUsername?.length === 0 : true) && (
           <AddContact
             onContactPress={onHandelContactClick}
             themeColor={themeColor}
@@ -40,7 +39,7 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
           />
         )}
 
-      {notificationType === "telegram" &&
+      {notificationType === 'telegram' &&
         telegramUsername?.length === 0 &&
         selectedContacts.length === 0 && (
           <View style={style.orContainer}>
@@ -50,7 +49,7 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
           </View>
         )}
 
-      {notificationType === "telegram" && selectedContacts.length === 0 && (
+      {notificationType === 'telegram' && selectedContacts.length === 0 && (
         <AddTelegramUsername
           telegramUsername={telegramUsername}
           setTelegramUsername={setTelegramUsername}

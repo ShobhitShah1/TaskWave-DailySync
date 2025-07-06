@@ -1,17 +1,10 @@
-import React, { FC, useCallback, useEffect, useRef, useState } from "react";
-import {
-  Dimensions,
-  FlatList,
-  Image,
-  Pressable,
-  StyleSheet,
-  View,
-  ViewToken,
-} from "react-native";
-import ReactNativeModal from "react-native-modal";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import AssetsPath from "../Constants/AssetsPath";
-import useThemeColors from "../Hooks/useThemeMode";
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { Dimensions, FlatList, Image, Pressable, StyleSheet, View, ViewToken } from 'react-native';
+import ReactNativeModal from 'react-native-modal';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+
+import AssetsPath from '../Constants/AssetsPath';
+import useThemeColors from '../Hooks/useThemeMode';
 
 interface ImagePreviewModalProps {
   isVisible: boolean;
@@ -20,7 +13,7 @@ interface ImagePreviewModalProps {
   initialIndex?: number;
 }
 
-const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get('window');
 
 const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
   isVisible,
@@ -47,17 +40,17 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
 
   const renderImageItem = useCallback(
     ({ item }: { item: string }) => (
-      <View style={[styles.imageWrapper, { width, height: "95%" }]}>
+      <View style={[styles.imageWrapper, { width, height: '95%' }]}>
         <View style={{ width: width - 30, height: height }}>
           <Image
             resizeMode="contain"
             source={{ uri: `file://${item}` }}
-            style={[styles.image, { width: "100%", height: "100%" }]}
+            style={[styles.image, { width: '100%', height: '100%' }]}
           />
         </View>
       </View>
     ),
-    []
+    [],
   );
 
   const onViewableItemsChanged = useCallback(
@@ -66,7 +59,7 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
         setCurrentIndex(viewableItems[0].index || 0);
       }
     },
-    []
+    [],
   );
 
   const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
@@ -124,11 +117,7 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
         })}
       />
       {currentIndex > 0 && (
-        <Animated.View
-          style={styles.leftArrow}
-          entering={FadeIn}
-          exiting={FadeOut}
-        >
+        <Animated.View style={styles.leftArrow} entering={FadeIn} exiting={FadeOut}>
           <Pressable onPress={handlePrevious}>
             <Image
               resizeMode="contain"
@@ -140,17 +129,13 @@ const ImagePreviewModal: FC<ImagePreviewModalProps> = ({
         </Animated.View>
       )}
       {currentIndex < images.length - 1 && (
-        <Animated.View
-          style={styles.rightArrow}
-          entering={FadeIn}
-          exiting={FadeOut}
-        >
+        <Animated.View style={styles.rightArrow} entering={FadeIn} exiting={FadeOut}>
           <Pressable onPress={handleNext}>
             <Image
               resizeMode="contain"
               tintColor={colors.black}
               source={AssetsPath.ic_leftArrow}
-              style={[styles.arrowIcon, { transform: [{ rotate: "180deg" }] }]}
+              style={[styles.arrowIcon, { transform: [{ rotate: '180deg' }] }]}
             />
           </Pressable>
         </Animated.View>
@@ -165,42 +150,42 @@ const useStyles = () => {
   return StyleSheet.create({
     modalContainer: {
       margin: 0,
-      alignItems: "center",
+      alignItems: 'center',
       backgroundColor: colors.background,
-      justifyContent: "center",
+      justifyContent: 'center',
     },
     imageWrapper: {
-      justifyContent: "center",
-      alignItems: "center",
-      overflow: "hidden",
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
       borderRadius: 10,
     },
     image: {
       borderRadius: 10,
-      overflow: "hidden",
+      overflow: 'hidden',
     },
     leftArrow: {
-      position: "absolute",
+      position: 'absolute',
       left: 5,
-      top: "50%",
+      top: '50%',
       zIndex: 1,
-      backgroundColor: "rgba(255, 255, 255, 0.6)",
+      backgroundColor: 'rgba(255, 255, 255, 0.6)',
       width: 30,
       height: 30,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center',
       borderRadius: 5,
     },
     rightArrow: {
-      position: "absolute",
+      position: 'absolute',
       right: 5,
-      top: "50%",
+      top: '50%',
       zIndex: 1,
-      backgroundColor: "rgba(255, 255, 255, 0.6)",
+      backgroundColor: 'rgba(255, 255, 255, 0.6)',
       width: 30,
       height: 30,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center',
       borderRadius: 5,
     },
     arrowIcon: {
@@ -208,10 +193,10 @@ const useStyles = () => {
       height: 20,
     },
     listHeaderView: {
-      width: "100%",
-      height: "10%",
+      width: '100%',
+      height: '10%',
       paddingHorizontal: 10,
-      justifyContent: "center",
+      justifyContent: 'center',
       top: 20,
       left: 5,
     },

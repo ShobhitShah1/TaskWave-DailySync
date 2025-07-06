@@ -1,0 +1,9 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+yarn format --check
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+  echo "\n❌ Code is not formatted. Please run 'yarn format' before committing."
+  exit 1
+fi 

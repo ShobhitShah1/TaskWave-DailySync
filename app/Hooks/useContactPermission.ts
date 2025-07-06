@@ -1,23 +1,14 @@
-import { useState } from "react";
-import { Alert, Linking, Platform } from "react-native";
-import { showMessage } from "react-native-flash-message";
-import {
-  check,
-  PERMISSIONS,
-  PermissionStatus,
-  request,
-  RESULTS,
-} from "react-native-permissions";
+import { useState } from 'react';
+import { Linking, Platform } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
+import { check, PERMISSIONS, PermissionStatus, request, RESULTS } from 'react-native-permissions';
 
 const getPlatformPermission = () => {
-  return Platform.OS === "android"
-    ? PERMISSIONS.ANDROID.READ_CONTACTS
-    : PERMISSIONS.IOS.CONTACTS;
+  return Platform.OS === 'android' ? PERMISSIONS.ANDROID.READ_CONTACTS : PERMISSIONS.IOS.CONTACTS;
 };
 
 const useContactPermission = () => {
-  const [permissionStatus, setPermissionStatus] =
-    useState<PermissionStatus | null>(null);
+  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus | null>(null);
 
   const checkPermissionStatus = async () => {
     const permission = getPlatformPermission();
@@ -34,9 +25,9 @@ const useContactPermission = () => {
     switch (status) {
       case RESULTS.UNAVAILABLE:
         showMessage({
-          description: "This feature is not available on your device.",
-          message: "Contacts Unavailable",
-          type: "danger",
+          description: 'This feature is not available on your device.',
+          message: 'Contacts Unavailable',
+          type: 'danger',
         });
         return false;
       case RESULTS.DENIED:
@@ -60,8 +51,8 @@ const useContactPermission = () => {
       } else if (result === RESULTS.BLOCKED) {
         showMessage({
           message:
-            "Contacts permission is required to access your contacts. click here to go to settings",
-          type: "danger",
+            'Contacts permission is required to access your contacts. click here to go to settings',
+          type: 'danger',
           duration: 5000,
           onPress: () => Linking.openSettings(),
         });
@@ -71,7 +62,7 @@ const useContactPermission = () => {
     } catch (error: any) {
       showMessage({
         message: `Error requesting contact permission: ${String(error?.message || error)}`,
-        type: "danger",
+        type: 'danger',
       });
       return false;
     }

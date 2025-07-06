@@ -1,10 +1,11 @@
-import React from "react";
-import { View, Pressable, Text } from "react-native";
-import Animated from "react-native-reanimated";
-import AssetsPath from "../../../Constants/AssetsPath";
-import AudioMemoItem from "../../../Components/MemoListItem";
-import { useAppContext } from "../../../Contexts/ThemeProvider";
-import useThemeColors from "../../../Hooks/useThemeMode";
+import React from 'react';
+import { Pressable, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
+
+import AudioMemoItem from '../../../Components/MemoListItem';
+import AssetsPath from '../../../Constants/AssetsPath';
+import { useAppContext } from '../../../Contexts/ThemeProvider';
+import useThemeColors from '../../../Hooks/useThemeMode';
 
 interface AudioRecorderProps {
   memos: any[];
@@ -28,16 +29,11 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   style,
 }) => {
   const { theme } = useAppContext();
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
   const colors = useThemeColors();
 
   return (
-    <View
-      style={[
-        style.recorderContainer,
-        { marginTop: memos.length === 0 ? 0 : 5 },
-      ]}
-    >
+    <View style={[style.recorderContainer, { marginTop: memos.length === 0 ? 0 : 5 }]}>
       {memos.length !== 0 && (
         <Pressable
           onPress={() => setMemos([])}
@@ -53,27 +49,14 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
         gradientStart={iconColor}
         renderRightIcon={
           <View>
-            {recording && (
-              <Animated.View
-                style={[style.recorderRecordWave, animatedRecordWave]}
-              />
-            )}
+            {recording && <Animated.View style={[style.recorderRecordWave, animatedRecordWave]} />}
 
-            <Pressable
-              style={style.recorderRecordButton}
-              onPress={onRecordingPress}
-            >
+            <Pressable style={style.recorderRecordButton} onPress={onRecordingPress}>
               <Animated.Image
                 resizeMode="contain"
-                tintColor={
-                  recording
-                    ? isDark
-                      ? colors.white
-                      : colors.black
-                    : themeColor
-                }
+                tintColor={recording ? (isDark ? colors.white : colors.black) : themeColor}
                 source={AssetsPath.ic_recordMic}
-                style={[{ width: "100%", height: "100%", zIndex: 9999999999 }]}
+                style={[{ width: '100%', height: '100%', zIndex: 9999999999 }]}
               />
             </Pressable>
           </View>

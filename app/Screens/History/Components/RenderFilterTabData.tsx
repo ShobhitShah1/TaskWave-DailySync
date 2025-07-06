@@ -1,8 +1,9 @@
-import React, { FC } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import Animated from "react-native-reanimated";
-import { FONTS } from "../../../Constants/Theme";
-import useThemeColors from "../../../Hooks/useThemeMode";
+import React, { FC } from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
+
+import { FONTS } from '../../../Constants/Theme';
+import useThemeColors from '../../../Hooks/useThemeMode';
 
 interface filterTabProps {
   res: {
@@ -17,21 +18,12 @@ interface filterTabProps {
   isActive: boolean;
 }
 
-const RenderFilterTabData: FC<filterTabProps> = ({
-  res,
-  index,
-  onTabPress,
-  isActive,
-}) => {
+const RenderFilterTabData: FC<filterTabProps> = ({ res, index, onTabPress, isActive }) => {
   const style = styles();
   const colors = useThemeColors();
 
   return (
-    <Pressable
-      key={index}
-      onPress={onTabPress}
-      style={[style.tabButton, { width: 70 }]}
-    >
+    <Pressable key={index} onPress={onTabPress} style={[style.tabButton, { width: 70 }]}>
       <Animated.View style={[style.tabContainer, isActive && style.activeTab]}>
         {res.icon && (
           <Image
@@ -77,23 +69,23 @@ const styles = () => {
 
   return StyleSheet.create({
     tabButton: {
-      height: "98%",
-      alignItems: "center",
-      overflow: "visible",
-      justifyContent: "center",
+      height: '98%',
+      alignItems: 'center',
+      overflow: 'visible',
+      justifyContent: 'center',
     },
     tabContainer: {
       flex: 1,
-      width: "95%",
-      height: "100%",
-      alignItems: "center",
-      justifyContent: "center",
+      width: '95%',
+      height: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     activeTab: {
       flex: 1,
-      justifyContent: "center",
+      justifyContent: 'center',
       borderRadius: 10,
-      backgroundColor: "rgba(38, 107, 235, 1)",
+      backgroundColor: 'rgba(38, 107, 235, 1)',
     },
     iconStyle: {
       width: 20,
@@ -102,27 +94,27 @@ const styles = () => {
     },
     tabTitle: {
       rowGap: 10,
-      width: "100%",
-      alignSelf: "center",
-      textAlign: "center",
-      justifyContent: "center",
+      width: '100%',
+      alignSelf: 'center',
+      textAlign: 'center',
+      justifyContent: 'center',
       fontFamily: FONTS.Medium,
     },
     badgeContainer: {
-      position: "absolute",
+      position: 'absolute',
       top: 0,
       right: 0,
       borderRadius: 50,
       width: 22,
       height: 22,
       zIndex: 1,
-      overflow: "visible",
-      justifyContent: "center",
-      alignItems: "center",
+      overflow: 'visible',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     badgeText: {
       fontSize: 12,
-      textAlign: "center",
+      textAlign: 'center',
       color: colors.black,
       fontFamily: FONTS.Medium,
     },

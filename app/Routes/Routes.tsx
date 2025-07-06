@@ -1,28 +1,25 @@
-import {
-  DefaultTheme,
-  NavigationContainer,
-  Theme,
-} from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import * as ExpoSplashScreen from "expo-splash-screen";
-import * as SystemUI from "expo-system-ui";
-import React from "react";
-import { StatusBar, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { storage, useAppContext } from "../Contexts/ThemeProvider";
-import useThemeColors from "../Hooks/useThemeMode";
-import AddReminder from "../Screens/AddReminder/AddReminder";
-import ReminderScheduled from "../Screens/AddReminder/ReminderScheduled";
-import OnBoarding from "../Screens/OnBoarding/Index";
-import ReminderPreview from "../Screens/Preview/ReminderPreview";
-import AboutApp from "../Screens/Setting/AboutApp";
-import HowAppWorks from "../Screens/Setting/HowAppWorks";
-import NotificationSound from "../Screens/Setting/NotificationSound";
-import { RootStackParamList } from "../Types/Interface";
-import BottomTab from "./BottomTab";
-import { useQuickActionCallback } from "expo-quick-actions/hooks";
-import { useBottomSheet } from "../Contexts/BottomSheetProvider";
-import { navigationRef } from "./RootNavigation";
+import { DefaultTheme, NavigationContainer, Theme } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useQuickActionCallback } from 'expo-quick-actions/hooks';
+import * as SystemUI from 'expo-system-ui';
+import React from 'react';
+import { StatusBar, StyleSheet } from 'react-native';
+import BootSplash from 'react-native-bootsplash';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useBottomSheet } from '../Contexts/BottomSheetProvider';
+import { storage, useAppContext } from '../Contexts/ThemeProvider';
+import useThemeColors from '../Hooks/useThemeMode';
+import AddReminder from '../Screens/AddReminder/AddReminder';
+import ReminderScheduled from '../Screens/AddReminder/ReminderScheduled';
+import OnBoarding from '../Screens/OnBoarding/Index';
+import ReminderPreview from '../Screens/Preview/ReminderPreview';
+import AboutApp from '../Screens/Setting/AboutApp';
+import HowAppWorks from '../Screens/Setting/HowAppWorks';
+import NotificationSound from '../Screens/Setting/NotificationSound';
+import { RootStackParamList } from '../Types/Interface';
+import BottomTab from './BottomTab';
+import { navigationRef } from './RootNavigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -41,12 +38,12 @@ const Routes = () => {
   };
 
   useQuickActionCallback((action) => {
-    if (action.id === "0") {
+    if (action.id === '0') {
       bottomSheetModalRef.current?.present();
     }
   });
 
-  const showOnboarding = storage.getString("onboardingShown");
+  const showOnboarding = storage.getString('onboardingShown');
 
   return (
     <NavigationContainer
@@ -54,7 +51,8 @@ const Routes = () => {
       theme={MyTheme}
       onReady={() => {
         setTimeout(() => {
-          ExpoSplashScreen.hideAsync();
+          console.log('hideAsync');
+          BootSplash.hide({ fade: true });
         }, 500);
         SystemUI.setBackgroundColorAsync(colors.background);
       }}
@@ -63,36 +61,28 @@ const Routes = () => {
         <StatusBar
           translucent
           backgroundColor={colors.background}
-          barStyle={theme === "dark" ? "light-content" : "dark-content"}
+          barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
         />
         <Stack.Navigator
-          screenOptions={({ route }) => ({
+          screenOptions={({}) => ({
             headerShown: false,
-            animation: "ios",
-            navigationBarColor:
-              route?.name === "OnBoarding"
-                ? colors.white
-                : route?.name === "BottomTab"
-                ? colors?.bottomTab
-                : colors?.background,
+            animation: 'ios_from_right',
+            // navigationBarColor:
+            //   route?.name === 'OnBoarding'
+            //     ? colors.white
+            //     : route?.name === 'BottomTab'
+            //       ? colors?.bottomTab
+            //       : colors?.background,
           })}
         >
-          {showOnboarding !== "no" && (
-            <Stack.Screen name="OnBoarding" component={OnBoarding} />
-          )}
+          {showOnboarding !== 'no' && <Stack.Screen name="OnBoarding" component={OnBoarding} />}
           <Stack.Screen name="BottomTab" component={BottomTab} />
           <Stack.Screen name="CreateReminder" component={AddReminder} />
-          <Stack.Screen
-            name="ReminderScheduled"
-            component={ReminderScheduled}
-          />
+          <Stack.Screen name="ReminderScheduled" component={ReminderScheduled} />
           <Stack.Screen name="ReminderPreview" component={ReminderPreview} />
           <Stack.Screen name="AboutApp" component={AboutApp} />
           <Stack.Screen name="HowAppWorks" component={HowAppWorks} />
-          <Stack.Screen
-            name="NotificationSound"
-            component={NotificationSound}
-          />
+          <Stack.Screen name="NotificationSound" component={NotificationSound} />
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>

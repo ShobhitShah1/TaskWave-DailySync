@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from 'moment';
 
 export const isSameDay = (date1: Date, date2: Date) => {
   return (
@@ -9,5 +9,5 @@ export const isSameDay = (date1: Date, date2: Date) => {
 };
 
 export const fromNowText = (date: Date) => {
-  return isSameDay(date, new Date()) ? "Today" : moment(date).fromNow();
+  return isSameDay(date, new Date()) ? 'Today' : moment(date).fromNow();
 };

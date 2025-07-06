@@ -1,5 +1,5 @@
-import { BlurView } from "expo-blur";
-import React, { memo, useCallback, useMemo, useState } from "react";
+import { BlurView } from 'expo-blur';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -9,17 +9,18 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from "react-native";
-import Modal from "react-native-modal";
+} from 'react-native';
+import Modal from 'react-native-modal';
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-} from "react-native-reanimated";
-import { FONTS, SIZE } from "../Constants/Theme";
-import { useAppContext } from "../Contexts/ThemeProvider";
-import useThemeColors from "../Hooks/useThemeMode";
+} from 'react-native-reanimated';
+
+import { FONTS, SIZE } from '../Constants/Theme';
+import { useAppContext } from '../Contexts/ThemeProvider';
+import useThemeColors from '../Hooks/useThemeMode';
 
 interface YearMonthPickerProps {
   isVisible: boolean;
@@ -38,23 +39,23 @@ interface PickerItemProps {
   onSelect: (value: number) => void;
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ITEM_HEIGHT = 40;
 const VISIBLE_ITEMS = 10;
 
 const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
@@ -71,17 +72,12 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
   const { theme } = useAppContext();
 
   const years = useMemo(
-    () =>
-      Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i),
-    [startYear, endYear]
+    () => Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i),
+    [startYear, endYear],
   );
 
-  const [selectedYear, setSelectedYear] = useState(
-    initialSelectedYear || new Date().getFullYear()
-  );
-  const [selectedMonth, setSelectedMonth] = useState(
-    initialSelectedMonth || new Date().getMonth()
-  );
+  const [selectedYear, setSelectedYear] = useState(initialSelectedYear || new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(initialSelectedMonth || new Date().getMonth());
 
   const animationProgress = useSharedValue(1);
   const modalScale = useSharedValue(1);
@@ -94,12 +90,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
     opacity: animationProgress.value,
   }));
 
-  const PickerItem: React.FC<PickerItemProps> = ({
-    label,
-    value,
-    isSelected,
-    onSelect,
-  }) => {
+  const PickerItem: React.FC<PickerItemProps> = ({ label, value, isSelected, onSelect }) => {
     const itemScale = useSharedValue(1);
 
     const itemAnimatedStyle = useAnimatedStyle(() => ({
@@ -111,8 +102,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
         style={[
           styles.pickerItem,
           isSelected && {
-            backgroundColor:
-              theme === "dark" ? colors.white : `rgba(209, 209, 209, ${0.5})`,
+            backgroundColor: theme === 'dark' ? colors.white : `rgba(209, 209, 209, ${0.5})`,
           },
           // isSelected && {
           //   backgroundColor: `rgba(209, 209, 209, ${
@@ -137,9 +127,9 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
               {
                 color: isSelected
                   ? colors.darkBlue
-                  : theme === "dark"
-                  ? colors.white
-                  : "rgba(48, 51, 52, 0.7)",
+                  : theme === 'dark'
+                    ? colors.white
+                    : 'rgba(48, 51, 52, 0.7)',
               },
               isSelected && styles.selectedItemText,
             ]}
@@ -156,7 +146,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       data: any[],
       selectedValue: number,
       onSelectValue: (value: number) => void,
-      valueToLabel: (value: number) => string
+      valueToLabel: (value: number) => string,
     ) => {
       const initialScrollIndex =
         data.indexOf(selectedValue) - Math.floor(VISIBLE_ITEMS / 2) >= 0
@@ -188,7 +178,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
         />
       );
     },
-    [colors]
+    [colors],
   );
 
   return (
@@ -232,8 +222,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
           style={[
             styles.modalView,
             {
-              backgroundColor:
-                theme === "dark" ? "rgba(30, 31, 31, 1)" : colors.background,
+              backgroundColor: theme === 'dark' ? 'rgba(30, 31, 31, 1)' : colors.background,
               shadowColor: colors.darkBlue,
               shadowOffset: { width: 0, height: -10 },
               shadowOpacity: 1,
@@ -244,35 +233,26 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
           ]}
         >
           <View style={styles.pickerContainer}>
-            {renderPickerColumn(years, selectedYear, setSelectedYear, (year) =>
-              year.toString()
-            )}
+            {renderPickerColumn(years, selectedYear, setSelectedYear, (year) => year.toString())}
             {renderPickerColumn(
               MONTHS.map((_, index) => index),
               selectedMonth,
               setSelectedMonth,
-              (monthIndex) => MONTHS[monthIndex]
+              (monthIndex) => MONTHS[monthIndex],
             )}
           </View>
           <View style={styles.buttonContainer}>
             <Pressable
-              style={[
-                styles.button,
-                { backgroundColor: "rgba(217, 217, 217, 1)" },
-              ]}
+              style={[styles.button, { backgroundColor: 'rgba(217, 217, 217, 1)' }]}
               onPress={onCancel}
             >
-              <Text style={[styles.buttonText, { color: colors.black }]}>
-                Cancel
-              </Text>
+              <Text style={[styles.buttonText, { color: colors.black }]}>Cancel</Text>
             </Pressable>
             <Pressable
               style={[styles.button, { backgroundColor: colors.darkBlue }]}
               onPress={handleConfirm}
             >
-              <Text style={[styles.buttonText, { color: colors.white }]}>
-                Confirm
-              </Text>
+              <Text style={[styles.buttonText, { color: colors.white }]}>Confirm</Text>
             </Pressable>
           </View>
         </Animated.View>
@@ -284,33 +264,33 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalView: {
     borderRadius: SIZE.listBorderRadius,
     padding: 20,
-    alignItems: "center",
+    alignItems: 'center',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
     shadowRadius: 10,
     width: SCREEN_WIDTH * 0.85,
   },
   pickerContainer: {
-    width: "100%",
-    justifyContent: "space-between",
-    flexDirection: "row",
+    width: '100%',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
     height: ITEM_HEIGHT * VISIBLE_ITEMS,
   },
   pickerColumn: {
     flex: 1,
   },
   pickerItem: {
-    width: "90%",
+    width: '90%',
     left: 8,
     height: ITEM_HEIGHT,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 20,
   },
   pickerItemText: {
@@ -321,16 +301,16 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.SemiBold,
   },
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginTop: 20,
-    width: "100%",
+    width: '100%',
   },
   button: {
     padding: 12,
     borderRadius: SIZE.listBorderRadius,
-    width: "48%",
-    alignItems: "center",
+    width: '48%',
+    alignItems: 'center',
   },
   buttonText: {
     fontSize: 16.5,

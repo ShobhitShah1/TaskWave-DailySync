@@ -1,20 +1,16 @@
-import { Linking, NativeModules } from "react-native";
-import { showMessage } from "react-native-flash-message";
-import { Notification } from "../Types/Interface";
-import { parseNotificationData } from "../Utils/notificationParser";
-import { navigationRef } from "../Routes/RootNavigation";
+import { Linking } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
+import { sendMail, sendSms, sendTelegramMessage, sendWhatsapp } from 'send-message';
 
-const { SendMessagesModule } = NativeModules;
+import { navigationRef } from '../Routes/RootNavigation';
+import { Notification } from '../Types/Interface';
+import { parseNotificationData } from '../Utils/notificationParser';
 
 const parseContacts = (toContact: any): string[] => {
   try {
-    const contacts = Array.isArray(toContact)
-      ? toContact
-      : JSON.parse(toContact);
+    const contacts = Array.isArray(toContact) ? toContact : JSON.parse(toContact);
 
-    return Array.isArray(contacts)
-      ? contacts.map((contact) => contact.number)
-      : [];
+    return Array.isArray(contacts) ? contacts.map((contact) => contact.number) : [];
   } catch (error: any) {
     showError(`Failed to parse toContact: ${error?.message?.toString()}`);
     return [];
@@ -24,20 +20,17 @@ const parseContacts = (toContact: any): string[] => {
 const parseEmails = (toMail: any): string => {
   try {
     const emails: string[] = JSON.parse(toMail);
-    return emails.filter((email) => email !== "").join(", ");
+    return emails.filter((email) => email !== '').join(', ');
   } catch (error: any) {
     showError(`Failed to parse toMail: ${error?.message?.toString()}`);
-    return "";
+    return '';
   }
 };
 
 const parseAttachments = (attachments: any): string[] => {
   try {
-    const parsed =
-      typeof attachments === "string" ? JSON.parse(attachments) : attachments;
-    return Array.isArray(parsed)
-      ? parsed.map((attachment) => attachment?.uri || "")
-      : [];
+    const parsed = typeof attachments === 'string' ? JSON.parse(attachments) : attachments;
+    return Array.isArray(parsed) ? parsed.map((attachment) => attachment?.uri || '') : [];
   } catch (error: any) {
     showError(`Failed to parse attachments: ${error?.message?.toString()}`);
     return [];
@@ -46,17 +39,15 @@ const parseAttachments = (attachments: any): string[] => {
 
 const parseAudioMemo = (memo: any): string => {
   try {
-    const parsed = typeof memo === "string" ? JSON.parse(memo) : memo;
-    return Array.isArray(parsed) && parsed.length > 0
-      ? parsed[0]?.uri || ""
-      : "";
+    const parsed = typeof memo === 'string' ? JSON.parse(memo) : memo;
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed[0]?.uri || '' : '';
   } catch {
-    return "";
+    return '';
   }
 };
 
 const showError = (message: string) => {
-  showMessage({ message, type: "danger" });
+  showMessage({ message, type: 'danger' });
 };
 
 const notificationHandlers = {
@@ -64,22 +55,18 @@ const notificationHandlers = {
     try {
       const numbers = parseContacts(data.toContact);
       if (!numbers.length) {
-        showError(
-          `No valid contact found for ${
-            isWhatsApp ? "WhatsApp" : "WhatsApp Business"
-          }.`
-        );
+        showError(`No valid contact found for ${isWhatsApp ? 'WhatsApp' : 'WhatsApp Business'}.`);
         return;
       }
 
       const attachments = parseAttachments(data.attachments);
       const audioPath = parseAudioMemo(data.memo);
-      await SendMessagesModule.sendWhatsapp(
-        numbers.join(","),
+      await sendWhatsapp(
+        numbers.join(','),
         String(data.message),
-        attachments.join(","),
+        attachments.join(','),
         audioPath,
-        isWhatsApp
+        isWhatsApp,
       );
     } catch (error: any) {
       showError(error?.message?.toString());
@@ -89,22 +76,18 @@ const notificationHandlers = {
     try {
       const numbers = parseContacts(data.toContact);
       if (!numbers.length) {
-        showError(
-          `No valid contact found for ${
-            isWhatsApp ? "WhatsApp" : "WhatsApp Business"
-          }.`
-        );
+        showError(`No valid contact found for ${isWhatsApp ? 'WhatsApp' : 'WhatsApp Business'}.`);
         return;
       }
 
       const attachments = parseAttachments(data.attachments);
       const audioPath = parseAudioMemo(data.memo);
-      await SendMessagesModule.sendWhatsapp(
-        numbers.join(","),
+      await sendWhatsapp(
+        numbers.join(','),
         String(data.message),
-        attachments.join(","),
+        attachments.join(','),
         audioPath,
-        isWhatsApp
+        isWhatsApp,
       );
     } catch (error: any) {
       showError(error?.message?.toString());
@@ -115,16 +98,12 @@ const notificationHandlers = {
     try {
       const numbers = parseContacts(data.toContact);
       if (!numbers.length) {
-        showError("No valid phone numbers found for SMS.");
+        showError('No valid phone numbers found for SMS.');
         return;
       }
 
       const attachments = parseAttachments(data.attachments);
-      await SendMessagesModule.sendSms(
-        numbers,
-        String(data.message),
-        attachments.join(",")
-      );
+      await sendSms(numbers, String(data.message), attachments.join(','));
     } catch (error: any) {
       showError(error?.message?.toString());
     }
@@ -134,12 +113,7 @@ const notificationHandlers = {
     try {
       const emails = parseEmails(data.toMail);
       const attachments = parseAttachments(data.attachments);
-      await SendMessagesModule.sendMail(
-        emails,
-        String(data.subject),
-        String(data.message),
-        attachments.join(",")
-      );
+      await sendMail(emails, String(data.subject), String(data.message), attachments.join(','));
     } catch (error: any) {
       showError(error?.message?.toString());
     }
@@ -159,12 +133,12 @@ const notificationHandlers = {
     const recipient = data.telegramUsername || numbers[0];
 
     if (!recipient || !data.message) {
-      showError("Invalid Telegram username or message.");
+      showError('Invalid Telegram username or message.');
       return;
     }
 
     try {
-      await SendMessagesModule.sendTelegramMessage(recipient, data.message);
+      await sendTelegramMessage(recipient, data.message);
     } catch (error: any) {
       showError(error?.message?.toString());
     }
@@ -174,7 +148,7 @@ const notificationHandlers = {
     try {
       const parseData = parseNotificationData(data);
 
-      navigationRef.navigate("ReminderPreview", {
+      navigationRef.navigate('ReminderPreview', {
         notificationData: parseData,
       });
     } catch (error: any) {
@@ -185,14 +159,11 @@ const notificationHandlers = {
 
 export const handleNotificationPress = async (notification: any) => {
   try {
-    const handler =
-      notificationHandlers[
-        notification.type as keyof typeof notificationHandlers
-      ];
+    const handler = notificationHandlers[notification.type as keyof typeof notificationHandlers];
     if (handler) {
       await handler(notification as Notification);
     } else {
-      showError("Unsupported notification type.");
+      showError('Unsupported notification type.');
     }
   } catch (error: any) {
     showError(error?.message?.toString());

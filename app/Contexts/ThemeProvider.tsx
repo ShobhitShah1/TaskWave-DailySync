@@ -1,22 +1,18 @@
-import * as SystemUI from "expo-system-ui";
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { MMKV } from "react-native-mmkv";
-import {
-  AppContextProps,
-  AppContextType,
-  Theme,
-  ViewMode,
-} from "../Types/Interface";
+import * as SystemUI from 'expo-system-ui';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { MMKV } from 'react-native-mmkv';
+
+import { AppContextProps, AppContextType, Theme, ViewMode } from '../Types/Interface';
 
 export const storage = new MMKV();
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>('dark');
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const storedViewMode = storage.getString("viewMode");
-    return (storedViewMode as ViewMode) || "list";
+    const storedViewMode = storage.getString('viewMode');
+    return (storedViewMode as ViewMode) || 'list';
   });
 
   useEffect(() => {
@@ -47,43 +43,41 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
 
   const storeTheme = async () => {
     try {
-      const storedTheme = storage.getString("themeMode");
-      const MyTheme: Theme = (storedTheme as Theme) || "dark";
-      await SystemUI.setBackgroundColorAsync(
-        MyTheme === "light" ? "#ffffff" : "#303334"
-      );
+      const storedTheme = storage.getString('themeMode');
+      const MyTheme: Theme = (storedTheme as Theme) || 'dark';
+      await SystemUI.setBackgroundColorAsync(MyTheme === 'light' ? '#ffffff' : '#303334');
       setTheme(MyTheme);
     } catch (error: any) {
-      throw new Error("Error storing theme mode: " + error.message);
+      throw new Error('Error storing theme mode: ' + error.message);
     }
   };
 
   const storeViewMode = () => {
     try {
-      const storedViewMode = storage.getString("viewMode");
+      const storedViewMode = storage.getString('viewMode');
       if (storedViewMode) {
         setViewMode(storedViewMode as ViewMode);
       }
     } catch (error: any) {
-      throw new Error("Error storing view mode: " + error?.message);
+      throw new Error('Error storing view mode: ' + error?.message);
     }
   };
 
   const toggleViewMode = async (newMode: ViewMode) => {
     try {
-      storage.set("viewMode", newMode);
+      storage.set('viewMode', newMode);
       setViewMode(newMode);
     } catch (error: any) {
-      throw new Error("Error storing view mode: " + error?.message);
+      throw new Error('Error storing view mode: ' + error?.message);
     }
   };
 
   const toggleTheme = async (newTheme: Theme) => {
     try {
-      storage.set("themeMode", newTheme);
+      storage.set('themeMode', newTheme);
       storeTheme();
     } catch (error: any) {
-      throw new Error("Error storing theme mode: " + error?.message);
+      throw new Error('Error storing theme mode: ' + error?.message);
     }
   };
 
@@ -94,15 +88,13 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
     toggleViewMode,
   };
 
-  return (
-    <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
-  );
+  return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
 };
 
 export const useAppContext = () => {
   const context = useContext(AppContext);
   if (!context) {
-    throw new Error("useAppContext must be used within an AppProvider");
+    throw new Error('useAppContext must be used within an AppProvider');
   }
   return context;
 };

@@ -1,49 +1,36 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import {
-  ActivityIndicator,
-  Keyboard,
-  Platform,
-  Pressable,
-  Text,
-  UIManager,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { showMessage } from "react-native-flash-message";
-import useNotificationIconColors from "../../Hooks/useNotificationIconColors";
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Keyboard, Pressable, Text, View } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
+import Animated from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import useNotificationIconColors from '../../Hooks/useNotificationIconColors';
 import useDatabase, {
   createNotificationChannel,
   scheduleNotification,
-} from "../../Hooks/useReminder";
-import useThemeColors from "../../Hooks/useThemeMode";
-import { Contact, Notification, NotificationType } from "../../Types/Interface";
-import { formatNotificationType } from "../../Utils/formatNotificationType";
-import { validateDateTime } from "../../Utils/validateDateTime";
-import styles from "./styles";
-import Header from "./Components/Header";
-import AudioRecorder from "./Components/AudioRecorder";
-import useAudioRecorder from "./hooks/useAudioRecorder";
-import ContactSelector from "./Components/ContactSelector";
-import useContactSelector from "./hooks/useContactSelector";
-import DocumentPickerComponent from "./Components/DocumentPicker";
-import useDocumentPicker from "./hooks/useDocumentPicker";
-import DateTimePicker from "./Components/DateTimePicker";
-import useDateTimePicker from "./hooks/useDateTimePicker";
-import ScheduleFrequencyPicker from "./Components/ScheduleFrequencyPicker";
-import useScheduleFrequency from "./hooks/useScheduleFrequency";
-import useAddReminderForm from "./hooks/useAddReminderForm";
-import Animated from "react-native-reanimated";
-import AddMailSubject from "./Components/AddMailSubject";
-import AddMailTo from "./Components/AddMailTo";
-import AddMessage from "./Components/AddMessage";
-import ContactListModal from "./Components/ContactListModal";
-
-if (Platform.OS === "android") {
-  if (UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
-}
+} from '../../Hooks/useReminder';
+import useThemeColors from '../../Hooks/useThemeMode';
+import { Contact, Notification, NotificationType } from '../../Types/Interface';
+import { formatNotificationType } from '../../Utils/formatNotificationType';
+import { validateDateTime } from '../../Utils/validateDateTime';
+import AddMailSubject from './Components/AddMailSubject';
+import AddMailTo from './Components/AddMailTo';
+import AddMessage from './Components/AddMessage';
+import AudioRecorder from './Components/AudioRecorder';
+import ContactListModal from './Components/ContactListModal';
+import ContactSelector from './Components/ContactSelector';
+import DateTimePicker from './Components/DateTimePicker';
+import DocumentPickerComponent from './Components/DocumentPicker';
+import Header from './Components/Header';
+import ScheduleFrequencyPicker from './Components/ScheduleFrequencyPicker';
+import useAddReminderForm from './hooks/useAddReminderForm';
+import useAudioRecorder from './hooks/useAudioRecorder';
+import useContactSelector from './hooks/useContactSelector';
+import useDateTimePicker from './hooks/useDateTimePicker';
+import useDocumentPicker from './hooks/useDocumentPicker';
+import useScheduleFrequency from './hooks/useScheduleFrequency';
+import styles from './styles';
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -55,9 +42,8 @@ const AddReminder = () => {
   const style = styles();
   const colors = useThemeColors();
   const navigation = useNavigation();
-  const { params } = useRoute<RouteProp<NotificationProps, "params">>();
-  const { createNotification, getNotificationById, updateNotification } =
-    useDatabase();
+  const { params } = useRoute<RouteProp<NotificationProps, 'params'>>();
+  const { createNotification, getNotificationById, updateNotification } = useDatabase();
 
   const notificationType = useMemo(() => {
     return params.notificationType as NotificationType;
@@ -74,7 +60,7 @@ const AddReminder = () => {
   }, [id]);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener("blur", () => {
+    const unsubscribe = navigation.addListener('blur', () => {
       stopRecording();
     });
 
@@ -94,17 +80,10 @@ const AddReminder = () => {
   } = useAddReminderForm(notificationType);
 
   const [isLoading, setIsLoading] = useState(false);
-  const { createViewColor, iconColor } =
-    useNotificationIconColors(notificationType);
+  const { createViewColor, iconColor } = useNotificationIconColors(notificationType);
 
-  const {
-    recording,
-    memos,
-    setMemos,
-    onRecordingPress,
-    stopRecording,
-    animatedRecordWave,
-  } = useAudioRecorder(createViewColor, iconColor);
+  const { recording, memos, setMemos, onRecordingPress, stopRecording, animatedRecordWave } =
+    useAudioRecorder(createViewColor, iconColor);
 
   const {
     contacts,
@@ -120,12 +99,8 @@ const AddReminder = () => {
     handleRemoveContact,
   } = useContactSelector();
 
-  const {
-    selectedDocuments,
-    setSelectedDocuments,
-    onHandelAttachmentClick,
-    onRemoveDocument,
-  } = useDocumentPicker();
+  const { selectedDocuments, setSelectedDocuments, onHandelAttachmentClick, onRemoveDocument } =
+    useDocumentPicker();
 
   const {
     selectedDateAndTime,
@@ -137,20 +112,16 @@ const AddReminder = () => {
     handlePickerChange,
   } = useDateTimePicker();
 
-  const {
-    scheduleFrequency,
-    setScheduleFrequency,
-    selectedDays,
-    setSelectedDays,
-  } = useScheduleFrequency();
+  const { scheduleFrequency, setScheduleFrequency, selectedDays, setSelectedDays } =
+    useScheduleFrequency();
 
   const getExistingNotificationData = async () => {
     const response = await getNotificationById(id);
     if (response) {
       setMessage(response?.message);
       setTo(response?.toMail?.[0]);
-      setSubject(response?.subject || "");
-      setTelegramUsername(response?.telegramUsername || "");
+      setSubject(response?.subject || '');
+      setTelegramUsername(response?.telegramUsername || '');
       setScheduleFrequency(response?.scheduleFrequency);
       setSelectedDays(response?.days);
       setSelectedDateAndTime({
@@ -174,37 +145,33 @@ const AddReminder = () => {
           selectedDateAndTime.date!.getMonth(),
           selectedDateAndTime.date!.getDate(),
           selectedDateAndTime.time!.getHours(),
-          selectedDateAndTime.time!.getMinutes()
+          selectedDateAndTime.time!.getMinutes(),
         );
 
         if (!validateDateTime(selectedDateTime)) {
-          throw new Error(
-            "The notification must be scheduled at least 10 seconds in the future."
-          );
+          throw new Error('The notification must be scheduled at least 10 seconds in the future.');
         }
 
-        const extractedContacts: Contact[] = selectedContacts?.map(
-          (contact) => ({
-            name: contact.name,
-            number: contact.number || "",
-            recordID: contact?.recordID || "",
-            thumbnailPath: contact?.thumbnailPath,
-          })
-        );
+        const extractedContacts: Contact[] = selectedContacts?.map((contact) => ({
+          name: contact.name,
+          number: contact.number || '',
+          recordID: contact?.recordID || '',
+          thumbnailPath: contact?.thumbnailPath,
+        }));
 
         const notificationData: Notification = {
-          id: "",
+          id: '',
           type: notificationType,
-          message: message.toString() || "",
+          message: message.toString() || '',
           date: selectedDateTime,
-          subject: notificationType === "gmail" ? subject : "",
+          subject: notificationType === 'gmail' ? subject : '',
           toContact: extractedContacts,
           toMail: [to],
           attachments: selectedDocuments,
-          scheduleFrequency: scheduleFrequency || "",
+          scheduleFrequency: scheduleFrequency || '',
           days: selectedDays,
           memo: memos || [],
-          telegramUsername: telegramUsername?.toString() || "",
+          telegramUsername: telegramUsername?.toString() || '',
         };
 
         let notificationScheduleId;
@@ -217,8 +184,8 @@ const AddReminder = () => {
             notificationScheduleId = id;
           } else {
             showMessage({
-              message: "Failed to update notification.",
-              type: "danger",
+              message: 'Failed to update notification.',
+              type: 'danger',
             });
             setIsLoading(false);
             return;
@@ -235,22 +202,22 @@ const AddReminder = () => {
             if (!created) {
               showMessage({
                 message: String(created),
-                type: "danger",
+                type: 'danger',
               });
               setIsLoading(false);
               return;
             }
           } else {
             showMessage({
-              message: "Failed to schedule notification.",
-              type: "danger",
+              message: 'Failed to schedule notification.',
+              type: 'danger',
             });
             setIsLoading(false);
             return;
           }
         }
 
-        navigation.navigate("ReminderScheduled", {
+        navigation.navigate('ReminderScheduled', {
           themeColor: createViewColor,
           notification: {
             ...notificationData,
@@ -264,7 +231,7 @@ const AddReminder = () => {
     } catch (error: any) {
       showMessage({
         message: String(error?.message || error),
-        type: "danger",
+        type: 'danger',
       });
       setIsLoading(false);
     }
@@ -290,11 +257,11 @@ const AddReminder = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {notificationType === "gmail" && (
+          {notificationType === 'gmail' && (
             <AddMailTo to={to} setTo={setTo} themeColor={createViewColor} />
           )}
 
-          {notificationType === "gmail" && (
+          {notificationType === 'gmail' && (
             <AddMailSubject
               subject={subject}
               setSubject={setSubject}
@@ -320,18 +287,18 @@ const AddReminder = () => {
             setTelegramUsername={setTelegramUsername}
           />
 
-          {notificationType !== "gmail" && (
+          {notificationType !== 'gmail' && (
             <AddMessage
               message={message}
               setMessage={setMessage}
               themeColor={createViewColor}
-              title={notificationType === "phone" ? "Note" : "Message"}
+              title={notificationType === 'phone' ? 'Note' : 'Message'}
             />
           )}
 
-          {notificationType !== "phone" &&
-            notificationType !== "telegram" &&
-            notificationType !== "note" && (
+          {notificationType !== 'phone' &&
+            notificationType !== 'telegram' &&
+            notificationType !== 'note' && (
               <DocumentPickerComponent
                 themeColor={createViewColor}
                 onRemoveDocument={onRemoveDocument}
@@ -340,8 +307,7 @@ const AddReminder = () => {
               />
             )}
 
-          {(notificationType === "whatsapp" ||
-            notificationType === "whatsappBusiness") && (
+          {(notificationType === 'whatsapp' || notificationType === 'whatsappBusiness') && (
             <AudioRecorder
               memos={memos}
               setMemos={setMemos}
@@ -388,9 +354,7 @@ const AddReminder = () => {
           {isLoading ? (
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
-            <Text style={style.createButtonText}>
-              {id ? "Update" : "Create"}
-            </Text>
+            <Text style={style.createButtonText}>{id ? 'Update' : 'Create'}</Text>
           )}
         </Pressable>
       </View>

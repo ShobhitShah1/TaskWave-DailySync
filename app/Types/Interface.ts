@@ -1,7 +1,8 @@
-import { DocumentPickerResponse } from "react-native-document-picker";
-import { FrequencyType } from "../Screens/AddReminder/Components/AddScheduleFrequency";
-import { ReactNode } from "react";
-import { ImageSourcePropType } from "react-native";
+import { DocumentPickerResponse } from '@react-native-documents/picker';
+import { ReactNode } from 'react';
+import { ImageSourcePropType } from 'react-native';
+
+import { FrequencyType } from '../Screens/AddReminder/Components/AddScheduleFrequency';
 
 declare global {
   namespace ReactNavigation {
@@ -13,12 +14,7 @@ export type RootStackParamList = {
   OnBoarding: undefined;
   BottomTab:
     | {
-        screen?:
-          | "Home"
-          | "Notification"
-          | "AddReminder"
-          | "History"
-          | "Setting";
+        screen?: 'Home' | 'Notification' | 'AddReminder' | 'History' | 'Setting';
       }
     | undefined;
   Home: undefined;
@@ -46,19 +42,19 @@ export interface AppContextProps {
   children: ReactNode;
 }
 
-export type Theme = "light" | "dark";
+export type Theme = 'light' | 'dark';
 
-export type ViewMode = "grid" | "list";
+export type ViewMode = 'grid' | 'list';
 
 export type NotificationType =
-  | "whatsapp"
-  | "whatsappBusiness"
-  | "SMS"
-  | "gmail"
-  | "phone"
-  | "instagram"
-  | "telegram"
-  | "note";
+  | 'whatsapp'
+  | 'whatsappBusiness'
+  | 'SMS'
+  | 'gmail'
+  | 'phone'
+  | 'instagram'
+  | 'telegram'
+  | 'note';
 
 export interface AppContextType {
   theme: Theme;
@@ -151,17 +147,14 @@ export interface NotificationStatus {
 
 export interface RenderSheetViewProps {
   categories: NotificationCategory[];
-  onCategoryClick: (
-    category: remindersCategoriesType,
-    isSelected: boolean
-  ) => void;
+  onCategoryClick: (category: remindersCategoriesType, isSelected: boolean) => void;
   selectedCategory: NotificationType;
   setSelectedCategory: (category: NotificationType) => void;
 }
 
 export interface headerInterface {
-  selectedFilter: NotificationType | "all";
-  setSelectedFilter: (category: NotificationType | "all") => void;
+  selectedFilter: NotificationType | 'all';
+  setSelectedFilter: (category: NotificationType | 'all') => void;
   notificationsState: NotificationStatus;
   setFullScreenPreview: (isFullScreen: boolean) => void;
 }

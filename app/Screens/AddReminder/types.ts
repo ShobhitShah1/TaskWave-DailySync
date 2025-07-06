@@ -1,4 +1,4 @@
-import { NotificationType, Contact } from '../../Types/Interface';
+import { Contact, NotificationType } from '../../Types/Interface';
 
 export interface ContactSelectorProps {
   contacts: Contact[];
@@ -8,7 +8,9 @@ export interface ContactSelectorProps {
   contactModalVisible: boolean;
   setContactModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
   isContactLoading: { isLoading: boolean; isRefreshing: boolean };
-  setIsContactLoading: React.Dispatch<React.SetStateAction<{ isLoading: boolean; isRefreshing: boolean }>>;
+  setIsContactLoading: React.Dispatch<
+    React.SetStateAction<{ isLoading: boolean; isRefreshing: boolean }>
+  >;
   onHandelContactClick: () => void;
   requestContactData: () => void;
   handleRemoveContact: (contact: Contact) => void;
@@ -16,4 +18,4 @@ export interface ContactSelectorProps {
   notificationType: NotificationType;
   telegramUsername: string;
   setTelegramUsername: React.Dispatch<React.SetStateAction<string>>;
- } 
+}

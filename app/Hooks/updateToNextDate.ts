@@ -1,16 +1,14 @@
-import moment from "moment";
-import { Notification } from "../Types/Interface";
+import moment from 'moment';
+
+import { Notification } from '../Types/Interface';
 
 // Convert day name to number (0 = Sunday, 1 = Monday, etc.)
 const dayToNumber = (day: string): number => {
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   return days.indexOf(day);
 };
 
-const findNextOccurrence = (
-  currentDayNumber: number,
-  selectedDays: string[]
-): number => {
+const findNextOccurrence = (currentDayNumber: number, selectedDays: string[]): number => {
   if (!Array.isArray(selectedDays)) {
     try {
       selectedDays = JSON.parse(selectedDays);
@@ -43,7 +41,7 @@ const findNextOccurrence = (
 };
 
 const updateToNextDate = async (
-  notification: Notification
+  notification: Notification,
 ): Promise<{ updatedNotification: Notification | null }> => {
   const { scheduleFrequency, date } = notification;
 
@@ -53,33 +51,33 @@ const updateToNextDate = async (
 
   const days = Array.isArray(notification.days)
     ? notification.days
-    : typeof notification.days === "string"
-    ? JSON.parse(notification.days)
-    : [];
+    : typeof notification.days === 'string'
+      ? JSON.parse(notification.days)
+      : [];
 
   const currentDate = moment(date);
   let nextDate = moment(currentDate);
 
   switch (scheduleFrequency) {
-    case "Daily":
-      nextDate.add(1, "day");
+    case 'Daily':
+      nextDate.add(1, 'day');
       break;
 
-    case "Weekly":
+    case 'Weekly':
       if (days.length > 0) {
         const daysToAdd = findNextOccurrence(currentDate.day(), days);
-        nextDate.add(daysToAdd, "days");
+        nextDate.add(daysToAdd, 'days');
       } else {
-        nextDate.add(1, "week");
+        nextDate.add(1, 'week');
       }
       break;
 
-    case "Monthly":
-      nextDate.add(1, "month");
+    case 'Monthly':
+      nextDate.add(1, 'month');
       break;
 
-    case "Yearly":
-      nextDate.add(1, "year");
+    case 'Yearly':
+      nextDate.add(1, 'year');
       break;
 
     default:
@@ -87,7 +85,7 @@ const updateToNextDate = async (
   }
 
   const safeJSONParse = (value: any) => {
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       try {
         return JSON.parse(value);
       } catch {

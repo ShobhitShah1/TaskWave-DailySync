@@ -1,18 +1,19 @@
-import { useNavigation } from "@react-navigation/native";
-import { memo, useCallback, useMemo } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
-import { useAppContext } from "../../../Contexts/ThemeProvider";
-import AssetsPath from "../../../Constants/AssetsPath";
-import { FONTS } from "../../../Constants/Theme";
-import { useDuplicateReminder } from "../../../Hooks/useDuplicateReminder";
-import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
-import useThemeColors from "../../../Hooks/useThemeMode";
-import { ReminderCardProps } from "../../../Types/Interface";
-import { getNotificationIcon } from "../../../Utils/getNotificationIcon";
-import { formatDate, formatTime } from "../../AddReminder/ReminderScheduled";
-import React from "react";
-import { getNotificationTitle } from "../../../Utils/getNotificationTitle";
+import { useNavigation } from '@react-navigation/native';
+import { memo, useCallback, useMemo } from 'react';
+import React from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
+
+import AssetsPath from '../../../Constants/AssetsPath';
+import { FONTS } from '../../../Constants/Theme';
+import { useAppContext } from '../../../Contexts/ThemeProvider';
+import { useDuplicateReminder } from '../../../Hooks/useDuplicateReminder';
+import useNotificationIconColors from '../../../Hooks/useNotificationIconColors';
+import useThemeColors from '../../../Hooks/useThemeMode';
+import { ReminderCardProps } from '../../../Types/Interface';
+import { getNotificationIcon } from '../../../Utils/getNotificationIcon';
+import { getNotificationTitle } from '../../../Utils/getNotificationTitle';
+import { formatDate, formatTime } from '../../AddReminder/ReminderScheduled';
 
 const RenderHistoryList: React.FC<ReminderCardProps> = memo(
   ({ notification, deleteReminder, loadNotifications }) => {
@@ -22,45 +23,35 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
     const notificationColors = useNotificationIconColors(notification.type);
 
     const typeColor = useMemo(() => {
-      return notification.type === "gmail" && theme === "light"
+      return notification.type === 'gmail' && theme === 'light'
         ? colors.gmailText
-        : notification.type === "whatsappBusiness"
-        ? notificationColors.createViewColor
-        : notificationColors.typeColor;
+        : notification.type === 'whatsappBusiness'
+          ? notificationColors.createViewColor
+          : notificationColors.typeColor;
     }, [notification.type, theme, colors.gmailText, notificationColors]);
 
     const gmailBorder = useMemo(
-      () =>
-        notification.type === "gmail"
-          ? notificationColors.iconColor
-          : typeColor,
-      [notificationColors]
+      () => (notification.type === 'gmail' ? notificationColors.iconColor : typeColor),
+      [notificationColors],
     );
 
-    const title = useMemo(
-      () => getNotificationTitle(notification),
-      [notification]
-    );
+    const title = useMemo(() => getNotificationTitle(notification), [notification]);
 
-    const icon = useMemo(
-      () => getNotificationIcon(notification.type),
-      [notification.type]
-    );
+    const icon = useMemo(() => getNotificationIcon(notification.type), [notification.type]);
 
     const onCardPress = useCallback(() => {
-      navigation.navigate("ReminderPreview", {
+      navigation.navigate('ReminderPreview', {
         notificationData: notification,
       });
     }, [notification]);
 
-    const { showDateTimeModal, renderDateTimePicker, openDuplicateModal } =
-      useDuplicateReminder({
-        notification: notification,
-        theme: theme,
-        onSuccess() {
-          loadNotifications && loadNotifications();
-        },
-      });
+    const { showDateTimeModal, renderDateTimePicker, openDuplicateModal } = useDuplicateReminder({
+      notification: notification,
+      theme: theme,
+      onSuccess() {
+        loadNotifications && loadNotifications();
+      },
+    });
 
     return (
       <>
@@ -69,24 +60,18 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
           style={[
             styles.cardContainer,
             {
-              borderColor:
-                notification.type === "gmail" ? gmailBorder : typeColor,
+              borderColor: notification.type === 'gmail' ? gmailBorder : typeColor,
             },
           ]}
         >
           <Pressable
             style={styles.pressableContainer}
             onPress={onCardPress}
-            onLongPress={() =>
-              notification.id && deleteReminder(notification.id)
-            }
+            onLongPress={() => notification.id && deleteReminder(notification.id)}
           >
             <View style={styles.rowContainer}>
               <View style={styles.textContainer}>
-                <Text
-                  numberOfLines={1}
-                  style={[styles.titleText, { color: colors.text }]}
-                >
+                <Text numberOfLines={1} style={[styles.titleText, { color: colors.text }]}>
                   To: {title?.toString()}
                 </Text>
                 <Text
@@ -99,9 +84,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
               <View style={styles.iconContainer}>
                 <Image
                   source={icon}
-                  tintColor={
-                    notification.type === "gmail" ? undefined : typeColor
-                  }
+                  tintColor={notification.type === 'gmail' ? undefined : typeColor}
                   resizeMode="contain"
                   style={styles.notificationIcon}
                 />
@@ -113,10 +96,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                   style={[
                     styles.timeBadge,
                     {
-                      backgroundColor:
-                        theme === "dark"
-                          ? colors.darkPrimaryBackground
-                          : typeColor,
+                      backgroundColor: theme === 'dark' ? colors.darkPrimaryBackground : typeColor,
                     },
                   ]}
                 >
@@ -130,8 +110,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                       style={[
                         styles.dateText,
                         {
-                          color:
-                            theme === "dark" ? colors.grayTitle : colors.white,
+                          color: theme === 'dark' ? colors.grayTitle : colors.white,
                         },
                       ]}
                     >
@@ -148,8 +127,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                       style={[
                         styles.timeText,
                         {
-                          color:
-                            theme === "dark" ? colors.grayTitle : colors.white,
+                          color: theme === 'dark' ? colors.grayTitle : colors.white,
                         },
                       ]}
                     >
@@ -162,47 +140,45 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
               <View style={styles.actionsContainer}>
                 <Pressable
                   style={{
-                    justifyContent: "center",
-                    alignItems: "center",
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     paddingHorizontal: 5,
                   }}
                   hitSlop={{ top: 10, bottom: 10 }}
                   onPress={onCardPress}
                 >
                   <Image
-                    tintColor={theme === "dark" ? colors.white : typeColor}
+                    tintColor={theme === 'dark' ? colors.white : typeColor}
                     source={AssetsPath.ic_view}
                     style={styles.actionIcon}
                   />
                 </Pressable>
                 <Pressable
                   style={{
-                    justifyContent: "center",
-                    alignItems: "center",
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     paddingHorizontal: 5,
                   }}
                   hitSlop={{ top: 10, bottom: 10 }}
                   onPress={openDuplicateModal}
                 >
                   <Image
-                    tintColor={theme === "dark" ? colors.white : typeColor}
+                    tintColor={theme === 'dark' ? colors.white : typeColor}
                     source={AssetsPath.ic_duplicate}
                     style={styles.actionIcon}
                   />
                 </Pressable>
                 <Pressable
                   style={{
-                    justifyContent: "center",
-                    alignItems: "center",
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     paddingHorizontal: 5,
                   }}
                   hitSlop={{ top: 10, bottom: 10 }}
-                  onPress={() =>
-                    notification?.id && deleteReminder(notification?.id)
-                  }
+                  onPress={() => notification?.id && deleteReminder(notification?.id)}
                 >
                   <Image
-                    tintColor={theme === "dark" ? colors.white : typeColor}
+                    tintColor={theme === 'dark' ? colors.white : typeColor}
                     source={AssetsPath.ic_delete}
                     style={[styles.actionIcon, { height: 17, width: 17 }]}
                   />
@@ -215,17 +191,17 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
         {showDateTimeModal && renderDateTimePicker()}
       </>
     );
-  }
+  },
 );
 
 export default memo(RenderHistoryList);
 
 const styles = StyleSheet.create({
   cardContainer: {
-    width: "100%",
+    width: '100%',
     height: 120,
     borderRadius: 10,
-    overflow: "hidden",
+    overflow: 'hidden',
     marginVertical: 5,
     borderWidth: 1,
   },
@@ -236,11 +212,11 @@ const styles = StyleSheet.create({
   },
   rowContainer: {
     flex: 0.75,
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   textContainer: {
-    width: "85%",
+    width: '85%',
   },
   titleText: {
     fontSize: 20,
@@ -252,9 +228,9 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.Medium,
   },
   iconContainer: {
-    width: "10%",
+    width: '10%',
     marginVertical: 5,
-    alignItems: "center",
+    alignItems: 'center',
   },
   notificationIcon: {
     width: 28,
@@ -262,25 +238,25 @@ const styles = StyleSheet.create({
   },
   footerContainer: {
     flex: 0.25,
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   timeContainer: {
-    maxWidth: "70%",
+    maxWidth: '70%',
   },
   timeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     borderRadius: 10,
     paddingHorizontal: 10,
     height: 25,
   },
   dateContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     columnGap: 5,
   },
   dateIcon: {
@@ -292,9 +268,9 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.Medium,
   },
   timeIconContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     columnGap: 5,
     marginLeft: 5,
   },
@@ -309,15 +285,15 @@ const styles = StyleSheet.create({
   actionsContainer: {
     gap: 6,
     // right: 5,
-    width: "25%",
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "center",
+    width: '25%',
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   actionIcon: {
     width: 20,
     height: 20,
-    resizeMode: "contain",
+    resizeMode: 'contain',
     // marginLeft: 13,
   },
 });

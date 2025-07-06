@@ -1,8 +1,9 @@
-import { useState } from "react";
-import Contacts from "react-native-contacts";
-import { Contact } from "../../../Types/Interface";
-import { showMessage } from "react-native-flash-message";
-import useContactPermission from "../../../Hooks/useContactPermission";
+import { useState } from 'react';
+import Contacts from 'react-native-contacts';
+import { showMessage } from 'react-native-flash-message';
+
+import useContactPermission from '../../../Hooks/useContactPermission';
+import { Contact } from '../../../Types/Interface';
 
 const useContactSelector = () => {
   const { requestPermission, checkPermissionStatus } = useContactPermission();
@@ -38,7 +39,7 @@ const useContactSelector = () => {
     } catch (error: any) {
       showMessage({
         message: String(error?.message || error),
-        type: "danger",
+        type: 'danger',
       });
       setIsContactLoading((prev) => ({
         ...prev,
@@ -52,21 +53,19 @@ const useContactSelector = () => {
       const contactsData = await Contacts.getAll();
       const simplifiedContacts: Contact[] = contactsData
         .map((contact) => ({
-          recordID: contact.recordID || "",
+          recordID: contact.recordID || '',
           name: contact.displayName,
           number: contact.phoneNumbers?.[0]?.number,
           hasThumbnail: contact.hasThumbnail,
         }))
-        .sort((a, b) =>
-          a?.name?.toLowerCase() > b?.name?.toLowerCase() ? 1 : -1
-        );
+        .sort((a, b) => (a?.name?.toLowerCase() > b?.name?.toLowerCase() ? 1 : -1));
 
       setContacts(simplifiedContacts);
     } catch (error: any) {
-      const message = String(error?.message) || "Failed to fetch contacts.";
+      const message = String(error?.message) || 'Failed to fetch contacts.';
       showMessage({
         message: message,
-        type: "danger",
+        type: 'danger',
       });
     } finally {
       setIsContactLoading((prev) => ({
@@ -78,9 +77,7 @@ const useContactSelector = () => {
 
   const handleRemoveContact = (contactToRemove: Contact) => {
     setSelectedContacts((prevContacts) =>
-      prevContacts.filter(
-        (contact) => contact.recordID !== contactToRemove.recordID
-      )
+      prevContacts.filter((contact) => contact.recordID !== contactToRemove.recordID),
     );
   };
 
@@ -99,4 +96,4 @@ const useContactSelector = () => {
   };
 };
 
-export default useContactSelector; 
+export default useContactSelector;

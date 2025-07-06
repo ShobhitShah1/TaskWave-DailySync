@@ -1,7 +1,8 @@
-import React, { FC, memo, useCallback } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
-import { FONTS, SIZE } from "../../../Constants/Theme";
-import useThemeColors from "../../../Hooks/useThemeMode";
+import React, { FC, memo, useCallback } from 'react';
+import { StyleSheet, TextInput, View } from 'react-native';
+
+import { FONTS, SIZE } from '../../../Constants/Theme';
+import useThemeColors from '../../../Hooks/useThemeMode';
 
 interface AddMailToProps {
   themeColor: string;
@@ -17,16 +18,11 @@ const AddMailTo: FC<AddMailToProps> = ({ themeColor, to, setTo }) => {
     (text: string) => {
       setTo(text);
     },
-    [setTo]
+    [setTo],
   );
 
   return (
-    <View
-      style={[
-        style.container,
-        { backgroundColor: colors.scheduleReminderCardBackground },
-      ]}
-    >
+    <View style={[style.container, { backgroundColor: colors.scheduleReminderCardBackground }]}>
       <TextInput
         // multiline
         spellCheck
@@ -48,12 +44,12 @@ export default memo(AddMailTo);
 const styles = () => {
   return StyleSheet.create({
     container: {
-      width: "100%",
+      width: '100%',
       height: 50,
       // maxHeight: 200,
       paddingHorizontal: 15,
-      flexDirection: "row",
-      justifyContent: "space-between",
+      flexDirection: 'row',
+      justifyContent: 'space-between',
       borderRadius: SIZE.listBorderRadius,
       marginBottom: 20,
     },

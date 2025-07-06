@@ -5,24 +5,42 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "ios": {
       "supportsTablet": false,
-      "runtimeVersion": {
-        "policy": "appVersion"
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Allow DailySync to access your location while using the app.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow DailySync to access your location in the background.",
+        "NSLocationAlwaysUsageDescription": "Allow DailySync to always access your location."
       }
     },
-    "splash": {
-      "image": "./assets/Images/Splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
-    },
     "android": {
-      "package": "com.taskwave.dailysync",
       "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "INTERNET",
+        "MODIFY_AUDIO_SETTINGS",
+        "READ_EXTERNAL_STORAGE",
+        "RECORD_AUDIO",
+        "SYSTEM_ALERT_WINDOW",
+        "VIBRATE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
       ],
-      "runtimeVersion": "1.0.0"
+      "package": "com.taskwave.dailysync",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "com.taskwave.dailysync"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "plugins": [
       "expo-font",
@@ -52,7 +70,56 @@
             }
           }
         }
-      ]
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraMavenRepos": ["../../node_modules/@notifee/react-native/android/libs"],
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "minSdkVersion": 24
+          },
+          "ios": {}
+        }
+      ],
+      [
+        "react-native-share",
+        {
+          "ios": ["fb", "instagram", "twitter"],
+          "android": ["com.facebook.katana", "com.instagram.android"],
+          "enableBase64ShareAndroid": true
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ],
+      [
+        "react-native-bootsplash",
+        {
+          "assetsDir": "assets/bootsplash"
+        }
+      ],
+      [
+        "react-native-maps",
+        {
+          "iosGoogleMapsApiKey": "${GOOGLE_MAPS_API_KEY_IOS}",
+          "androidGoogleMapsApiKey": "${GOOGLE_MAPS_API_KEY_ANDROID}"
+        }
+      ],
+      [
+        "react-native-edge-to-edge",
+        {
+          "android": {
+            "parentTheme": "Default",
+            "enforceNavigationBarContrast": false
+          }
+        }
+      ],
+      "expo-sqlite"
     ]
   }
 }

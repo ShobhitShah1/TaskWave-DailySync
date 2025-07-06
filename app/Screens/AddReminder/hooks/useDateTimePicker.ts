@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-export type PickerVisibleType = "date" | "time" | null;
+export type PickerVisibleType = 'date' | 'time' | null;
 
 export interface DateAndTimeState {
   date: Date | undefined;
@@ -8,7 +8,6 @@ export interface DateAndTimeState {
 }
 
 const useDateTimePicker = () => {
- 
   const [selectedDateAndTime, setSelectedDateAndTime] = useState<DateAndTimeState>({
     date: undefined,
     time: undefined,
@@ -16,20 +15,18 @@ const useDateTimePicker = () => {
   const [pickerVisibleType, setPickerVisibleType] = useState<PickerVisibleType>(null);
 
   const handleDatePress = () => {
-    setPickerVisibleType("date");
+    setPickerVisibleType('date');
   };
 
   const handleTimePress = () => {
-    setPickerVisibleType("time");
+    setPickerVisibleType('time');
   };
 
   const handlePickerChange = (event: any, selectedDate: Date | undefined) => {
     setPickerVisibleType(null);
-    if (event.type === "set" && selectedDate) {
+    if (event.type === 'set' && selectedDate) {
       const updatedDateTime =
-        pickerVisibleType === "date"
-          ? { date: selectedDate }
-          : { time: selectedDate };
+        pickerVisibleType === 'date' ? { date: selectedDate } : { time: selectedDate };
       setSelectedDateAndTime((prev) => ({ ...prev, ...updatedDateTime }));
     }
   };
@@ -45,4 +42,4 @@ const useDateTimePicker = () => {
   };
 };
 
-export default useDateTimePicker; 
+export default useDateTimePicker;

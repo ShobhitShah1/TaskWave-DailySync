@@ -1,11 +1,12 @@
-import React, { FC, memo } from "react";
-import { Image, Pressable, StyleSheet, Text } from "react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
-import AssetsPath from "../../../Constants/AssetsPath";
-import TextString from "../../../Constants/TextString";
-import { FONTS, SIZE } from "../../../Constants/Theme";
-import useThemeColors from "../../../Hooks/useThemeMode";
-import { AddContactProps, Contact } from "../../../Types/Interface";
+import React, { FC, memo } from 'react';
+import { Image, Pressable, StyleSheet, Text } from 'react-native';
+import Animated, { LinearTransition } from 'react-native-reanimated';
+
+import AssetsPath from '../../../Constants/AssetsPath';
+import TextString from '../../../Constants/TextString';
+import { FONTS, SIZE } from '../../../Constants/Theme';
+import useThemeColors from '../../../Hooks/useThemeMode';
+import { AddContactProps, Contact } from '../../../Types/Interface';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -36,10 +37,7 @@ const AddContact: FC<AddContactProps> = ({
       ) : (
         <Animated.View style={style.contactListContainer}>
           {selectedContacts.map((contact: Contact, index) => (
-            <Animated.View
-              key={index}
-              layout={LinearTransition.springify().mass(0.5)}
-            >
+            <Animated.View key={index} layout={LinearTransition.springify().mass(0.5)}>
               <Pressable
                 key={contact.recordID || index}
                 style={[style.contactChip, { backgroundColor: themeColor }]}
@@ -52,11 +50,7 @@ const AddContact: FC<AddContactProps> = ({
           ))}
         </Animated.View>
       )}
-      <Image
-        resizeMode="contain"
-        source={AssetsPath.ic_downArrow}
-        style={style.downArrow}
-      />
+      <Image resizeMode="contain" source={AssetsPath.ic_downArrow} style={style.downArrow} />
     </AnimatedPressable>
   );
 };
@@ -69,12 +63,12 @@ const styles = () => {
   return StyleSheet.create({
     container: {
       minHeight: 50,
-      width: "100%",
+      width: '100%',
       marginBottom: 15,
-      alignItems: "center",
+      alignItems: 'center',
       paddingRight: 15,
-      flexDirection: "row",
-      justifyContent: "space-between",
+      flexDirection: 'row',
+      justifyContent: 'space-between',
       borderRadius: SIZE.listBorderRadius,
     },
     downArrow: {
@@ -87,15 +81,15 @@ const styles = () => {
     },
 
     contactListContainer: {
-      maxWidth: "80%",
-      flexDirection: "row",
-      flexWrap: "wrap",
+      maxWidth: '80%',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
       marginVertical: 10,
       paddingHorizontal: 5,
     },
     contactChip: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       paddingHorizontal: 10,
       paddingVertical: 5,
       borderRadius: 20,

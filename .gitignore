@@ -7,6 +7,7 @@ node_modules/
 .expo/
 dist/
 web-build/
+expo-env.d.ts
 
 # Native
 *.orig.*
@@ -30,6 +31,8 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
+scripts/setup-env.js
 
 # typescript
 *.tsbuildinfo

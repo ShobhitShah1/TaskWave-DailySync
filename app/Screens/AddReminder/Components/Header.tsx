@@ -1,6 +1,7 @@
-import React from "react";
-import { View, Pressable, Image, Text } from "react-native";
-import AssetsPath from "../../../Constants/AssetsPath";
+import React from 'react';
+import { Image, Pressable, Text, View } from 'react-native';
+
+import AssetsPath from '../../../Constants/AssetsPath';
 
 interface HeaderProps {
   onBackPress: () => void;
@@ -10,13 +11,7 @@ interface HeaderProps {
   style?: any;
 }
 
-const Header: React.FC<HeaderProps> = ({
-  onBackPress,
-  title,
-  themeColor,
-  textColor,
-  style,
-}) => {
+const Header: React.FC<HeaderProps> = ({ onBackPress, title, themeColor, textColor, style }) => {
   return (
     <View style={style?.headerContainer}>
       <Pressable hitSlop={10} onPress={onBackPress}>

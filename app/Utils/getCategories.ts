@@ -1,5 +1,4 @@
-import { categoriesConfig } from "../Constants/CategoryConfig";
-import { LightThemeColors } from "../Constants/Theme";
+import { categoriesConfig } from '../Constants/CategoryConfig';
+import { LightThemeColors } from '../Constants/Theme';
 
-export const getCategories = (colors: typeof LightThemeColors) =>
-  categoriesConfig(colors);
+export const getCategories = (colors: typeof LightThemeColors) => categoriesConfig(colors);

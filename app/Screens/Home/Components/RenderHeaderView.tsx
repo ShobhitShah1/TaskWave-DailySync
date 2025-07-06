@@ -1,13 +1,14 @@
-import React, { FC, memo, useCallback, useMemo } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
-import AssetsPath from "../../../Constants/AssetsPath";
-import { useAppContext } from "../../../Contexts/ThemeProvider";
-import useNotificationIconColors from "../../../Hooks/useNotificationIconColors";
-import useThemeColors from "../../../Hooks/useThemeMode";
-import { headerInterface, NotificationType } from "../../../Types/Interface";
-import { getCategories } from "../../../Utils/getCategories";
-import styles from "../styles";
-import { FilterButton } from "./FilterButton";
+import React, { FC, memo, useCallback, useMemo } from 'react';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+
+import AssetsPath from '../../../Constants/AssetsPath';
+import { useAppContext } from '../../../Contexts/ThemeProvider';
+import useNotificationIconColors from '../../../Hooks/useNotificationIconColors';
+import useThemeColors from '../../../Hooks/useThemeMode';
+import { headerInterface, NotificationType } from '../../../Types/Interface';
+import { getCategories } from '../../../Utils/getCategories';
+import styles from '../styles';
+import { FilterButton } from './FilterButton';
 
 const RenderHeaderView: FC<headerInterface> = ({
   selectedFilter,
@@ -22,7 +23,7 @@ const RenderHeaderView: FC<headerInterface> = ({
 
   const handleSelectFilter = useCallback(
     (filter: NotificationType) => setSelectedFilter(filter),
-    [setSelectedFilter]
+    [setSelectedFilter],
   );
 
   const handleFullScreenPreview = useCallback(() => {
@@ -32,8 +33,8 @@ const RenderHeaderView: FC<headerInterface> = ({
   }, [notificationsState, setFullScreenPreview]);
 
   const selectedColor = useMemo(
-    () => (selectedFilter === "all" ? colors.text : colors.grayTitle),
-    [selectedFilter]
+    () => (selectedFilter === 'all' ? colors.text : colors.grayTitle),
+    [selectedFilter],
   );
 
   return (
@@ -51,43 +52,30 @@ const RenderHeaderView: FC<headerInterface> = ({
           >
             <Pressable
               hitSlop={4}
-              style={[
-                style.filterAllBtn,
-                { backgroundColor: colors.background },
-              ]}
-              onPress={() => setSelectedFilter("all")}
+              style={[style.filterAllBtn, { backgroundColor: colors.background }]}
+              onPress={() => setSelectedFilter('all')}
             >
-              <Text style={[style.filterAllText, { color: selectedColor }]}>
-                All
-              </Text>
+              <Text style={[style.filterAllText, { color: selectedColor }]}>All</Text>
             </Pressable>
 
             {initialCategories.map((res) => {
-              const getColor = useNotificationIconColors(
-                res.type as NotificationType
-              );
+              const getColor = useNotificationIconColors(res.type as NotificationType);
               return (
                 <FilterButton
                   data={res}
                   key={res.id}
                   selectedFilter={selectedFilter}
-                  onPress={() =>
-                    handleSelectFilter(res.type as NotificationType)
-                  }
-                  backgroundColor={getColor?.backgroundColor || ""}
+                  onPress={() => handleSelectFilter(res.type as NotificationType)}
+                  backgroundColor={getColor?.backgroundColor || ''}
                 />
               );
             })}
           </ScrollView>
         </View>
-        <Pressable
-          hitSlop={4}
-          style={style.fullscreenButton}
-          onPress={handleFullScreenPreview}
-        >
+        <Pressable hitSlop={4} style={style.fullscreenButton} onPress={handleFullScreenPreview}>
           <Image
             resizeMode="contain"
-            tintColor={theme === "light" ? colors.sms : colors.text}
+            tintColor={theme === 'light' ? colors.sms : colors.text}
             source={AssetsPath.ic_fullScreen}
             style={style.fullScreenIcon}
           />

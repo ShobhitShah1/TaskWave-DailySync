@@ -1,14 +1,13 @@
-import React from "react";
+import React from 'react';
+
 import AddScheduleFrequency, {
   FrequencyType,
   WeekDayType,
-} from "../Components/AddScheduleFrequency";
+} from '../Components/AddScheduleFrequency';
 
 interface ScheduleFrequencyPickerProps {
   scheduleFrequency: FrequencyType | null;
-  setScheduleFrequency: React.Dispatch<
-    React.SetStateAction<FrequencyType | null>
-  >;
+  setScheduleFrequency: React.Dispatch<React.SetStateAction<FrequencyType | null>>;
   selectedDays: WeekDayType[];
   setSelectedDays: React.Dispatch<React.SetStateAction<WeekDayType[]>>;
   themeColor: string;

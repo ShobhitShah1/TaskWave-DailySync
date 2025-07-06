@@ -1,17 +1,14 @@
-import AssetsPath from "../Constants/AssetsPath";
+import AssetsPath from '../Constants/AssetsPath';
 
-export const getIconSourceForBottomTabs = (
-  routeName: string,
-  isFocus: boolean
-) => {
+export const getIconSourceForBottomTabs = (routeName: string, isFocus: boolean) => {
   switch (routeName) {
-    case "Home":
+    case 'Home':
       return isFocus ? AssetsPath.ic_fillHome : AssetsPath.ic_home;
-    case "Coming Soon":
+    case 'Coming Soon':
       return AssetsPath.ic_unFillComingSoon;
-    case "History":
+    case 'History':
       return AssetsPath.ic_unFillHistory;
-    case "Setting":
+    case 'Setting':
       return AssetsPath.ic_unFillSetting;
     default:
       return null;

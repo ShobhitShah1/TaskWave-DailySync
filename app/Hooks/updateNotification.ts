@@ -1,49 +1,38 @@
-import { showMessage } from "react-native-flash-message";
-import { Notification } from "../Types/Interface";
-import * as SQLite from "expo-sqlite";
-import { CHANNEL_ID, CHANNEL_NAME } from "./useReminder";
 import notifee, {
   AlarmType,
   AndroidImportance,
   AndroidVisibility,
   TimestampTrigger,
   TriggerType,
-} from "@notifee/react-native";
-import { storage } from "../Contexts/ThemeProvider";
+} from '@notifee/react-native';
+import * as SQLite from 'expo-sqlite';
+import { showMessage } from 'react-native-flash-message';
 
-export const updateNotification = async (
-  notification: Notification
-): Promise<boolean> => {
+import { storage } from '../Contexts/ThemeProvider';
+import { Notification } from '../Types/Interface';
+import { CHANNEL_ID, CHANNEL_NAME } from './useReminder';
+
+export const updateNotification = async (notification: Notification): Promise<boolean> => {
   try {
-    const database = await SQLite.openDatabaseAsync("notifications.db", {
+    const database = await SQLite.openDatabaseAsync('notifications.db', {
       useNewConnection: true,
     });
 
     if (!database) {
-      console.error("[Database] Failed to open database connection");
+      console.error('[Database] Failed to open database connection');
       showMessage({
-        message: "Database connection error. Please try again.",
-        type: "danger",
+        message: 'Database connection error. Please try again.',
+        type: 'danger',
       });
       return false;
     }
 
-    const {
-      id,
-      type,
-      message,
-      date,
-      toContact,
-      toMail,
-      subject,
-      attachments,
-      memo,
-    } = notification;
+    const { id, type, message, date, toContact, toMail, subject, attachments, memo } = notification;
 
-    console.log("[Notification] Updating notification:", { id, type, subject });
+    console.log('[Notification] Updating notification:', { id, type, subject });
 
     if (!id) {
-      console.error("[Notification] Missing notification ID");
+      console.error('[Notification] Missing notification ID');
       return false;
     }
 
@@ -51,22 +40,20 @@ export const updateNotification = async (
     try {
       if (Array.isArray(toMail)) {
         toMailArray = toMail;
-      } else if (typeof toMail === "string") {
+      } else if (typeof toMail === 'string') {
         toMailArray = JSON.parse(toMail);
       } else {
         toMailArray = [];
       }
 
-      toMailArray = toMailArray
-        .map((email: string) => email?.trim())
-        .filter(Boolean);
+      toMailArray = toMailArray.map((email: string) => email?.trim()).filter(Boolean);
     } catch (e) {
-      console.error("[Notification] Failed to parse toMail array:", e);
+      console.error('[Notification] Failed to parse toMail array:', e);
       toMailArray = [];
     }
 
-    const soundName = storage.getString("notificationSound");
-    console.log("[Notification] Using sound:", soundName);
+    const soundName = storage.getString('notificationSound');
+    console.log('[Notification] Using sound:', soundName);
 
     try {
       const channelId = await notifee.createChannel({
@@ -74,15 +61,14 @@ export const updateNotification = async (
         name: CHANNEL_NAME,
         visibility: AndroidVisibility.PUBLIC,
         importance: AndroidImportance.HIGH,
-        sound: soundName || "default",
+        sound: soundName || 'default',
       });
 
-      console.log("[Notification] Created notification channel:", channelId);
+      console.log('[Notification] Created notification channel:', channelId);
 
       const trigger: TimestampTrigger = {
         type: TriggerType.TIMESTAMP,
-        timestamp:
-          date instanceof Date ? date.getTime() : new Date(date).getTime(),
+        timestamp: date instanceof Date ? date.getTime() : new Date(date).getTime(),
         alarmManager: {
           type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
         },
@@ -90,7 +76,7 @@ export const updateNotification = async (
 
       const notificationData = {
         ...notification,
-        subject: subject || "",
+        subject: subject || '',
         toContact: JSON.stringify(toContact || []),
         toMail: JSON.stringify(toMailArray),
         attachments: JSON.stringify(attachments || []),
@@ -102,36 +88,31 @@ export const updateNotification = async (
           {
             id: id?.toString(),
             title:
-              type === "gmail"
-                ? subject
-                : `Reminder: ${subject || "You have an upcoming task"}`,
+              type === 'gmail' ? subject : `Reminder: ${subject || 'You have an upcoming task'}`,
             body:
               message?.toString() ||
               `Don't forget! You have a task with ${toMailArray.join(
-                ", "
+                ', ',
               )}. Please check details or contact them if needed.`,
             android: {
               channelId,
               visibility: AndroidVisibility.PUBLIC,
               importance: AndroidImportance.HIGH,
               pressAction: {
-                id: "default",
+                id: 'default',
               },
             },
             data: notificationData as any,
           },
-          trigger
+          trigger,
         );
-        console.log("[Notification] Successfully created trigger notification");
+        console.log('[Notification] Successfully created trigger notification');
       } catch (error: any) {
-        if (!error.message?.includes("invalid notification ID")) {
-          console.error(
-            "[Notification] Failed to create trigger notification:",
-            error
-          );
+        if (!error.message?.includes('invalid notification ID')) {
+          console.error('[Notification] Failed to create trigger notification:', error);
           showMessage({
             message: String(error?.message || error),
-            type: "danger",
+            type: 'danger',
           });
         }
         return false;
@@ -142,11 +123,11 @@ export const updateNotification = async (
           UPDATE notifications
           SET
             type = '${type}',
-            message = '${(message || "").toString().replace(/'/g, "''")}',
+            message = '${(message || '').toString().replace(/'/g, "''")}',
             date = '${new Date(date).toISOString()}',
-            subject = '${(subject || "").replace(/'/g, "''")}',
+            subject = '${(subject || '').replace(/'/g, "''")}',
             attachments = '${JSON.stringify(attachments || [])}',
-            scheduleFrequency = '${notification.scheduleFrequency || ""}',
+            scheduleFrequency = '${notification.scheduleFrequency || ''}',
             memo = '${JSON.stringify(memo || [])}',
             toMail = '${escapedToMail}'
           WHERE id = '${id}'
@@ -154,16 +135,16 @@ export const updateNotification = async (
 
       const deleteContactsSQL = `DELETE FROM contacts WHERE notification_id = '${id}'`;
 
-      let insertContactsSQL = "";
-      if (type === "gmail" && toMailArray.length > 0) {
+      let insertContactsSQL = '';
+      if (type === 'gmail' && toMailArray.length > 0) {
         insertContactsSQL = toMailArray
           .map(
             (email: string) => `
               INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
               VALUES ('${id}', '${email?.trim()}', null, '${email?.trim()}', null)
-            `
+            `,
           )
-          .join(";");
+          .join(';');
       } else if (toContact && toContact.length > 0) {
         insertContactsSQL = toContact
           .map(
@@ -172,21 +153,13 @@ export const updateNotification = async (
               VALUES (
                 '${id}',
                 '${contact.name.replace(/'/g, "''")}',
-                ${
-                  contact.number
-                    ? `'${contact.number.replace(/'/g, "''")}'`
-                    : "null"
-                },
+                ${contact.number ? `'${contact.number.replace(/'/g, "''")}'` : 'null'},
                 '${contact.recordID.replace(/'/g, "''")}',
-                ${
-                  contact.thumbnailPath
-                    ? `'${contact.thumbnailPath.replace(/'/g, "''")}'`
-                    : "null"
-                }
+                ${contact.thumbnailPath ? `'${contact.thumbnailPath.replace(/'/g, "''")}'` : 'null'}
               )
-            `
+            `,
           )
-          .join(";");
+          .join(';');
       }
 
       const transactionSQL = `
@@ -197,29 +170,21 @@ export const updateNotification = async (
 
       try {
         await database.execAsync(transactionSQL);
-        console.log(
-          "[Notification] Successfully updated notification in database"
-        );
+        console.log('[Notification] Successfully updated notification in database');
         return true;
       } catch (error: any) {
-        console.error(
-          "[Notification] Failed to update notification in database:",
-          error
-        );
-        if (!error.message?.includes("invalid notification ID")) {
+        console.error('[Notification] Failed to update notification in database:', error);
+        if (!error.message?.includes('invalid notification ID')) {
           return false;
         }
         throw new Error(String(error?.message || error));
       }
     } catch (error) {
-      console.error(
-        "[Notification] Failed to create notification channel:",
-        error
-      );
+      console.error('[Notification] Failed to create notification channel:', error);
       throw error;
     }
   } catch (error) {
-    console.error("[Notification] Update notification error:", error);
+    console.error('[Notification] Update notification error:', error);
     throw error;
   }
 };

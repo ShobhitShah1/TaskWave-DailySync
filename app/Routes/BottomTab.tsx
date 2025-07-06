@@ -3,70 +3,64 @@ import {
   BottomSheetBackdropProps,
   BottomSheetModal,
   BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
-import { useNavigation } from "@react-navigation/native";
-import React, { memo, useCallback, useState } from "react";
+} from '@gorhom/bottom-sheet';
+import { useNavigation } from '@react-navigation/native';
+import React, { memo, useCallback, useState } from 'react';
 import {
+  Animated as RNAnimated,
+  Dimensions,
   Image,
   Linking,
-  NativeModules,
   Platform,
   Pressable,
-  Animated as RNAnimated,
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { CurvedBottomBar } from "react-native-curved-bottom-bar";
-import { showMessage } from "react-native-flash-message";
-import LinearGradient from "react-native-linear-gradient";
-import { Shadow } from "react-native-shadow-2";
-import TextString from "../Constants/TextString";
-import { FONTS } from "../Constants/Theme";
-import {
-  BottomSheetProvider,
-  useBottomSheet,
-} from "../Contexts/BottomSheetProvider";
-import { useBottomSheetBackHandler } from "../Hooks/useBottomSheetBackHandler";
-import useThemeColors from "../Hooks/useThemeMode";
-import AddReminder from "../Screens/AddReminder/AddReminder";
-import History from "../Screens/History/History";
-import Home from "../Screens/Home/Home";
-import Notification from "../Screens/Notification/Notification";
-import Setting from "../Screens/Setting/Setting";
-import {
-  NotificationCategory,
-  NotificationType,
-  RenderTabBarProps,
-} from "../Types/Interface";
-import { getCategories } from "../Utils/getCategories";
-import { getIconSourceForBottomTabs } from "../Utils/getIconSourceForBottomTabs";
-import RenderSheetView from "./Components/RenderSheetView";
+} from 'react-native';
+import { CurvedBottomBar } from 'react-native-curved-bottom-bar';
+import { showMessage } from 'react-native-flash-message';
+import LinearGradient from 'react-native-linear-gradient';
+import { Shadow } from 'react-native-shadow-2';
+import { isAppInstalled } from 'send-message';
+
+import TextString from '../Constants/TextString';
+import { FONTS } from '../Constants/Theme';
+import { BottomSheetProvider, useBottomSheet } from '../Contexts/BottomSheetProvider';
+import { useBottomSheetBackHandler } from '../Hooks/useBottomSheetBackHandler';
+import useThemeColors from '../Hooks/useThemeMode';
+import AddReminder from '../Screens/AddReminder/AddReminder';
+import History from '../Screens/History/History';
+import Home from '../Screens/Home/Home';
+import Notification from '../Screens/Notification/Notification';
+import Setting from '../Screens/Setting/Setting';
+import { NotificationCategory, NotificationType, RenderTabBarProps } from '../Types/Interface';
+import { getCategories } from '../Utils/getCategories';
+import { getIconSourceForBottomTabs } from '../Utils/getIconSourceForBottomTabs';
+import RenderSheetView from './Components/RenderSheetView';
+
+const { width } = Dimensions.get('window');
 
 const BottomTab = () => {
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { bottomSheetModalRef } = useBottomSheet();
-  const { handleSheetPositionChange } =
-    useBottomSheetBackHandler(bottomSheetModalRef);
+  const { handleSheetPositionChange } = useBottomSheetBackHandler(bottomSheetModalRef);
 
   const [hideBottomTab, setHideBottomTab] = useState(false);
-  const [selectedCategory, setSelectedCategory] =
-    useState<NotificationType>("whatsapp");
+  const [selectedCategory, setSelectedCategory] = useState<NotificationType>('whatsapp');
   const initialCategories = getCategories(colors);
 
-  const [categories, setCategories] =
-    useState<NotificationCategory[]>(initialCategories);
+  const [categories, setCategories] = useState<NotificationCategory[]>(initialCategories);
 
   const handleTabChange = useCallback(
     (selectedTab: string) => {
-      const shouldHide = selectedTab === "History" || selectedTab === "Setting";
+      const shouldHide = selectedTab === 'History' || selectedTab === 'Setting';
 
       if (hideBottomTab !== shouldHide) {
         setHideBottomTab(shouldHide);
       }
     },
-    [hideBottomTab]
+    [hideBottomTab],
   );
 
   const handlePresentModalPress = useCallback(() => {
@@ -84,25 +78,15 @@ const BottomTab = () => {
           style={styles.tabBarItem}
         >
           <Image
-            source={getIconSourceForBottomTabs(
-              routeName,
-              selectedTab === routeName
-            )}
-            tintColor={
-              selectedTab === routeName
-                ? colors.white
-                : "rgba(255, 255, 255, 0.6)"
-            }
+            source={getIconSourceForBottomTabs(routeName, selectedTab === routeName)}
+            tintColor={selectedTab === routeName ? colors.white : 'rgba(255, 255, 255, 0.6)'}
             style={styles.icon}
           />
           <Text
             style={[
               styles.tabLabel,
               {
-                color:
-                  selectedTab === routeName
-                    ? colors.white
-                    : "rgba(255, 255, 255, 0.6)",
+                color: selectedTab === routeName ? colors.white : 'rgba(255, 255, 255, 0.6)',
               },
             ]}
           >
@@ -111,7 +95,7 @@ const BottomTab = () => {
         </Pressable>
       </View>
     ),
-    [colors.white, handleTabChange]
+    [colors.white, handleTabChange],
   );
 
   const renderBackdrop = useCallback(
@@ -122,10 +106,10 @@ const BottomTab = () => {
         // appearsOnIndex={0}
         pressBehavior="close"
         // disappearsOnIndex={-1}
-        style={[props.style, { backgroundColor: "rgba(0,0,0,0.7)" }]}
+        style={[props.style, { backgroundColor: 'rgba(0,0,0,0.7)' }]}
       />
     ),
-    []
+    [],
   );
 
   const onCloseSheet = useCallback(() => {
@@ -134,26 +118,22 @@ const BottomTab = () => {
     }
   }, [bottomSheetModalRef]);
 
-  const { SendMessagesModule } = NativeModules;
-
   const checkAppAndNavigate = useCallback(
     async (packageName: string, appStoreUrl: string, errorMessage: string) => {
       try {
-        const result = await SendMessagesModule.CheckisAppInstalled(
-          packageName
-        );
+        const result = await isAppInstalled(packageName);
         if (result) {
           onCloseSheet();
           setTimeout(() => {
-            navigation.navigate("CreateReminder", {
+            navigation.navigate('CreateReminder', {
               notificationType: selectedCategory,
             });
           }, 200);
         } else {
           showMessage({
             message: errorMessage,
-            description: "Click here to install application",
-            type: "warning",
+            description: 'Click here to install application',
+            type: 'warning',
             onPress: () => Linking.openURL(appStoreUrl),
             duration: 5000,
             floating: true,
@@ -162,46 +142,46 @@ const BottomTab = () => {
       } catch (error) {
         showMessage({
           message: errorMessage,
-          type: "danger",
+          type: 'danger',
         });
       }
     },
-    [SendMessagesModule, navigation, selectedCategory]
+    [isAppInstalled, navigation, selectedCategory],
   );
 
   const onPressNext = useCallback(() => {
     switch (selectedCategory) {
-      case "whatsapp":
+      case 'whatsapp':
         checkAppAndNavigate(
-          "com.whatsapp",
-          Platform.OS === "android"
-            ? "https://play.google.com/store/apps/details?id=com.whatsapp"
-            : "https://apps.apple.com/app/whatsapp-messenger/id310633997",
-          "WhatsApp is not installed"
+          'com.whatsapp',
+          Platform.OS === 'android'
+            ? 'https://play.google.com/store/apps/details?id=com.whatsapp'
+            : 'https://apps.apple.com/app/whatsapp-messenger/id310633997',
+          'WhatsApp is not installed',
         );
         break;
-      case "whatsappBusiness":
+      case 'whatsappBusiness':
         checkAppAndNavigate(
-          "com.whatsapp.w4b",
-          Platform.OS === "android"
-            ? "https://play.google.com/store/apps/details?id=com.whatsapp.w4b"
-            : "https://apps.apple.com/app/whatsapp-business/id1386412985",
-          "WhatsApp Business is not installed"
+          'com.whatsapp.w4b',
+          Platform.OS === 'android'
+            ? 'https://play.google.com/store/apps/details?id=com.whatsapp.w4b'
+            : 'https://apps.apple.com/app/whatsapp-business/id1386412985',
+          'WhatsApp Business is not installed',
         );
         break;
-      case "instagram":
+      case 'instagram':
         checkAppAndNavigate(
-          "com.instagram.android",
-          Platform.OS === "android"
-            ? "https://play.google.com/store/apps/details?id=com.instagram.android"
-            : "https://apps.apple.com/us/app/instagram/id389801252",
-          "Instagram is not installed"
+          'com.instagram.android',
+          Platform.OS === 'android'
+            ? 'https://play.google.com/store/apps/details?id=com.instagram.android'
+            : 'https://apps.apple.com/us/app/instagram/id389801252',
+          'Instagram is not installed',
         );
         break;
       default:
         onCloseSheet();
         setTimeout(() => {
-          navigation.navigate("CreateReminder", {
+          navigation.navigate('CreateReminder', {
             notificationType: selectedCategory,
           });
         }, 200);
@@ -216,17 +196,24 @@ const BottomTab = () => {
 
       setSelectedCategory(item.type);
     },
-    [categories]
+    [categories],
   );
 
   return (
     <React.Fragment>
       <CurvedBottomBar.Navigator
         type="DOWN"
+        id="bottom-tab"
+        width={width}
+        borderColor="transparent"
+        borderWidth={0}
+        shadowStyle={{}}
+        defaultScreenOptions={{}}
+        backBehavior="initialRoute"
         style={[
           styles.bottomBar,
           {
-            display: hideBottomTab ? "none" : undefined,
+            display: hideBottomTab ? 'none' : undefined,
             zIndex: hideBottomTab ? -1 : undefined,
           },
         ]}
@@ -240,8 +227,8 @@ const BottomTab = () => {
           <RNAnimated.View style={styles.btnCircleUp}>
             <Shadow
               distance={4}
-              startColor={"rgba(64, 93, 240, 0.2)"}
-              endColor={"rgba(64, 93, 240, 0.1)"}
+              startColor={'rgba(64, 93, 240, 0.2)'}
+              endColor={'rgba(64, 93, 240, 0.1)'}
               offset={[0, 0]}
               paintInside
               corners={{ bottomEnd: true, bottomStart: true }}
@@ -257,37 +244,20 @@ const BottomTab = () => {
         )}
         tabBar={renderTabBar}
         screenListeners={{
-          state: (e) => {
+          state: (e: any) => {
             const currentIndex = e?.data?.state?.index;
             const currentRouteName = e?.data?.state?.routeNames?.[currentIndex];
-            const hideTab =
-              currentRouteName === "History" || currentRouteName === "Setting";
+            const hideTab = currentRouteName === 'History' || currentRouteName === 'Setting';
 
             setHideBottomTab(hideTab);
           },
         }}
       >
         <CurvedBottomBar.Screen name="Home" component={Home} position="LEFT" />
-        <CurvedBottomBar.Screen
-          name="Coming Soon"
-          component={Notification}
-          position="LEFT"
-        />
-        <CurvedBottomBar.Screen
-          name="AddReminder"
-          component={AddReminder}
-          position="CIRCLE"
-        />
-        <CurvedBottomBar.Screen
-          name="History"
-          component={History}
-          position="RIGHT"
-        />
-        <CurvedBottomBar.Screen
-          name="Setting"
-          component={Setting}
-          position="RIGHT"
-        />
+        <CurvedBottomBar.Screen name="Coming Soon" component={Notification} position="LEFT" />
+        <CurvedBottomBar.Screen name="AddReminder" component={AddReminder} position="CIRCLE" />
+        <CurvedBottomBar.Screen name="History" component={History} position="RIGHT" />
+        <CurvedBottomBar.Screen name="Setting" component={Setting} position="RIGHT" />
       </CurvedBottomBar.Navigator>
 
       <BottomSheetProvider>
@@ -298,7 +268,7 @@ const BottomTab = () => {
               <LinearGradient
                 start={{ x: 0, y: 1 }}
                 end={{ x: 0, y: 0 }}
-                colors={["rgba(0,0,0,1)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.0)"]}
+                colors={['rgba(0,0,0,1)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.0)']}
                 style={styles.sheetNextButtonContainer}
               >
                 <Pressable
@@ -306,12 +276,7 @@ const BottomTab = () => {
                   onPress={onPressNext}
                   style={styles.sheetNextButton}
                 >
-                  <Text
-                    style={[
-                      styles.sheetNextButtonText,
-                      { color: colors.white },
-                    ]}
-                  >
+                  <Text style={[styles.sheetNextButtonText, { color: colors.white }]}>
                     {TextString.Next}
                   </Text>
                 </Pressable>
@@ -319,25 +284,16 @@ const BottomTab = () => {
             );
           }}
           backdropComponent={renderBackdrop}
-          containerStyle={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+          containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
           backgroundStyle={{ backgroundColor: colors.background }}
-          handleStyle={[
-            styles.handleStyle,
-            { backgroundColor: colors.background },
-          ]}
-          handleIndicatorStyle={[
-            styles.handleIndicatorStyle,
-            { backgroundColor: colors.text },
-          ]}
+          handleStyle={[styles.handleStyle, { backgroundColor: colors.background }]}
+          handleIndicatorStyle={[styles.handleIndicatorStyle, { backgroundColor: colors.text }]}
           ref={bottomSheetModalRef}
-          snapPoints={["80%"]}
+          snapPoints={['80%']}
           onChange={handleSheetPositionChange}
         >
           <BottomSheetScrollView
-            style={[
-              styles.contentContainer,
-              { backgroundColor: colors.background },
-            ]}
+            style={[styles.contentContainer, { backgroundColor: colors.background }]}
             showsVerticalScrollIndicator={false}
           >
             <RenderSheetView
@@ -359,14 +315,14 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
   },
   btnCircleUp: {
-    alignItems: "center",
-    justifyContent: "center",
-    bottom: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    bottom: 27,
   },
   tabBarItem: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tabLabel: {
     fontSize: 12,
@@ -378,16 +334,16 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   addButtonText: {
-    color: "white",
+    color: 'white',
     fontSize: 50,
     fontFamily: FONTS.Regular,
   },
   modalBackground: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
   },
   contentContainer: {
     paddingHorizontal: 16,
@@ -399,29 +355,29 @@ const styles = StyleSheet.create({
     paddingBottom: 90,
   },
   sheetNextButtonContainer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     padding: 0,
     height: 80,
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sheetNextButton: {
     width: 120,
     height: 38,
     borderRadius: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(64, 93, 240, 1)",
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(64, 93, 240, 1)',
   },
   iconContainer: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   icon: {
     width: 22,
     height: 22,
-    resizeMode: "contain",
+    resizeMode: 'contain',
   },
   handleStyle: {
     borderTopRightRadius: 20,
@@ -435,30 +391,30 @@ const styles = StyleSheet.create({
   sheetNextButtonText: {
     fontFamily: FONTS.Medium,
     fontSize: 17,
-    color: "white",
+    color: 'white',
   },
   sheetSuggestionView: {
-    alignSelf: "center",
+    alignSelf: 'center',
     marginBottom: 20,
     gap: 15,
-    flexDirection: "row",
-    overflow: "hidden",
+    flexDirection: 'row',
+    overflow: 'hidden',
   },
   sheetSuggestionImageView: {
     width: 35,
     height: 35,
     elevation: 5,
-    shadowColor: "rgba(0, 0, 0, 0.1)",
+    shadowColor: 'rgba(0, 0, 0, 0.1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 3,
     borderRadius: 500,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   sheetSuggestionImage: {
-    width: "55%",
-    height: "55%",
-    alignSelf: "center",
+    width: '55%',
+    height: '55%',
+    alignSelf: 'center',
   },
 });
 

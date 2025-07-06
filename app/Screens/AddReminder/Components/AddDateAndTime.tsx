@@ -1,9 +1,10 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import React, { FC } from "react";
-import useThemeColors from "../../../Hooks/useThemeMode";
-import { FONTS, SIZE } from "../../../Constants/Theme";
-import TextString from "../../../Constants/TextString";
-import AssetsPath from "../../../Constants/AssetsPath";
+import React, { FC } from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+
+import AssetsPath from '../../../Constants/AssetsPath';
+import TextString from '../../../Constants/TextString';
+import { FONTS, SIZE } from '../../../Constants/Theme';
+import useThemeColors from '../../../Hooks/useThemeMode';
 
 interface AddDateAndTimeProps {
   themeColor: string;
@@ -22,9 +23,7 @@ const AddDateAndTime: FC<AddDateAndTimeProps> = ({
 
   return (
     <View style={[styles.container]}>
-      <Text style={[styles.titleText, { color: colors.text }]}>
-        {TextString.Schedule}:
-      </Text>
+      <Text style={[styles.titleText, { color: colors.text }]}>{TextString.Schedule}:</Text>
 
       <View style={styles.flexView}>
         <View style={styles.dateAndTimeView}>
@@ -36,25 +35,19 @@ const AddDateAndTime: FC<AddDateAndTimeProps> = ({
               { backgroundColor: colors.scheduleReminderCardBackground },
             ]}
           >
-            <Image
-              tintColor={themeColor}
-              style={styles.icon}
-              source={AssetsPath.ic_calender}
-            />
+            <Image tintColor={themeColor} style={styles.icon} source={AssetsPath.ic_calender} />
             <Text
               numberOfLines={1}
               style={[
                 styles.valueText,
                 {
-                  color: selectedDateAndTime?.date
-                    ? colors.text
-                    : colors.placeholderText,
+                  color: selectedDateAndTime?.date ? colors.text : colors.placeholderText,
                 },
               ]}
             >
               {selectedDateAndTime?.date
                 ? new Date(selectedDateAndTime.date).toLocaleDateString()
-                : "DD / MM / YY"}
+                : 'DD / MM / YY'}
             </Text>
           </Pressable>
         </View>
@@ -68,25 +61,19 @@ const AddDateAndTime: FC<AddDateAndTimeProps> = ({
               { backgroundColor: colors.scheduleReminderCardBackground },
             ]}
           >
-            <Image
-              tintColor={themeColor}
-              style={styles.icon}
-              source={AssetsPath.ic_time}
-            />
+            <Image tintColor={themeColor} style={styles.icon} source={AssetsPath.ic_time} />
             <Text
               numberOfLines={1}
               style={[
                 styles.valueText,
                 {
-                  color: selectedDateAndTime?.time
-                    ? colors.text
-                    : colors.placeholderText,
+                  color: selectedDateAndTime?.time ? colors.text : colors.placeholderText,
                 },
               ]}
             >
               {selectedDateAndTime?.time
                 ? new Date(selectedDateAndTime.time).toLocaleTimeString()
-                : "Time"}
+                : 'Time'}
             </Text>
           </Pressable>
         </View>
@@ -99,7 +86,7 @@ export default AddDateAndTime;
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
+    width: '100%',
     marginBottom: 20,
   },
   titleText: {
@@ -107,13 +94,13 @@ const styles = StyleSheet.create({
     fontSize: 19,
   },
   flexView: {
-    width: "100%",
+    width: '100%',
     marginVertical: 15,
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   dateAndTimeView: {
-    width: "48%",
+    width: '48%',
     marginVertical: 5,
   },
   mainTitle: {
@@ -122,19 +109,19 @@ const styles = StyleSheet.create({
   },
   dateAndTimeFlexView: {
     height: 50,
-    width: "100%",
+    width: '100%',
     columnGap: 10,
     marginVertical: 10,
-    flexDirection: "row",
+    flexDirection: 'row',
     paddingHorizontal: 10,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: SIZE.listBorderRadius,
   },
   icon: {
     width: 20,
     height: 20,
-    resizeMode: "contain",
+    resizeMode: 'contain',
   },
   valueText: {
     fontFamily: FONTS.Medium,
