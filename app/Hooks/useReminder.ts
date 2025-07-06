@@ -149,10 +149,10 @@ export const scheduleNotification = async (
           visibility: AndroidVisibility.PUBLIC,
           importance: AndroidImportance.HIGH,
           pressAction: { id: 'default' },
-          ...(imageAttachment?.fileCopyUri && {
+          ...(imageAttachment?.uri && {
             style: {
               type: AndroidStyle.BIGPICTURE,
-              picture: imageAttachment?.fileCopyUri || '',
+              picture: imageAttachment?.uri || '',
             },
           }),
         },
@@ -177,10 +177,10 @@ export const scheduleNotification = async (
             visibility: AndroidVisibility.PUBLIC,
             importance: AndroidImportance.HIGH,
             pressAction: { id: 'default' },
-            ...(imageAttachment?.fileCopyUri && {
+            ...(imageAttachment?.uri && {
               style: {
                 type: AndroidStyle.BIGPICTURE,
-                picture: imageAttachment?.fileCopyUri || '',
+                picture: imageAttachment?.uri || '',
               },
             }),
           },

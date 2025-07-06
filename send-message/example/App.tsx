@@ -1,15 +1,14 @@
-import { useEvent } from 'expo';
-import { Button, SafeAreaView, ScrollView, Text, View } from 'react-native';
-import SendMessage, { SendMessageView } from 'send-message';
+import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { SendMessageView } from 'send-message';
 
 export default function App() {
-  const onChangePayload = useEvent(SendMessage, 'onChange');
+  // const onChangePayload = useEvent(SendMessage, 'onChange'); // Not supported
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.container}>
         <Text style={styles.header}>Module API Example</Text>
-        <Group name="Constants">
+        {/* <Group name="Constants">
           <Text>{SendMessage.PI}</Text>
         </Group>
         <Group name="Functions">
@@ -25,7 +24,7 @@ export default function App() {
         </Group>
         <Group name="Events">
           <Text>{onChangePayload?.value}</Text>
-        </Group>
+        </Group> */}
         <Group name="Views">
           <SendMessageView
             url="https://www.example.com"
