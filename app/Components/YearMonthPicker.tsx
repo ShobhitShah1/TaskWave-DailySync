@@ -200,6 +200,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
         </Pressable>
       }
       hasBackdrop
+      statusBarTranslucent
       useNativeDriverForBackdrop
       hideModalContentWhileAnimating
       deviceHeight={height + ((StatusBar.currentHeight || 30) + 50)}

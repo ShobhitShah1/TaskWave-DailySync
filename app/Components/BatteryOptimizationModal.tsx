@@ -2,17 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as React from 'react';
 import { Dimensions, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
 import Modal from 'react-native-modal';
-import Animated, {
-  Easing,
-  FadeIn,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
 
 import { FONTS } from '../Constants/Theme';
 import { useAppContext } from '../Contexts/ThemeProvider';
@@ -35,116 +24,24 @@ const BatteryOptimizationModal = ({
   const { theme } = useAppContext();
   const isDark = theme === 'dark';
 
-  const glowAnimation = useSharedValue(0);
-  const iconRotate = useSharedValue(0);
-  const iconScale = useSharedValue(1);
-  const floatingParticles = useSharedValue(0);
-  const backgroundWave = useSharedValue(0);
-  const confirmButtonScale = useSharedValue(1);
-  const cancelButtonScale = useSharedValue(1);
-  const titleShimmer = useSharedValue(0);
-  const pulseRing = useSharedValue(0);
-
-  React.useEffect(() => {
-    if (visible) {
-      glowAnimation.value = withRepeat(
-        withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.sin) }),
-        -1,
-        true,
-      );
-
-      iconRotate.value = withRepeat(
-        withSequence(
-          withTiming(5, { duration: 800 }),
-          withTiming(-5, { duration: 800 }),
-          withTiming(0, { duration: 400 }),
-        ),
-        -1,
-        false,
-      );
-
-      iconScale.value = withRepeat(
-        withSequence(
-          withTiming(1.2, { duration: 1000, easing: Easing.out(Easing.quad) }),
-          withTiming(1, { duration: 1000, easing: Easing.in(Easing.quad) }),
-        ),
-        -1,
-        true,
-      );
-
-      floatingParticles.value = withRepeat(
-        withTiming(1, { duration: 4000, easing: Easing.inOut(Easing.ease) }),
-        -1,
-        true,
-      );
-
-      backgroundWave.value = withRepeat(
-        withTiming(1, { duration: 6000, easing: Easing.linear }),
-        -1,
-        false,
-      );
-
-      titleShimmer.value = withDelay(500, withRepeat(withTiming(1, { duration: 2000 }), -1, true));
-
-      pulseRing.value = withRepeat(
-        withSequence(withTiming(1, { duration: 1500 }), withTiming(0, { duration: 500 })),
-        -1,
-        false,
-      );
-    } else {
-      glowAnimation.value = 0;
-      iconRotate.value = 0;
-      iconScale.value = 1;
-      floatingParticles.value = 0;
-      backgroundWave.value = 0;
-      titleShimmer.value = 0;
-      pulseRing.value = 0;
-    }
-  }, [visible]);
-
-  const animatedIconStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: iconScale.value }, { rotate: `${iconRotate.value}deg` }],
-  }));
-
-  const animatedConfirmStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: confirmButtonScale.value }],
-  }));
-
-  const animatedCancelStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: cancelButtonScale.value }],
-  }));
-
   const handleConfirmPress = () => {
-    confirmButtonScale.value = withSequence(
-      withSpring(0.9, { damping: 22, stiffness: 260 }),
-      withSpring(1.08, { damping: 22, stiffness: 260 }),
-      withSpring(1, { damping: 22, stiffness: 260 }),
-    );
-    setTimeout(onConfirm, 220);
+    onConfirm();
   };
 
   const handleCancelPress = () => {
-    cancelButtonScale.value = withSequence(
-      withSpring(0.9, { damping: 22, stiffness: 260 }),
-      withSpring(1, { damping: 22, stiffness: 260 }),
-    );
-    setTimeout(onCancel, 170);
+    onCancel();
   };
 
   return (
     <Modal
       isVisible={visible}
       style={{ margin: 0 }}
-      animationInTiming={700}
-      animationOutTiming={400}
       backdropOpacity={1}
-      backdropColor="rgba(0,0,0,0.5)"
-      backdropTransitionOutTiming={400}
-      backdropTransitionInTiming={700}
+      backdropColor="rgba(0,0,0,0.7)"
       hasBackdrop={true}
       statusBarTranslucent
-      animationIn="slideInDown"
-      animationOut="slideOutUp"
+      animationIn="slideInUp"
+      animationOut="slideOutDown"
       useNativeDriver
       deviceHeight={screenHeight + (StatusBar.currentHeight || 15)}
       useNativeDriverForBackdrop
@@ -161,8 +58,7 @@ const BatteryOptimizationModal = ({
           },
         ]}
       >
-        <Animated.View
-          entering={FadeIn.delay(400).duration(800)}
+        <View
           style={[
             styles.iconContainer,
             {
@@ -176,24 +72,20 @@ const BatteryOptimizationModal = ({
             },
           ]}
         >
-          <Animated.View style={animatedIconStyle}>
+          <View style={{}}>
             <Ionicons
               name="battery-charging"
               size={42}
               color={isDark ? colors.instagram : colors.darkBlue}
             />
-          </Animated.View>
-        </Animated.View>
+          </View>
+        </View>
 
-        <Animated.Text
-          entering={FadeIn.delay(500)}
-          style={[styles.title, { color: colors.text, fontFamily: FONTS.Bold }]}
-        >
+        <Text style={[styles.title, { color: colors.text, fontFamily: FONTS.Bold }]}>
           Battery Optimization Detected
-        </Animated.Text>
+        </Text>
 
-        <Animated.Text
-          entering={FadeIn.delay(600)}
+        <Text
           style={[
             styles.message,
             {
@@ -204,10 +96,10 @@ const BatteryOptimizationModal = ({
         >
           To ensure you receive all notifications on time, please disable battery optimization for
           this app. This will allow the app to run reliably in the background.
-        </Animated.Text>
+        </Text>
 
-        <Animated.View entering={FadeIn.delay(700)} style={styles.buttonContainer}>
-          <Animated.View style={[styles.buttonWrapper, animatedCancelStyle]}>
+        <View style={styles.buttonContainer}>
+          <View style={styles.buttonWrapper}>
             <Pressable
               style={[
                 styles.button,
@@ -231,9 +123,9 @@ const BatteryOptimizationModal = ({
                 Skip
               </Text>
             </Pressable>
-          </Animated.View>
+          </View>
 
-          <Animated.View style={[styles.buttonWrapper, animatedConfirmStyle]}>
+          <View style={styles.buttonWrapper}>
             <Pressable
               style={[
                 styles.button,
@@ -253,8 +145,8 @@ const BatteryOptimizationModal = ({
                 Continue
               </Text>
             </Pressable>
-          </Animated.View>
-        </Animated.View>
+          </View>
+        </View>
       </View>
     </Modal>
   );

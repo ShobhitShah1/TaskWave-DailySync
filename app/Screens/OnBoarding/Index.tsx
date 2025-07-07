@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, FlatList, StatusBar, StyleSheet, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Animated, FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { OnBoardingData } from '../../Constants/Data';
@@ -33,20 +33,15 @@ const OnBoarding = () => {
     }
   };
 
-  useEffect(() => {
-    const unSub = navigation.addListener('blur', () => {
-      <StatusBar
-        translucent
-        backgroundColor={colors.background}
-        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-      />;
-    });
-    return unSub;
-  }, []);
+  // useEffect(() => {
+  //   const unSub = navigation.addListener('blur', () => {
+  //     <StatusBar translucent barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} />;
+  //   });
+  //   return unSub;
+  // }, []);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
-      <StatusBar barStyle={'dark-content'} backgroundColor={colors.white} />
       <View style={{ flex: 2 }}>
         <FlatList
           horizontal

@@ -1,9 +1,10 @@
 import { DefaultTheme, NavigationContainer, Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useQuickActionCallback } from 'expo-quick-actions/hooks';
+import { setStatusBarStyle } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import React from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -49,30 +50,24 @@ const Routes = () => {
     <NavigationContainer
       ref={navigationRef}
       theme={MyTheme}
-      onReady={() => {
+      onReady={async () => {
+        setStatusBarStyle(theme === 'dark' ? 'light' : 'dark');
+        SystemUI.setBackgroundColorAsync(theme === 'dark' ? '#303334' : '#ffffff');
+        console.log(
+          theme === 'dark' ? '#303334' : '#ffffff',
+          await SystemUI.getBackgroundColorAsync(),
+        );
+
         setTimeout(() => {
-          console.log('hideAsync');
           BootSplash.hide({ fade: true });
         }, 500);
-        SystemUI.setBackgroundColorAsync(colors.background);
       }}
     >
       <SafeAreaView style={styles.container}>
-        <StatusBar
-          translucent
-          backgroundColor={colors.background}
-          barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-        />
         <Stack.Navigator
           screenOptions={({}) => ({
             headerShown: false,
             animation: 'ios_from_right',
-            // navigationBarColor:
-            //   route?.name === 'OnBoarding'
-            //     ? colors.white
-            //     : route?.name === 'BottomTab'
-            //       ? colors?.bottomTab
-            //       : colors?.background,
           })}
         >
           {showOnboarding !== 'no' && <Stack.Screen name="OnBoarding" component={OnBoarding} />}

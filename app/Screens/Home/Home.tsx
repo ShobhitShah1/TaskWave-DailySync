@@ -1,6 +1,6 @@
 import notifee from '@notifee/react-native';
 import { useIsFocused } from '@react-navigation/native';
-import * as React from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -41,7 +41,7 @@ const Home = () => {
   const isFocus = useIsFocused();
   const { height } = useWindowDimensions();
 
-  const flatListRef = React.useRef<FlatList>(null);
+  const flatListRef = useRef<FlatList>(null);
   const { getAllNotifications, deleteNotification } = useDatabase();
   const { permissionStatus, requestPermission } = useNotificationPermission();
 
@@ -55,20 +55,20 @@ const Home = () => {
     setCurrentMonth,
   } = useCalendar(new Date());
 
-  const [fullScreenPreview, setFullScreenPreview] = React.useState(false);
-  const [showDateAndYearModal, setShowDateAndYearModal] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [showBatteryModal, setShowBatteryModal] = React.useState(false);
-  const batteryModalConfirmRef = React.useRef<() => void>(() => {});
+  const [fullScreenPreview, setFullScreenPreview] = useState(false);
+  const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showBatteryModal, setShowBatteryModal] = useState(false);
+  const batteryModalConfirmRef = useRef<() => void>(() => {});
 
-  const [notificationsState, setNotificationsState] = React.useState<NotificationStatus>({
+  const [notificationsState, setNotificationsState] = useState<NotificationStatus>({
     all: [] as Notification[],
     allByDate: [] as Notification[],
     active: [] as Notification[],
     inactive: [] as Notification[],
   });
-  const [refreshing, setRefreshing] = React.useState(false);
-  const [selectedFilter, setSelectedFilter] = React.useState<NotificationType | 'all'>('all');
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<NotificationType | 'all'>('all');
 
   const findSelectedIndex = () => {
     return daysArray.findIndex((item) => item.formattedDate === selectedDate);
@@ -90,24 +90,24 @@ const Home = () => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     scrollToIndex();
   }, [selectedDate, isFocus, notificationsState, flatListRef.current]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isFocus) {
       setIsLoading(notificationsState?.allByDate?.length === 0);
       loadNotifications();
     }
   }, [isFocus, selectedDate, selectedFilter]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (permissionStatus !== 'granted') {
       requestPermission();
     }
   }, [permissionStatus]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       notifee.isBatteryOptimizationEnabled().then((isBatteryOptimizationEnabled) => {
         if (isBatteryOptimizationEnabled) {
@@ -115,18 +115,24 @@ const Home = () => {
             setShowBatteryModal(false);
             await notifee.openBatteryOptimizationSettings();
           };
-          setShowBatteryModal(true);
+
+          setTimeout(() => {
+            setShowBatteryModal(true);
+          }, 1500);
         }
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   }, []);
 
-  const onRefresh = React.useCallback(async () => {
+  const onRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
       await loadNotifications();
       setRefreshing(false);
     } catch (error) {
+      console.log(error);
       setRefreshing(false);
     }
   }, [selectedDate, selectedFilter]);
@@ -181,12 +187,13 @@ const Home = () => {
         inactive: inactive,
       });
     } catch (error) {
+      console.log(error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const deleteReminder = React.useCallback(async (id?: string) => {
+  const deleteReminder = useCallback(async (id?: string) => {
     if (!id) {
       showMessage({
         message: 'Invalid reminder ID',
@@ -305,7 +312,7 @@ const Home = () => {
               }
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 93 }}
-              keyExtractor={(item, index) => item?.id?.toString()}
+              keyExtractor={(item) => item?.id?.toString()}
               renderItem={({ item }) => (
                 <ReminderCard
                   notification={item}
@@ -322,35 +329,29 @@ const Home = () => {
         </View>
       </View>
 
-      {fullScreenPreview && (
-        <FullScreenPreviewModal
-          isVisible={fullScreenPreview}
-          notifications={notificationsState?.allByDate}
-          onClose={() => setFullScreenPreview(false)}
-          onRefreshData={loadNotifications}
-          setFullScreenPreview={setFullScreenPreview}
-        />
-      )}
+      <FullScreenPreviewModal
+        isVisible={fullScreenPreview}
+        notifications={notificationsState?.allByDate}
+        onClose={() => setFullScreenPreview(false)}
+        onRefreshData={loadNotifications}
+        setFullScreenPreview={setFullScreenPreview}
+      />
 
-      {showDateAndYearModal && (
-        <YearMonthPicker
-          isVisible={showDateAndYearModal}
-          selectedYear={selectedDateObject.getFullYear()}
-          selectedMonth={selectedDateObject.getMonth()}
-          onConfirm={handleDateChange}
-          onCancel={() => setShowDateAndYearModal(false)}
-        />
-      )}
+      <YearMonthPicker
+        isVisible={showDateAndYearModal}
+        selectedYear={selectedDateObject.getFullYear()}
+        selectedMonth={selectedDateObject.getMonth()}
+        onConfirm={handleDateChange}
+        onCancel={() => setShowDateAndYearModal(false)}
+      />
 
-      {showBatteryModal && (
-        <BatteryOptimizationModal
-          visible={showBatteryModal}
-          onConfirm={batteryModalConfirmRef.current}
-          onCancel={() => setShowBatteryModal(false)}
-        />
-      )}
+      <BatteryOptimizationModal
+        visible={showBatteryModal}
+        onConfirm={batteryModalConfirmRef.current}
+        onCancel={() => setShowBatteryModal(false)}
+      />
     </SafeAreaView>
   );
 };
 
-export default Home;
+export default memo(Home);

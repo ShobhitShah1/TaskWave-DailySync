@@ -3,12 +3,13 @@ import {
   FlatList,
   Image,
   Pressable,
+  StatusBar,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from 'react-native';
-import ReactNativeModal from 'react-native-modal';
+import Modal from 'react-native-modal';
 
 import AssetsPath from '../Constants/AssetsPath';
 import TextString from '../Constants/TextString';
@@ -50,14 +51,14 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
   };
 
   return (
-    <ReactNativeModal
+    <Modal
       isVisible={isVisible}
       onBackButtonPress={onClose}
       onBackdropPress={onClose}
       animationIn={'fadeInUp'}
       animationInTiming={800}
-      // statusBarTranslucent
-      // deviceHeight={height + (StatusBar.currentHeight || 20)}
+      statusBarTranslucent
+      deviceHeight={height + (StatusBar.currentHeight || 20)}
       animationOutTiming={300}
       hideModalContentWhileAnimating
       animationOut={'fadeOutDown'}
@@ -73,7 +74,7 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
       }
       hasBackdrop
       useNativeDriver={true}
-      useNativeDriverForBackdrop={false}
+      useNativeDriverForBackdrop={true}
       style={style.container}
       backdropOpacity={0.5}
     >
@@ -119,7 +120,7 @@ const FullScreenPreviewModal: FC<FullScreenProps> = ({
           </View>
         </View>
       </View>
-    </ReactNativeModal>
+    </Modal>
   );
 };
 

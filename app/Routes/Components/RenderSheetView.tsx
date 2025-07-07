@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { memo } from 'react';
 import { Dimensions, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, SequencedTransition } from 'react-native-reanimated';
@@ -41,12 +40,6 @@ const RenderSheetView = ({
 
   return (
     <View style={styles.container}>
-      <StatusBar
-        translucent
-        backgroundColor={colors.background}
-        style={theme === 'dark' ? 'light' : 'dark'}
-      />
-
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
