@@ -46,7 +46,6 @@ const RateUsModal: FC<RateUsModalProps> = ({ isVisible, onClose }) => {
       style={style.modalContainer}
       backdropOpacity={1}
       useNativeDriverForBackdrop
-      removeClippedSubviews
     >
       <View style={style.mainContainer}>
         <View style={style.rateUsViewContainer}>

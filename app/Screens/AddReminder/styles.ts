@@ -67,7 +67,6 @@ const styles = () => {
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 15,
-      marginBottom: 10,
     },
     contactHeaderIcon: {
       width: 20,
@@ -77,7 +76,8 @@ const styles = () => {
     contactSearchInput: {
       height: 45,
       marginHorizontal: 10,
-      marginVertical: 20,
+      marginTop: 20,
+      marginBottom: 15,
       paddingHorizontal: 15,
       borderRadius: 20,
       backgroundColor: colors.contactBackground,
@@ -112,7 +112,7 @@ const styles = () => {
     },
     contactDoneButton: {
       width: '100%',
-      height: 80,
+      height: 70,
       bottom: 0,
       position: 'absolute',
       justifyContent: 'center',
@@ -212,6 +212,11 @@ const styles = () => {
       fontFamily: FONTS.SemiBold,
       fontSize: 15,
       textAlign: 'center',
+    },
+
+    customBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(48, 51, 52, 0.8)',
     },
   });
 };

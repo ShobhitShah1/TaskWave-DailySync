@@ -16,6 +16,10 @@ const ic_whatsappBusiness = require('../../assets/Icons/ic_whatsappBusiness.png'
 const ic_phone = require('../../assets/Icons/ic_phone.png');
 const ic_telegram = require('../../assets/Icons/ic_telegram.png');
 const ic_notes = require('../../assets/Icons/ic_notes.png');
+const ic_location = require('../../assets/Icons/ic_location.png');
+const ic_location_list_icon = require('../../assets/Icons/ic_location_list_icon.png');
+const ic_sync = require('../../assets/Icons/ic_sync.png');
+
 const ic_gmail_history = require('../../assets/Icons/ic_gmail_history.png');
 const ic_sms_history = require('../../assets/Icons/ic_sms_history.png');
 const ic_whatsapp_history = require('../../assets/Icons/ic_whatsapp_history.png');
@@ -23,6 +27,7 @@ const ic_whatsappBusiness_history = require('../../assets/Icons/ic_whatsappBusin
 const ic_phone_history = require('../../assets/Icons/ic_phone_history.png');
 const ic_telegram_history = require('../../assets/Icons/ic_telegram_history.png');
 const ic_notes_history = require('../../assets/Icons/ic_notes_history.png');
+const ic_history_location_icon = require('../../assets/Icons/ic_history_location_icon.png');
 
 // Glow
 const ic_gmailGlow = require('../../assets/Icons/ic_gmailGlow.png');
@@ -32,6 +37,8 @@ const ic_whatsappBusinessGlow = require('../../assets/Icons/ic_whatsappBusinessG
 const ic_phoneGlow = require('../../assets/Icons/ic_phoneGlow.png');
 const ic_telegramGlow = require('../../assets/Icons/ic_telegramGlow.png');
 const ic_notesGlow = require('../../assets/Icons/ic_notesGlow.png');
+const ic_locationGlow = require('../../assets/Icons/ic_locationGlow.png');
+
 const ic_edit = require('../../assets/Icons/ic_edit.png');
 const ic_view = require('../../assets/Icons/ic_view.png');
 const ic_duplicate = require('../../assets/Icons/ic_duplicate.png');
@@ -100,6 +107,9 @@ export default {
   ic_darkTheme,
   ic_lightTheme,
   ic_notification,
+  ic_location_list_icon,
+  ic_history_location_icon,
+  ic_sync,
 
   ic_gmail,
   ic_sms,
@@ -126,6 +136,8 @@ export default {
   ic_phoneGlow,
   ic_telegramGlow,
   ic_notesGlow,
+  ic_locationGlow,
+  ic_location,
 
   ic_edit,
   ic_view,

@@ -1,12 +1,5 @@
-import notifee, {
-  AlarmType,
-  AndroidImportance,
-  AndroidStyle,
-  AndroidVisibility,
-  RepeatFrequency,
-  TimestampTrigger,
-  TriggerType,
-} from '@notifee/react-native';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import notifee, { AndroidImportance, AndroidVisibility } from '@notifee/react-native';
 import * as SQLite from 'expo-sqlite';
 import { useEffect } from 'react';
 import { showMessage } from 'react-native-flash-message';
@@ -14,9 +7,13 @@ import { showMessage } from 'react-native-flash-message';
 import { sounds } from '../Constants/Data';
 import { storage } from '../Contexts/ThemeProvider';
 import { Contact, Notification, RescheduleConfig } from '../Types/Interface';
-
-export const CHANNEL_ID = 'reminder';
-export const CHANNEL_NAME = 'Reminder';
+import {
+  buildNotifeeNotification,
+  buildTimestampTrigger,
+  CHANNEL_NAME,
+  createNotificationChannelIfNeeded,
+} from '../Utils/notificationHelpers';
+import { prepareNotificationData } from '../Utils/prepareNotificationData';
 
 export const RESCHEDULE_CONFIG: RescheduleConfig = {
   defaultDelay: 1, // default 1 minutes
@@ -68,41 +65,27 @@ export const scheduleNotification = async (
     const {
       id,
       date,
-      type,
-      message,
-      subject,
       scheduleFrequency,
+      attachments,
+      telegramUsername,
       days,
       toContact,
       toMail,
-      attachments,
+      subject,
+      type,
+      message,
       memo,
-      telegramUsername,
     } = notification;
 
     await notifee.requestPermission();
-    await createNotificationChannel();
-    const channelId = storage.getString('notificationSound');
+    await createNotificationChannelIfNeeded();
+    const channelId = storage.getString('notificationSound') || 'default';
 
     const notificationDate = rescheduleOptions?.isReschedule
       ? createFutureDate(rescheduleOptions.delayMinutes || RESCHEDULE_CONFIG.defaultDelay)
-      : date instanceof Date
-        ? date
-        : new Date(date);
+      : new Date(date);
 
-    const trigger: TimestampTrigger = {
-      type: TriggerType.TIMESTAMP,
-      timestamp: notificationDate.getTime(),
-      repeatFrequency:
-        scheduleFrequency === 'Daily'
-          ? RepeatFrequency.DAILY
-          : scheduleFrequency === 'Weekly'
-            ? RepeatFrequency.WEEKLY
-            : undefined,
-      alarmManager: {
-        type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
-      },
-    };
+    const trigger = buildTimestampTrigger(notificationDate, scheduleFrequency || undefined);
 
     const rescheduleInfoString = rescheduleOptions?.isReschedule
       ? JSON.stringify({
@@ -112,6 +95,14 @@ export const scheduleNotification = async (
         })
       : '';
 
+    const notifeeNotification = buildNotifeeNotification(
+      notification,
+      channelId,
+      notificationDate,
+      rescheduleInfoString,
+    );
+
+    // Ensure all .data fields are strings (Notifee expects string values)
     const notificationData = {
       ...notification,
       id: id || '',
@@ -128,36 +119,12 @@ export const scheduleNotification = async (
       rescheduleInfo: rescheduleInfoString,
     };
 
-    const imageAttachment = attachments?.find((attachment) =>
-      attachment.type?.startsWith('image/'),
-    );
-
     const notifeeNotificationId = await notifee.createTriggerNotification(
       {
-        ...(id && {
-          id: id,
-        }),
-        title: type === 'gmail' ? subject : `Reminder: ${subject || 'You have an upcoming task'}`,
-        body:
-          message.toString() ||
-          `Don't forget! You have a task with ${
-            toContact?.map((contact) => contact.name).join(', ') || toMail.join(', ')
-          }. Please check details or contact them if needed.`,
-        android: {
-          channelId,
-          sound: channelId,
-          visibility: AndroidVisibility.PUBLIC,
-          importance: AndroidImportance.HIGH,
-          pressAction: { id: 'default' },
-          ...(imageAttachment?.uri && {
-            style: {
-              type: AndroidStyle.BIGPICTURE,
-              picture: imageAttachment?.uri || '',
-            },
-          }),
-        },
-        data: notificationData as any,
-      },
+        ...(id && { id: id }),
+        ...notifeeNotification,
+        data: notificationData,
+      } as any,
       trigger,
     );
 
@@ -165,33 +132,14 @@ export const scheduleNotification = async (
       await notifee.createTriggerNotification(
         {
           id: notifeeNotificationId,
-          title: type === 'gmail' ? subject : `Reminder: ${subject || 'You have an upcoming task'}`,
-          body:
-            message.toString() ||
-            `Don't forget! You have a task with ${
-              toContact?.map((contact) => contact.name).join(', ') || toMail.join(', ')
-            }. Please check details or contact them if needed.`,
-          android: {
-            channelId,
-            sound: channelId,
-            visibility: AndroidVisibility.PUBLIC,
-            importance: AndroidImportance.HIGH,
-            pressAction: { id: 'default' },
-            ...(imageAttachment?.uri && {
-              style: {
-                type: AndroidStyle.BIGPICTURE,
-                picture: imageAttachment?.uri || '',
-              },
-            }),
-          },
+          ...notifeeNotification,
           data: {
             ...(notificationData as any),
             id: notifeeNotificationId,
           },
-        },
+        } as any,
         trigger,
       );
-
       return notifeeNotificationId;
     }
 
@@ -264,6 +212,14 @@ const useReminder = () => {
             thumbnailPath TEXT,
             FOREIGN KEY (notification_id) REFERENCES notifications (id) ON DELETE CASCADE
           );
+
+          CREATE TABLE IF NOT EXISTS device_contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            number TEXT,
+            recordID TEXT NOT NULL,
+            thumbnailPath TEXT
+          );
         `);
 
           await database.execAsync(`PRAGMA user_version = 1;`);
@@ -332,27 +288,15 @@ const useReminder = () => {
         return null;
       }
 
-      const {
-        type,
-        message,
-        date,
-        toContact,
-        toMail,
-        subject,
-        attachments,
-        days,
-        id,
-        memo,
-        telegramUsername,
-      } = notification;
+      const data = prepareNotificationData(notification);
 
       console.log('[Notification] Creating notification:', {
-        id,
-        type,
-        subject,
+        id: data.id,
+        type: data.type,
+        subject: data.subject,
       });
 
-      if (!id) {
+      if (!data.id) {
         console.error('[Notification] Missing notification ID');
         showMessage({
           message: 'Failed to schedule notification. Please try again.',
@@ -361,48 +305,40 @@ const useReminder = () => {
         return null;
       }
 
-      const toMailString = JSON.stringify(toMail || []);
-      const daysString = JSON.stringify(days || []);
-
       const insertNotificationSQL = `
       INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail, telegramUsername, days)
       VALUES (
-        '${id}',
-        '${type}',
-        '${(message || '').toString().replace(/'/g, "''")?.trim()}',
-        '${new Date(date).toISOString()}',
-        '${(subject || '').toString().replace(/'/g, "''")?.trim()}',
-        '${JSON.stringify(attachments || [])}',
-        '${notification.scheduleFrequency}',
-        '${JSON.stringify(memo || [])}',
-        '${toMailString}',
-        '${telegramUsername?.toString().replace(/'/g, "''")?.trim() || ''}',
-        '${daysString}'
+        '${data.id}',
+        '${data.type}',
+        '${data.message}',
+        '${data.date}',
+        '${data.subject}',
+        '${data.attachments}',
+        '${data.scheduleFrequency}',
+        '${data.memo}',
+        '${data.toMail}',
+        '${data.telegramUsername}',
+        '${data.days}'
       )`;
 
       let insertContactsSQL = '';
 
-      if (type === 'gmail') {
-        const emailArray = Array.isArray(toMail) ? toMail : [toMail];
-        insertContactsSQL = emailArray
+      if (data.type === 'gmail') {
+        insertContactsSQL = data.toMailArray
           .filter((email) => email)
           .map(
             (email) => `
           INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-          VALUES ('${id}', '${email}', null, '${email}', null)
+          VALUES ('${data.id}', '${email}', null, '${email}', null)
         `,
           )
           .join(';');
       } else {
-        insertContactsSQL = toContact
+        insertContactsSQL = data.toContact
           .map(
             (contact) => `
           INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-          VALUES ('${id}', '${contact.name}', ${
-            contact.number ? `'${contact.number}'` : 'null'
-          }, '${contact.recordID}', ${
-            contact.thumbnailPath ? `'${contact.thumbnailPath}'` : 'null'
-          })
+          VALUES ('${data.id}', '${contact.name}', ${contact.number ? `'${contact.number}'` : 'null'}, '${contact.recordID}', ${contact.thumbnailPath ? `'${contact.thumbnailPath}'` : 'null'})
         `,
           )
           .join(';');
@@ -415,8 +351,8 @@ const useReminder = () => {
 
       try {
         await database.execAsync(transactionSQL);
-        console.log('[Notification] Successfully created notification:', id);
-        return id;
+        console.log('[Notification] Successfully created notification:', data.id);
+        return data.id;
       } catch (error: any) {
         console.error('[Notification] Failed to create notification:', error);
         throw new Error(error.message || error);
@@ -440,79 +376,48 @@ const useReminder = () => {
         return false;
       }
 
-      const {
-        id,
-        type,
-        message,
-        date,
-        toContact,
-        toMail,
-        subject,
-        attachments,
-        days,
-        memo,
-        telegramUsername,
-      } = notification;
+      const data = prepareNotificationData(notification);
 
-      console.log('[Notification] Updating notification:', id);
+      console.log('[Notification] Updating notification:', data.id);
 
-      let toMailArray;
-      try {
-        if (Array.isArray(toMail)) {
-          toMailArray = toMail;
-        } else if (typeof toMail === 'string') {
-          toMailArray = JSON.parse(toMail);
-        } else {
-          toMailArray = [];
-        }
-
-        toMailArray = toMailArray.map((email: string) => email?.trim()).filter(Boolean);
-      } catch (e) {
-        toMailArray = [];
-      }
-
-      await createNotificationChannel();
-
+      await createNotificationChannelIfNeeded();
       await scheduleNotification(notification);
-
-      const escapedToMail = JSON.stringify(toMailArray).replace(/'/g, "''");
-      const escapedDays = JSON.stringify(days || []).replace(/'/g, "''");
 
       const updateNotificationSQL = `
         UPDATE notifications
         SET
-          type = '${type}',
-          message = '${(message || '').toString().replace(/'/g, "''")?.trim()}',
-          date = '${new Date(date).toISOString()}',
-          subject = '${(subject || '').replace(/'/g, "''")?.trim()}',
-          attachments = '${JSON.stringify(attachments || [])}',
-          scheduleFrequency = '${notification.scheduleFrequency || ''}',
-          days = '${escapedDays}',
-          memo = '${JSON.stringify(memo || [])}',
-          toMail = '${escapedToMail}',
-          telegramUsername = '${(telegramUsername || '').toString().replace(/'/g, "''")?.trim()}'
-        WHERE id = '${id}'
+          type = '${data.type}',
+          message = '${data.message}',
+          date = '${data.date}',
+          subject = '${data.subject}',
+          attachments = '${data.attachments}',
+          scheduleFrequency = '${data.scheduleFrequency}',
+          days = '${data.days}',
+          memo = '${data.memo}',
+          toMail = '${data.toMail}',
+          telegramUsername = '${data.telegramUsername}'
+        WHERE id = '${data.id}'
       `;
 
-      const deleteContactsSQL = `DELETE FROM contacts WHERE notification_id = '${id}'`;
+      const deleteContactsSQL = `DELETE FROM contacts WHERE notification_id = '${data.id}'`;
 
       let insertContactsSQL = '';
-      if (type === 'gmail' && toMailArray.length > 0) {
-        insertContactsSQL = toMailArray
+      if (data.type === 'gmail' && data.toMailArray.length > 0) {
+        insertContactsSQL = data.toMailArray
           .map(
             (email: string) => `
             INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-            VALUES ('${id}', '${email?.trim()}', null, '${email?.trim()}', null)
+            VALUES ('${data.id}', '${email?.trim()}', null, '${email?.trim()}', null)
           `,
           )
           .join(';');
-      } else if (toContact && toContact.length > 0) {
-        insertContactsSQL = toContact
+      } else if (data.toContact && data.toContact.length > 0) {
+        insertContactsSQL = data.toContact
           .map(
             (contact) => `
             INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
             VALUES (
-              '${id}',
+              '${data.id}',
               '${contact.name.replace(/'/g, "''")}',
               ${contact.number ? `'${contact.number.replace(/'/g, "''")}'` : 'null'},
               '${contact.recordID.replace(/'/g, "''")}',
@@ -531,7 +436,7 @@ const useReminder = () => {
 
       try {
         await database.execAsync(transactionSQL);
-        console.log('[Notification] Successfully updated notification:', id);
+        console.log('[Notification] Successfully updated notification:', data.id);
         return true;
       } catch (error: any) {
         console.error('[Notification] Failed to update notification:', error);
@@ -717,6 +622,64 @@ const useReminder = () => {
     }
   };
 
+  const ensureDeviceContactsTable = async () => {
+    const database = await openDatabase();
+    try {
+      await database.execAsync(`CREATE TABLE IF NOT EXISTS device_contacts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        number TEXT,
+        recordID TEXT NOT NULL,
+        thumbnailPath TEXT
+      );`);
+    } catch (err) {
+      console.error('[SQLite] Failed to ensure device_contacts table:', err);
+    }
+  };
+
+  const clearDeviceContacts = async () => {
+    const database = await openDatabase();
+    try {
+      await ensureDeviceContactsTable();
+      await database.execAsync('DELETE FROM device_contacts');
+    } catch (err) {
+      console.error('[SQLite] clearDeviceContacts error:', err);
+    }
+  };
+
+  const insertDeviceContacts = async (contacts: Contact[]) => {
+    const database = await openDatabase();
+    if (!contacts.length) return;
+    try {
+      await ensureDeviceContactsTable();
+      const values = contacts
+        .map(
+          (c: Contact) =>
+            `('${c.name.replace(/'/g, "''")}', '${c.number ? c.number.replace(/'/g, "''") : ''}', '${c.recordID}', '${c.thumbnailPath || ''}')`,
+        )
+        .join(',');
+      await database.execAsync(
+        `INSERT INTO device_contacts (name, number, recordID, thumbnailPath) VALUES ${values}`,
+      );
+    } catch (err) {
+      console.error('[SQLite] insertDeviceContacts error:', err);
+    }
+  };
+
+  const getAllDeviceContacts = async () => {
+    const database = await openDatabase();
+    try {
+      await ensureDeviceContactsTable();
+      const rows = await database.getAllAsync(
+        'SELECT name, number, recordID, thumbnailPath FROM device_contacts ORDER BY name COLLATE NOCASE ASC',
+      );
+      return rows;
+    } catch (err) {
+      console.error('[SQLite] getAllDeviceContacts error:', err);
+      return [];
+    }
+  };
+
   return {
     initializeDatabase,
     createNotification,
@@ -724,6 +687,9 @@ const useReminder = () => {
     updateNotification,
     deleteNotification,
     getNotificationById,
+    clearDeviceContacts,
+    insertDeviceContacts,
+    getAllDeviceContacts,
   };
 };
 

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { setStatusBarStyle } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { MMKV } from 'react-native-mmkv';
@@ -16,36 +18,14 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
   });
 
   useEffect(() => {
-    // setThemeBasedOnTime();
     storeViewMode();
     storeTheme();
   }, []);
-
-  // useEffect(() => {
-  //   const unSubscribe = AppState.addEventListener("change", (nextAppState) => {
-  //     if (nextAppState === "active") {
-  //       setThemeBasedOnTime();
-  //     }
-  //   });
-
-  //   return () => unSubscribe.remove();
-  // }, []);
-
-  // const setThemeBasedOnTime = () => {
-  //   const currentHour = new Date().getHours();
-
-  //   const currentTheme: Theme =
-  //     currentHour >= 6 && currentHour < 18 ? "light" : "dark";
-  //   setTheme(currentTheme);
-
-  //   storage.set("themeMode", currentTheme);
-  // };
 
   const storeTheme = async () => {
     try {
       const storedTheme = storage.getString('themeMode');
       const MyTheme: Theme = (storedTheme as Theme) || 'dark';
-      await SystemUI.setBackgroundColorAsync(MyTheme === 'light' ? '#ffffff' : '#303334');
       setTheme(MyTheme);
     } catch (error: any) {
       throw new Error('Error storing theme mode: ' + error.message);
@@ -76,6 +56,9 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
     try {
       storage.set('themeMode', newTheme);
       storeTheme();
+
+      setStatusBarStyle(newTheme === 'dark' ? 'light' : 'dark');
+      SystemUI.setBackgroundColorAsync(newTheme === 'dark' ? '#303334' : '#ffffff');
     } catch (error: any) {
       throw new Error('Error storing theme mode: ' + error?.message);
     }

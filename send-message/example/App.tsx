@@ -1,48 +1,12 @@
-import { SafeAreaView, ScrollView, Text, View } from 'react-native';
-import { SendMessageView } from 'send-message';
+import { SafeAreaView, ScrollView, Text } from 'react-native';
 
 export default function App() {
-  // const onChangePayload = useEvent(SendMessage, 'onChange'); // Not supported
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.container}>
         <Text style={styles.header}>Module API Example</Text>
-        {/* <Group name="Constants">
-          <Text>{SendMessage.PI}</Text>
-        </Group>
-        <Group name="Functions">
-          <Text>{SendMessage.hello()}</Text>
-        </Group>
-        <Group name="Async functions">
-          <Button
-            title="Set value"
-            onPress={async () => {
-              await SendMessage.setValueAsync('Hello from JS!');
-            }}
-          />
-        </Group>
-        <Group name="Events">
-          <Text>{onChangePayload?.value}</Text>
-        </Group> */}
-        <Group name="Views">
-          <SendMessageView
-            url="https://www.example.com"
-            onLoad={({ nativeEvent: { url } }) => console.log(`Loaded: ${url}`)}
-            style={styles.view}
-          />
-        </Group>
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function Group(props: { name: string; children: React.ReactNode }) {
-  return (
-    <View style={styles.group}>
-      <Text style={styles.groupHeader}>{props.name}</Text>
-      {props.children}
-    </View>
   );
 }
 

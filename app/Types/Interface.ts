@@ -36,6 +36,7 @@ export type RootStackParamList = {
   AboutApp: undefined;
   HowAppWorks: undefined;
   NotificationSound: undefined;
+  LocationDetails: undefined;
 };
 
 export interface AppContextProps {
@@ -54,7 +55,8 @@ export type NotificationType =
   | 'phone'
   | 'instagram'
   | 'telegram'
-  | 'note';
+  | 'note'
+  | 'location';
 
 export interface AppContextType {
   theme: Theme;
@@ -131,6 +133,9 @@ export interface ContactListModalProps {
   selectedContacts: Contact[];
   setSelectedContacts: React.Dispatch<React.SetStateAction<Contact[]>>;
   notificationType: NotificationType;
+  // Optional for sync button
+  syncContacts?: () => void;
+  isSyncing?: boolean;
 }
 
 export type Memo = {
@@ -260,4 +265,15 @@ export interface Sound {
 export interface RescheduleConfig {
   defaultDelay: number; // minutes
   maxRetries?: number; // optional maximum number of reschedules
+}
+
+export interface LocationMarker {
+  id: string;
+  latitude: number;
+  longitude: number;
+  color: string;
+}
+
+export interface LocationMapViewProps {
+  children?: React.ReactNode;
 }

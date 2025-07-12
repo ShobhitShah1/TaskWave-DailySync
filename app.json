@@ -104,13 +104,6 @@
         }
       ],
       [
-        "react-native-maps",
-        {
-          "iosGoogleMapsApiKey": "${GOOGLE_MAPS_API_KEY_IOS}",
-          "androidGoogleMapsApiKey": "${GOOGLE_MAPS_API_KEY_ANDROID}"
-        }
-      ],
-      [
         "react-native-edge-to-edge",
         {
           "android": {

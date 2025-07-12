@@ -1,5 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Keyboard, Pressable, Text, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import Animated from 'react-native-reanimated';
@@ -97,6 +97,7 @@ const AddReminder = () => {
     onHandelContactClick,
     requestContactData,
     handleRemoveContact,
+    syncContacts,
   } = useContactSelector();
 
   const { selectedDocuments, setSelectedDocuments, onHandelAttachmentClick, onRemoveDocument } =
@@ -270,16 +271,8 @@ const AddReminder = () => {
           )}
 
           <ContactSelector
-            contacts={contacts}
-            setContacts={setContacts}
             selectedContacts={selectedContacts}
-            setSelectedContacts={setSelectedContacts}
-            contactModalVisible={contactModalVisible}
-            setContactModalVisible={setContactModalVisible}
-            isContactLoading={isContactLoading}
-            setIsContactLoading={setIsContactLoading}
             onHandelContactClick={onHandelContactClick}
-            requestContactData={requestContactData}
             handleRemoveContact={handleRemoveContact}
             themeColor={createViewColor}
             notificationType={notificationType}
@@ -369,9 +362,11 @@ const AddReminder = () => {
         setSelectedContacts={setSelectedContacts}
         isContactLoading={isContactLoading.isLoading}
         onClose={() => setContactModalVisible(false)}
+        syncContacts={syncContacts}
+        isSyncing={isContactLoading.isRefreshing}
       />
     </SafeAreaView>
   );
 };
 
-export default AddReminder;
+export default memo(AddReminder);

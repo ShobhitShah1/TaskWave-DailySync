@@ -1,10 +1,10 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Dimensions, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, FadeOut, SequencedTransition } from 'react-native-reanimated';
+import Animated, { FadeIn, Layout } from 'react-native-reanimated';
 
 import { useAppContext } from '../../Contexts/ThemeProvider';
 import useThemeColors from '../../Hooks/useThemeMode';
-import { RenderSheetViewProps } from '../../Types/Interface';
+import { NotificationType, RenderSheetViewProps } from '../../Types/Interface';
 import { getCategories } from '../../Utils/getCategories';
 import RenderCategoryItem from './RenderCategoryItem';
 
@@ -19,10 +19,51 @@ const RenderSheetView = ({
 }: RenderSheetViewProps) => {
   const { theme } = useAppContext();
   const colors = useThemeColors();
+  const [sortedCategories, setSortedCategories] = useState(categories);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const previousSelectedRef = useRef(selectedCategory);
 
   const initialCategories = getCategories(colors);
 
-  const createRows = (items: any) => {
+  // Improved shift to top function with animation control
+  const shiftToTop = useCallback(
+    (selectedType: string) => {
+      if (isAnimating || previousSelectedRef.current === selectedType) return;
+
+      setIsAnimating(true);
+
+      // Delay the state update to allow for smoother animation
+      setTimeout(() => {
+        const selectedItems = categories.filter((cat) => cat.type === selectedType);
+        const otherItems = categories.filter((cat) => cat.type !== selectedType);
+
+        const newOrder = [...selectedItems, ...otherItems];
+        setSortedCategories(newOrder);
+        previousSelectedRef.current = selectedType as NotificationType;
+
+        // Reset animation flag after layout settles
+        setTimeout(() => setIsAnimating(false), 300);
+      }, 50);
+    },
+    [categories, isAnimating],
+  );
+
+  // Handle category click with debouncing
+  const handleCategoryClick = useCallback(
+    (category: any, isTopCategory: boolean) => {
+      if (isAnimating) return;
+
+      if (isTopCategory && category.type !== selectedCategory) {
+        shiftToTop(category.type);
+      }
+      onCategoryClick(category, isTopCategory);
+      setSelectedCategory(category.type);
+    },
+    [shiftToTop, onCategoryClick, setSelectedCategory, selectedCategory, isAnimating],
+  );
+
+  // Create rows for grid layout with stable keys
+  const createRows = useCallback((items: any[]) => {
     const rows = [];
     for (let i = 0; i < items.length; i += 2) {
       const row = [items[i]];
@@ -34,26 +75,24 @@ const RenderSheetView = ({
       rows.push(row);
     }
     return rows;
-  };
+  }, []);
 
-  const rows = createRows(categories);
+  const rows = useMemo(() => createRows(sortedCategories), [sortedCategories, createRows]);
 
   return (
     <View style={styles.container}>
+      {/* Top Category Selection */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.contentContainerStyle}
       >
-        {initialCategories?.map((res) => {
+        {initialCategories?.map((res, index) => {
           const isSelected = res.type === selectedCategory;
 
           return (
             <Pressable
-              onPress={() => {
-                onCategoryClick(res, true);
-                setSelectedCategory(res.type);
-              }}
+              onPress={() => handleCategoryClick(res, true)}
               key={res.id}
               style={[
                 styles.sheetSuggestionImageView,
@@ -61,9 +100,10 @@ const RenderSheetView = ({
                   opacity: (theme === 'dark' && isSelected) || theme === 'light' ? 1 : 0.5,
                 },
               ]}
+              disabled={isAnimating}
             >
               <Animated.Image
-                entering={FadeIn.delay(100 * res.id)}
+                entering={FadeIn.delay(100 * index)}
                 resizeMode="contain"
                 fadeDuration={300}
                 source={isSelected ? res.glowIcon : res.icon}
@@ -81,31 +121,27 @@ const RenderSheetView = ({
         })}
       </ScrollView>
 
+      {/* Grid Container */}
       <View style={styles.gridContainer}>
         {rows.map((row, rowIndex) => (
           <View key={`row-${rowIndex}`} style={styles.row}>
             {row.map((item, itemIndex) =>
               item ? (
                 <Animated.View
-                  key={item?.id?.toString()}
-                  layout={SequencedTransition}
-                  exiting={FadeOut}
+                  key={`${item?.id}`} // Simplified key for stability
+                  layout={Layout.springify().damping(15).stiffness(100)}
                   style={styles.itemContainer}
                 >
                   <RenderCategoryItem
                     item={item}
                     index={itemIndex}
-                    onCategoryClick={(category) => onCategoryClick(category, false)}
+                    onCategoryClick={(category) => handleCategoryClick(category, false)}
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
                   />
                 </Animated.View>
               ) : (
-                <Animated.View
-                  key={`empty-${rowIndex}-${itemIndex}`}
-                  style={styles.emptyItem}
-                  layout={SequencedTransition}
-                />
+                <View key={`empty-${rowIndex}-${itemIndex}`} style={styles.emptyItem} />
               ),
             )}
           </View>

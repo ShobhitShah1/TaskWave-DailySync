@@ -2,21 +2,20 @@ import 'dotenv/config';
 
 export default ({ config }) => ({
   ...config,
-  plugins: [
-    ...config.plugins.filter(
-      (plugin) =>
-        !(Array.isArray(plugin) && plugin[0] === 'react-native-maps')
-    ),
-    [
-      'react-native-maps',
-      {
-        iosGoogleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS,
-        androidGoogleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID,
+  android: {
+    ...config.android,
+    config: {
+      ...config.android?.config,
+      googleMaps: {
+        apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID,
       },
-    ],
-    ...config.plugins.filter(
-      (plugin) =>
-        Array.isArray(plugin) && plugin[0] !== 'react-native-maps'
-    ),
-  ],
+    },
+  },
+  ios: {
+    ...config.ios,
+    config: {
+      ...config.ios?.config,
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS,
+    },
+  },
 }); 

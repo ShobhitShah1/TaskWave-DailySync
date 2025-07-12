@@ -34,19 +34,19 @@ const BatteryOptimizationModal = ({
 
   return (
     <Modal
+      hasBackdrop
+      useNativeDriver
       isVisible={visible}
       style={{ margin: 0 }}
       backdropOpacity={1}
-      backdropColor="rgba(0,0,0,0.7)"
-      hasBackdrop={true}
       statusBarTranslucent
       animationIn="slideInUp"
       animationOut="slideOutDown"
-      useNativeDriver
-      deviceHeight={screenHeight + (StatusBar.currentHeight || 15)}
       useNativeDriverForBackdrop
       onBackdropPress={onCancel}
       hideModalContentWhileAnimating
+      backdropColor="rgba(0,0,0,0.7)"
+      deviceHeight={screenHeight + (StatusBar.currentHeight || 15)}
     >
       <View
         style={[
@@ -272,4 +272,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BatteryOptimizationModal;
+export default React.memo(BatteryOptimizationModal);

@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import Animated, { LinearTransition } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import RenderCalenderView from '../../Components/RenderCalenderView';
 import YearMonthPicker from '../../Components/YearMonthPicker';
@@ -36,9 +36,10 @@ import RenderHistoryList from './Components/RenderHistoryList';
 
 const History = () => {
   const style = styles();
-  const colors = useThemeColors();
-  const flashListRef = useRef<any>(null);
+  const { bottom } = useSafeAreaInsets();
   const isFocus = useIsFocused();
+  const colors = useThemeColors();
+  const flashListRef = useRef<Animated.FlatList<Notification>>(null);
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filteredNotifications, setFilteredNotifications] = useState<Notification[]>([]);
@@ -416,7 +417,7 @@ const History = () => {
           )}
         </View>
 
-        <View style={style.tabsContainer}>
+        <View style={[style.tabsContainer, { bottom: bottom + 5 }]}>
           <View
             style={{
               width: '17.5%',
@@ -504,7 +505,7 @@ const styles = () => {
       alignSelf: 'center',
     },
     tabsContainer: {
-      bottom: 38,
+      // bottom: 38,
       height: 68,
       width: '100%',
       elevation: 5,

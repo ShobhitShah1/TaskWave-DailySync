@@ -13,6 +13,7 @@ import { storage, useAppContext } from '../Contexts/ThemeProvider';
 import useThemeColors from '../Hooks/useThemeMode';
 import AddReminder from '../Screens/AddReminder/AddReminder';
 import ReminderScheduled from '../Screens/AddReminder/ReminderScheduled';
+import LocationDetails from '../Screens/LocationDetails/LocationDetails';
 import OnBoarding from '../Screens/OnBoarding/Index';
 import ReminderPreview from '../Screens/Preview/ReminderPreview';
 import AboutApp from '../Screens/Setting/AboutApp';
@@ -53,10 +54,6 @@ const Routes = () => {
       onReady={async () => {
         setStatusBarStyle(theme === 'dark' ? 'light' : 'dark');
         SystemUI.setBackgroundColorAsync(theme === 'dark' ? '#303334' : '#ffffff');
-        console.log(
-          theme === 'dark' ? '#303334' : '#ffffff',
-          await SystemUI.getBackgroundColorAsync(),
-        );
 
         setTimeout(() => {
           BootSplash.hide({ fade: true });
@@ -65,10 +62,7 @@ const Routes = () => {
     >
       <SafeAreaView style={styles.container}>
         <Stack.Navigator
-          screenOptions={({}) => ({
-            headerShown: false,
-            animation: 'ios_from_right',
-          })}
+          screenOptions={({}) => ({ headerShown: false, animation: 'ios_from_right' })}
         >
           {showOnboarding !== 'no' && <Stack.Screen name="OnBoarding" component={OnBoarding} />}
           <Stack.Screen name="BottomTab" component={BottomTab} />
@@ -78,6 +72,7 @@ const Routes = () => {
           <Stack.Screen name="AboutApp" component={AboutApp} />
           <Stack.Screen name="HowAppWorks" component={HowAppWorks} />
           <Stack.Screen name="NotificationSound" component={NotificationSound} />
+          <Stack.Screen name="LocationDetails" component={LocationDetails} />
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>

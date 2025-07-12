@@ -1,23 +1,24 @@
 import React from 'react';
 import { Text, View } from 'react-native';
+import { Contact, NotificationType } from 'Types/Interface';
 
 import AddContact from '../Components/AddContact';
 import AddTelegramUsername from '../Components/AddTelegramUsername';
-import ContactListModal from '../Components/ContactListModal';
 import styles from '../styles';
-import { ContactSelectorProps } from '../types';
+
+interface ContactSelectorProps {
+  selectedContacts: Contact[];
+  onHandelContactClick: () => void;
+  handleRemoveContact: (contact: Contact) => void;
+  themeColor: string;
+  notificationType: NotificationType;
+  telegramUsername: string;
+  setTelegramUsername: React.Dispatch<React.SetStateAction<string>>;
+}
 
 const ContactSelector: React.FC<ContactSelectorProps> = ({
-  contacts,
-  setContacts,
   selectedContacts,
-  setSelectedContacts,
-  contactModalVisible,
-  setContactModalVisible,
-  isContactLoading,
-  setIsContactLoading,
   onHandelContactClick,
-  requestContactData,
   handleRemoveContact,
   themeColor,
   notificationType,
@@ -56,18 +57,6 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
           themeColor={themeColor}
         />
       )}
-
-      <ContactListModal
-        contacts={contacts}
-        isVisible={contactModalVisible}
-        onRefreshData={requestContactData}
-        selectedContacts={selectedContacts}
-        notificationType={notificationType}
-        refreshing={isContactLoading.isRefreshing}
-        setSelectedContacts={setSelectedContacts}
-        isContactLoading={isContactLoading.isLoading}
-        onClose={() => setContactModalVisible(false)}
-      />
     </>
   );
 };

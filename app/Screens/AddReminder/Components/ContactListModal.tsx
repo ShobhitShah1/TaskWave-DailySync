@@ -1,3 +1,4 @@
+import { BlurView } from 'expo-blur';
 import React, { FC, memo, useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -23,45 +24,17 @@ import RenderContactList from './RenderContactList';
 
 const { height } = Dimensions.get('window');
 
-// Memoized search input component
-const SearchInput = memo(
-  ({
-    value,
-    onChangeText,
-    colors,
-    style,
-  }: {
-    value: string;
-    onChangeText: (text: string) => void;
-    colors: any;
-    style: any;
-  }) => (
-    <TextInput
-      placeholder="Search.."
-      placeholderTextColor={colors.placeholderText}
-      style={[style.contactSearchInput, { color: colors.text }]}
-      value={value}
-      onChangeText={onChangeText}
-      autoCapitalize="none"
-      autoCorrect={false}
-      clearButtonMode="while-editing"
-      returnKeyType="search"
-      blurOnSubmit={true}
-    />
-  ),
-);
+interface ContactListModalPropsWithSync extends ContactListModalProps {
+  syncContacts: () => void;
+  isSyncing: boolean;
+}
 
-// Optimized contact validation function
 const isValidContact = (contact: Contact): boolean => {
   if (!contact.number) return false;
-
   const number = contact.number.trim();
-
-  // Combined regex for better performance
   return /^(\+91\d{10}|\+\d{1,3}\d{7,14}|[1-9]\d{6,14})$/.test(number);
 };
 
-// Memoized filtered contacts hook
 const useFilteredContacts = (contacts: Contact[], searchText: string) => {
   return useMemo(() => {
     if (!searchText.trim()) {
@@ -71,33 +44,50 @@ const useFilteredContacts = (contacts: Contact[], searchText: string) => {
     const lowerSearchText = searchText.toLowerCase().trim();
     return contacts.filter((contact) => {
       if (!isValidContact(contact)) return false;
-
       const name = contact.name?.toLowerCase();
       return name?.includes(lowerSearchText);
     });
   }, [contacts, searchText]);
 };
 
-// Optimized render item component
-const ContactItem = memo(
-  ({
-    item,
-    selectedContacts,
-    handleSelectContact,
-  }: {
-    item: Contact;
-    selectedContacts: Contact[];
-    handleSelectContact: (contact: Contact) => void;
-  }) => (
-    <RenderContactList
-      contacts={item}
-      selectedContacts={selectedContacts}
-      handleSelectContact={handleSelectContact}
-    />
-  ),
-);
+const ContactListEmptyView = memo(() => {
+  const colors = useThemeColors();
 
-const ContactListModal: FC<ContactListModalProps> = ({
+  return (
+    <Animated.View
+      style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 40 }}
+    >
+      <Image
+        style={{ width: 80, height: 80, marginBottom: 18, tintColor: colors.placeholderText }}
+        source={AssetsPath.ic_contact}
+        resizeMode="contain"
+      />
+      <Text
+        style={{
+          fontSize: 20,
+          color: colors.text,
+          fontFamily: 'ClashGrotesk-Medium',
+          marginBottom: 6,
+        }}
+      >
+        No Contacts Found
+      </Text>
+      <Text
+        style={{
+          fontSize: 15,
+          color: colors.placeholderText,
+          textAlign: 'center',
+          fontFamily: 'ClashGrotesk-Regular',
+          maxWidth: 220,
+        }}
+      >
+        Try syncing or adding contacts.
+      </Text>
+    </Animated.View>
+  );
+});
+
+const ContactListModal: FC<ContactListModalPropsWithSync> = ({
   isVisible,
   onClose,
   contacts,
@@ -107,51 +97,20 @@ const ContactListModal: FC<ContactListModalProps> = ({
   isContactLoading,
   notificationType,
   setSelectedContacts,
+  syncContacts,
+  isSyncing,
 }) => {
   const style = styles();
   const colors = useThemeColors();
-  const [searchText, setSearchText] = useState('');
   const flatListRef = useRef<FlatList>(null);
-
-  // Modal state management
-  const [isClosing, setIsClosing] = useState(false);
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Debounced search to prevent excessive filtering
-  const [debouncedSearchText, setDebouncedSearchText] = useState('');
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Optimized close handler
+  const [searchText, setSearchText] = useState('');
+  const [debouncedSearchText, setDebouncedSearchText] = useState('');
+
   const handleClose = useCallback(() => {
-    if (isClosing) return; // Prevent multiple close calls
-
-    setIsClosing(true);
-
-    // Clear any existing timeout
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-    }
-
-    // Immediate close for better UX
     onClose();
-
-    // Reset closing state after animation
-    closeTimeoutRef.current = setTimeout(() => {
-      setIsClosing(false);
-    }, 350);
-  }, [isClosing, onClose]);
-
-  // Cleanup on unmount
-  React.useEffect(() => {
-    return () => {
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current);
-      }
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, []);
+  }, [onClose]);
 
   const handleSearchTextChange = useCallback((text: string) => {
     setSearchText(text);
@@ -169,15 +128,12 @@ const ContactListModal: FC<ContactListModalProps> = ({
 
   const handleSelectContact = useCallback(
     (contact: Contact) => {
-      if (isClosing) return; // Prevent actions while closing
-
       setSelectedContacts((prevSelectedContacts) => {
         const isSingleSelect = ['whatsapp', 'whatsappBusiness', 'phone', 'telegram'].includes(
           notificationType,
         );
 
         if (isSingleSelect) {
-          // Immediate close without animation delay
           handleClose();
           return [contact];
         } else {
@@ -189,14 +145,13 @@ const ContactListModal: FC<ContactListModalProps> = ({
         }
       });
     },
-    [notificationType, setSelectedContacts, handleClose, isClosing],
+    [notificationType, setSelectedContacts, handleClose],
   );
 
-  // Optimized render item with getItemLayout for better performance
   const renderContactItem = useCallback(
     ({ item }: { item: Contact }) => (
-      <ContactItem
-        item={item}
+      <RenderContactList
+        contacts={item}
         selectedContacts={selectedContacts}
         handleSelectContact={handleSelectContact}
       />
@@ -204,9 +159,6 @@ const ContactListModal: FC<ContactListModalProps> = ({
     [selectedContacts, handleSelectContact],
   );
 
-  const keyExtractor = useCallback((item: Contact) => item.recordID, []);
-
-  // Reset search when modal closes
   React.useEffect(() => {
     if (!isVisible) {
       setSearchText('');
@@ -214,18 +166,6 @@ const ContactListModal: FC<ContactListModalProps> = ({
     }
   }, [isVisible]);
 
-  // Estimated item height for getItemLayout (adjust based on your item height)
-  const ITEM_HEIGHT = 70;
-  const getItemLayout = useCallback(
-    (_: any, index: number) => ({
-      length: ITEM_HEIGHT,
-      offset: ITEM_HEIGHT * index,
-      index,
-    }),
-    [],
-  );
-
-  // Optimized refresh control
   const refreshControl = useMemo(
     () => (
       <RefreshControl
@@ -241,49 +181,74 @@ const ContactListModal: FC<ContactListModalProps> = ({
 
   return (
     <Modal
-      isVisible={isVisible && !isClosing}
-      hideModalContentWhileAnimating={true}
-      statusBarTranslucent={true}
+      isVisible={isVisible}
+      statusBarTranslucent
       animationIn="slideInUp"
       animationOut="slideOutDown"
-      animationInTiming={300}
-      animationOutTiming={250}
-      useNativeDriver={true}
-      useNativeDriverForBackdrop={true}
-      hasBackdrop={false}
+      animationInTiming={200} // Reduced from 300
+      animationOutTiming={150} // Reduced from 250
+      useNativeDriver
+      useNativeDriverForBackdrop
+      hasBackdrop
       onBackButtonPress={handleClose}
       style={{ margin: 0, justifyContent: 'flex-end' }}
       deviceHeight={height + (StatusBar.currentHeight || 30)}
-      avoidKeyboard={true}
-      backdropTransitionOutTiming={0}
+      customBackdrop={
+        <Pressable style={style.customBackdrop} onPress={onClose}>
+          <BlurView
+            style={style.customBackdrop}
+            intensity={15}
+            tint="dark"
+            experimentalBlurMethod="dimezisBlurView"
+          />
+        </Pressable>
+      }
+      avoidKeyboard
     >
       <View style={[style.contactModalContainer, { paddingTop: 50 }]}>
         <View style={style.contactHeaderContainer}>
-          <Pressable
-            hitSlop={15}
-            onPress={handleClose}
-            disabled={isClosing}
-            android_ripple={{ color: colors.text + '20', radius: 20 }}
-          >
+          <Pressable hitSlop={15} onPress={handleClose}>
             <Image
               tintColor={colors.text}
               source={AssetsPath.ic_leftArrow}
               style={style.contactHeaderIcon}
             />
           </Pressable>
+
+          <Pressable
+            style={{ width: 30, height: 30 }}
+            hitSlop={15}
+            onPress={syncContacts}
+            disabled={isSyncing}
+          >
+            {isSyncing ? (
+              <ActivityIndicator size="small" color={colors.text} />
+            ) : (
+              <Image
+                tintColor={colors.text}
+                source={AssetsPath.ic_sync}
+                style={[style.contactHeaderIcon, { width: '100%', height: '100%' }]}
+              />
+            )}
+          </Pressable>
         </View>
 
-        <SearchInput
+        <TextInput
+          placeholder="Search.."
+          placeholderTextColor={colors.placeholderText}
+          style={[style.contactSearchInput, { color: colors.text }]}
           value={searchText}
           onChangeText={handleSearchTextChange}
-          colors={colors}
-          style={style}
+          autoCapitalize="none"
+          autoCorrect={false}
+          clearButtonMode="while-editing"
+          returnKeyType="search"
         />
 
         {isContactLoading ? (
           <Animated.View
-            entering={FadeIn.duration(300)}
-            exiting={FadeOut.duration(200)}
+            entering={FadeIn.duration(200)} // Reduced from 300
+            exiting={FadeOut.duration(150)} // Reduced from 200
             style={style.contactLoadingContainer}
           >
             <ActivityIndicator size="large" color={colors.text} />
@@ -297,22 +262,16 @@ const ContactListModal: FC<ContactListModalProps> = ({
             data={filteredContacts}
             refreshControl={refreshControl}
             keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            // Optimized performance props
-            maxToRenderPerBatch={20}
-            initialNumToRender={15}
-            windowSize={10}
-            removeClippedSubviews={true}
-            updateCellsBatchingPeriod={50}
-            // getItemLayout={getItemLayout} // Enable if all items have consistent height
-            contentContainerStyle={{ paddingBottom: 100 }}
-            keyExtractor={keyExtractor}
+            maxToRenderPerBatch={50}
+            initialNumToRender={50}
+            updateCellsBatchingPeriod={100}
+            contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
+            keyExtractor={(item) => item.recordID?.toString()}
             renderItem={renderContactItem}
-            // Better memory management
-            onEndReachedThreshold={0.5}
-            scrollEventThrottle={16}
-            // Prevent unnecessary re-renders
+            onEndReachedThreshold={0.8}
+            scrollEventThrottle={32}
             extraData={selectedContacts}
+            ListEmptyComponent={<ContactListEmptyView />}
           />
         )}
 
@@ -337,7 +296,6 @@ const ContactListModal: FC<ContactListModalProps> = ({
           <Pressable
             style={style.contactDoneButtonView}
             onPress={handleClose}
-            disabled={isClosing}
             android_ripple={{ color: colors.text + '30' }}
           >
             <Text style={style.contactDoneButtonText}>Done</Text>

@@ -7,7 +7,6 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import React, { memo, useCallback, useState } from 'react';
 import {
-  Animated as RNAnimated,
   Dimensions,
   Image,
   Linking,
@@ -178,6 +177,12 @@ const BottomTab = () => {
           'Instagram is not installed',
         );
         break;
+      case 'location':
+        onCloseSheet();
+        setTimeout(() => {
+          navigation.navigate('LocationDetails');
+        }, 200);
+        break;
       default:
         onCloseSheet();
         setTimeout(() => {
@@ -224,7 +229,7 @@ const BottomTab = () => {
         initialRouteName="Home"
         borderTopLeftRight
         renderCircle={() => (
-          <RNAnimated.View style={styles.btnCircleUp}>
+          <View style={styles.btnCircleUp}>
             <Shadow
               distance={4}
               startColor={'rgba(64, 93, 240, 0.2)'}
@@ -240,7 +245,7 @@ const BottomTab = () => {
                 <Text style={styles.addButtonText}>+</Text>
               </Pressable>
             </Shadow>
-          </RNAnimated.View>
+          </View>
         )}
         tabBar={renderTabBar}
         screenListeners={{
@@ -284,7 +289,7 @@ const BottomTab = () => {
             );
           }}
           backdropComponent={renderBackdrop}
-          containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
           backgroundStyle={{ backgroundColor: colors.background }}
           handleStyle={[styles.handleStyle, { backgroundColor: colors.background }]}
           handleIndicatorStyle={[styles.handleIndicatorStyle, { backgroundColor: colors.text }]}

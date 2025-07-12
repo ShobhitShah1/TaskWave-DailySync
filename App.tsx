@@ -1,7 +1,6 @@
 import notifee, { EventType } from '@notifee/react-native';
 import { useFonts } from 'expo-font';
 import * as QuickActions from 'expo-quick-actions';
-import * as SystemUI from 'expo-system-ui';
 import { useEffect } from 'react';
 import { LogBox, StatusBar, StyleSheet, Text } from 'react-native';
 import FlashMessage, { showMessage } from 'react-native-flash-message';
@@ -20,8 +19,6 @@ import useReminder, {
 } from './app/Hooks/useReminder';
 import Routes from './app/Routes/Routes';
 import { Notification } from './app/Types/Interface';
-
-SystemUI.setBackgroundColorAsync('transparent');
 
 if (__DEV__) {
   LogBox.ignoreAllLogs();
@@ -279,7 +276,7 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.container}>
         <AppProvider>
           <BottomSheetProvider>
             <Routes />

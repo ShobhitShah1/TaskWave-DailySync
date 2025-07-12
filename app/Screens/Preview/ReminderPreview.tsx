@@ -1,7 +1,7 @@
 import { DocumentPickerResponse } from '@react-native-documents/picker';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import Animated, {
   Easing,
@@ -9,6 +9,7 @@ import Animated, {
   FadeOut,
   LinearTransition,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -27,6 +28,7 @@ import useThemeColors from '../../Hooks/useThemeMode';
 import { Notification } from '../../Types/Interface';
 import { formatNotificationType } from '../../Utils/formatNotificationType';
 import { getNotificationIcon } from '../../Utils/getNotificationIcon';
+import { linkifyText } from '../../Utils/linkify';
 import { formatDate, formatTime } from '../AddReminder/ReminderScheduled';
 
 type NotificationProps = {
@@ -68,7 +70,7 @@ const ReminderPreview = () => {
   const documentPreviews = useMemo(
     () =>
       notificationData?.attachments &&
-      notificationData?.attachments?.map((document: DocumentPickerResponse, index) => {
+      notificationData?.attachments?.map((document: DocumentPickerResponse) => {
         const isImage = document.type?.startsWith('image');
         const imageIndex: number | null = isImage ? imageIndexCounter++ : null;
 
@@ -158,11 +160,11 @@ const ReminderPreview = () => {
 
   const scrollY = useSharedValue(0);
 
-  const timerStyle = useAnimatedStyle(() => {
-    const shouldHide = scrollY.value > 175;
+  const shouldHide = useDerivedValue(() => scrollY.value > 175);
 
+  const timerStyle = useAnimatedStyle(() => {
     return {
-      opacity: withTiming(shouldHide ? 1 : 0, {
+      opacity: withTiming(shouldHide.value ? 1 : 0, {
         duration: 300,
         easing: Easing.linear,
       }),
@@ -273,7 +275,22 @@ const ReminderPreview = () => {
             {(notificationData.message || notificationData.subject) && (
               <View style={[style.reminderCard, { backgroundColor: colors.previewBackground }]}>
                 <Text style={[style.reminderCardText, { color: colors.text }]}>
-                  {notificationData.message || notificationData.subject}
+                  {linkifyText(String(notificationData.message || notificationData.subject)).map(
+                    (part, idx) => {
+                      if (part.type === 'url') {
+                        return (
+                          <Text
+                            key={idx}
+                            style={{ color: createViewColor, textDecorationLine: 'underline' }}
+                            onPress={() => Linking.openURL(part.value)}
+                          >
+                            {part.value}
+                          </Text>
+                        );
+                      }
+                      return <Text key={idx}>{part.value}</Text>;
+                    },
+                  )}
                 </Text>
               </View>
             )}
@@ -293,7 +310,6 @@ const ReminderPreview = () => {
             {notificationData?.attachments?.length !== 0 && (
               <ScrollView
                 horizontal
-                removeClippedSubviews={true}
                 style={style.previewContainer}
                 contentContainerStyle={style.scrollContent}
                 showsHorizontalScrollIndicator={false}

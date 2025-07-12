@@ -1,8 +1,5 @@
-// Reexport the native module. On web, it will be resolved to SendMessageModule.web.ts
-// and on native platforms to SendMessageModule.ts
 export * from './SendMessage.types';
 export { default } from './SendMessageModule';
-export { default as SendMessageView } from './SendMessageView';
 
 import SendMessageModule from './SendMessageModule';
 

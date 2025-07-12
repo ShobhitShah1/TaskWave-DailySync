@@ -11,47 +11,8 @@ import java.io.File
 import android.widget.Toast
 
 class SendMessageModule : Module() {
-  // Each module class must implement the definition function. The definition consists of components
-  // that describes the module's functionality and behavior.
-  // See https://docs.expo.dev/modules/module-api for more details about available components.
   override fun definition() = ModuleDefinition {
-    // Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument.
-    // Can be inferred from module's class name, but it's recommended to set it explicitly for clarity.
-    // The module will be accessible from `requireNativeModule('SendMessage')` in JavaScript.
     Name("SendMessage")
-
-    // Sets constant properties on the module. Can take a dictionary or a closure that returns a dictionary.
-    Constants(
-      "PI" to Math.PI
-    )
-
-    // Defines event names that the module can send to JavaScript.
-    Events("onChange")
-
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      "Hello world! 👋"
-    }
-
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { value: String ->
-      // Send an event to JavaScript.
-      sendEvent("onChange", mapOf(
-        "value" to value
-      ))
-    }
-
-    // Enables the module to be used as a native view. Definition components that are accepted as part of
-    // the view definition: Prop, Events.
-    View(SendMessageView::class) {
-      // Defines a setter for the `url` prop.
-      Prop("url") { view: SendMessageView, url: URL ->
-        view.webView.loadUrl(url.toString())
-      }
-      // Defines an event that the view can send to JavaScript.
-      Events("onLoad")
-    }
 
     Function("sendMail") { recipients: String, subject: String, body: String, attachmentPaths: String ->
       val context = appContext.reactContext ?: return@Function
@@ -60,7 +21,6 @@ class SendMessageModule : Module() {
       emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(recipients))
       emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject)
       emailIntent.putExtra(Intent.EXTRA_TEXT, body)
-
       if (attachmentPaths.isNotEmpty()) {
         val attachmentUris = ArrayList<Uri>()
         val paths = attachmentPaths.split(",")
@@ -80,11 +40,9 @@ class SendMessageModule : Module() {
           emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
       }
-
       if (isAppInstalled(context, "com.google.android.gm")) {
         emailIntent.setPackage("com.google.android.gm")
       }
-
       try {
         appContext.currentActivity?.startActivity(
           Intent.createChooser(emailIntent, "Send email...")
@@ -98,7 +56,6 @@ class SendMessageModule : Module() {
       val context = appContext.reactContext ?: return@Function
       val numbersList = numbers.filter { it.isNotEmpty() }
       if (numbersList.isEmpty()) return@Function
-
       val smsUri = Uri.parse("smsto:${numbersList.joinToString(";")}")
       val intent = Intent(Intent.ACTION_SENDTO, smsUri)
       if (isAppInstalled(context, "com.google.android.apps.messaging")) {
