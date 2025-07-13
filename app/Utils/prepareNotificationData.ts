@@ -22,6 +22,10 @@ export function prepareNotificationData(notification: Notification) {
     memo,
     telegramUsername,
     scheduleFrequency,
+    latitude,
+    longitude,
+    radius,
+    locationName,
   } = notification;
 
   // Helper to escape single quotes for SQL
@@ -64,5 +68,9 @@ export function prepareNotificationData(notification: Notification) {
     days: daysString,
     toContact: toContact || [],
     toMailArray,
+    latitude,
+    longitude,
+    radius,
+    locationName: escapeForSQL(locationName),
   };
 }

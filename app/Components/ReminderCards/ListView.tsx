@@ -72,6 +72,30 @@ const ListView: FC<IListViewProps> = ({
             >
               {notification.message || notification.subject}
             </Text>
+            {notification.type === 'location' && notification.locationName && (
+              <View style={{ marginTop: 6, flexDirection: 'row', alignItems: 'center' }}>
+                <Image
+                  source={icon}
+                  style={{ width: 16, height: 16, marginRight: 6, tintColor: typeColor }}
+                  resizeMode="contain"
+                />
+                <Text
+                  style={{
+                    color: typeColor,
+                    fontFamily: FONTS.Medium,
+                    fontSize: 15,
+                    backgroundColor:
+                      theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                    borderRadius: 7,
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                  }}
+                  numberOfLines={1}
+                >
+                  {notification.locationName}
+                </Text>
+              </View>
+            )}
           </View>
           <View style={styles.typeContainer}>
             <Text style={[styles.typeText, { color: typeColor }]}>

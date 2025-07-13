@@ -4,6 +4,7 @@ import { Image, Platform, Pressable, StyleSheet, View } from 'react-native';
 import MapView, { LatLng, MapPressEvent, Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 
 import AssetsPath from '../../../Constants/AssetsPath';
+import LocationService from '../../../Services/LocationService';
 
 const DEFAULT_MARKERS = [
   {
@@ -52,9 +53,24 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
     onLocationSelect(coordinate);
   };
 
-  const centerOnUser = () => {
-    // This is a placeholder; in a real app, get user location from permissions
-    mapRef.current?.animateToRegion(INITIAL_REGION, 500);
+  const centerOnUser = async () => {
+    try {
+      const currentLocation = await LocationService.getCurrentLocation();
+      if (currentLocation) {
+        const userRegion: Region = {
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        };
+        mapRef.current?.animateToRegion(userRegion, 500);
+      } else {
+        mapRef.current?.animateToRegion(INITIAL_REGION, 500);
+      }
+    } catch (error) {
+      console.error('Error getting current location:', error);
+      mapRef.current?.animateToRegion(INITIAL_REGION, 500);
+    }
   };
 
   return (

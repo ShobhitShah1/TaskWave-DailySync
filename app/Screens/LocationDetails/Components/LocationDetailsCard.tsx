@@ -11,6 +11,7 @@ interface LocationDetailsCardProps {
   message: string;
   setMessage: (m: string) => void;
   onCreate: () => void;
+  isLoading?: boolean;
 }
 
 const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
@@ -19,6 +20,7 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
   message,
   setMessage,
   onCreate,
+  isLoading = false,
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
@@ -53,8 +55,13 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
         numberOfLines={3}
       />
       <Pressable
-        style={[styles.button, { backgroundColor: theme === 'dark' ? colors.white : colors.black }]}
+        style={[
+          styles.button,
+          { backgroundColor: theme === 'dark' ? colors.white : colors.black },
+          isLoading && { opacity: 0.6 },
+        ]}
         onPress={onCreate}
+        disabled={isLoading}
       >
         <Text
           style={[
@@ -62,7 +69,7 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
             { color: theme !== 'dark' ? colors.white : colors.black, fontFamily: FONTS.SemiBold },
           ]}
         >
-          Create
+          {isLoading ? 'Creating...' : 'Create'}
         </Text>
       </Pressable>
     </View>

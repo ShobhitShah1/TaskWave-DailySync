@@ -15,6 +15,7 @@ import AddReminder from '../Screens/AddReminder/AddReminder';
 import ReminderScheduled from '../Screens/AddReminder/ReminderScheduled';
 import LocationDetails from '../Screens/LocationDetails/LocationDetails';
 import OnBoarding from '../Screens/OnBoarding/Index';
+import LocationPreview from '../Screens/Preview/LocationPreview';
 import ReminderPreview from '../Screens/Preview/ReminderPreview';
 import AboutApp from '../Screens/Setting/AboutApp';
 import HowAppWorks from '../Screens/Setting/HowAppWorks';
@@ -73,6 +74,7 @@ const Routes = () => {
           <Stack.Screen name="HowAppWorks" component={HowAppWorks} />
           <Stack.Screen name="NotificationSound" component={NotificationSound} />
           <Stack.Screen name="LocationDetails" component={LocationDetails} />
+          <Stack.Screen name="LocationPreview" component={LocationPreview} />
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>

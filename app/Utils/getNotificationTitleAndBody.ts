@@ -65,6 +65,12 @@ export function getNotificationTitleAndBody(notification: Notification): Notific
         body: `${messageToSend ? `"${messageToSend}" - ` : ''}Your brilliant idea is now safely captured. Open Note Alo to review, edit, or share your thoughts.`,
       };
 
+    case 'location':
+      return {
+        title: `📍 Location Reminder • ${messageToSend || 'Location'}`,
+        body: `You've arrived at your destination! ${messageToSend ? `"${messageToSend}"` : 'Tap to view details.'}`,
+      };
+
     default:
       return {
         title: `🔔 Action Required • ${messageToSend || 'Task'}`,

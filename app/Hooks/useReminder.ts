@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import notifee, { AndroidImportance, AndroidVisibility } from '@notifee/react-native';
 import * as SQLite from 'expo-sqlite';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { showMessage } from 'react-native-flash-message';
 
 import { sounds } from '../Constants/Data';
@@ -28,15 +28,17 @@ export const createNotificationChannel = async () => {
       storage.set('notificationSound', 'default');
     }
 
-    sounds.map(async (notification) => {
-      await notifee.createChannel({
-        id: notification?.soundKeyName,
-        name: CHANNEL_NAME + ' ' + notification.soundKeyName?.toLocaleUpperCase(),
-        visibility: AndroidVisibility.PUBLIC,
-        importance: AndroidImportance.HIGH,
-        sound: notification?.soundKeyName,
-      });
-    });
+    await Promise.all(
+      sounds.map(async (notification) => {
+        await notifee.createChannel({
+          id: notification?.soundKeyName,
+          name: CHANNEL_NAME + ' ' + notification.soundKeyName?.toLocaleUpperCase(),
+          visibility: AndroidVisibility.PUBLIC,
+          importance: AndroidImportance.HIGH,
+          sound: notification?.soundKeyName,
+        });
+      }),
+    );
   } catch (error: any) {
     if (!error.message?.toString()?.includes('invalid notification ID')) {
       showMessage({
@@ -48,9 +50,9 @@ export const createNotificationChannel = async () => {
 };
 
 const createFutureDate = (delayMinutes: number) => {
-  const date = new Date();
-  date.setMinutes(date.getMinutes() + delayMinutes);
-  return date;
+  const futureDate = new Date();
+  futureDate.setMinutes(futureDate.getMinutes() + delayMinutes);
+  return futureDate;
 };
 
 export const scheduleNotification = async (
@@ -153,21 +155,66 @@ export const scheduleNotification = async (
 };
 
 const useReminder = () => {
+  const databaseRef = useRef<SQLite.SQLiteDatabase | null>(null);
+  const isInitializingRef = useRef(false);
+
   async function openDatabase() {
-    const database = await SQLite.openDatabaseAsync('notifications.db', {
-      useNewConnection: true,
-    });
-    await initializeDatabase(database);
-    return database;
+    try {
+      // If we already have a database connection, return it
+      if (databaseRef.current) {
+        return databaseRef.current;
+      }
+
+      // If initialization is in progress, wait
+      if (isInitializingRef.current) {
+        // Wait for initialization to complete
+        while (isInitializingRef.current) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        return databaseRef.current;
+      }
+
+      isInitializingRef.current = true;
+
+      const database = await SQLite.openDatabaseAsync('notifications.db', {
+        useNewConnection: true,
+      });
+
+      await initializeDatabase(database);
+      databaseRef.current = database;
+      isInitializingRef.current = false;
+      return database;
+    } catch (error) {
+      isInitializingRef.current = false;
+      console.error('[Database] Failed to open database:', error);
+      throw error;
+    }
   }
 
   useEffect(() => {
-    openDatabase();
+    openDatabase().catch(console.error);
+
+    // Cleanup function to close database connection
+    return () => {
+      if (databaseRef.current) {
+        try {
+          databaseRef.current.closeAsync();
+          databaseRef.current = null;
+        } catch (error) {
+          console.error('[Database] Error closing database:', error);
+        }
+      }
+    };
   }, []);
 
   const initializeDatabase = async (database: SQLite.SQLiteDatabase) => {
     try {
+      // Set WAL mode for better concurrency
+      await database.execAsync(`PRAGMA journal_mode = WAL;`);
       await database.execAsync(`PRAGMA foreign_keys = ON;`);
+      await database.execAsync(`PRAGMA synchronous = NORMAL;`);
+      await database.execAsync(`PRAGMA cache_size = 10000;`);
+      await database.execAsync(`PRAGMA temp_store = MEMORY;`);
 
       type PRAGMAResult = { user_version: number };
 
@@ -185,7 +232,8 @@ const useReminder = () => {
 
       console.log(`[Database] Current version: ${currentVersion}`);
 
-      await database.execAsync('BEGIN TRANSACTION;');
+      // Use a more robust transaction approach
+      await database.execAsync('BEGIN IMMEDIATE TRANSACTION;');
 
       try {
         if (currentVersion < 1) {
@@ -261,6 +309,58 @@ const useReminder = () => {
           await database.execAsync(`PRAGMA user_version = 3;`);
         }
 
+        if (currentVersion < 4) {
+          console.log('[Database] Upgrading to version 4 - Adding location support');
+          const columnCheckResult = await database.getAllAsync<ColumnInfo>(
+            `PRAGMA table_info(notifications);`,
+          );
+
+          const latitudeExists = columnCheckResult.some((column) => column.name === 'latitude');
+          const longitudeExists = columnCheckResult.some((column) => column.name === 'longitude');
+          const radiusExists = columnCheckResult.some((column) => column.name === 'radius');
+
+          if (!latitudeExists) {
+            await database.execAsync(`
+            ALTER TABLE notifications ADD COLUMN latitude REAL;
+          `);
+          }
+
+          if (!longitudeExists) {
+            await database.execAsync(`
+            ALTER TABLE notifications ADD COLUMN longitude REAL;
+          `);
+          }
+
+          if (!radiusExists) {
+            await database.execAsync(`
+            ALTER TABLE notifications ADD COLUMN radius INTEGER DEFAULT 100;
+          `);
+          }
+
+          await database.execAsync(`PRAGMA user_version = 4;`);
+        }
+
+        if (currentVersion < 5) {
+          console.log(
+            '[Database] Upgrading to version 5 - Adding locationName for location reminders',
+          );
+          const columnCheckResult = await database.getAllAsync<ColumnInfo>(
+            `PRAGMA table_info(notifications);`,
+          );
+
+          const locationNameExists = columnCheckResult.some(
+            (column) => column.name === 'locationName',
+          );
+
+          if (!locationNameExists) {
+            await database.execAsync(`
+            ALTER TABLE notifications ADD COLUMN locationName TEXT;
+          `);
+          }
+
+          await database.execAsync(`PRAGMA user_version = 5;`);
+        }
+
         await database.execAsync('COMMIT;');
         console.log('[Database] Schema update completed successfully');
       } catch (error) {
@@ -274,10 +374,37 @@ const useReminder = () => {
     }
   };
 
+  const executeWithRetry = async <T>(
+    operation: () => Promise<T>,
+    maxRetries: number = 3,
+    delay: number = 1000,
+  ): Promise<T> => {
+    let lastError: any;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error: any) {
+        lastError = error;
+
+        if (error.message?.includes('database is locked')) {
+          console.log(`[Database] Locked on attempt ${attempt}, retrying...`);
+          if (attempt < maxRetries) {
+            await new Promise((resolve) => setTimeout(resolve, delay * attempt));
+            continue;
+          }
+        }
+
+        throw error;
+      }
+    }
+
+    throw lastError;
+  };
+
   const createNotification = async (notification: Notification): Promise<string | null> => {
-    try {
+    return executeWithRetry(async () => {
       const database = await openDatabase();
-      await initializeDatabase(database);
 
       if (!database) {
         console.error('[Database] Failed to open database connection');
@@ -306,7 +433,7 @@ const useReminder = () => {
       }
 
       const insertNotificationSQL = `
-      INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail, telegramUsername, days)
+      INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail, telegramUsername, days, latitude, longitude, radius, locationName)
       VALUES (
         '${data.id}',
         '${data.type}',
@@ -318,7 +445,11 @@ const useReminder = () => {
         '${data.memo}',
         '${data.toMail}',
         '${data.telegramUsername}',
-        '${data.days}'
+        '${data.days}',
+        ${data.latitude || 'NULL'},
+        ${data.longitude || 'NULL'},
+        ${data.radius || 'NULL'},
+        '${data.locationName || ''}'
       )`;
 
       let insertContactsSQL = '';
@@ -333,7 +464,8 @@ const useReminder = () => {
         `,
           )
           .join(';');
-      } else {
+      } else if (data.type !== 'location' && data.toContact.length > 0) {
+        // Only insert contacts for non-location notifications that have contacts
         insertContactsSQL = data.toContact
           .map(
             (contact) => `
@@ -350,21 +482,21 @@ const useReminder = () => {
     `.trim();
 
       try {
+        await database.execAsync('BEGIN TRANSACTION;');
         await database.execAsync(transactionSQL);
+        await database.execAsync('COMMIT;');
         console.log('[Notification] Successfully created notification:', data.id);
         return data.id;
       } catch (error: any) {
+        await database.execAsync('ROLLBACK;');
         console.error('[Notification] Failed to create notification:', error);
         throw new Error(error.message || error);
       }
-    } catch (error) {
-      console.error('[Notification] Create notification error:', error);
-      throw error;
-    }
+    });
   };
 
   const updateNotification = async (notification: Notification): Promise<boolean> => {
-    try {
+    return executeWithRetry(async () => {
       const database = await openDatabase();
 
       if (!database) {
@@ -380,8 +512,11 @@ const useReminder = () => {
 
       console.log('[Notification] Updating notification:', data.id);
 
-      await createNotificationChannelIfNeeded();
-      await scheduleNotification(notification);
+      // Only schedule with Notifee for non-location notifications
+      if (data.type !== 'location') {
+        await createNotificationChannelIfNeeded();
+        await scheduleNotification(notification);
+      }
 
       const updateNotificationSQL = `
         UPDATE notifications
@@ -395,7 +530,10 @@ const useReminder = () => {
           days = '${data.days}',
           memo = '${data.memo}',
           toMail = '${data.toMail}',
-          telegramUsername = '${data.telegramUsername}'
+          telegramUsername = '${data.telegramUsername}',
+          latitude = ${data.latitude || 'NULL'},
+          longitude = ${data.longitude || 'NULL'},
+          radius = ${data.radius || 'NULL'}
         WHERE id = '${data.id}'
       `;
 
@@ -435,21 +573,21 @@ const useReminder = () => {
       `;
 
       try {
+        await database.execAsync('BEGIN TRANSACTION;');
         await database.execAsync(transactionSQL);
+        await database.execAsync('COMMIT;');
         console.log('[Notification] Successfully updated notification:', data.id);
         return true;
       } catch (error: any) {
+        await database.execAsync('ROLLBACK;');
         console.error('[Notification] Failed to update notification:', error);
         throw new Error(String(error?.message || error));
       }
-    } catch (error) {
-      console.error('[Notification] Update notification error:', error);
-      throw error;
-    }
+    });
   };
 
   const deleteNotification = async (id: string): Promise<boolean> => {
-    try {
+    return executeWithRetry(async () => {
       const database = await openDatabase();
 
       if (!database) {
@@ -464,28 +602,22 @@ const useReminder = () => {
       console.log('[Notification] Deleting notification:', id);
 
       try {
-        await notifee.cancelNotification(id);
+        await database.execAsync('BEGIN TRANSACTION;');
+        await database.execAsync(`DELETE FROM contacts WHERE notification_id = '${id}'`);
         await database.execAsync(`DELETE FROM notifications WHERE id = '${id}'`);
+        await database.execAsync('COMMIT;');
         console.log('[Notification] Successfully deleted notification:', id);
         return true;
       } catch (error: any) {
+        await database.execAsync('ROLLBACK;');
         console.error('[Notification] Failed to delete notification:', error);
-        if (!error.message?.includes('invalid notification ID')) {
-          showMessage({
-            message: String(error?.message || error),
-            type: 'danger',
-          });
-        }
-        return false;
+        throw new Error(String(error?.message || error));
       }
-    } catch (error) {
-      console.error('[Notification] Delete notification error:', error);
-      throw error;
-    }
+    });
   };
 
   const getAllNotifications = async (): Promise<Notification[]> => {
-    try {
+    return executeWithRetry(async () => {
       const database = await openDatabase();
 
       if (!database) {
@@ -531,29 +663,24 @@ const useReminder = () => {
               .map((contact) => contact.name),
             attachments: JSON.parse(notification.attachments),
             memo: JSON.parse(notification.memo),
+            latitude: notification.latitude,
+            longitude: notification.longitude,
+            radius: notification.radius,
+            locationName: notification.locationName,
           });
         }
 
         console.log('[Notification] Successfully fetched notifications:', result.length);
         return result;
       } catch (error: any) {
-        console.error('[Notification] Failed to fetch notifications:', error);
-        if (!error.message?.includes('invalid notification ID')) {
-          showMessage({
-            message: String(error?.message || error),
-            type: 'danger',
-          });
-        }
-        return [];
+        console.error('[Notification] Get all notifications error:', error);
+        throw new Error(String(error?.message || error));
       }
-    } catch (error) {
-      console.error('[Notification] Get all notifications error:', error);
-      throw error;
-    }
+    });
   };
 
   const getNotificationById = async (id: string): Promise<Notification | null> => {
-    try {
+    return executeWithRetry(async () => {
       const database = await openDatabase();
 
       if (!database) {
@@ -568,19 +695,18 @@ const useReminder = () => {
       console.log('[Notification] Fetching notification by ID:', id);
 
       try {
-        const notificationQuery = await database.getAllAsync<any>(
+        const notifications = await database.getAllAsync<any>(
           `SELECT * FROM notifications WHERE id = '${id}'`,
         );
 
-        if (notificationQuery.length === 0) {
+        if (notifications.length === 0) {
           console.log('[Notification] No notification found with ID:', id);
           return null;
         }
 
-        const notification = notificationQuery[0];
-
+        const notification = notifications[0];
         const contacts = await database.getAllAsync<Contact>(
-          `SELECT name, number, recordID, thumbnailPath FROM contacts WHERE notification_id = '${notification.id}'`,
+          `SELECT name, number, recordID, thumbnailPath FROM contacts WHERE notification_id = '${id}'`,
         );
 
         let days = [];
@@ -602,91 +728,106 @@ const useReminder = () => {
             .map((contact) => contact.name),
           attachments: JSON.parse(notification.attachments),
           memo: JSON.parse(notification.memo),
+          latitude: notification.latitude,
+          longitude: notification.longitude,
+          radius: notification.radius,
+          locationName: notification.locationName,
         };
 
-        console.log('[Notification] Successfully fetched notification:', id);
+        console.log('[Notification] Successfully fetched notification by ID:', id);
         return result;
       } catch (error: any) {
-        console.error('[Notification] Failed to fetch notification:', error);
-        if (!error.message?.includes('invalid notification ID')) {
-          showMessage({
-            message: String(error?.message || error),
-            type: 'danger',
-          });
-        }
-        return null;
+        console.error('[Notification] Get notification by ID error:', error);
+        throw new Error(String(error?.message || error));
       }
-    } catch (error) {
-      console.error('[Notification] Get notification by ID error:', error);
-      throw error;
-    }
+    });
   };
 
   const ensureDeviceContactsTable = async () => {
-    const database = await openDatabase();
-    try {
-      await database.execAsync(`CREATE TABLE IF NOT EXISTS device_contacts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        number TEXT,
-        recordID TEXT NOT NULL,
-        thumbnailPath TEXT
-      );`);
-    } catch (err) {
-      console.error('[SQLite] Failed to ensure device_contacts table:', err);
-    }
+    return executeWithRetry(async () => {
+      const database = await openDatabase();
+      if (!database) {
+        throw new Error('Database connection failed');
+      }
+      try {
+        await database.execAsync(`CREATE TABLE IF NOT EXISTS device_contacts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          number TEXT,
+          recordID TEXT NOT NULL,
+          thumbnailPath TEXT
+        );`);
+      } catch (err) {
+        console.error('[SQLite] Failed to ensure device_contacts table:', err);
+      }
+    });
   };
 
   const clearDeviceContacts = async () => {
-    const database = await openDatabase();
-    try {
-      await ensureDeviceContactsTable();
-      await database.execAsync('DELETE FROM device_contacts');
-    } catch (err) {
-      console.error('[SQLite] clearDeviceContacts error:', err);
-    }
+    return executeWithRetry(async () => {
+      const database = await openDatabase();
+      if (!database) {
+        throw new Error('Database connection failed');
+      }
+      try {
+        await ensureDeviceContactsTable();
+        await database.execAsync('DELETE FROM device_contacts');
+      } catch (err) {
+        console.error('[SQLite] clearDeviceContacts error:', err);
+      }
+    });
   };
 
   const insertDeviceContacts = async (contacts: Contact[]) => {
-    const database = await openDatabase();
-    if (!contacts.length) return;
-    try {
-      await ensureDeviceContactsTable();
-      const values = contacts
-        .map(
-          (c: Contact) =>
-            `('${c.name.replace(/'/g, "''")}', '${c.number ? c.number.replace(/'/g, "''") : ''}', '${c.recordID}', '${c.thumbnailPath || ''}')`,
-        )
-        .join(',');
-      await database.execAsync(
-        `INSERT INTO device_contacts (name, number, recordID, thumbnailPath) VALUES ${values}`,
-      );
-    } catch (err) {
-      console.error('[SQLite] insertDeviceContacts error:', err);
-    }
+    return executeWithRetry(async () => {
+      const database = await openDatabase();
+      if (!database) {
+        throw new Error('Database connection failed');
+      }
+      if (!contacts.length) return;
+      try {
+        await ensureDeviceContactsTable();
+        const values = contacts
+          .map(
+            (c: Contact) =>
+              `('${c.name.replace(/'/g, "''")}', '${c.number ? c.number.replace(/'/g, "''") : ''}', '${c.recordID}', '${c.thumbnailPath || ''}')`,
+          )
+          .join(',');
+        await database.execAsync(
+          `INSERT INTO device_contacts (name, number, recordID, thumbnailPath) VALUES ${values}`,
+        );
+      } catch (err) {
+        console.error('[SQLite] insertDeviceContacts error:', err);
+      }
+    });
   };
 
   const getAllDeviceContacts = async () => {
-    const database = await openDatabase();
-    try {
-      await ensureDeviceContactsTable();
-      const rows = await database.getAllAsync(
-        'SELECT name, number, recordID, thumbnailPath FROM device_contacts ORDER BY name COLLATE NOCASE ASC',
-      );
-      return rows;
-    } catch (err) {
-      console.error('[SQLite] getAllDeviceContacts error:', err);
-      return [];
-    }
+    return executeWithRetry(async () => {
+      const database = await openDatabase();
+      if (!database) {
+        throw new Error('Database connection failed');
+      }
+      try {
+        await ensureDeviceContactsTable();
+        const rows = await database.getAllAsync(
+          'SELECT name, number, recordID, thumbnailPath FROM device_contacts ORDER BY name COLLATE NOCASE ASC',
+        );
+        return rows;
+      } catch (err) {
+        console.error('[SQLite] getAllDeviceContacts error:', err);
+        return [];
+      }
+    });
   };
 
   return {
-    initializeDatabase,
     createNotification,
-    getAllNotifications,
     updateNotification,
     deleteNotification,
+    getAllNotifications,
     getNotificationById,
+    ensureDeviceContactsTable,
     clearDeviceContacts,
     insertDeviceContacts,
     getAllDeviceContacts,

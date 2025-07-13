@@ -65,9 +65,15 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
       date: notification.date instanceof Date ? notification.date.toISOString() : notification.date,
     };
 
-    navigation.navigate('ReminderPreview', {
-      notificationData,
-    });
+    if (notification.type === 'location') {
+      navigation.navigate('LocationPreview', {
+        notificationData,
+      });
+    } else {
+      navigation.navigate('ReminderPreview', {
+        notificationData,
+      });
+    }
 
     setFullScreenPreview && setFullScreenPreview(false);
   }, [notification]);

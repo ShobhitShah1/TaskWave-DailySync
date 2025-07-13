@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import notifee from '@notifee/react-native';
-import * as SQLite from 'expo-sqlite';
 import { showMessage } from 'react-native-flash-message';
 
 import { storage } from '../Contexts/ThemeProvider';
 import { Notification } from '../Types/Interface';
+import { getDatabase } from '../Utils/databaseUtils';
 import {
   buildNotifeeNotification,
   buildTimestampTrigger,
@@ -14,18 +14,7 @@ import { prepareNotificationData } from '../Utils/prepareNotificationData';
 
 export const updateNotification = async (notification: Notification): Promise<boolean> => {
   try {
-    const database = await SQLite.openDatabaseAsync('notifications.db', {
-      useNewConnection: true,
-    });
-
-    if (!database) {
-      console.error('[Database] Failed to open database connection');
-      showMessage({
-        message: 'Database connection error. Please try again.',
-        type: 'danger',
-      });
-      return false;
-    }
+    const database = await getDatabase();
 
     const data = prepareNotificationData(notification);
     const {

@@ -33,6 +33,9 @@ export type RootStackParamList = {
   ReminderPreview: {
     notificationData: Notification | { id: string };
   };
+  LocationPreview: {
+    notificationData: Notification;
+  };
   AboutApp: undefined;
   HowAppWorks: undefined;
   NotificationSound: undefined;
@@ -92,6 +95,10 @@ export interface Notification {
   days: string[];
   memo?: Memo[];
   telegramUsername: string;
+  latitude?: number;
+  longitude?: number;
+  radius?: number;
+  locationName?: string;
   rescheduleInfo?: {
     isReschedule?: boolean;
     delayMinutes?: number;

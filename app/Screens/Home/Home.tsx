@@ -19,6 +19,7 @@ import BatteryOptimizationModal from '../../Components/BatteryOptimizationModal'
 import FullScreenPreviewModal from '../../Components/FullScreenPreviewModal';
 import ReminderCard from '../../Components/ReminderCard';
 import RenderCalenderView from '../../Components/RenderCalenderView';
+import ServiceManager from '../../Components/ServiceManager';
 import YearMonthPicker from '../../Components/YearMonthPicker';
 import TextString from '../../Constants/TextString';
 import isGridView from '../../Hooks/isGridView';
@@ -59,6 +60,7 @@ const Home = () => {
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showBatteryModal, setShowBatteryModal] = useState(false);
+  const [showServiceManager, setShowServiceManager] = useState(false);
   const batteryModalConfirmRef = useRef<() => void>(() => {});
 
   const [notificationsState, setNotificationsState] = useState<NotificationStatus>({
@@ -236,7 +238,12 @@ const Home = () => {
 
   return (
     <SafeAreaView style={style.container}>
-      <HomeHeader title={TextString.DailySync} titleAlignment="center" leftIconType="grid" />
+      <HomeHeader
+        title={TextString.DailySync}
+        titleAlignment="center"
+        leftIconType="grid"
+        onServicePress={() => setShowServiceManager(true)}
+      />
 
       <View style={style.homeContainContainer}>
         <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>
@@ -327,29 +334,34 @@ const Home = () => {
             </View>
           )}
         </View>
+
+        <FullScreenPreviewModal
+          isVisible={fullScreenPreview}
+          notifications={notificationsState?.allByDate}
+          onClose={() => setFullScreenPreview(false)}
+          onRefreshData={loadNotifications}
+          setFullScreenPreview={setFullScreenPreview}
+        />
+
+        <YearMonthPicker
+          isVisible={showDateAndYearModal}
+          selectedYear={selectedDateObject.getFullYear()}
+          selectedMonth={selectedDateObject.getMonth()}
+          onConfirm={handleDateChange}
+          onCancel={() => setShowDateAndYearModal(false)}
+        />
+
+        <BatteryOptimizationModal
+          visible={showBatteryModal}
+          onConfirm={batteryModalConfirmRef.current}
+          onCancel={() => setShowBatteryModal(false)}
+        />
+
+        <ServiceManager
+          isVisible={showServiceManager}
+          onClose={() => setShowServiceManager(false)}
+        />
       </View>
-
-      <FullScreenPreviewModal
-        isVisible={fullScreenPreview}
-        notifications={notificationsState?.allByDate}
-        onClose={() => setFullScreenPreview(false)}
-        onRefreshData={loadNotifications}
-        setFullScreenPreview={setFullScreenPreview}
-      />
-
-      <YearMonthPicker
-        isVisible={showDateAndYearModal}
-        selectedYear={selectedDateObject.getFullYear()}
-        selectedMonth={selectedDateObject.getMonth()}
-        onConfirm={handleDateChange}
-        onCancel={() => setShowDateAndYearModal(false)}
-      />
-
-      <BatteryOptimizationModal
-        visible={showBatteryModal}
-        onConfirm={batteryModalConfirmRef.current}
-        onCancel={() => setShowBatteryModal(false)}
-      />
     </SafeAreaView>
   );
 };

@@ -17,6 +17,8 @@ export const getNotificationIcon = (type: NotificationType) => {
       return AssetsPath.ic_telegram_history;
     case 'note':
       return AssetsPath.ic_notes_history;
+    case 'location':
+      return AssetsPath.ic_location_list_icon;
     default:
       return null;
   }

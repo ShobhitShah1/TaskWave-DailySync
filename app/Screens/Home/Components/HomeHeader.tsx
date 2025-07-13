@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import React, { memo, useCallback } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -18,6 +19,7 @@ interface IHomeHeaderProps {
   titleAlignment?: 'left' | 'center';
   showThemeSwitch?: boolean;
   onBackPress?: () => void;
+  onServicePress?: () => void;
 }
 
 const HomeHeader = ({
@@ -26,6 +28,7 @@ const HomeHeader = ({
   titleAlignment = 'left',
   showThemeSwitch = true,
   onBackPress,
+  onServicePress,
 }: IHomeHeaderProps) => {
   const colors = useThemeColors();
   const navigation = useNavigation();
@@ -54,6 +57,16 @@ const HomeHeader = ({
           style={styles.icon}
           tintColor={leftIconType === 'back' ? colors.text : undefined}
         />
+      </Pressable>
+    );
+  };
+
+  const renderServiceButton = () => {
+    if (!onServicePress) return null;
+
+    return (
+      <Pressable hitSlop={10} style={styles.serviceButton} onPress={onServicePress}>
+        <Ionicons name="settings" size={20} color={colors.text} />
       </Pressable>
     );
   };
@@ -87,7 +100,8 @@ const HomeHeader = ({
           {title || TextString.DailySync}
         </Text>
 
-        <View style={styles.switchContainer}>
+        <View style={styles.rightContainer}>
+          {renderServiceButton()}
           {showThemeSwitch && <CustomSwitch isOn={theme !== 'dark'} onToggle={handleToggle} />}
         </View>
       </View>
@@ -131,6 +145,19 @@ const styles = StyleSheet.create({
     height: 28,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  rightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  serviceButton: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    backgroundColor: 'rgba(173, 175, 176, 0.2)',
   },
   switchContainer: {
     width: 70,

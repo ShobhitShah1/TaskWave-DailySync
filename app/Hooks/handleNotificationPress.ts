@@ -155,6 +155,17 @@ const notificationHandlers = {
       showError(error?.message?.toString());
     }
   },
+  location: (data: Notification) => {
+    try {
+      const parseData = parseNotificationData(data);
+
+      navigationRef.navigate('ReminderPreview', {
+        notificationData: parseData,
+      });
+    } catch (error: any) {
+      showError(error?.message?.toString());
+    }
+  },
 };
 
 export const handleNotificationPress = async (notification: any) => {
