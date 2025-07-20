@@ -1,9 +1,10 @@
 import { useAppContext } from '@Contexts/ThemeProvider';
 import React from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { FONTS } from '@Constants/Theme';
 import useThemeColors from '@Hooks/useThemeMode';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 
 interface LocationDetailsCardProps {
   title: string;
@@ -31,22 +32,17 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
         styles.card,
         { backgroundColor: colors.reminderCardBackground, shadowColor: colors.black },
       ]}
+      pointerEvents="box-none"
     >
-      <TextInput
-        style={[
-          styles.titleInput,
-          { backgroundColor: colors.background, color: colors.text, fontFamily: FONTS.Medium },
-        ]}
+      <BottomSheetTextInput
+        style={[styles.titleInput, { backgroundColor: colors.background, color: colors.text }]}
         placeholder="Title"
         placeholderTextColor={colors.placeholderText}
         value={title}
         onChangeText={setTitle}
       />
-      <TextInput
-        style={[
-          styles.messageInput,
-          { backgroundColor: colors.background, color: colors.text, fontFamily: FONTS.Regular },
-        ]}
+      <BottomSheetTextInput
+        style={[styles.messageInput, { backgroundColor: colors.background, color: colors.text }]}
         placeholder="Message..."
         placeholderTextColor={colors.placeholderText}
         value={message}
@@ -78,17 +74,19 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 20,
-    padding: 16,
-    borderRadius: 16,
-    marginHorizontal: 16,
+    // position: 'absolute',
+    // left: 0,
+    // right: 0,
+    // bottom: 0,
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 25,
+    // borderRadius: 16,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 6,
+    zIndex: 9999,
   },
   titleInput: {
     borderRadius: 8,
@@ -96,15 +94,17 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     marginBottom: 8,
     fontSize: 15,
+    fontFamily: FONTS.SemiBold,
   },
   messageInput: {
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    marginBottom: 12,
+    marginBottom: 20,
     fontSize: 15,
     minHeight: 80,
     textAlignVertical: 'top',
+    fontFamily: FONTS.Medium,
   },
   button: {
     borderRadius: 8,

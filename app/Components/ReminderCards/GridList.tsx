@@ -20,6 +20,7 @@ const GridView: FC<IListViewProps> = ({
   cardBackgroundColor,
   icon,
   title,
+  address,
   notification,
   onCardPress,
   typeColor,
@@ -28,6 +29,7 @@ const GridView: FC<IListViewProps> = ({
   onDuplicatePress,
 }) => {
   const colors = useThemeColors();
+  const isLocation = notification?.type === 'location';
   const { theme } = useAppContext();
   const menuRef = useRef<MenuComponentRef>(null);
   const { timeLeft } = useCountdownTimer(notification.date);
@@ -85,16 +87,23 @@ const GridView: FC<IListViewProps> = ({
           </Text>
 
           <View style={styles.typeContainer}>
-            <View
-              style={[
-                styles.logoContainer,
-                {
-                  backgroundColor: notification.type === 'gmail' ? colors.gmail : typeColor,
-                },
-              ]}
-            >
-              <Image source={icon} style={styles.logo} />
-            </View>
+            {isLocation ? (
+              <Image
+                source={icon}
+                style={{ width: LOGO_SIZE, height: LOGO_SIZE, borderRadius: 12, marginRight: 3 }}
+              />
+            ) : (
+              <View
+                style={[
+                  styles.logoContainer,
+                  {
+                    backgroundColor: notification.type === 'gmail' ? colors.gmail : typeColor,
+                  },
+                ]}
+              >
+                <Image source={icon} style={styles.logo} />
+              </View>
+            )}
             <Image
               tintColor={typeColor}
               source={AssetsPath.ic_notification}
@@ -125,12 +134,21 @@ const GridView: FC<IListViewProps> = ({
             <View style={[styles.separator, { borderColor: typeColor }]} />
 
             <View style={styles.countdownContainer}>
-              <Image
-                tintColor={colors.text}
-                source={AssetsPath.ic_timerClock}
-                style={styles.timerIcon}
-              />
-              <Text style={[styles.countdownText, { color: typeColor }]}>{timeLeft}</Text>
+              {!isLocation && (
+                <Image
+                  tintColor={colors.text}
+                  source={AssetsPath.ic_timerClock}
+                  style={styles.timerIcon}
+                />
+              )}
+              <Text
+                style={[
+                  styles.countdownText,
+                  { color: typeColor, marginHorizontal: isLocation ? 4 : 0 },
+                ]}
+              >
+                {isLocation ? address : timeLeft}
+              </Text>
             </View>
           </View>
           <Pressable hitSlop={15} onPress={onMenuPress} style={[styles.menuPressable]}>

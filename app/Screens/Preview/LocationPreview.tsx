@@ -1,15 +1,29 @@
-import { RouteProp, useRoute } from '@react-navigation/native';
-import React, { useRef } from 'react';
-import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-
 import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import { useAddressFromCoords } from '@Hooks/useAddressFromCoords';
 import useThemeColors from '@Hooks/useThemeMode';
+import {
+  Camera,
+  FillLayer,
+  MapView,
+  PointAnnotation,
+  ShapeSource,
+} from '@maplibre/maplibre-react-native';
+import { RouteProp, useRoute } from '@react-navigation/native';
+import HomeHeader from '@Screens/Home/Components/HomeHeader';
+import MapMarker from '@Screens/LocationDetails/Components/LocationMapView/MapMarker';
+import {
+  DARK_MAP_STYLE,
+  LIGHT_MAP_STYLE,
+} from '@Screens/LocationDetails/Components/LocationMapView/MapStyles';
 import { Notification } from '@Types/Interface';
+import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
+import React, { memo, useMemo } from 'react';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
-const MAP_HEIGHT = width * 0.7;
+const MAP_HEIGHT = width * 0.9;
 const CARD_RADIUS = 22;
 const SHADOW = {
   shadowColor: '#000',
@@ -25,9 +39,9 @@ const LocationPreview = () => {
   const { params } = useRoute<LocationPreviewRoute>();
   const notification = params.notificationData;
   const colors = useThemeColors();
-  const mapRef = useRef<MapView>(null);
+  const { theme } = useAppContext();
 
-  if (!notification.latitude || !notification.longitude) {
+  if (typeof notification.latitude !== 'number' || typeof notification.longitude !== 'number') {
     return (
       <View style={styles.centered}>
         <Text style={{ color: colors.text }}>No location data available.</Text>
@@ -35,80 +49,162 @@ const LocationPreview = () => {
     );
   }
 
-  const initialRegion = {
-    latitude: notification.latitude,
-    longitude: notification.longitude,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  };
+  const coords = useMemo(
+    () => ({
+      latitude: notification.latitude as number,
+      longitude: notification.longitude as number,
+    }),
+    [notification.latitude, notification.longitude],
+  );
 
-  const handleCenterOnLocation = () => {
-    mapRef.current?.animateToRegion(initialRegion, 600);
-  };
+  const { address, loading } = useAddressFromCoords(coords);
+  const mapStyle = theme === 'light' ? LIGHT_MAP_STYLE : DARK_MAP_STYLE;
+
+  const circleGeoJSON = useMemo(
+    () => (notification.radius ? createGeoJSONCircle(coords, notification.radius) : null),
+    [coords, notification.radius],
+  );
 
   return (
-    <View style={[styles.screen, { backgroundColor: colors.previewBackground }]}>
-      <View style={[styles.mapCard, SHADOW, { backgroundColor: colors.background }]}>
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          provider={PROVIDER_GOOGLE}
-          initialRegion={initialRegion}
-          showsUserLocation={true}
-          scrollEnabled={true}
-          zoomEnabled={true}
-          pitchEnabled={true}
-          rotateEnabled={true}
-        >
-          <Circle
-            center={{ latitude: notification.latitude, longitude: notification.longitude }}
-            radius={notification.radius || 100}
-            fillColor={colors.lightBlue + '22'}
-            strokeColor={colors.lightBlue}
-            strokeWidth={2}
-          />
-          <Marker
-            coordinate={{ latitude: notification.latitude, longitude: notification.longitude }}
-            title={notification.locationName || 'Location'}
-            description={notification.message}
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      <HomeHeader
+        title={'Location Preview'}
+        leftIconType="back"
+        titleAlignment="center"
+        showThemeSwitch={false}
+      />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={[styles.heroMapCard, SHADOW]}>
+          <MapView
+            style={styles.map}
+            mapStyle={mapStyle}
+            zoomEnabled
+            scrollEnabled
+            pitchEnabled
+            rotateEnabled
           >
-            <Image
-              source={AssetsPath.ic_locationGlow}
-              style={{ width: 38, height: 38 }}
-              resizeMode="contain"
+            <Camera
+              centerCoordinate={[coords.longitude as number, coords.latitude as number]}
+              zoomLevel={16}
+              animationDuration={0}
+              pitch={45}
+              heading={0}
+              minZoomLevel={2}
+              maxZoomLevel={20}
             />
-          </Marker>
-        </MapView>
-        <Pressable style={[styles.fab, SHADOW]} onPress={handleCenterOnLocation}>
-          <Image source={AssetsPath.ic_view} style={styles.fabIcon} resizeMode="contain" />
-        </Pressable>
-      </View>
-      <View style={styles.divider} />
-      <View style={[styles.infoCard, SHADOW, { backgroundColor: colors.background }]}>
-        <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
-          {notification.subject || 'Location Reminder'}
-        </Text>
-        <Text style={[styles.message, { color: colors.grayTitle }]} numberOfLines={3}>
-          {notification.message}
-        </Text>
-        {notification.locationName && (
-          <View style={styles.locationRow}>
+            {/* Draw circle for radius if present */}
+            {circleGeoJSON && (
+              <ShapeSource id="radius-shape" shape={circleGeoJSON}>
+                <FillLayer
+                  id="radius-fill"
+                  style={{
+                    fillColor: colors.blue,
+                    fillOpacity: 0.15,
+                    fillOutlineColor: colors.blue,
+                  }}
+                />
+              </ShapeSource>
+            )}
+            <PointAnnotation
+              id="notification-location"
+              coordinate={[coords.longitude as number, coords.latitude as number]}
+            >
+              {/* Larger, more visible marker */}
+              <View style={styles.markerWrapper}>
+                <MapMarker color={colors.blue} backgroundColor={colors.background} />
+              </View>
+            </PointAnnotation>
+          </MapView>
+          {/* Address Overlay */}
+          <View style={[styles.addressOverlay, { backgroundColor: colors.background + 'ee' }]}>
             <Image
               source={AssetsPath.ic_location_list_icon}
-              style={styles.locationIcon}
+              style={[styles.addressOverlayIcon]}
               resizeMode="contain"
             />
-            <Text style={[styles.locationName, { color: colors.lightBlue }]} numberOfLines={1}>
-              {notification.locationName}
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.addressOverlayLabel, { color: colors.grayTitle }]}>Address</Text>
+              {loading ? (
+                <Text style={[styles.addressOverlayText, { color: colors.grayTitle }]}>
+                  Loading address...
+                </Text>
+              ) : (
+                <Text style={[styles.addressOverlayText, { color: colors.text }]} numberOfLines={2}>
+                  {address?.toString() || 'No address found'}
+                </Text>
+              )}
+            </View>
+          </View>
+        </View>
+
+        <View
+          style={[
+            styles.detailsCard,
+            SHADOW,
+            { backgroundColor: colors.reminderCardBackground, borderColor: colors.borderColor },
+          ]}
+        >
+          <View style={styles.sectionBlock}>
+            <Text style={[styles.sectionHeader, { color: colors.grayTitle }]}>Title</Text>
+            <Text style={[styles.sectionValue, { color: colors.text }]} numberOfLines={1}>
+              {notification.subject || 'Location Reminder'}
             </Text>
           </View>
-        )}
-        {notification.radius && (
-          <Text style={[styles.radiusText, { color: colors.grayTitle }]}>
-            Radius: {notification.radius}m
-          </Text>
-        )}
-      </View>
+          <View style={styles.divider} />
+          <View style={styles.sectionBlock}>
+            <Text style={[styles.sectionHeader, { color: colors.grayTitle }]}>Message</Text>
+            <Text style={[styles.sectionValue, { color: colors.text }]} numberOfLines={2}>
+              {notification.message || 'No message'}
+            </Text>
+          </View>
+          {notification.locationName && (
+            <>
+              <View style={styles.divider} />
+              <View style={styles.sectionBlock}>
+                <Text style={[styles.sectionHeader, { color: colors.grayTitle }]}>Location</Text>
+                <View style={styles.chipRow}>
+                  <Text
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor:
+                          theme === 'dark' ? 'rgba(38,107,235,0.18)' : 'rgba(38,107,235,0.10)',
+                        color: colors.blue,
+                        borderColor: colors.blue,
+                      },
+                    ]}
+                  >
+                    {notification.locationName}
+                  </Text>
+                </View>
+              </View>
+            </>
+          )}
+          {notification.radius && (
+            <>
+              <View style={styles.divider} />
+              <View style={styles.sectionBlock}>
+                <Text style={[styles.sectionHeader, { color: colors.grayTitle }]}>Radius</Text>
+                <View style={styles.chipRow}>
+                  <Text
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor:
+                          theme === 'dark' ? 'rgba(76,175,80,0.18)' : 'rgba(76,175,80,0.10)',
+                        color: '#4CAF50',
+                        borderColor: '#4CAF50',
+                      },
+                    ]}
+                  >
+                    {notification.radius} m
+                  </Text>
+                </View>
+              </View>
+            </>
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -116,87 +212,168 @@ const LocationPreview = () => {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    padding: 0,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
+    backgroundColor: undefined,
   },
-  mapCard: {
-    width: width * 0.94,
+  scrollContent: {
+    paddingBottom: 32,
+    alignItems: 'center',
+    paddingTop: 8,
+  },
+  heroMapCard: {
+    width: width * 0.98,
     height: MAP_HEIGHT,
-    borderRadius: CARD_RADIUS,
+    borderRadius: 28,
     overflow: 'hidden',
-    marginTop: 18,
+    marginTop: 0,
     marginBottom: 0,
     alignSelf: 'center',
     position: 'relative',
+    borderWidth: 1.5,
+    borderColor: 'rgba(38,107,235,0.13)',
+    backgroundColor: '#fff',
   },
   map: {
     width: '100%',
     height: '100%',
   },
-  fab: {
-    position: 'absolute',
-    bottom: 18,
-    right: 18,
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    width: 44,
-    height: 44,
+  markerWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  fabIcon: {
-    width: 26,
-    height: 26,
-    tintColor: '#303334',
-  },
-  divider: {
-    width: width * 0.7,
-    height: 2,
+    width: 48,
+    height: 48,
     backgroundColor: 'rgba(38,107,235,0.08)',
-    borderRadius: 2,
-    marginVertical: 18,
-    alignSelf: 'center',
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: '#268BEB',
+    shadowColor: '#268BEB',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  infoCard: {
-    width: width * 0.94,
-    borderRadius: CARD_RADIUS,
-    padding: 22,
-    marginBottom: 18,
-    alignSelf: 'center',
-  },
-  title: {
-    fontSize: 22,
-    fontFamily: FONTS.SemiBold,
-    marginBottom: 8,
-  },
-  message: {
-    fontSize: 16.5,
-    fontFamily: FONTS.Medium,
-    marginBottom: 12,
-    lineHeight: 22,
-  },
-  locationRow: {
+  addressOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
-    marginBottom: 6,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(38,107,235,0.08)',
+    gap: 10,
   },
-  locationIcon: {
-    width: 18,
-    height: 18,
-    marginRight: 7,
-    tintColor: '#268BEB',
+  addressOverlayIcon: {
+    width: 28,
+    height: 28,
+    marginRight: 8,
   },
-  locationName: {
+  addressOverlayLabel: {
+    fontSize: 13,
+    fontFamily: FONTS.Medium,
+    marginBottom: 2,
+  },
+  addressOverlayText: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: FONTS.Medium,
+  },
+  addressOverlayCopyBtn: {
+    marginLeft: 10,
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: 'rgba(38,107,235,0.08)',
+  },
+  copyIcon: {
+    width: 20,
+    height: 20,
+  },
+  detailsCard: {
+    width: width * 0.94,
+    borderRadius: CARD_RADIUS + 6, // less round
+    paddingVertical: 18, // less vertical padding
+    paddingHorizontal: 14, // less horizontal padding
+    marginTop: 16,
+    marginBottom: 18,
+    alignSelf: 'center',
+    backgroundColor: undefined,
+    borderWidth: 1,
+    gap: 0,
+  },
+  sectionBlock: {
+    marginBottom: 0,
+    paddingBottom: 4, // less space
+  },
+  sectionHeader: {
+    fontSize: 12,
+    fontFamily: FONTS.Medium,
+    opacity: 0.7,
+    letterSpacing: 0.2,
+    marginBottom: 1,
+    marginLeft: 1,
+  },
+  sectionValue: {
+    fontSize: 16,
+    fontFamily: FONTS.SemiBold,
+    fontWeight: '700',
+    marginBottom: 1,
+    marginLeft: 1,
+    marginTop: 1,
+  },
+  divider: {
+    width: '100%',
+    height: 0.7,
+    backgroundColor: 'rgba(38,107,235,0.08)',
+    borderRadius: 1,
+    marginVertical: 10,
+    alignSelf: 'center',
+  },
+  chipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 1,
+    marginTop: 3,
+  },
+  chip: {
+    fontSize: 13,
+    fontFamily: FONTS.Medium,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    overflow: 'hidden',
+    marginRight: 6,
+    marginBottom: 1,
+    fontWeight: '600',
+    letterSpacing: 0.1,
+    borderWidth: 1,
+  },
+  snackbar: {
+    position: 'absolute',
+    bottom: 32,
+    left: 0,
+    right: 0,
+    alignSelf: 'center',
+    marginHorizontal: 32,
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    zIndex: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.13,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  snackbarText: {
     fontSize: 16,
     fontFamily: FONTS.Medium,
-    maxWidth: width * 0.7,
-  },
-  radiusText: {
-    fontSize: 14,
-    fontFamily: FONTS.Regular,
-    marginTop: 2,
   },
   centered: {
     flex: 1,
@@ -205,4 +382,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LocationPreview;
+export default memo(LocationPreview);

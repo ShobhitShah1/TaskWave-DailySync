@@ -17,6 +17,7 @@ const ListView: FC<IListViewProps> = ({
   cardBackgroundColor,
   icon,
   title,
+  address,
   notification,
   onCardPress,
   typeColor,
@@ -25,6 +26,7 @@ const ListView: FC<IListViewProps> = ({
   onDuplicatePress,
 }) => {
   const colors = useThemeColors();
+  const isLocation = notification.type === 'location';
 
   const { theme } = useAppContext();
   const { timeLeft } = useCountdownTimer(notification.date);
@@ -42,16 +44,23 @@ const ListView: FC<IListViewProps> = ({
       >
         <View style={styles.rowContainer}>
           <View style={styles.logoWrapper}>
-            <View
-              style={[
-                styles.logoContainer,
-                {
-                  backgroundColor: notification.type === 'gmail' ? colors.gmail : typeColor,
-                },
-              ]}
-            >
-              <Image source={icon} style={styles.logo} />
-            </View>
+            {isLocation ? (
+              <Image
+                source={icon}
+                style={{ width: LOGO_SIZE, height: LOGO_SIZE, borderRadius: 15 }}
+              />
+            ) : (
+              <View
+                style={[
+                  styles.logoContainer,
+                  {
+                    backgroundColor: notification.type === 'gmail' ? colors.gmail : typeColor,
+                  },
+                ]}
+              >
+                <Image source={icon} style={styles.logo} />
+              </View>
+            )}
           </View>
           <View style={styles.textContainer}>
             <Text
@@ -72,30 +81,6 @@ const ListView: FC<IListViewProps> = ({
             >
               {notification.message || notification.subject}
             </Text>
-            {notification.type === 'location' && notification.locationName && (
-              <View style={{ marginTop: 6, flexDirection: 'row', alignItems: 'center' }}>
-                <Image
-                  source={icon}
-                  style={{ width: 16, height: 16, marginRight: 6, tintColor: typeColor }}
-                  resizeMode="contain"
-                />
-                <Text
-                  style={{
-                    color: typeColor,
-                    fontFamily: FONTS.Medium,
-                    fontSize: 15,
-                    backgroundColor:
-                      theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                    borderRadius: 7,
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                  }}
-                  numberOfLines={1}
-                >
-                  {notification.locationName}
-                </Text>
-              </View>
-            )}
           </View>
           <View style={styles.typeContainer}>
             <Text style={[styles.typeText, { color: typeColor }]}>
@@ -114,15 +99,24 @@ const ListView: FC<IListViewProps> = ({
             <Text style={[styles.timeText, { color: typeColor }]}>
               {formatTime(new Date(notification.date))}
             </Text>
+
+            {/* {!isLocation && (
+              <> */}
             <View style={[styles.separator, { borderColor: typeColor }]} />
             <View style={styles.countdownContainer}>
-              <Image
-                tintColor={colors.text}
-                source={AssetsPath.ic_timerClock}
-                style={styles.timerIcon}
-              />
-              <Text style={[styles.countdownText, { color: typeColor }]}>{timeLeft}</Text>
+              {!isLocation && (
+                <Image
+                  tintColor={colors.text}
+                  source={AssetsPath.ic_timerClock}
+                  style={styles.timerIcon}
+                />
+              )}
+              <Text style={[styles.countdownText, { color: typeColor }]}>
+                {isLocation ? address || '' : timeLeft}
+              </Text>
             </View>
+            {/* </>
+            )} */}
           </View>
           <View style={styles.actionsContainer}>
             <Pressable onPress={onCardPress}>

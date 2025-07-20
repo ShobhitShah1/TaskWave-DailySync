@@ -3,7 +3,7 @@ import notifee, { EventType } from '@notifee/react-native';
 import { useFonts } from 'expo-font';
 import * as QuickActions from 'expo-quick-actions';
 import React, { useEffect } from 'react';
-import { LogBox, StyleSheet, Text } from 'react-native';
+import { LogBox, StatusBar, StyleSheet, Text } from 'react-native';
 import FlashMessage, { showMessage } from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -271,6 +271,7 @@ const AppContent = () => {
             animated
             hideOnPress
             position="top"
+            statusBarHeight={StatusBar.currentHeight || 10}
             titleStyle={{ fontFamily: FONTS.SemiBold, fontSize: 18 }}
             textStyle={{ fontFamily: FONTS.Medium, fontSize: 15 }}
           />

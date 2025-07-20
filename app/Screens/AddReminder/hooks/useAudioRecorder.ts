@@ -19,8 +19,6 @@ const useAudioRecorder = (createViewColor: string, iconColor: string) => {
   const onRecordingPress = async () => {
     const isPermissionGranted = await check(PERMISSIONS.ANDROID.RECORD_AUDIO);
 
-    console.log('isPermissionGranted:', isPermissionGranted);
-
     if (isPermissionGranted === 'denied') {
       request(PERMISSIONS.ANDROID.RECORD_AUDIO).then((response) => {
         if (response === 'granted') {

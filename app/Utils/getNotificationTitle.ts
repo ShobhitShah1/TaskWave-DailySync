@@ -1,5 +1,11 @@
-export const getNotificationTitle = (notification: any): string => {
+import { Notification } from '@Types/Interface';
+
+export const getNotificationTitle = (notification: Notification): string => {
   if (!notification) return '';
+
+  if (notification.type === 'location') {
+    return notification.message;
+  }
 
   if (notification.type === 'note') {
     return 'Note';

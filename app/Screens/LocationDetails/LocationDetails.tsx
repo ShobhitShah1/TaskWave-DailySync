@@ -1,42 +1,36 @@
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import useThemeColors from '@Hooks/useThemeMode';
 import HomeHeader from '@Screens/Home/Components/HomeHeader';
-import React, { memo, useEffect, useState } from 'react';
-import {
-  Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
-import { LatLng } from 'react-native-maps';
-import { useSharedValue, withTiming } from 'react-native-reanimated';
+import React, { memo, useRef, useState } from 'react';
+import { Alert, StyleSheet, View } from 'react-native';
 
 import useLocationNotification from '@Hooks/useLocationNotification';
-import { Notification } from '@Types/Interface';
+import { GeoLatLng, Notification } from '@Types/Interface';
 import LocationDetailsCard from './Components/LocationDetailsCard';
 import LocationMapView from './Components/LocationMapView';
-import LocationSearchBar from './Components/LocationSearchBar';
+import LocationSearchBar, { NominatimResult } from './Components/LocationSearchBar';
 
 const LocationDetails = () => {
   const colors = useThemeColors();
   const { scheduleLocationNotification } = useLocationNotification();
-  const [selectedLocation, setSelectedLocation] = useState<LatLng | null>(null);
+
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [search, setSearch] = useState('');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<GeoLatLng | null>(null);
 
-  const cardAnim = useSharedValue(0);
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
-  useEffect(() => {
-    cardAnim.value = withTiming(isSearchFocused ? 0 : 1, { duration: 300 });
-  }, [isSearchFocused]);
-
-  const handleLocationSelect = (coordinate: LatLng) => {
+  const handleLocationSelect = (coordinate: GeoLatLng) => {
     setSelectedLocation(coordinate);
+
+    bottomSheetRef?.current?.snapToIndex(1);
+  };
+
+  const handleSearchResultSelect = (result: NominatimResult) => {
+    setSearch(result.display_name);
+    setSelectedLocation({ latitude: parseFloat(result.lat), longitude: parseFloat(result.lon) });
   };
 
   const validateAndSubmit = async () => {
@@ -90,47 +84,58 @@ const LocationDetails = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-          <HomeHeader
-            title={'Location'}
-            titleAlignment="center"
-            leftIconType="back"
-            showThemeSwitch={false}
-          />
-          <LocationMapView
-            onLocationSelect={handleLocationSelect}
-            selectedLocation={selectedLocation}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <HomeHeader
+        title={'Location'}
+        titleAlignment="center"
+        leftIconType="back"
+        showThemeSwitch={false}
+      />
+      <LocationMapView onLocationSelect={handleLocationSelect} selectedLocation={selectedLocation}>
+        <LocationSearchBar
+          value={search}
+          onChangeText={setSearch}
+          onResultSelect={handleSearchResultSelect}
+        />
+        <BottomSheet
+          handleStyle={{
+            borderBottomWidth: 0.5,
+            borderColor: colors.reminderCardBackground,
+            backgroundColor: colors.reminderCardBackground,
+          }}
+          handleIndicatorStyle={{ backgroundColor: colors.white }}
+          style={{
+            borderBottomWidth: 0,
+            zIndex: 999999999,
+            backgroundColor: colors.reminderCardBackground,
+          }}
+          snapPoints={['5%', '33%']}
+          ref={bottomSheetRef}
+          keyboardBlurBehavior="restore"
+          keyboardBehavior="interactive"
+          android_keyboardInputMode="adjustPan"
+        >
+          <BottomSheetView
+            style={[styles.contentContainer, { backgroundColor: colors.reminderCardBackground }]}
           >
-            <LocationSearchBar
-              value={search}
-              onChangeText={setSearch}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
+            <LocationDetailsCard
+              title={title}
+              setTitle={setTitle}
+              message={message}
+              setMessage={setMessage}
+              onCreate={validateAndSubmit}
+              isLoading={isLoading}
             />
-          </LocationMapView>
-          <LocationDetailsCard
-            title={title}
-            setTitle={setTitle}
-            message={message}
-            setMessage={setMessage}
-            onCreate={validateAndSubmit}
-            isLoading={isLoading}
-          />
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+          </BottomSheetView>
+        </BottomSheet>
+      </LocationMapView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
+  contentContainer: { flex: 1 },
 });
 
 export default memo(LocationDetails);

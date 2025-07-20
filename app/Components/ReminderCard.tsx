@@ -6,6 +6,7 @@ import { showMessage } from 'react-native-flash-message';
 
 import { useAppContext } from '@Contexts/ThemeProvider';
 import isGridView from '@Hooks/isGridView';
+import { useAddressFromCoords } from '@Hooks/useAddressFromCoords';
 import { useCountdownTimer } from '@Hooks/useCountdownTimer';
 import useNotificationIconColors from '@Hooks/useNotificationIconColors';
 import useDatabase, { scheduleNotification } from '@Hooks/useReminder';
@@ -44,6 +45,19 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   }, [timeIsOver, timeLeft]);
 
   const title = useMemo(() => getNotificationTitle(notification), [notification]);
+
+  const coords = useMemo(
+    () => ({
+      latitude: notification.latitude as number,
+      longitude: notification.longitude as number,
+    }),
+    [notification.latitude, notification.longitude],
+  );
+
+  const { addressDetails } = useAddressFromCoords(coords);
+  const location =
+    `${addressDetails?.area?.toString() || ''}, ${addressDetails?.city?.toString() || ''}` ||
+    'unknown';
 
   const cardBackgroundColor = useMemo(() => {
     return theme === 'dark' ? colors.reminderCardBackground : notificationColors.backgroundColor;
@@ -205,6 +219,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           title={title}
           typeColor={typeColor}
           deleteReminder={deleteReminder}
+          address={location}
         />
       ) : (
         <ListView
@@ -217,6 +232,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           title={title}
           typeColor={typeColor}
           deleteReminder={deleteReminder}
+          address={location}
         />
       )}
 

@@ -1,125 +1,133 @@
 import AssetsPath from '@Constants/AssetsPath';
 import React from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 
 interface MapControlsProps {
-  isSatelliteView: boolean;
-  onToggleSatellite: () => void;
   onZoomToFit: () => void;
   onCenterUser: () => void;
   showZoomToFit: boolean;
   colors: { background: string; blue: string; text: string };
 }
 
+interface MapControlButtonProps {
+  onPress: () => void;
+  icon: any;
+  backgroundColor: string;
+  iconColor?: string;
+  accessibilityLabel: string;
+  style?: ViewStyle;
+  isFirst?: boolean;
+  isLast?: boolean;
+}
+
+const MapControlButton: React.FC<MapControlButtonProps> = ({
+  onPress,
+  icon,
+  backgroundColor,
+  iconColor,
+  accessibilityLabel,
+  style,
+  isFirst,
+  isLast,
+}) => (
+  <Pressable
+    style={({ pressed }) => [
+      styles.controlButton,
+      { backgroundColor, opacity: pressed ? 0.8 : 1 },
+      isFirst && { borderTopLeftRadius: 18, borderTopRightRadius: 18 },
+      isLast && { borderBottomLeftRadius: 18, borderBottomRightRadius: 18 },
+      style,
+    ]}
+    onPress={onPress}
+    accessibilityRole="button"
+    accessibilityLabel={accessibilityLabel}
+    android_ripple={{ color: iconColor + '22', borderless: true }}
+  >
+    <Image
+      source={icon}
+      style={[styles.controlIcon, iconColor ? { tintColor: iconColor } : {}]}
+      resizeMode="contain"
+    />
+  </Pressable>
+);
+
 const MapControls: React.FC<MapControlsProps> = ({
-  isSatelliteView,
-  onToggleSatellite,
   onZoomToFit,
   onCenterUser,
   showZoomToFit,
   colors,
 }) => (
-  <>
-    {/* Satellite toggle button - top right */}
-    <View style={styles.satelliteToggleContainer}>
-      <Pressable
-        style={[styles.controlButton, { backgroundColor: colors.background }]}
-        onPress={onToggleSatellite}
-      >
-        <Image
-          source={isSatelliteView ? AssetsPath.ic_view : AssetsPath.ic_fullScreen}
-          style={[styles.controlIcon, { tintColor: isSatelliteView ? colors.blue : colors.text }]}
-          resizeMode="contain"
-        />
-      </Pressable>
-    </View>
-
-    {/* Zoom to fit all button - top right */}
-    {showZoomToFit && (
-      <View style={styles.zoomFitContainer}>
-        <Pressable
-          style={[styles.controlButton, { backgroundColor: colors.background }]}
+  <View style={[styles.container, { shadowColor: colors.text + '55' }]}>
+    <View
+      style={[
+        styles.buttonGroup,
+        { backgroundColor: colors.background, borderColor: colors.text + '11' },
+      ]}
+    >
+      {showZoomToFit && (
+        <MapControlButton
           onPress={onZoomToFit}
-        >
-          <Image
-            source={AssetsPath.ic_view}
-            style={[styles.controlIcon, { tintColor: colors.blue }]}
-            resizeMode="contain"
-          />
-        </Pressable>
-      </View>
-    )}
-
-    {/* Floating action button to center on user - bottom right */}
-    <View style={styles.fabContainer}>
-      <Pressable
-        style={[styles.fab, { backgroundColor: colors.background }]}
-        onPress={onCenterUser}
-      >
-        <Image
-          source={AssetsPath.ic_location}
-          style={[styles.fabIcon, { tintColor: colors.blue }]}
-          resizeMode="contain"
+          icon={AssetsPath.ic_view}
+          backgroundColor={colors.background}
+          iconColor={colors.blue}
+          accessibilityLabel="Zoom to fit all markers"
+          isFirst
         />
-      </Pressable>
+      )}
+      {showZoomToFit && <View style={[styles.divider, { backgroundColor: colors.text + '18' }]} />}
+      <MapControlButton
+        onPress={onCenterUser}
+        iconColor={colors.blue}
+        backgroundColor={colors.background}
+        icon={AssetsPath.ic_history_location_icon}
+        accessibilityLabel="Center map on your location"
+        isLast
+      />
     </View>
-  </>
+  </View>
 );
 
 const styles = StyleSheet.create({
-  satelliteToggleContainer: {
+  container: {
     position: 'absolute',
-    top: 16,
-    right: 16,
-    zIndex: 30,
-    elevation: 12,
-  },
-  zoomFitContainer: {
-    position: 'absolute',
-    top: 16,
-    right: 70, // Adjust position to be next to satellite toggle
-    zIndex: 30,
-    elevation: 12,
-  },
-  fabContainer: {
-    position: 'absolute',
-    bottom: 24,
-    right: 18,
-    zIndex: 30,
-    elevation: 12,
-  },
-  fab: {
-    borderRadius: 28,
-    width: 56,
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
+    top: 10,
+    right: 10,
+    zIndex: 9999,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 10,
   },
-  fabIcon: {
-    width: 24,
-    height: 24,
+  buttonGroup: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    borderRadius: 20,
+    paddingVertical: 2,
+    paddingHorizontal: 2,
+    borderWidth: 1,
+    backgroundColor: undefined, // will be set via props
+    borderColor: undefined, // will be set via props
   },
   controlButton: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 8,
+    marginVertical: 0,
+    marginHorizontal: 0,
   },
   controlIcon: {
-    width: 24,
-    height: 24,
+    width: 25,
+    height: 25,
+    resizeMode: 'contain',
+  },
+  divider: {
+    width: '70%',
+    height: 1.5,
+    alignSelf: 'center',
+    marginVertical: 2,
+    backgroundColor: undefined, // will be set via props
   },
 });
 
