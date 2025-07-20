@@ -4,15 +4,15 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Platform } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 
-import { useAppContext } from '../Contexts/ThemeProvider';
-import isGridView from '../Hooks/isGridView';
-import { useCountdownTimer } from '../Hooks/useCountdownTimer';
-import useNotificationIconColors from '../Hooks/useNotificationIconColors';
-import useDatabase, { scheduleNotification } from '../Hooks/useReminder';
-import useThemeColors from '../Hooks/useThemeMode';
-import { ReminderCardProps } from '../Types/Interface';
-import { getNotificationIcon } from '../Utils/getNotificationIcon';
-import { getNotificationTitle } from '../Utils/getNotificationTitle';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import isGridView from '@Hooks/isGridView';
+import { useCountdownTimer } from '@Hooks/useCountdownTimer';
+import useNotificationIconColors from '@Hooks/useNotificationIconColors';
+import useDatabase, { scheduleNotification } from '@Hooks/useReminder';
+import useThemeColors from '@Hooks/useThemeMode';
+import { ReminderCardProps } from '@Types/Interface';
+import { getNotificationIcon } from '@Utils/getNotificationIcon';
+import { getNotificationTitle } from '@Utils/getNotificationTitle';
 import GridView from './ReminderCards/GridList';
 import ListView from './ReminderCards/ListView';
 

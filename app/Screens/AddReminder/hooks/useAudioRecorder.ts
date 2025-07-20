@@ -6,7 +6,7 @@ import { showMessage } from 'react-native-flash-message';
 import { check, PERMISSIONS, request } from 'react-native-permissions';
 import { interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
-import { Memo } from '../../../Types/Interface';
+import { Memo } from '@Types/Interface';
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 

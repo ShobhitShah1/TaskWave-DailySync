@@ -15,25 +15,25 @@ import {
 import { showMessage } from 'react-native-flash-message';
 import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 
-import BatteryOptimizationModal from '../../Components/BatteryOptimizationModal';
-import FullScreenPreviewModal from '../../Components/FullScreenPreviewModal';
-import ReminderCard from '../../Components/ReminderCard';
-import RenderCalenderView from '../../Components/RenderCalenderView';
-import ServiceManager from '../../Components/ServiceManager';
-import YearMonthPicker from '../../Components/YearMonthPicker';
-import TextString from '../../Constants/TextString';
-import isGridView from '../../Hooks/isGridView';
-import useCalendar from '../../Hooks/useCalendar';
-import useNotificationPermission from '../../Hooks/useNotificationPermission';
-import { default as useDatabase } from '../../Hooks/useReminder';
-import useThemeColors from '../../Hooks/useThemeMode';
-import { Notification, NotificationStatus, NotificationType } from '../../Types/Interface';
-import { fromNowText } from '../../Utils/isSameDat';
+import FullScreenPreviewModal from '@Components/FullScreenPreviewModal';
+import ReminderCard from '@Components/ReminderCard';
+import RenderCalenderView from '@Components/RenderCalenderView';
+import ServiceManager from '@Components/ServiceManager';
+import YearMonthPicker from '@Components/YearMonthPicker';
+import TextString from '@Constants/TextString';
+import isGridView from '@Hooks/isGridView';
+import useCalendar from '@Hooks/useCalendar';
+import useNotificationPermission from '@Hooks/useNotificationPermission';
+import { default as useDatabase } from '@Hooks/useReminder';
+import useThemeColors from '@Hooks/useThemeMode';
+import { Notification, NotificationStatus, NotificationType } from '@Types/Interface';
+import { fromNowText } from '@Utils/isSameDat';
 import { formatDate } from '../AddReminder/ReminderScheduled';
 import HomeHeader from './Components/HomeHeader';
 import RenderEmptyView from './Components/RenderEmptyView';
 import RenderHeaderView from './Components/RenderHeaderView';
 import styles from './styles';
+import BatteryOptimizationModal from '@Components/BatteryOptimizationModal';
 
 const Home = () => {
   const style = styles();

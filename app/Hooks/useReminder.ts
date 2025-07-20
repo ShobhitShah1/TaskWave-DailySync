@@ -2,17 +2,17 @@
 import notifee, { AndroidImportance, AndroidVisibility } from '@notifee/react-native';
 import { showMessage } from 'react-native-flash-message';
 
-import { sounds } from '../Constants/Data';
-import { storage } from '../Contexts/ThemeProvider';
-import { Contact, Notification, RescheduleConfig } from '../Types/Interface';
-import { executeWithRetry, getDatabase } from '../Utils/databaseUtils';
+import { sounds } from '@Constants/Data';
+import { storage } from '@Contexts/ThemeProvider';
+import { Contact, Notification, RescheduleConfig } from '@Types/Interface';
+import { executeWithRetry, getDatabase } from '@Utils/databaseUtils';
 import {
   buildNotifeeNotification,
   buildTimestampTrigger,
   CHANNEL_NAME,
   createNotificationChannelIfNeeded,
-} from '../Utils/notificationHelpers';
-import { prepareNotificationData } from '../Utils/prepareNotificationData';
+} from '@Utils/notificationHelpers';
+import { prepareNotificationData } from '@Utils/prepareNotificationData';
 
 export const RESCHEDULE_CONFIG: RescheduleConfig = {
   defaultDelay: 1, // default 1 minutes

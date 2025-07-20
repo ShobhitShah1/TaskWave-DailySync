@@ -2,7 +2,7 @@ import { DocumentPickerResponse } from '@react-native-documents/picker';
 import { ReactNode } from 'react';
 import { ImageSourcePropType } from 'react-native';
 
-import { FrequencyType } from '../Screens/AddReminder/Components/AddScheduleFrequency';
+import { FrequencyType } from '@Screens/AddReminder/Components/AddScheduleFrequency';
 
 declare global {
   namespace ReactNavigation {

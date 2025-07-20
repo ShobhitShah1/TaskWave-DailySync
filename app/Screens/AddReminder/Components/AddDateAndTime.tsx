@@ -1,10 +1,10 @@
 import React, { FC } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import AssetsPath from '../../../Constants/AssetsPath';
-import TextString from '../../../Constants/TextString';
-import { FONTS, SIZE } from '../../../Constants/Theme';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import AssetsPath from '@Constants/AssetsPath';
+import TextString from '@Constants/TextString';
+import { FONTS, SIZE } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface AddDateAndTimeProps {
   themeColor: string;

@@ -21,10 +21,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { FONTS } from '../Constants/Theme';
-import { useAppContext } from '../Contexts/ThemeProvider';
-import useThemeColors from '../Hooks/useThemeMode';
-import LocationService from '../Services/LocationService';
+import { FONTS } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
+import LocationService from '@Services/LocationService';
 import ControlGrid from './ServiceManager/ControlGrid';
 import RemindersList from './ServiceManager/RemindersList';
 import StatusCard from './ServiceManager/StatusCard';

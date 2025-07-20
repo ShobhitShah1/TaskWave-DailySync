@@ -3,29 +3,18 @@ import React, { FC, memo, useMemo, useRef } from 'react';
 import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import AssetsPath from '../../Constants/AssetsPath';
-import { FONTS } from '../../Constants/Theme';
-import { useAppContext } from '../../Contexts/ThemeProvider';
-import { useCountdownTimer } from '../../Hooks/useCountdownTimer';
-import useThemeColors from '../../Hooks/useThemeMode';
-import { formatTime } from '../../Screens/AddReminder/ReminderScheduled';
-import { IListViewProps } from '../../Types/Interface';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import { useCountdownTimer } from '@Hooks/useCountdownTimer';
+import useThemeColors from '@Hooks/useThemeMode';
+import { formatTime } from '@Screens/AddReminder/ReminderScheduled';
+import { IListViewProps } from '@Types/Interface';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const LOGO_SIZE = SCREEN_WIDTH * 0.06;
 const CARD_WIDTH = SCREEN_WIDTH < 375 ? '47%' : '49%';
-
-// DEBUG: Color palette for visualizing different sections
-const DEBUG_COLORS = {
-  cardContainer: 'rgba(255,0,0,0.1)', // Light Red
-  headerContainer: 'rgba(0,255,0,0.1)', // Light Green
-  logoContainer: 'rgba(0,0,255,0.1)', // Light Blue
-  contentContainer: 'rgba(255,255,0,0.1)', // Light Yellow
-  footerContainer: 'rgba(255,0,255,0.1)', // Light Magenta
-  timeWrapper: 'rgba(0,255,255,0.1)', // Light Cyan
-  menuContainer: 'rgba(255,165,0,0.1)', // Light Orange
-};
 
 const GridView: FC<IListViewProps> = ({
   cardBackgroundColor,

@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 
-import { Notification, Theme } from '../Types/Interface';
+import { Notification, Theme } from '@Types/Interface';
 import useDatabase, { scheduleNotification } from './useReminder';
 
 interface DateTimePickerState {

@@ -8,9 +8,9 @@ import notifee, {
   TriggerType,
 } from '@notifee/react-native';
 
-import { sounds } from '../Constants/Data';
-import { storage } from '../Contexts/ThemeProvider';
-import { Notification } from '../Types/Interface';
+import { sounds } from '@Constants/Data';
+import { storage } from '@Contexts/ThemeProvider';
+import { Notification } from '@Types/Interface';
 import { getNotificationTitleAndBody } from './getNotificationTitleAndBody';
 
 export const CHANNEL_NAME = 'Reminder';

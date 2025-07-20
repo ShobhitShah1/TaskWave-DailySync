@@ -15,20 +15,20 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import ImagePreviewModal from '../../Components/ImagePreviewModal';
-import AudioMemoItem from '../../Components/MemoListItem';
-import AssetsPath from '../../Constants/AssetsPath';
-import { FONTS, SIZE } from '../../Constants/Theme';
-import { useAppContext } from '../../Contexts/ThemeProvider';
-import { handleNotificationPress } from '../../Hooks/handleNotificationPress';
-import { useCountdownTimer } from '../../Hooks/useCountdownTimer';
-import useNotificationIconColors from '../../Hooks/useNotificationIconColors';
-import useReminder from '../../Hooks/useReminder';
-import useThemeColors from '../../Hooks/useThemeMode';
-import { Notification } from '../../Types/Interface';
-import { formatNotificationType } from '../../Utils/formatNotificationType';
-import { getNotificationIcon } from '../../Utils/getNotificationIcon';
-import { linkifyText } from '../../Utils/linkify';
+import ImagePreviewModal from '@Components/ImagePreviewModal';
+import AudioMemoItem from '@Components/MemoListItem';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import { handleNotificationPress } from '@Hooks/handleNotificationPress';
+import { useCountdownTimer } from '@Hooks/useCountdownTimer';
+import useNotificationIconColors from '@Hooks/useNotificationIconColors';
+import useReminder from '@Hooks/useReminder';
+import useThemeColors from '@Hooks/useThemeMode';
+import { Notification } from '@Types/Interface';
+import { formatNotificationType } from '@Utils/formatNotificationType';
+import { getNotificationIcon } from '@Utils/getNotificationIcon';
+import { linkifyText } from '@Utils/linkify';
 import { formatDate, formatTime } from '../AddReminder/ReminderScheduled';
 
 type NotificationProps = {

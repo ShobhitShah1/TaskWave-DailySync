@@ -2,10 +2,10 @@ import React, { memo, useMemo } from 'react';
 import { Image, ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-import AssetsPath from '../../Constants/AssetsPath';
-import { FONTS } from '../../Constants/Theme';
-import useThemeColors from '../../Hooks/useThemeMode';
-import { CategoryItemType } from '../../Types/Interface';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
+import { CategoryItemType } from '@Types/Interface';
 
 const RenderCategoryItem = ({
   item,

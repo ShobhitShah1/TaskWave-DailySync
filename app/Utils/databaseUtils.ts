@@ -23,15 +23,6 @@ export const getDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
       useNewConnection: true,
     });
 
-    // Add migration: add 'priority' column if it does not exist
-    const columns = await databaseInstance.getAllAsync<{ name: string }>(
-      `PRAGMA table_info(notifications);`,
-    );
-    const hasPriority = columns.some((col) => col.name === 'priority');
-    if (!hasPriority) {
-      await databaseInstance.execAsync(`ALTER TABLE notifications ADD COLUMN priority TEXT;`);
-    }
-
     // Create notifications table if it does not exist (now includes 'priority')
     await databaseInstance.execAsync(`CREATE TABLE IF NOT EXISTS notifications (
       id TEXT PRIMARY KEY,
@@ -51,6 +42,16 @@ export const getDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
       locationName TEXT,
       priority TEXT
     );`);
+    console.log('[Database] notifications table ensured');
+
+    // Add migration: add 'priority' column if it does not exist
+    const columns = await databaseInstance.getAllAsync<{ name: string }>(
+      `PRAGMA table_info(notifications);`,
+    );
+    const hasPriority = columns.some((col) => col.name === 'priority');
+    if (!hasPriority) {
+      await databaseInstance.execAsync(`ALTER TABLE notifications ADD COLUMN priority TEXT;`);
+    }
 
     // Create contacts table if it does not exist
     await databaseInstance.execAsync(`CREATE TABLE IF NOT EXISTS contacts (

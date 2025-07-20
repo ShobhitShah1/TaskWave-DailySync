@@ -18,9 +18,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { FONTS, SIZE } from '../Constants/Theme';
-import { useAppContext } from '../Contexts/ThemeProvider';
-import useThemeColors from '../Hooks/useThemeMode';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface YearMonthPickerProps {
   isVisible: boolean;

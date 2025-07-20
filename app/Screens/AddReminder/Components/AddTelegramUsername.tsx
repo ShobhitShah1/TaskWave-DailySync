@@ -8,8 +8,8 @@ import {
   View,
 } from 'react-native';
 
-import { FONTS, SIZE } from '../../../Constants/Theme';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import { FONTS, SIZE } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface AddTelegramUsernameProps {
   themeColor: string;

@@ -2,15 +2,15 @@
 import notifee from '@notifee/react-native';
 import { showMessage } from 'react-native-flash-message';
 
-import { storage } from '../Contexts/ThemeProvider';
-import { Notification } from '../Types/Interface';
-import { getDatabase } from '../Utils/databaseUtils';
+import { storage } from '@Contexts/ThemeProvider';
+import { Notification } from '@Types/Interface';
+import { getDatabase } from '@Utils/databaseUtils';
 import {
   buildNotifeeNotification,
   buildTimestampTrigger,
   createNotificationChannelIfNeeded,
-} from '../Utils/notificationHelpers';
-import { prepareNotificationData } from '../Utils/prepareNotificationData';
+} from '@Utils/notificationHelpers';
+import { prepareNotificationData } from '@Utils/prepareNotificationData';
 
 export const updateNotification = async (notification: Notification): Promise<boolean> => {
   try {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { showMessage } from 'react-native-flash-message';
 
-import LocationService from '../Services/LocationService';
+import LocationService from '@Services/LocationService';
 
 interface LocationServiceState {
   isTracking: boolean;

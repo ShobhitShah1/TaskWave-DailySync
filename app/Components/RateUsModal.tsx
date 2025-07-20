@@ -3,9 +3,9 @@ import React, { FC, useState } from 'react';
 import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import ReactNativeModal from 'react-native-modal';
 
-import AssetsPath from '../Constants/AssetsPath';
-import { FONTS } from '../Constants/Theme';
-import useThemeColors from '../Hooks/useThemeMode';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface RateUsModalProps {
   isVisible: boolean;

@@ -1,10 +1,10 @@
 import React, { FC, memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import AssetsPath from '../../../Constants/AssetsPath';
-import { FONTS } from '../../../Constants/Theme';
-import { useAppContext } from '../../../Contexts/ThemeProvider';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface SettingProps {
   icon: number;

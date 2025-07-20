@@ -2,10 +2,10 @@ import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Dimensions, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 
-import { useAppContext } from '../../Contexts/ThemeProvider';
-import useThemeColors from '../../Hooks/useThemeMode';
-import { NotificationType, RenderSheetViewProps } from '../../Types/Interface';
-import { getCategories } from '../../Utils/getCategories';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
+import { NotificationType, RenderSheetViewProps } from '@Types/Interface';
+import { getCategories } from '@Utils/getCategories';
 import RenderCategoryItem from './RenderCategoryItem';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

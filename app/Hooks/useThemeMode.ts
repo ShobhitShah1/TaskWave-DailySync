@@ -1,5 +1,5 @@
-import { DarkThemeColors, LightThemeColors } from '../Constants/Theme';
-import { useAppContext } from '../Contexts/ThemeProvider';
+import { DarkThemeColors, LightThemeColors } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
 
 const useThemeColors = () => {
   const { theme } = useAppContext();

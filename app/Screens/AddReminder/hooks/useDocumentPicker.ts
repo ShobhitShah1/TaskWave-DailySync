@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import RNBlobUtil from 'react-native-blob-util';
 import { showMessage } from 'react-native-flash-message';
 
-import { generateUniqueFileName } from '../../../Utils/generateUniqueFileName';
+import { generateUniqueFileName } from '@Utils/generateUniqueFileName';
 import { MAX_FILE_SIZE } from './useAudioRecorder';
 
 const useDocumentPicker = () => {

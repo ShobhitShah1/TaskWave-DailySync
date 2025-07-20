@@ -1,8 +1,8 @@
 import { StyleSheet } from 'react-native';
 
-import { FONTS, SIZE } from '../../Constants/Theme';
-import { useAppContext } from '../../Contexts/ThemeProvider';
-import useThemeColors from '../../Hooks/useThemeMode';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
 
 const styles = () => {
   const colors = useThemeColors();

@@ -9,11 +9,11 @@ import {
   View,
 } from 'react-native';
 
-import FullScreenMessageModal from '../../../Components/FullScreenMessageModal';
-import AssetsPath from '../../../Constants/AssetsPath';
-import { FONTS, SIZE } from '../../../Constants/Theme';
-import { useAppContext } from '../../../Contexts/ThemeProvider';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import FullScreenMessageModal from '@Components/FullScreenMessageModal';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface AddMessageProps {
   title?: 'Message' | 'Note';

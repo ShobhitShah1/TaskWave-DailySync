@@ -3,8 +3,8 @@ import { Dimensions, FlatList, Image, Pressable, StyleSheet, View, ViewToken } f
 import ReactNativeModal from 'react-native-modal';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import AssetsPath from '../Constants/AssetsPath';
-import useThemeColors from '../Hooks/useThemeMode';
+import AssetsPath from '@Constants/AssetsPath';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface ImagePreviewModalProps {
   isVisible: boolean;

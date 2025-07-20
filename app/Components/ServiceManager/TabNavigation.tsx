@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { useAppContext } from '../../Contexts/ThemeProvider';
+import { useAppContext } from '@Contexts/ThemeProvider';
 
 interface TabNavigationProps {
   selectedTab: 'overview' | 'reminders' | 'advanced';

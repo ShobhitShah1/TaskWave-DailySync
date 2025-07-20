@@ -2,10 +2,10 @@ import React, { memo } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import AssetsPath from '../../Constants/AssetsPath';
-import { FONTS, SIZE } from '../../Constants/Theme';
-import { useAppContext } from '../../Contexts/ThemeProvider';
-import useThemeColors from '../../Hooks/useThemeMode';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
 import HomeHeader from '../Home/Components/HomeHeader';
 
 const AboutApp = () => {

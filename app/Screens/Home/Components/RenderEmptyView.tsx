@@ -2,8 +2,8 @@ import React, { memo } from 'react';
 import { Image, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import AssetsPath from '../../../Constants/AssetsPath';
-import TextString from '../../../Constants/TextString';
+import AssetsPath from '@Constants/AssetsPath';
+import TextString from '@Constants/TextString';
 import styles from '../styles';
 
 const RenderEmptyView = () => {

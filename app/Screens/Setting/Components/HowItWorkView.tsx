@@ -1,9 +1,9 @@
 import React, { FC } from 'react';
 import { Image, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
-import { FONTS } from '../../../Constants/Theme';
-import { useAppContext } from '../../../Contexts/ThemeProvider';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import { FONTS } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface HowItWorkViewProps {
   item: any;

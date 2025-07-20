@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 import { showMessage } from 'react-native-flash-message';
 
-import LocationService from '../Services/LocationService';
-import { Notification } from '../Types/Interface';
+import LocationService from '@Services/LocationService';
+import { Notification } from '@Types/Interface';
 import useLocationPermission from './useLocationPermission';
 import useDatabase from './useReminder';
 

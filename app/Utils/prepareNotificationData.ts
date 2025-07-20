@@ -1,4 +1,4 @@
-import { Notification } from '../Types/Interface';
+import { Notification } from '@Types/Interface';
 
 /**
  * Prepares and normalizes notification data for both SQL and notification payloads.

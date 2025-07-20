@@ -2,8 +2,8 @@ import React, { memo, useEffect } from 'react';
 import { Image, Pressable } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
-import { useAppContext } from '../../../Contexts/ThemeProvider';
-import { NotificationType } from '../../../Types/Interface';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import { NotificationType } from '@Types/Interface';
 import styles from '../styles';
 
 interface FilterButtonProps {

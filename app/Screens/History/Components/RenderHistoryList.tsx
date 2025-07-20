@@ -4,15 +4,15 @@ import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-import AssetsPath from '../../../Constants/AssetsPath';
-import { FONTS } from '../../../Constants/Theme';
-import { useAppContext } from '../../../Contexts/ThemeProvider';
-import { useDuplicateReminder } from '../../../Hooks/useDuplicateReminder';
-import useNotificationIconColors from '../../../Hooks/useNotificationIconColors';
-import useThemeColors from '../../../Hooks/useThemeMode';
-import { ReminderCardProps } from '../../../Types/Interface';
-import { getNotificationIcon } from '../../../Utils/getNotificationIcon';
-import { getNotificationTitle } from '../../../Utils/getNotificationTitle';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import { useDuplicateReminder } from '@Hooks/useDuplicateReminder';
+import useNotificationIconColors from '@Hooks/useNotificationIconColors';
+import useThemeColors from '@Hooks/useThemeMode';
+import { ReminderCardProps } from '@Types/Interface';
+import { getNotificationIcon } from '@Utils/getNotificationIcon';
+import { getNotificationTitle } from '@Utils/getNotificationTitle';
 import { formatDate, formatTime } from '../../AddReminder/ReminderScheduled';
 
 const RenderHistoryList: React.FC<ReminderCardProps> = memo(

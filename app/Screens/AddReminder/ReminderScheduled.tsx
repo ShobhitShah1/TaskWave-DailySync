@@ -4,12 +4,12 @@ import React, { memo, useMemo } from 'react';
 import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import AssetsPath from '../../Constants/AssetsPath';
-import { FONTS, SIZE } from '../../Constants/Theme';
-import { useCountdownTimer } from '../../Hooks/useCountdownTimer';
-import useThemeColors from '../../Hooks/useThemeMode';
-import { Notification } from '../../Types/Interface';
-import { getNotificationTitle } from '../../Utils/getNotificationTitle';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useCountdownTimer } from '@Hooks/useCountdownTimer';
+import useThemeColors from '@Hooks/useThemeMode';
+import { Notification } from '@Types/Interface';
+import { getNotificationTitle } from '@Utils/getNotificationTitle';
 
 type ReminderScheduledProps = {
   params: { themeColor: string; notification: Notification };

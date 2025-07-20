@@ -4,9 +4,10 @@ import React, { memo, useEffect, useRef, useState } from 'react';
 import { Animated, FlatList, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { OnBoardingData } from '../../Constants/Data';
-import { storage, useAppContext } from '../../Contexts/ThemeProvider';
-import useThemeColors from '../../Hooks/useThemeMode';
+import { OnBoardingData } from '@Constants/Data';
+import { storage, useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
+
 import NextButton from './Components/NextButton';
 import OnBoardingListView from './Components/OnBoardingListView';
 import Paginator from './Components/Paginator';

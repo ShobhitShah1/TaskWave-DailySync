@@ -1,4 +1,4 @@
-import { Notification } from '../Types/Interface';
+import { Notification } from '@Types/Interface';
 
 interface NotificationTitleBody {
   title: string;

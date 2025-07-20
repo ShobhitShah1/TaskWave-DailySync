@@ -3,9 +3,9 @@ import * as React from 'react';
 import { Dimensions, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
 import Modal from 'react-native-modal';
 
-import { FONTS } from '../Constants/Theme';
-import { useAppContext } from '../Contexts/ThemeProvider';
-import useThemeColors from '../Hooks/useThemeMode';
+import { FONTS } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface BatteryOptimizationModalProps {
   visible: boolean;

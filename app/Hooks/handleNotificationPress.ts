@@ -2,9 +2,9 @@ import { Linking } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { sendMail, sendSms, sendTelegramMessage, sendWhatsapp } from 'send-message';
 
-import { navigationRef } from '../Routes/RootNavigation';
-import { Notification } from '../Types/Interface';
-import { parseNotificationData } from '../Utils/notificationParser';
+import { navigationRef } from '@Routes/RootNavigation';
+import { Notification } from '@Types/Interface';
+import { parseNotificationData } from '@Utils/notificationParser';
 
 const parseContacts = (toContact: any): string[] => {
   try {

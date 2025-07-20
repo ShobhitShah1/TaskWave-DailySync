@@ -1,5 +1,5 @@
-import useThemeColors from '@hooks/useThemeMode';
-import HomeHeader from '@screens/Home/Components/HomeHeader';
+import useThemeColors from '@Hooks/useThemeMode';
+import HomeHeader from '@Screens/Home/Components/HomeHeader';
 import React, { memo, useEffect, useState } from 'react';
 import {
   Alert,
@@ -13,8 +13,8 @@ import {
 import { LatLng } from 'react-native-maps';
 import { useSharedValue, withTiming } from 'react-native-reanimated';
 
-import useLocationNotification from '../../Hooks/useLocationNotification';
-import { Notification } from '../../Types/Interface';
+import useLocationNotification from '@Hooks/useLocationNotification';
+import { Notification } from '@Types/Interface';
 import LocationDetailsCard from './Components/LocationDetailsCard';
 import LocationMapView from './Components/LocationMapView';
 import LocationSearchBar from './Components/LocationSearchBar';

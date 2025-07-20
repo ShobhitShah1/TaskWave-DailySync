@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { LayoutAnimation, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { FONTS } from '../../Constants/Theme';
+import { FONTS } from '@Constants/Theme';
 
 interface StatusCardProps {
   status: string;

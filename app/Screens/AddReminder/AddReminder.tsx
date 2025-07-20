@@ -5,15 +5,12 @@ import { showMessage } from 'react-native-flash-message';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import useNotificationIconColors from '../../Hooks/useNotificationIconColors';
-import useDatabase, {
-  createNotificationChannel,
-  scheduleNotification,
-} from '../../Hooks/useReminder';
-import useThemeColors from '../../Hooks/useThemeMode';
-import { Contact, Notification, NotificationType } from '../../Types/Interface';
-import { formatNotificationType } from '../../Utils/formatNotificationType';
-import { validateDateTime } from '../../Utils/validateDateTime';
+import useNotificationIconColors from '@Hooks/useNotificationIconColors';
+import useDatabase, { createNotificationChannel, scheduleNotification } from '@Hooks/useReminder';
+import useThemeColors from '@Hooks/useThemeMode';
+import { Contact, Notification, NotificationType } from '@Types/Interface';
+import { formatNotificationType } from '@Utils/formatNotificationType';
+import { validateDateTime } from '@Utils/validateDateTime';
 import AddMailSubject from './Components/AddMailSubject';
 import AddMailTo from './Components/AddMailTo';
 import AddMessage from './Components/AddMessage';

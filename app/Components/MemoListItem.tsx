@@ -9,11 +9,11 @@ import Animated, {
   useAnimatedStyle,
 } from 'react-native-reanimated';
 
-import AssetsPath from '../Constants/AssetsPath';
-import { FONTS, SIZE } from '../Constants/Theme';
-import { useAppContext } from '../Contexts/ThemeProvider';
-import useThemeColors from '../Hooks/useThemeMode';
-import { Memo } from '../Types/Interface';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
+import { Memo } from '@Types/Interface';
 
 const AudioMemoItem = ({
   memo,

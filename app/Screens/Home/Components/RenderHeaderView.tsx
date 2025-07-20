@@ -1,12 +1,12 @@
 import React, { FC, memo, useCallback, useMemo } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 
-import AssetsPath from '../../../Constants/AssetsPath';
-import { useAppContext } from '../../../Contexts/ThemeProvider';
-import useNotificationIconColors from '../../../Hooks/useNotificationIconColors';
-import useThemeColors from '../../../Hooks/useThemeMode';
-import { headerInterface, NotificationType } from '../../../Types/Interface';
-import { getCategories } from '../../../Utils/getCategories';
+import AssetsPath from '@Constants/AssetsPath';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useNotificationIconColors from '@Hooks/useNotificationIconColors';
+import useThemeColors from '@Hooks/useThemeMode';
+import { headerInterface, NotificationType } from '@Types/Interface';
+import { getCategories } from '@Utils/getCategories';
 import styles from '../styles';
 import { FilterButton } from './FilterButton';
 

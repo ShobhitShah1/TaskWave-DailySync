@@ -1,8 +1,8 @@
 import React, { FC, memo } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { FONTS } from '../../../Constants/Theme';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface NextButtonProps {
   scrollTo: () => void;

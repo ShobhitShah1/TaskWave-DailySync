@@ -4,10 +4,10 @@ import { Linking, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Share from 'react-native-share';
 
-import RateUsModal from '../../Components/RateUsModal';
-import AssetsPath from '../../Constants/AssetsPath';
-import { SIZE } from '../../Constants/Theme';
-import useThemeColors from '../../Hooks/useThemeMode';
+import RateUsModal from '@Components/RateUsModal';
+import AssetsPath from '@Constants/AssetsPath';
+import { SIZE } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 import HomeHeader from '../Home/Components/HomeHeader';
 import SettingItem from './Components/SettingItem';
 

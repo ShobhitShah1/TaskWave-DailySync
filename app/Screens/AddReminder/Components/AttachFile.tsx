@@ -3,10 +3,10 @@ import React, { FC, memo, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 
-import ImagePreviewModal from '../../../Components/ImagePreviewModal';
-import AssetsPath from '../../../Constants/AssetsPath';
-import { FONTS, SIZE } from '../../../Constants/Theme';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import ImagePreviewModal from '@Components/ImagePreviewModal';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS, SIZE } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface AttachFileProps {
   themeColor: string;

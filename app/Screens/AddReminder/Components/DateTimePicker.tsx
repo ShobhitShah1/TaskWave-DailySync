@@ -1,7 +1,6 @@
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import React from 'react';
-
-import AddDateAndTime from '../Components/AddDateAndTime';
+import AddDateAndTime from './AddDateAndTime';
 
 interface DateTimePickerProps {
   selectedDateAndTime: { date: Date | undefined; time: Date | undefined };

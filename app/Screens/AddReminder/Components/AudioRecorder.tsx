@@ -2,10 +2,10 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import AudioMemoItem from '../../../Components/MemoListItem';
-import AssetsPath from '../../../Constants/AssetsPath';
-import { useAppContext } from '../../../Contexts/ThemeProvider';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import AssetsPath from '@Constants/AssetsPath';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
+import AudioMemoItem from '@Components/MemoListItem';
 
 interface AudioRecorderProps {
   memos: any[];

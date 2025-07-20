@@ -2,9 +2,9 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { Contact, NotificationType } from 'Types/Interface';
 
-import AddContact from '../Components/AddContact';
-import AddTelegramUsername from '../Components/AddTelegramUsername';
 import styles from '../styles';
+import AddContact from './AddContact';
+import AddTelegramUsername from './AddTelegramUsername';
 
 interface ContactSelectorProps {
   selectedContacts: Contact[];

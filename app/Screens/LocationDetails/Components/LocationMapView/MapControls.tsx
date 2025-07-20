@@ -1,4 +1,4 @@
-import AssetsPath from '@constants/AssetsPath';
+import AssetsPath from '@Constants/AssetsPath';
 import React from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 

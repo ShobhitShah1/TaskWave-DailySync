@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-import { Notification } from '../Types/Interface';
+import { Notification } from '@Types/Interface';
 
 // Convert day name to number (0 = Sunday, 1 = Monday, etc.)
 const dayToNumber = (day: string): number => {

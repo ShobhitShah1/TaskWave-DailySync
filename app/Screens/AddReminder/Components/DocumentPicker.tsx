@@ -1,7 +1,6 @@
 import { DocumentPickerResponse } from '@react-native-documents/picker';
 import React from 'react';
-
-import AttachFile from '../Components/AttachFile';
+import AttachFile from './AttachFile';
 
 interface DocumentPickerProps {
   selectedDocuments: DocumentPickerResponse[];

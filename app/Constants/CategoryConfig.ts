@@ -1,4 +1,4 @@
-import { NotificationType } from '../Types/Interface';
+import { NotificationType } from '@Types/Interface';
 import AssetsPath from './AssetsPath';
 import { LightThemeColors } from './Theme';
 

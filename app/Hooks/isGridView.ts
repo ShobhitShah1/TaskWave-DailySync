@@ -1,4 +1,4 @@
-import { useAppContext } from '../Contexts/ThemeProvider';
+import { useAppContext } from '@Contexts/ThemeProvider';
 
 const isGridView = () => {
   const { viewMode } = useAppContext();

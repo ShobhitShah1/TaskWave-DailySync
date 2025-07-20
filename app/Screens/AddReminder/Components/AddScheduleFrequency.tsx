@@ -8,8 +8,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { FONTS } from '../../../Constants/Theme';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 export const frequencies = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
 export const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

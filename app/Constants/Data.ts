@@ -1,4 +1,4 @@
-import { Sound } from '../Types/Interface';
+import { Sound } from '@Types/Interface';
 import AssetsPath from './AssetsPath';
 
 export const OnBoardingData = [

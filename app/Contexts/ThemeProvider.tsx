@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 import { MMKV } from 'react-native-mmkv';
 
-import { AppContextProps, AppContextType, Theme, ViewMode } from '../Types/Interface';
+import { AppContextProps, AppContextType, Theme, ViewMode } from '@Types/Interface';
 
 export const storage = new MMKV();
 

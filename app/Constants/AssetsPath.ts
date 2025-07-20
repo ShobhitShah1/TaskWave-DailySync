@@ -95,8 +95,6 @@ const software_interface_remove = require('../../assets/Sound/softwareInterfaceR
 const ting_tong = require('../../assets/Sound/ting_tong.mp3');
 const tink_tink = require('../../assets/Sound/tink_tink.mp3');
 
-const leaflet_html = require('../../assets/leaflet.html');
-
 export default {
   ic_home,
   ic_fillHome,
@@ -198,7 +196,4 @@ export default {
   software_interface_remove,
   ting_tong,
   tink_tink,
-
-  // HTML
-  leaflet_html,
 };

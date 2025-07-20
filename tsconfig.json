@@ -3,14 +3,17 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
-    "baseUrl": "./app",
+    "baseUrl": "app",
     "paths": {
-      "@components/*": ["Components/*"],
-      "@screens/*": ["Screens/*"],
-      "@hooks/*": ["Hooks/*"],
-      "@contexts/*": ["Contexts/*"],
-      "@constants/*": ["Constants/*"],
-      "@utils/*": ["Utils/*"]
+      "@Components/*": ["Components/*"],
+      "@Constants/*": ["Constants/*"],
+      "@Contexts/*": ["Contexts/*"],
+      "@Hooks/*": ["Hooks/*"],
+      "@Routes/*": ["Routes/*"],
+      "@Screens/*": ["Screens/*"],
+      "@Services/*": ["Services/*"],
+      "@Types/*": ["Types/*"],
+      "@Utils/*": ["Utils/*"]
     }
   }
 }

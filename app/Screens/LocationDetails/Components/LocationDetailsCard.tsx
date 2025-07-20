@@ -1,9 +1,9 @@
-import { useAppContext } from '@contexts/ThemeProvider';
+import { useAppContext } from '@Contexts/ThemeProvider';
 import React from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { FONTS } from '../../../Constants/Theme';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface LocationDetailsCardProps {
   title: string;

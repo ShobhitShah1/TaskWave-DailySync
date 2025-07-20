@@ -11,13 +11,13 @@ import {
 } from 'react-native';
 import Modal from 'react-native-modal';
 
-import AssetsPath from '../Constants/AssetsPath';
-import TextString from '../Constants/TextString';
-import { FONTS, SIZE } from '../Constants/Theme';
-import { useAppContext } from '../Contexts/ThemeProvider';
-import isGridView from '../Hooks/isGridView';
-import useThemeColors from '../Hooks/useThemeMode';
-import { FullScreenProps } from '../Types/Interface';
+import AssetsPath from '@Constants/AssetsPath';
+import TextString from '@Constants/TextString';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import isGridView from '@Hooks/isGridView';
+import useThemeColors from '@Hooks/useThemeMode';
+import { FullScreenProps } from '@Types/Interface';
 import ReminderCard from './ReminderCard';
 
 const FullScreenPreviewModal: FC<FullScreenProps> = ({

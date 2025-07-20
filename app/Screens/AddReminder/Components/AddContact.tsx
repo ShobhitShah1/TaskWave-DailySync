@@ -2,11 +2,11 @@ import React, { FC, memo } from 'react';
 import { Image, Pressable, StyleSheet, Text } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 
-import AssetsPath from '../../../Constants/AssetsPath';
-import TextString from '../../../Constants/TextString';
-import { FONTS, SIZE } from '../../../Constants/Theme';
-import useThemeColors from '../../../Hooks/useThemeMode';
-import { AddContactProps, Contact } from '../../../Types/Interface';
+import AssetsPath from '@Constants/AssetsPath';
+import TextString from '@Constants/TextString';
+import { FONTS, SIZE } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
+import { AddContactProps, Contact } from '@Types/Interface';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 

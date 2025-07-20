@@ -16,9 +16,9 @@ import {
 import Modal from 'react-native-modal';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import AssetsPath from '../../../Constants/AssetsPath';
-import useThemeColors from '../../../Hooks/useThemeMode';
-import { Contact, ContactListModalProps } from '../../../Types/Interface';
+import AssetsPath from '@Constants/AssetsPath';
+import useThemeColors from '@Hooks/useThemeMode';
+import { Contact, ContactListModalProps } from '@Types/Interface';
 import styles from '../styles';
 import RenderContactList from './RenderContactList';
 

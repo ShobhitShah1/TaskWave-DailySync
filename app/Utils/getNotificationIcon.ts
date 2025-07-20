@@ -1,5 +1,5 @@
-import AssetsPath from '../Constants/AssetsPath';
-import { NotificationType } from '../Types/Interface';
+import AssetsPath from '@Constants/AssetsPath';
+import { NotificationType } from '@Types/Interface';
 
 export const getNotificationIcon = (type: NotificationType) => {
   switch (type) {

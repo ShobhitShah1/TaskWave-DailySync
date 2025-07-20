@@ -2,9 +2,9 @@ import React, { memo, useEffect } from 'react';
 import { Image, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
-import AssetsPath from '../Constants/AssetsPath';
-import { useAppContext } from '../Contexts/ThemeProvider';
-import useThemeColors from '../Hooks/useThemeMode';
+import AssetsPath from '@Constants/AssetsPath';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface CustomSwitchProps {
   isOn: boolean;

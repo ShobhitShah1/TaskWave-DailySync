@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import Contacts from 'react-native-contacts';
 import { showMessage } from 'react-native-flash-message';
 
-import useContactPermission from '../../../Hooks/useContactPermission';
-import useReminder from '../../../Hooks/useReminder';
-import { Contact } from '../../../Types/Interface';
+import useContactPermission from '@Hooks/useContactPermission';
+import useReminder from '@Hooks/useReminder';
+import { Contact } from '@Types/Interface';
 
 const useContactSelector = () => {
   const { requestPermission, checkPermissionStatus } = useContactPermission();

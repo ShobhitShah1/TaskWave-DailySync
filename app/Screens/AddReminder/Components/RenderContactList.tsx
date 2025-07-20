@@ -2,9 +2,9 @@ import React, { memo, useMemo } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
-import { useAppContext } from '../../../Contexts/ThemeProvider';
-import useThemeColors from '../../../Hooks/useThemeMode';
-import { Contact } from '../../../Types/Interface';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
+import { Contact } from '@Types/Interface';
 import styles from '../styles';
 
 interface RenderContactListProps {

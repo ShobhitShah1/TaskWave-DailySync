@@ -1,4 +1,4 @@
-import { FONTS } from '@constants/Theme';
+import { FONTS } from '@Constants/Theme';
 import notifee, { EventType } from '@notifee/react-native';
 import { useFonts } from 'expo-font';
 import * as QuickActions from 'expo-quick-actions';
@@ -281,6 +281,12 @@ const AppContent = () => {
 };
 
 export default function App() {
+  useEffect(() => {
+    getDatabase()
+      .then(() => console.log('[App] Database initialized'))
+      .catch((err) => console.error('[App] Database init error', err));
+  }, []);
+
   return (
     <AppProvider>
       <AppContent />

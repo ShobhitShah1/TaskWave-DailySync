@@ -2,14 +2,14 @@ import React, { FC, memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import AssetsPath from '../../Constants/AssetsPath';
-import { FONTS } from '../../Constants/Theme';
-import { useAppContext } from '../../Contexts/ThemeProvider';
-import { useCountdownTimer } from '../../Hooks/useCountdownTimer';
-import useThemeColors from '../../Hooks/useThemeMode';
-import { formatTime } from '../../Screens/AddReminder/ReminderScheduled';
-import { IListViewProps } from '../../Types/Interface';
-import { formatNotificationType } from '../../Utils/formatNotificationType';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import { useCountdownTimer } from '@Hooks/useCountdownTimer';
+import useThemeColors from '@Hooks/useThemeMode';
+import { formatTime } from '@Screens/AddReminder/ReminderScheduled';
+import { IListViewProps } from '@Types/Interface';
+import { formatNotificationType } from '@Utils/formatNotificationType';
 
 const LOGO_SIZE = 65;
 

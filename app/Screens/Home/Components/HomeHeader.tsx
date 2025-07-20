@@ -4,12 +4,12 @@ import React, { memo, useCallback } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-import CustomSwitch from '../../../Components/CustomSwitch';
-import AssetsPath from '../../../Constants/AssetsPath';
-import TextString from '../../../Constants/TextString';
-import { FONTS, SIZE } from '../../../Constants/Theme';
-import { useAppContext } from '../../../Contexts/ThemeProvider';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import AssetsPath from '@Constants/AssetsPath';
+import TextString from '@Constants/TextString';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
+import CustomSwitch from '@Components/CustomSwitch';
 
 type LeftIconType = 'grid' | 'back' | 'none';
 
@@ -170,12 +170,12 @@ export default memo(HomeHeader);
 // import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 // import Animated, { FadeIn } from 'react-native-reanimated';
 
-// import CustomSwitch from '../../../Components/CustomSwitch';
-// import AssetsPath from '../../../Constants/AssetsPath';
-// import TextString from '../../../Constants/TextString';
-// import { FONTS, SIZE } from '../../../Constants/Theme';
-// import { useAppContext } from '../../../Contexts/ThemeProvider';
-// import useThemeColors from '../../../Hooks/useThemeMode';
+// import CustomSwitch from './Components/CustomSwitch';
+// import AssetsPath from '@Constants/AssetsPath';
+// import TextString from '@Constants/TextString';
+// import { FONTS, SIZE } from '@Constants/Theme';
+// import { useAppContext } from '@Contexts/ThemeProvider';
+// import useThemeColors from '@Hooks/useThemeMode';
 
 // type LeftIconType = 'grid' | 'back' | 'none';
 

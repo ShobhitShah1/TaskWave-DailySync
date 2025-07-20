@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { showMessage } from 'react-native-flash-message';
 
-import { NotificationType } from '../../../Types/Interface';
-import { validateMultipleEmails } from '../../../Utils/validateMultipleEmails';
+import { NotificationType } from '@Types/Interface';
+import { validateMultipleEmails } from '@Utils/validateMultipleEmails';
 
 const useAddReminderForm = (notificationType: NotificationType) => {
   const [message, setMessage] = useState('');

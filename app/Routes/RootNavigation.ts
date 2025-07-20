@@ -1,6 +1,6 @@
 import { CommonActions, createNavigationContainerRef } from '@react-navigation/native';
 
-import { RootStackParamList } from '../Types/Interface';
+import { RootStackParamList } from '@Types/Interface';
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 

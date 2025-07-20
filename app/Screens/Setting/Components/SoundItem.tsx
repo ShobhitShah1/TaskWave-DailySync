@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { Sound } from '../../../Types/Interface';
+import { Sound } from '@Types/Interface';
 import styles from '../styles';
 
 interface SoundItemProps {

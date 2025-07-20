@@ -3,8 +3,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';
 
-import useThemeColors from '../../../Hooks/useThemeMode';
-import LocationService from '../../../Services/LocationService';
+import useThemeColors from '@Hooks/useThemeMode';
+import LocationService from '@Services/LocationService';
 import MapMarker from './LocationMapView/MapMarker';
 import MapControls from './LocationMapView/MapControls';
 import { LIGHT_MAP_STYLE, DARK_MAP_STYLE, SATELLITE_MAP_STYLE } from './LocationMapView/MapStyles';
@@ -13,8 +13,8 @@ import {
   GeoLatLng,
   LocationMapViewProps,
   MapLibreUserLocationEvent,
-} from '../../../Types/Interface';
-import { getCenterBetweenPoints, getZoomLevelForPoints } from '../../../Utils/geoUtils';
+} from '@Types/Interface';
+import { getCenterBetweenPoints, getZoomLevelForPoints } from '@Utils/geoUtils';
 
 const DEFAULT_LOCATION: GeoLatLng = {
   latitude: -23.5489,

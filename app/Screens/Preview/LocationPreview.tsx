@@ -3,10 +3,10 @@ import React, { useRef } from 'react';
 import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
-import AssetsPath from '../../Constants/AssetsPath';
-import { FONTS } from '../../Constants/Theme';
-import useThemeColors from '../../Hooks/useThemeMode';
-import { Notification } from '../../Types/Interface';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
+import { Notification } from '@Types/Interface';
 
 const { width } = Dimensions.get('window');
 const MAP_HEIGHT = width * 0.7;

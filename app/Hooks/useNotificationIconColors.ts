@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
-import { categoriesConfig } from '../Constants/CategoryConfig';
-import { NotificationColor } from '../Types/Interface';
+import { categoriesConfig } from '@Constants/CategoryConfig';
+import { NotificationColor } from '@Types/Interface';
 import useThemeColors from './useThemeMode';
 
 const useNotificationIconColors = (notificationType: string): NotificationColor => {

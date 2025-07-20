@@ -2,8 +2,8 @@ import React, { FC } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { FONTS } from '../../../Constants/Theme';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface filterTabProps {
   res: {

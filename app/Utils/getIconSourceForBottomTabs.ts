@@ -1,4 +1,4 @@
-import AssetsPath from '../Constants/AssetsPath';
+import AssetsPath from '@Constants/AssetsPath';
 
 export const getIconSourceForBottomTabs = (routeName: string, isFocus: boolean) => {
   switch (routeName) {

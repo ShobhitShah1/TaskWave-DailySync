@@ -1,6 +1,6 @@
 import { DocumentPickerResponse } from '@react-native-documents/picker';
 
-import { Notification } from '../Types/Interface';
+import { Notification } from '@Types/Interface';
 
 export const parseAttachments = (attachments: any): DocumentPickerResponse[] => {
   try {

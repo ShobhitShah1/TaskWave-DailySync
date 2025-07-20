@@ -1,4 +1,4 @@
-import { GetCenterBetweenPoints, GetZoomLevelForPoints } from '../Types/Interface';
+import { GetCenterBetweenPoints, GetZoomLevelForPoints } from '@Types/Interface';
 
 /**
  * Calculate the center point between two GeoLatLng coordinates.

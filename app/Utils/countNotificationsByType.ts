@@ -1,4 +1,4 @@
-import { Notification, NotificationType } from '../Types/Interface';
+import { Notification, NotificationType } from '@Types/Interface';
 
 export function countNotificationsByType(
   notifications: Notification[],

@@ -1,9 +1,5 @@
 import React from 'react';
-
-import AddScheduleFrequency, {
-  FrequencyType,
-  WeekDayType,
-} from '../Components/AddScheduleFrequency';
+import AddScheduleFrequency, { FrequencyType, WeekDayType } from './AddScheduleFrequency';
 
 interface ScheduleFrequencyPickerProps {
   scheduleFrequency: FrequencyType | null;

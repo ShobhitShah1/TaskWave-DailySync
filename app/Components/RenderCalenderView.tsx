@@ -1,9 +1,9 @@
 import React, { FC, memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { FONTS } from '../Constants/Theme';
-import useThemeColors from '../Hooks/useThemeMode';
-import { DayItem } from '../Types/Interface';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
+import { DayItem } from '@Types/Interface';
 
 interface CalenderProps {
   item: DayItem;

@@ -7,10 +7,10 @@ import { showMessage } from 'react-native-flash-message';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { sounds } from '../../Constants/Data';
-import { storage } from '../../Contexts/ThemeProvider';
-import { createNotificationChannel } from '../../Hooks/useReminder';
-import { Sound } from '../../Types/Interface';
+import { sounds } from '@Constants/Data';
+import { storage } from '@Contexts/ThemeProvider';
+import { createNotificationChannel } from '@Hooks/useReminder';
+import { Sound } from '@Types/Interface';
 import HomeHeader from '../Home/Components/HomeHeader';
 import SoundItem from './Components/SoundItem';
 import styles from './styles';

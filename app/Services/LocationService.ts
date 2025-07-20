@@ -4,7 +4,7 @@ import * as QuickActions from 'expo-quick-actions';
 import * as TaskManager from 'expo-task-manager';
 import { showMessage } from 'react-native-flash-message';
 
-import { Notification } from '../Types/Interface';
+import { Notification } from '@Types/Interface';
 
 // Proper type for notification action events
 interface NotificationActionEvent {

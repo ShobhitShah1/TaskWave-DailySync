@@ -1,10 +1,10 @@
-import { useAppContext } from '@contexts/ThemeProvider';
+import { useAppContext } from '@Contexts/ThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
-import { FONTS } from '../../../Constants/Theme';
-import useThemeColors from '../../../Hooks/useThemeMode';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface LocationSearchBarProps {
   value: string;
