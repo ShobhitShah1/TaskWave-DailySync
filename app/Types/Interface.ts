@@ -281,6 +281,74 @@ export interface LocationMarker {
   color: string;
 }
 
+// Geo types for map and utility functions
+export interface GeoLatLng {
+  latitude: number;
+  longitude: number;
+}
+
+export type GetCenterBetweenPoints = (a: GeoLatLng, b: GeoLatLng) => GeoLatLng;
+export type GetZoomLevelForPoints = (a: GeoLatLng, b: GeoLatLng) => number;
+
+/**
+ * Props for the main LocationMapView component
+ */
 export interface LocationMapViewProps {
+  onLocationSelect: (coordinate: GeoLatLng) => void;
+  selectedLocation: GeoLatLng | null;
   children?: React.ReactNode;
+}
+
+/**
+ * Camera position state for the map
+ */
+export interface CameraPosition {
+  centerCoordinate: [number, number];
+  zoomLevel: number;
+  animationDuration?: number;
+}
+
+/**
+ * Props for the custom map marker
+ */
+export interface MapMarkerProps {
+  color: string;
+  backgroundColor: string;
+}
+
+/**
+ * Props for the map controls (satellite, zoom-to-fit, FAB)
+ */
+export interface MapControlsProps {
+  isSatelliteView: boolean;
+  onToggleSatellite: () => void;
+  onZoomToFit: () => void;
+  onCenterUser: () => void;
+  showZoomToFit: boolean;
+  colors: { background: string; blue: string; text: string };
+}
+
+/**
+ * MapLibre map press event type (for onPress handler)
+ */
+export interface MapLibreMapPressEvent {
+  payload?: {
+    geometry?: {
+      coordinates: [number, number];
+    };
+  };
+  geometry?: {
+    coordinates: [number, number];
+  };
+  coordinates?: [number, number];
+}
+
+/**
+ * MapLibre user location update event type (for UserLocation onUpdate handler)
+ */
+export interface MapLibreUserLocationEvent {
+  coords?: {
+    latitude: number;
+    longitude: number;
+  };
 }

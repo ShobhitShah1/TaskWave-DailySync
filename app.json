@@ -112,7 +112,8 @@
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+       "@maplibre/maplibre-react-native"
     ]
   }
 }

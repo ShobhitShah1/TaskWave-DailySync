@@ -30,7 +30,6 @@
     "react-hooks",
     "prettier",
     "unused-imports",
-    "simple-import-sort"
   ],
   "rules": {
     "prettier/prettier": "error",
@@ -38,14 +37,11 @@
     "react/prop-types": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "warn",
-    "import/order": ["error", { "newlines-between": "always" }],
     "unused-imports/no-unused-imports": "error",
     "unused-imports/no-unused-vars": [
       "warn",
       { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
-    ],
-    "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error"
+    ]
   },
   "settings": {
     "react": {

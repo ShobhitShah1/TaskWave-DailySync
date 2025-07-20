@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Dimensions, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, Layout } from 'react-native-reanimated';
+import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 
 import { useAppContext } from '../../Contexts/ThemeProvider';
 import useThemeColors from '../../Hooks/useThemeMode';
@@ -129,7 +129,7 @@ const RenderSheetView = ({
               item ? (
                 <Animated.View
                   key={`${item?.id}`} // Simplified key for stability
-                  layout={Layout.springify().damping(15).stiffness(100)}
+                  layout={LinearTransition.springify().damping(15).stiffness(100)}
                   style={styles.itemContainer}
                 >
                   <RenderCategoryItem

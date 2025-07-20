@@ -1,4 +1,5 @@
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { FC, memo, useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -12,7 +13,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 

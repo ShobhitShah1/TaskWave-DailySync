@@ -13,7 +13,7 @@ interface BatteryOptimizationModalProps {
   onCancel: () => void;
 }
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { height: screenHeight } = Dimensions.get('window');
 
 const BatteryOptimizationModal = ({
   visible,
@@ -63,7 +63,7 @@ const BatteryOptimizationModal = ({
             styles.iconContainer,
             {
               backgroundColor: isDark ? 'rgba(225, 48, 108, 0.2)' : 'rgba(64, 93, 240, 0.15)',
-              borderColor: isDark ? 'rgba(225, 48, 108, 0.4)' : 'rgba(64, 93, 240, 0.3)',
+              borderColor: isDark ? 'rgba(225, 48, 108, 0.4)' : 'rgba(10, 10, 10, 0.3)',
               shadowColor: isDark ? colors.instagram : colors.darkBlue,
               shadowOffset: { width: 0, height: 8 },
               shadowOpacity: 0.3,
@@ -164,48 +164,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  backgroundPattern: {
-    position: 'absolute',
-    width: screenWidth * 0.8,
-    height: screenWidth * 0.8,
-    borderRadius: screenWidth * 0.4,
-    top: '20%',
-    left: '60%',
-  },
-  glowContainer: {
-    position: 'absolute',
-    width: 400,
-    height: 400,
-    borderRadius: 200,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 50,
-    elevation: 30,
-  },
-  glowEffect: {
-    flex: 1,
-    borderRadius: 200,
-    opacity: 0.4,
-  },
-  secondaryGlow: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-  },
-  pulseRing: {
-    position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    top: 15,
-    left: '50%',
-    marginLeft: -60,
-  },
   modalContainer: {
     width: 360,
-    maxWidth: 360,
     alignSelf: 'center',
     borderRadius: 32,
     paddingHorizontal: 28,
@@ -240,6 +200,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     letterSpacing: 0.2,
     paddingHorizontal: 8,
+    width: '100%',
   },
   buttonContainer: {
     flexDirection: 'row',

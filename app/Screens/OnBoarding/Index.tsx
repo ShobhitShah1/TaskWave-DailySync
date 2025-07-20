@@ -1,6 +1,7 @@
-import { useNavigation } from '@react-navigation/native';
-import React, { useRef, useState } from 'react';
-import { Animated, FlatList, StyleSheet, View } from 'react-native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import * as SystemUI from 'expo-system-ui';
+import React, { memo, useEffect, useRef, useState } from 'react';
+import { Animated, FlatList, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { OnBoardingData } from '../../Constants/Data';
@@ -17,6 +18,10 @@ const OnBoarding = () => {
   const sliderRef = useRef<FlatList>(null);
   const colors = useThemeColors();
   const { theme } = useAppContext();
+  const isFocus = useIsFocused();
+
+  const isDark = theme === 'dark';
+  const barColor = isDark ? '#303334' : '#ffffff';
 
   const viewableItemsChanged = useRef(({ viewableItems }: any) => {
     setCurrentIndex(viewableItems?.[0]?.index);
@@ -28,17 +33,37 @@ const OnBoarding = () => {
     if (CurrentIndex < OnBoardingData.length - 1) {
       sliderRef.current?.scrollToIndex({ index: CurrentIndex + 1 });
     } else {
+      StatusBar.setBackgroundColor(barColor);
+      StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
+      SystemUI.setBackgroundColorAsync(barColor);
+
       storage.set('onboardingShown', 'no');
       navigation.replace('BottomTab');
     }
   };
 
-  // useEffect(() => {
-  //   const unSub = navigation.addListener('blur', () => {
-  //     <StatusBar translucent barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} />;
-  //   });
-  //   return unSub;
-  // }, []);
+  useEffect(() => {
+    if (isFocus) {
+      StatusBar.setTranslucent(true);
+      StatusBar.setBackgroundColor('#ffffff');
+      StatusBar.setBarStyle('dark-content');
+
+      SystemUI.setBackgroundColorAsync('#ffffff');
+    } else {
+      StatusBar.setBackgroundColor(barColor);
+      StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
+      SystemUI.setBackgroundColorAsync(barColor);
+    }
+
+    return () => {
+      StatusBar.setBackgroundColor(barColor);
+      StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
+      SystemUI.setBackgroundColorAsync(barColor);
+    };
+  }, [isFocus, theme]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
@@ -65,13 +90,13 @@ const OnBoarding = () => {
 
       <View style={{ flex: 0.5 }}>
         <Paginator data={OnBoardingData} scrollX={scrollX} />
-        <NextButton scrollTo={scrollTo} />
+        <NextButton scrollTo={scrollTo} isLast={CurrentIndex === OnBoardingData.length - 1} />
       </View>
     </SafeAreaView>
   );
 };
 
-export default OnBoarding;
+export default memo(OnBoarding);
 
 const styles = StyleSheet.create({
   container: {

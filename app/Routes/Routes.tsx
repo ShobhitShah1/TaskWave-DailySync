@@ -1,11 +1,11 @@
 import { DefaultTheme, NavigationContainer, Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useQuickActionCallback } from 'expo-quick-actions/hooks';
-import { setStatusBarStyle } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
+import { SystemBars } from 'react-native-edge-to-edge';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useBottomSheet } from '../Contexts/BottomSheetProvider';
@@ -49,35 +49,54 @@ const Routes = () => {
   const showOnboarding = storage.getString('onboardingShown');
 
   return (
-    <NavigationContainer
-      ref={navigationRef}
-      theme={MyTheme}
-      onReady={async () => {
-        setStatusBarStyle(theme === 'dark' ? 'light' : 'dark');
-        SystemUI.setBackgroundColorAsync(theme === 'dark' ? '#303334' : '#ffffff');
+    <>
+      <SystemBars
+        key={theme}
+        style={showOnboarding !== 'no' ? 'light' : theme === 'dark' ? 'light' : 'dark'}
+      />
 
-        setTimeout(() => {
-          BootSplash.hide({ fade: true });
-        }, 500);
-      }}
-    >
-      <SafeAreaView style={styles.container}>
-        <Stack.Navigator
-          screenOptions={({}) => ({ headerShown: false, animation: 'ios_from_right' })}
-        >
-          {showOnboarding !== 'no' && <Stack.Screen name="OnBoarding" component={OnBoarding} />}
-          <Stack.Screen name="BottomTab" component={BottomTab} />
-          <Stack.Screen name="CreateReminder" component={AddReminder} />
-          <Stack.Screen name="ReminderScheduled" component={ReminderScheduled} />
-          <Stack.Screen name="ReminderPreview" component={ReminderPreview} />
-          <Stack.Screen name="AboutApp" component={AboutApp} />
-          <Stack.Screen name="HowAppWorks" component={HowAppWorks} />
-          <Stack.Screen name="NotificationSound" component={NotificationSound} />
-          <Stack.Screen name="LocationDetails" component={LocationDetails} />
-          <Stack.Screen name="LocationPreview" component={LocationPreview} />
-        </Stack.Navigator>
-      </SafeAreaView>
-    </NavigationContainer>
+      <StatusBar
+        backgroundColor={
+          showOnboarding !== 'no' ? '#ffffff' : theme === 'dark' ? '#303334' : '#ffffff'
+        }
+        barStyle={
+          showOnboarding !== 'no'
+            ? 'light-content'
+            : theme === 'dark'
+              ? 'light-content'
+              : 'dark-content'
+        }
+      />
+
+      <NavigationContainer
+        ref={navigationRef}
+        theme={MyTheme}
+        onReady={async () => {
+          SystemUI.setBackgroundColorAsync(theme === 'dark' ? '#303334' : '#ffffff');
+
+          setTimeout(() => {
+            BootSplash.hide({ fade: true });
+          }, 500);
+        }}
+      >
+        <SafeAreaView style={styles.container}>
+          <Stack.Navigator
+            screenOptions={({}) => ({ headerShown: false, animation: 'ios_from_right' })}
+          >
+            {showOnboarding !== 'no' && <Stack.Screen name="OnBoarding" component={OnBoarding} />}
+            <Stack.Screen name="BottomTab" component={BottomTab} />
+            <Stack.Screen name="CreateReminder" component={AddReminder} />
+            <Stack.Screen name="ReminderScheduled" component={ReminderScheduled} />
+            <Stack.Screen name="ReminderPreview" component={ReminderPreview} />
+            <Stack.Screen name="AboutApp" component={AboutApp} />
+            <Stack.Screen name="HowAppWorks" component={HowAppWorks} />
+            <Stack.Screen name="NotificationSound" component={NotificationSound} />
+            <Stack.Screen name="LocationDetails" component={LocationDetails} />
+            <Stack.Screen name="LocationPreview" component={LocationPreview} />
+          </Stack.Navigator>
+        </SafeAreaView>
+      </NavigationContainer>
+    </>
   );
 };
 

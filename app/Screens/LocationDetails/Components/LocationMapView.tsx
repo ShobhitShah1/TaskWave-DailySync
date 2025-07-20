@@ -1,143 +1,248 @@
-import { useAppContext } from '@contexts/ThemeProvider';
-import React, { useRef, useState } from 'react';
-import { Image, Platform, Pressable, StyleSheet, View } from 'react-native';
-import MapView, { LatLng, MapPressEvent, Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import { Camera, MapView, PointAnnotation, UserLocation } from '@maplibre/maplibre-react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, StyleSheet, View } from 'react-native';
+import { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';
 
-import AssetsPath from '../../../Constants/AssetsPath';
+import useThemeColors from '../../../Hooks/useThemeMode';
 import LocationService from '../../../Services/LocationService';
+import MapMarker from './LocationMapView/MapMarker';
+import MapControls from './LocationMapView/MapControls';
+import { LIGHT_MAP_STYLE, DARK_MAP_STYLE, SATELLITE_MAP_STYLE } from './LocationMapView/MapStyles';
+import {
+  CameraPosition,
+  GeoLatLng,
+  LocationMapViewProps,
+  MapLibreUserLocationEvent,
+} from '../../../Types/Interface';
+import { getCenterBetweenPoints, getZoomLevelForPoints } from '../../../Utils/geoUtils';
 
-const DEFAULT_MARKERS = [
-  {
-    id: '1',
-    coordinate: { latitude: 37.78825, longitude: -122.4324 },
-    icon: AssetsPath.ic_history_location_icon,
-  },
-  {
-    id: '2',
-    coordinate: { latitude: 37.78925, longitude: -122.4314 },
-    icon: AssetsPath.ic_history_location_icon,
-  },
-  {
-    id: '3',
-    coordinate: { latitude: 37.78725, longitude: -122.4334 },
-    icon: AssetsPath.ic_history_location_icon,
-  },
-];
-
-const INITIAL_REGION: Region = {
-  latitude: 37.78825,
-  longitude: -122.4324,
-  latitudeDelta: 0.0922,
-  longitudeDelta: 0.0421,
+const DEFAULT_LOCATION: GeoLatLng = {
+  latitude: -23.5489,
+  longitude: -46.6388,
 };
-
-interface LocationMapViewProps {
-  onLocationSelect: (coordinate: LatLng) => void;
-  selectedLocation: LatLng | null;
-  children?: React.ReactNode;
-}
 
 const LocationMapView: React.FC<LocationMapViewProps> = ({
   onLocationSelect,
   selectedLocation,
   children,
 }) => {
-  const { theme } = useAppContext();
-  const [region] = useState(INITIAL_REGION);
-  const [markers] = useState(DEFAULT_MARKERS);
-  const mapRef = useRef<MapView>(null);
+  const colors = useThemeColors();
+  const cameraRef = useRef<null>(null);
+  const [isMapReady, setIsMapReady] = useState<boolean>(false);
+  const [userLocation, setUserLocation] = useState<GeoLatLng | null>(null);
+  const [isSatelliteView, setIsSatelliteView] = useState<boolean>(false);
+  const [cameraPosition, setCameraPosition] = useState<CameraPosition>({
+    centerCoordinate: [DEFAULT_LOCATION.longitude, DEFAULT_LOCATION.latitude],
+    zoomLevel: 15,
+  });
 
-  const handleMapPress = (e: MapPressEvent) => {
-    const { coordinate } = e.nativeEvent;
-    console.log('coordinate', coordinate);
-    onLocationSelect(coordinate);
+  useEffect(() => {
+    if (selectedLocation && isMapReady) {
+      setCameraPosition({
+        centerCoordinate: [selectedLocation.longitude, selectedLocation.latitude],
+        zoomLevel: 17,
+        animationDuration: 1000,
+      });
+    }
+  }, [selectedLocation, isMapReady]);
+
+  useEffect(() => {
+    const getCurrentLocation = async () => {
+      try {
+        const location = await LocationService.getCurrentLocation();
+        if (location) {
+          const currentLocation: GeoLatLng = {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          };
+          setUserLocation(currentLocation);
+          if (!selectedLocation) {
+            setCameraPosition({
+              centerCoordinate: [currentLocation.longitude, currentLocation.latitude],
+              zoomLevel: 16,
+              animationDuration: 1000,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error getting current location:', error);
+        Alert.alert(
+          'Location Error',
+          'Unable to get current location. Please check location permissions.',
+        );
+      }
+    };
+    getCurrentLocation();
+  }, [selectedLocation]);
+
+  const getMapStyle = () => {
+    if (isSatelliteView) return SATELLITE_MAP_STYLE;
+    return colors.background === 'rgba(48, 51, 52, 1)' ? DARK_MAP_STYLE : LIGHT_MAP_STYLE;
   };
 
-  const centerOnUser = async () => {
+  const handleMapPress = useCallback(
+    (feature: Feature<Geometry, GeoJsonProperties>) => {
+      try {
+        if (feature.geometry?.type === 'Point') {
+          const coordinates = (feature.geometry as Point).coordinates;
+          const coordinate: GeoLatLng = {
+            latitude: coordinates[1],
+            longitude: coordinates[0],
+          };
+          onLocationSelect(coordinate);
+        }
+      } catch (error) {
+        console.error('Error handling map press:', error);
+        console.log('Map press event:', feature);
+      }
+    },
+    [onLocationSelect],
+  );
+
+  const handleMapReady = useCallback(() => {
+    setIsMapReady(true);
+  }, []);
+
+  const centerOnUser = useCallback(async () => {
     try {
-      const currentLocation = await LocationService.getCurrentLocation();
-      if (currentLocation) {
-        const userRegion: Region = {
-          latitude: currentLocation.coords.latitude,
-          longitude: currentLocation.coords.longitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
+      const location = await LocationService.getCurrentLocation();
+      if (location) {
+        const currentLocation: GeoLatLng = {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
         };
-        mapRef.current?.animateToRegion(userRegion, 500);
+        setUserLocation(currentLocation);
+        setCameraPosition({
+          centerCoordinate: [currentLocation.longitude, currentLocation.latitude],
+          zoomLevel: 16,
+          animationDuration: 1000,
+        });
       } else {
-        mapRef.current?.animateToRegion(INITIAL_REGION, 500);
+        Alert.alert(
+          'Location Error',
+          'Unable to get current location. Please check location permissions.',
+        );
       }
     } catch (error) {
       console.error('Error getting current location:', error);
-      mapRef.current?.animateToRegion(INITIAL_REGION, 500);
+      Alert.alert('Error', 'Unable to get current location. Please check location permissions.');
     }
-  };
+  }, []);
+
+  const zoomToFitAll = useCallback(async () => {
+    try {
+      const location = await LocationService.getCurrentLocation();
+      if (location && selectedLocation) {
+        const currentLocation: GeoLatLng = {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        };
+        const center = getCenterBetweenPoints(currentLocation, selectedLocation);
+        const zoomLevel = getZoomLevelForPoints(currentLocation, selectedLocation);
+        setCameraPosition({
+          centerCoordinate: [center.longitude, center.latitude],
+          zoomLevel,
+          animationDuration: 1500,
+        });
+      } else if (location) {
+        centerOnUser();
+      } else {
+        Alert.alert(
+          'Location Error',
+          'Unable to get current location. Please check location permissions.',
+        );
+      }
+    } catch (error) {
+      console.error('Error zooming to fit all:', error);
+      Alert.alert('Error', 'Unable to zoom to fit all locations.');
+    }
+  }, [selectedLocation, centerOnUser]);
+
+  const toggleSatelliteView = useCallback(() => {
+    setIsSatelliteView((prev) => !prev);
+  }, []);
 
   return (
     <View style={styles.mapContainer}>
       <MapView
-        ref={mapRef}
-        style={StyleSheet.absoluteFill}
-        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-        initialRegion={region}
-        showsUserLocation
+        style={styles.map}
+        mapStyle={getMapStyle()}
+        compassEnabled
+        logoEnabled
         onPress={handleMapPress}
-        liteMode={theme === 'light'}
+        onDidFinishLoadingMap={handleMapReady}
+        zoomEnabled
+        scrollEnabled
+        pitchEnabled
+        rotateEnabled
+        attributionEnabled
+        attributionPosition={{ bottom: 8, left: 8 }}
+        preferredFramesPerSecond={60}
+        localizeLabels
       >
-        {markers.map((marker) => (
-          <Marker key={marker.id} coordinate={marker.coordinate} image={marker.icon} />
-        ))}
+        <Camera
+          ref={cameraRef}
+          centerCoordinate={cameraPosition.centerCoordinate}
+          zoomLevel={cameraPosition.zoomLevel}
+          animationDuration={cameraPosition.animationDuration}
+          pitch={45}
+          heading={0}
+          minZoomLevel={10}
+          maxZoomLevel={20}
+        />
         {selectedLocation && (
-          <Marker
-            coordinate={selectedLocation}
-            image={AssetsPath.ic_play}
-            title="Selected Location"
-          />
+          <PointAnnotation
+            id="selected-location"
+            coordinate={[selectedLocation.longitude, selectedLocation.latitude]}
+          >
+            <MapMarker color={colors.blue} backgroundColor={colors.background} />
+          </PointAnnotation>
         )}
+        <UserLocation
+          visible={true}
+          onUpdate={(location: MapLibreUserLocationEvent) => {
+            if (location.coords) {
+              setUserLocation({
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+              });
+            }
+          }}
+        />
       </MapView>
+      <MapControls
+        isSatelliteView={isSatelliteView}
+        onToggleSatellite={toggleSatelliteView}
+        onZoomToFit={zoomToFitAll}
+        onCenterUser={centerOnUser}
+        showZoomToFit={!!selectedLocation}
+        colors={{ background: colors.background, blue: colors.blue, text: colors.text }}
+      />
       {children}
-      <Pressable style={styles.fab} onPress={centerOnUser}>
-        <Image source={AssetsPath.ic_view} resizeMode="contain" style={styles.fabIcon} />
-      </Pressable>
     </View>
   );
 };
 
+export default LocationMapView;
+
 const styles = StyleSheet.create({
   mapContainer: {
     flex: 1,
-    // position: 'relative',
-    // borderRadius: 18,
-    // overflow: 'hidden',
-    // marginHorizontal: 10,
-    // marginBottom: 0,
+    position: 'relative',
+    borderRadius: 18,
+    overflow: 'hidden',
+    marginHorizontal: 10,
+    marginBottom: 0,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    zIndex: 1,
   },
-  fab: {
-    position: 'absolute',
-    bottom: 24,
-    right: 18,
-    backgroundColor: '#fff',
-    borderRadius: 28,
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.18,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  fabIcon: {
-    width: 28,
-    height: 28,
-    tintColor: '#303334',
+  map: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
 });
-
-export default LocationMapView;

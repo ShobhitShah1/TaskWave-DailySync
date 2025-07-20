@@ -6,13 +6,14 @@ import useThemeColors from '../../../Hooks/useThemeMode';
 
 interface NextButtonProps {
   scrollTo: () => void;
+  isLast: boolean;
 }
 
-const NextButton: FC<NextButtonProps> = ({ scrollTo }) => {
+const NextButton: FC<NextButtonProps> = ({ scrollTo, isLast }) => {
   const style = styles();
   return (
     <Pressable onPress={scrollTo} style={style.container}>
-      <Text style={style.text}>Next</Text>
+      <Text style={style.text}>{isLast ? 'Finish' : 'Next'}</Text>
     </Pressable>
   );
 };

@@ -5,6 +5,7 @@ import {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { memo, useCallback, useState } from 'react';
 import {
   Dimensions,
@@ -18,7 +19,6 @@ import {
 } from 'react-native';
 import { CurvedBottomBar } from 'react-native-curved-bottom-bar';
 import { showMessage } from 'react-native-flash-message';
-import LinearGradient from 'react-native-linear-gradient';
 import { Shadow } from 'react-native-shadow-2';
 import { isAppInstalled } from 'send-message';
 

@@ -1,14 +1,15 @@
+import { FONTS } from '@constants/Theme';
 import notifee, { EventType } from '@notifee/react-native';
 import { useFonts } from 'expo-font';
 import * as QuickActions from 'expo-quick-actions';
-import { useEffect } from 'react';
-import { LogBox, StatusBar, StyleSheet, Text } from 'react-native';
+import React, { useEffect } from 'react';
+import { LogBox, StyleSheet, Text } from 'react-native';
 import FlashMessage, { showMessage } from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomSheetProvider } from './app/Contexts/BottomSheetProvider';
-import { AppProvider } from './app/Contexts/ThemeProvider';
+import { AppProvider, useAppContext } from './app/Contexts/ThemeProvider';
 import { handleNotificationPress } from './app/Hooks/handleNotificationPress';
 import { updateNotification } from './app/Hooks/updateNotification';
 import updateToNextDate from './app/Hooks/updateToNextDate';
@@ -78,7 +79,9 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
   }
 });
 
-export default function App() {
+// Component to handle theme-aware styling
+const AppContent = () => {
+  const { theme } = useAppContext();
   const { updateNotification, createNotification } = useReminder();
 
   const [loaded, error] = useFonts({
@@ -256,23 +259,37 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <AppProvider>
-        <BottomSheetProvider>
-          <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-            <Routes />
-            <FlashMessage position="top" />
-          </SafeAreaView>
-        </BottomSheetProvider>
-      </AppProvider>
+    <GestureHandlerRootView
+      style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
+    >
+      <BottomSheetProvider>
+        <SafeAreaView
+          style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
+        >
+          <Routes />
+          <FlashMessage
+            animated
+            hideOnPress
+            position="top"
+            titleStyle={{ fontFamily: FONTS.SemiBold, fontSize: 18 }}
+            textStyle={{ fontFamily: FONTS.Medium, fontSize: 15 }}
+          />
+        </SafeAreaView>
+      </BottomSheetProvider>
     </GestureHandlerRootView>
+  );
+};
+
+export default function App() {
+  return (
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
 });

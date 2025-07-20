@@ -417,7 +417,7 @@ const History = () => {
           )}
         </View>
 
-        <View style={[style.tabsContainer, { bottom: bottom + 5 }]}>
+        <View style={[style.tabsContainer, { bottom: bottom + 20 }]}>
           <View
             style={{
               width: '17.5%',

@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import notifee, { AndroidImportance, AndroidVisibility } from '@notifee/react-native';
-import * as SQLite from 'expo-sqlite';
-import { useEffect, useRef } from 'react';
 import { showMessage } from 'react-native-flash-message';
 
 import { sounds } from '../Constants/Data';
 import { storage } from '../Contexts/ThemeProvider';
 import { Contact, Notification, RescheduleConfig } from '../Types/Interface';
+import { executeWithRetry, getDatabase } from '../Utils/databaseUtils';
 import {
   buildNotifeeNotification,
   buildTimestampTrigger,
@@ -155,256 +154,9 @@ export const scheduleNotification = async (
 };
 
 const useReminder = () => {
-  const databaseRef = useRef<SQLite.SQLiteDatabase | null>(null);
-  const isInitializingRef = useRef(false);
-
-  async function openDatabase() {
-    try {
-      // If we already have a database connection, return it
-      if (databaseRef.current) {
-        return databaseRef.current;
-      }
-
-      // If initialization is in progress, wait
-      if (isInitializingRef.current) {
-        // Wait for initialization to complete
-        while (isInitializingRef.current) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-        }
-        return databaseRef.current;
-      }
-
-      isInitializingRef.current = true;
-
-      const database = await SQLite.openDatabaseAsync('notifications.db', {
-        useNewConnection: true,
-      });
-
-      await initializeDatabase(database);
-      databaseRef.current = database;
-      isInitializingRef.current = false;
-      return database;
-    } catch (error) {
-      isInitializingRef.current = false;
-      console.error('[Database] Failed to open database:', error);
-      throw error;
-    }
-  }
-
-  useEffect(() => {
-    openDatabase().catch(console.error);
-
-    // Cleanup function to close database connection
-    return () => {
-      if (databaseRef.current) {
-        try {
-          databaseRef.current.closeAsync();
-          databaseRef.current = null;
-        } catch (error) {
-          console.error('[Database] Error closing database:', error);
-        }
-      }
-    };
-  }, []);
-
-  const initializeDatabase = async (database: SQLite.SQLiteDatabase) => {
-    try {
-      // Set WAL mode for better concurrency
-      await database.execAsync(`PRAGMA journal_mode = WAL;`);
-      await database.execAsync(`PRAGMA foreign_keys = ON;`);
-      await database.execAsync(`PRAGMA synchronous = NORMAL;`);
-      await database.execAsync(`PRAGMA cache_size = 10000;`);
-      await database.execAsync(`PRAGMA temp_store = MEMORY;`);
-
-      type PRAGMAResult = { user_version: number };
-
-      type ColumnInfo = {
-        cid: number;
-        name: string;
-        type: string;
-        notnull: number;
-        dflt_value: any;
-        pk: number;
-      };
-
-      const result = await database.getAllAsync<PRAGMAResult>(`PRAGMA user_version;`);
-      const currentVersion = result[0]?.user_version || 0;
-
-      console.log(`[Database] Current version: ${currentVersion}`);
-
-      // Use a more robust transaction approach
-      await database.execAsync('BEGIN IMMEDIATE TRANSACTION;');
-
-      try {
-        if (currentVersion < 1) {
-          console.log('[Database] Initializing version 1 schema');
-          await database.execAsync(`
-          CREATE TABLE IF NOT EXISTS notifications (
-            id TEXT PRIMARY KEY,
-            type TEXT NOT NULL,
-            message TEXT NOT NULL,
-            date TEXT NOT NULL,
-            subject TEXT,
-            attachments TEXT,
-            scheduleFrequency TEXT,
-            memo TEXT,
-            toMail TEXT
-          );
-
-          CREATE TABLE IF NOT EXISTS contacts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            notification_id TEXT,
-            name TEXT NOT NULL,
-            number TEXT,
-            recordID TEXT NOT NULL,
-            thumbnailPath TEXT,
-            FOREIGN KEY (notification_id) REFERENCES notifications (id) ON DELETE CASCADE
-          );
-
-          CREATE TABLE IF NOT EXISTS device_contacts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            number TEXT,
-            recordID TEXT NOT NULL,
-            thumbnailPath TEXT
-          );
-        `);
-
-          await database.execAsync(`PRAGMA user_version = 1;`);
-        }
-
-        if (currentVersion < 2) {
-          console.log('[Database] Upgrading to version 2');
-          const columnCheckResult = await database.getAllAsync<ColumnInfo>(
-            `PRAGMA table_info(notifications);`,
-          );
-
-          const telegramUsernameExists = columnCheckResult.some(
-            (column) => column.name === 'telegramUsername',
-          );
-
-          if (!telegramUsernameExists) {
-            await database.execAsync(`
-            ALTER TABLE notifications ADD COLUMN telegramUsername TEXT;
-          `);
-          }
-
-          await database.execAsync(`PRAGMA user_version = 2;`);
-        }
-
-        if (currentVersion < 3) {
-          console.log('[Database] Upgrading to version 3');
-          const columnCheckResult = await database.getAllAsync<ColumnInfo>(
-            `PRAGMA table_info(notifications);`,
-          );
-
-          const daysExists = columnCheckResult.some((column) => column.name === 'days');
-
-          if (!daysExists) {
-            await database.execAsync(`
-            ALTER TABLE notifications ADD COLUMN days TEXT;
-          `);
-          }
-
-          await database.execAsync(`PRAGMA user_version = 3;`);
-        }
-
-        if (currentVersion < 4) {
-          console.log('[Database] Upgrading to version 4 - Adding location support');
-          const columnCheckResult = await database.getAllAsync<ColumnInfo>(
-            `PRAGMA table_info(notifications);`,
-          );
-
-          const latitudeExists = columnCheckResult.some((column) => column.name === 'latitude');
-          const longitudeExists = columnCheckResult.some((column) => column.name === 'longitude');
-          const radiusExists = columnCheckResult.some((column) => column.name === 'radius');
-
-          if (!latitudeExists) {
-            await database.execAsync(`
-            ALTER TABLE notifications ADD COLUMN latitude REAL;
-          `);
-          }
-
-          if (!longitudeExists) {
-            await database.execAsync(`
-            ALTER TABLE notifications ADD COLUMN longitude REAL;
-          `);
-          }
-
-          if (!radiusExists) {
-            await database.execAsync(`
-            ALTER TABLE notifications ADD COLUMN radius INTEGER DEFAULT 100;
-          `);
-          }
-
-          await database.execAsync(`PRAGMA user_version = 4;`);
-        }
-
-        if (currentVersion < 5) {
-          console.log(
-            '[Database] Upgrading to version 5 - Adding locationName for location reminders',
-          );
-          const columnCheckResult = await database.getAllAsync<ColumnInfo>(
-            `PRAGMA table_info(notifications);`,
-          );
-
-          const locationNameExists = columnCheckResult.some(
-            (column) => column.name === 'locationName',
-          );
-
-          if (!locationNameExists) {
-            await database.execAsync(`
-            ALTER TABLE notifications ADD COLUMN locationName TEXT;
-          `);
-          }
-
-          await database.execAsync(`PRAGMA user_version = 5;`);
-        }
-
-        await database.execAsync('COMMIT;');
-        console.log('[Database] Schema update completed successfully');
-      } catch (error) {
-        await database.execAsync('ROLLBACK;');
-        console.error('[Database] Schema update failed:', error);
-        throw error;
-      }
-    } catch (error) {
-      console.error('[Database] Initialization error:', error);
-      throw error;
-    }
-  };
-
-  const executeWithRetry = async <T>(
-    operation: () => Promise<T>,
-    maxRetries: number = 3,
-    delay: number = 1000,
-  ): Promise<T> => {
-    let lastError: any;
-
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        return await operation();
-      } catch (error: any) {
-        lastError = error;
-
-        if (error.message?.includes('database is locked')) {
-          console.log(`[Database] Locked on attempt ${attempt}, retrying...`);
-          if (attempt < maxRetries) {
-            await new Promise((resolve) => setTimeout(resolve, delay * attempt));
-            continue;
-          }
-        }
-
-        throw error;
-      }
-    }
-
-    throw lastError;
-  };
-
   const createNotification = async (notification: Notification): Promise<string | null> => {
     return executeWithRetry(async () => {
-      const database = await openDatabase();
+      const database = await getDatabase();
 
       if (!database) {
         console.error('[Database] Failed to open database connection');
@@ -497,7 +249,7 @@ const useReminder = () => {
 
   const updateNotification = async (notification: Notification): Promise<boolean> => {
     return executeWithRetry(async () => {
-      const database = await openDatabase();
+      const database = await getDatabase();
 
       if (!database) {
         console.error('[Database] Failed to open database connection');
@@ -588,7 +340,7 @@ const useReminder = () => {
 
   const deleteNotification = async (id: string): Promise<boolean> => {
     return executeWithRetry(async () => {
-      const database = await openDatabase();
+      const database = await getDatabase();
 
       if (!database) {
         console.error('[Database] Failed to open database connection');
@@ -618,7 +370,7 @@ const useReminder = () => {
 
   const getAllNotifications = async (): Promise<Notification[]> => {
     return executeWithRetry(async () => {
-      const database = await openDatabase();
+      const database = await getDatabase();
 
       if (!database) {
         console.error('[Database] Failed to open database connection');
@@ -681,7 +433,7 @@ const useReminder = () => {
 
   const getNotificationById = async (id: string): Promise<Notification | null> => {
     return executeWithRetry(async () => {
-      const database = await openDatabase();
+      const database = await getDatabase();
 
       if (!database) {
         console.error('[Database] Failed to open database connection');
@@ -745,7 +497,7 @@ const useReminder = () => {
 
   const ensureDeviceContactsTable = async () => {
     return executeWithRetry(async () => {
-      const database = await openDatabase();
+      const database = await getDatabase();
       if (!database) {
         throw new Error('Database connection failed');
       }
@@ -765,7 +517,7 @@ const useReminder = () => {
 
   const clearDeviceContacts = async () => {
     return executeWithRetry(async () => {
-      const database = await openDatabase();
+      const database = await getDatabase();
       if (!database) {
         throw new Error('Database connection failed');
       }
@@ -780,7 +532,7 @@ const useReminder = () => {
 
   const insertDeviceContacts = async (contacts: Contact[]) => {
     return executeWithRetry(async () => {
-      const database = await openDatabase();
+      const database = await getDatabase();
       if (!database) {
         throw new Error('Database connection failed');
       }
@@ -804,7 +556,7 @@ const useReminder = () => {
 
   const getAllDeviceContacts = async () => {
     return executeWithRetry(async () => {
-      const database = await openDatabase();
+      const database = await getDatabase();
       if (!database) {
         throw new Error('Database connection failed');
       }

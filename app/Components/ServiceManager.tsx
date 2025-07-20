@@ -1,24 +1,34 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
-  Animated,
   Dimensions,
-  Modal,
-  ScrollView,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
+import Modal from 'react-native-modal';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { FONTS } from '../Constants/Theme';
 import { useAppContext } from '../Contexts/ThemeProvider';
 import useThemeColors from '../Hooks/useThemeMode';
 import LocationService from '../Services/LocationService';
+import ControlGrid from './ServiceManager/ControlGrid';
+import RemindersList from './ServiceManager/RemindersList';
+import StatusCard from './ServiceManager/StatusCard';
+import TabNavigation from './ServiceManager/TabNavigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,113 +44,90 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ isVisible, onClose }) =
   const [isLoading, setIsLoading] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<'overview' | 'reminders' | 'advanced'>('overview');
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [slideAnim] = useState(new Animated.Value(height));
-  const statusDotAnim = useRef(new Animated.Value(1)).current;
 
-  useEffect(() => {
-    console.log('ServiceManager: isVisible changed to', isVisible);
-    if (isVisible) {
-      updateServiceInfo();
-      setDebugInfo('ServiceManager opened');
-      // Animate in
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          tension: 100,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      // Animate out
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: height,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [isVisible]);
+  const dotScale = useSharedValue(1);
 
+  // Button animation scales
+  type ButtonKey =
+    | 'start'
+    | 'stop'
+    | 'pause'
+    | 'resume'
+    | 'test'
+    | 'forceStop'
+    | 'emergency'
+    | 'addTest';
+  const buttonScales: Record<ButtonKey, ReturnType<typeof useSharedValue<number>>> = {
+    start: useSharedValue<number>(1),
+    stop: useSharedValue<number>(1),
+    pause: useSharedValue<number>(1),
+    resume: useSharedValue<number>(1),
+    test: useSharedValue<number>(1),
+    forceStop: useSharedValue<number>(1),
+    emergency: useSharedValue<number>(1),
+    addTest: useSharedValue<number>(1),
+  };
+
+  // Status dot pulse
   useEffect(() => {
     if (serviceInfo?.serviceStatus === 'running') {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(statusDotAnim, {
-            toValue: 1.3,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-          Animated.timing(statusDotAnim, {
-            toValue: 1,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-        ]),
-      ).start();
+      dotScale.value = withRepeat(
+        withSequence(withTiming(1.3, { duration: 600 }), withTiming(1, { duration: 600 })),
+        -1,
+        false,
+      );
     } else {
-      statusDotAnim.setValue(1);
+      dotScale.value = withTiming(1, { duration: 200 });
     }
   }, [serviceInfo?.serviceStatus]);
 
+  // Animated styles
+  const overlayStyle = useAnimatedStyle(() => ({
+    backgroundColor: theme === 'dark' ? 'rgba(30,31,31,0.7)' : 'rgba(0,0,0,0.18)',
+  }));
+
+  // Button press handlers
+  const handleButtonPressIn = (key: string) => {
+    if (buttonScales[key as ButtonKey])
+      buttonScales[key as ButtonKey].value = withSpring(0.95, { damping: 10 });
+  };
+  const handleButtonPressOut = (key: string) => {
+    if (buttonScales[key as ButtonKey])
+      buttonScales[key as ButtonKey].value = withSpring(1, { damping: 10 });
+  };
+
+  // Service info update
   const updateServiceInfo = () => {
     try {
       const info = LocationService.getServiceInfo();
-      console.log('ServiceManager: Service info updated', info);
       setServiceInfo(info);
       setDebugInfo(`Service info updated: ${JSON.stringify(info, null, 2)}`);
     } catch (error) {
-      console.error('ServiceManager: Error updating service info', error);
       setDebugInfo(`Error updating service info: ${error}`);
     }
   };
 
+  // Service action handler
   const handleServiceAction = async (action: string) => {
-    console.log('ServiceManager: Handling action', action);
     setIsLoading(true);
     setDebugInfo(`Executing action: ${action}`);
-
     try {
       switch (action) {
         case 'start':
           await LocationService.startLocationTracking();
-          showMessage({
-            message: 'Location tracking started',
-            type: 'success',
-          });
+          showMessage({ message: 'Location tracking started', type: 'success' });
           break;
         case 'stop':
           await LocationService.stopLocationTracking();
-          showMessage({
-            message: 'Location tracking stopped',
-            type: 'info',
-          });
+          showMessage({ message: 'Location tracking stopped', type: 'info' });
           break;
         case 'pause':
           await LocationService.pauseLocationTracking();
-          showMessage({
-            message: 'Location tracking paused',
-            type: 'warning',
-          });
+          showMessage({ message: 'Location tracking paused', type: 'warning' });
           break;
         case 'resume':
           await LocationService.resumeLocationTracking();
-          showMessage({
-            message: 'Location tracking resumed',
-            type: 'success',
-          });
+          showMessage({ message: 'Location tracking resumed', type: 'success' });
           break;
         case 'forceStop':
           Alert.alert(
@@ -178,24 +165,17 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ isVisible, onClose }) =
           break;
         case 'test':
           await LocationService.testInteractiveNotification();
-          showMessage({
-            message: 'Test notification sent',
-            type: 'info',
-          });
+          showMessage({ message: 'Test notification sent', type: 'info' });
           break;
         case 'addTest':
           await LocationService.addTestLocationReminder();
-          showMessage({
-            message: 'Test reminder added',
-            type: 'success',
-          });
+          showMessage({ message: 'Test reminder added', type: 'success' });
           break;
         default:
           break;
       }
       updateServiceInfo();
     } catch (error) {
-      console.error('ServiceManager: Service action error', error);
       showMessage({
         message: 'Error performing action',
         description: error instanceof Error ? error.message : 'Unknown error',
@@ -207,597 +187,24 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ isVisible, onClose }) =
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'running':
-        return 'play-circle';
-      case 'paused':
-        return 'pause-circle';
-      case 'stopped':
-        return 'stop-circle';
-      default:
-        return 'help-circle';
-    }
+  // Utility to strip instagramGradient from colors for StatusCard
+  const stripGradient = (colors: Record<string, any>) => {
+    const { instagramGradient, ...rest } = colors;
+    return rest;
   };
-
-  const getStatusGradient = (status: string, colors: any): [string, string] => {
-    switch (status) {
-      case 'running':
-        return [colors.green, colors.lightBlue];
-      case 'paused':
-        return [colors.yellow, colors.grayBackground];
-      case 'stopped':
-        return [colors.reminderCardBackground, colors.grayBackground];
-      default:
-        return [colors.primary, colors.primary];
-    }
-  };
-
-  const getStatusDotColor = (status: string, colors: any) => {
-    switch (status) {
-      case 'running':
-        return colors.green;
-      case 'paused':
-        return colors.yellow;
-      case 'stopped':
-      default:
-        return colors.gmailText;
-    }
-  };
-
-  const renderTabButton = (
-    tab: 'overview' | 'reminders' | 'advanced',
-    title: string,
-    icon: string,
-  ) => (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      style={[
-        styles.tabButton,
-        selectedTab === tab && {
-          backgroundColor: colors.primary,
-          borderRadius: 24,
-          paddingHorizontal: 20,
-          paddingVertical: 10,
-          shadowColor: colors.primary,
-          shadowOpacity: 0.18,
-          shadowRadius: 8,
-          elevation: 6,
-          borderWidth: 0,
-        },
-      ]}
-      onPress={() => setSelectedTab(tab)}
-    >
-      <Ionicons
-        name={icon as any}
-        size={20}
-        color={selectedTab === tab ? colors.white : colors.grayTitle}
-      />
-      <Text
-        style={[
-          styles.tabButtonText,
-          {
-            color: selectedTab === tab ? colors.white : colors.grayTitle,
-            fontWeight: selectedTab === tab ? 'bold' : 'normal',
-          },
-        ]}
-      >
-        {title}
-      </Text>
-    </TouchableOpacity>
-  );
-
-  const renderOverviewTab = () => (
-    <View style={styles.tabContent}>
-      {/* Debug Info */}
-      {__DEV__ && (
-        <View style={[styles.debugSection, { backgroundColor: colors.grayBackground }]}>
-          <View style={styles.debugHeader}>
-            <Ionicons name="bug" size={16} color={colors.yellow} />
-            <Text style={[styles.debugTitle, { color: colors.text }]}>Debug Info</Text>
-          </View>
-          <Text style={[styles.debugText, { color: colors.grayTitle }]}>{debugInfo}</Text>
-        </View>
-      )}
-
-      {/* Service Status Card */}
-      <LinearGradient
-        colors={getStatusGradient(serviceInfo?.serviceStatus || 'stopped', colors)}
-        style={[
-          styles.statusCard,
-          serviceInfo?.serviceStatus === 'running' && styles.statusCardGlow,
-          {
-            backgroundColor: colors.background,
-            borderWidth: 1,
-            borderColor: colors.borderColor,
-            shadowColor: 'rgba(0,0,0,0.10)',
-            shadowOpacity: 0.1,
-            shadowRadius: 16,
-            elevation: 6,
-            marginBottom: 20,
-            borderRadius: 20,
-          },
-        ]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.statusCardContent}>
-          <View
-            style={[
-              styles.statusIconContainer,
-              { backgroundColor: colors.grayBackground, borderRadius: 16 },
-            ]}
-          >
-            {' '}
-            {/* theme-aware */}
-            <Ionicons
-              name={getStatusIcon(serviceInfo?.serviceStatus || 'stopped')}
-              size={48}
-              color={colors.primary}
-            />
-          </View>
-          <View style={styles.statusTextContainer}>
-            <Text style={[styles.statusText, { color: colors.text }]}>
-              {' '}
-              {serviceInfo?.serviceStatus?.toUpperCase() || 'STOPPED'}{' '}
-            </Text>
-            <Text style={[styles.statusSubtext, { color: colors.grayTitle }]}>
-              {' '}
-              Location Tracking Service{' '}
-            </Text>
-          </View>
-          <View style={styles.statusIndicator}>
-            <Animated.View
-              style={[
-                styles.statusDot,
-                {
-                  backgroundColor: getStatusDotColor(serviceInfo?.serviceStatus, colors),
-                  transform: [
-                    { scale: serviceInfo?.serviceStatus === 'running' ? statusDotAnim : 1 },
-                  ],
-                },
-              ]}
-            />
-          </View>
-        </View>
-      </LinearGradient>
-
-      {/* Service Stats Grid */}
-      <View style={styles.statsGrid}>
-        <View
-          style={[
-            styles.statCard,
-            {
-              backgroundColor: colors.background,
-              borderColor: colors.borderColor,
-              shadowColor: 'rgba(0,0,0,0.10)',
-              shadowOpacity: 0.1,
-              shadowRadius: 12,
-              elevation: 4,
-              marginBottom: 16,
-              borderRadius: 16,
-            },
-          ]}
-        >
-          <View style={styles.statIconContainer}>
-            <Ionicons name="location" size={24} color={colors.primary} />
-          </View>
-          <Text style={[styles.statValue, { color: colors.text }]}>
-            {' '}
-            {serviceInfo?.isTracking ? 'Active' : 'Inactive'}{' '}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.grayTitle }]}>Tracking</Text>
-        </View>
-
-        <View
-          style={[
-            styles.statCard,
-            {
-              backgroundColor: colors.background,
-              borderColor: colors.borderColor,
-              shadowColor: 'rgba(0,0,0,0.10)',
-              shadowOpacity: 0.1,
-              shadowRadius: 12,
-              elevation: 4,
-              marginBottom: 16,
-              borderRadius: 16,
-            },
-          ]}
-        >
-          <View style={styles.statIconContainer}>
-            <Ionicons name="pause" size={24} color={colors.primary} />
-          </View>
-          <Text style={[styles.statValue, { color: colors.text }]}>
-            {serviceInfo?.isPaused ? 'Yes' : 'No'}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.grayTitle }]}>Paused</Text>
-        </View>
-
-        <View
-          style={[
-            styles.statCard,
-            {
-              backgroundColor: colors.background,
-              borderColor: colors.borderColor,
-              shadowColor: 'rgba(0,0,0,0.10)',
-              shadowOpacity: 0.1,
-              shadowRadius: 12,
-              elevation: 4,
-              marginBottom: 16,
-              borderRadius: 16,
-            },
-          ]}
-        >
-          <View style={styles.statIconContainer}>
-            <Ionicons name="notifications" size={24} color={colors.primary} />
-          </View>
-          <Text style={[styles.statValue, { color: colors.text }]}>
-            {serviceInfo?.activeRemindersCount || 0}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.grayTitle }]}>Active</Text>
-        </View>
-
-        <View
-          style={[
-            styles.statCard,
-            {
-              backgroundColor: colors.background,
-              borderColor: colors.borderColor,
-              shadowColor: 'rgba(0,0,0,0.10)',
-              shadowOpacity: 0.1,
-              shadowRadius: 12,
-              elevation: 4,
-              marginBottom: 16,
-              borderRadius: 16,
-            },
-          ]}
-        >
-          <View style={styles.statIconContainer}>
-            <Ionicons name="list" size={24} color={colors.primary} />
-          </View>
-          <Text style={[styles.statValue, { color: colors.text }]}>
-            {serviceInfo?.totalReminders || 0}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.grayTitle }]}>Total</Text>
-        </View>
-      </View>
-
-      {/* Control Buttons */}
-      <View style={styles.controlSection}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Quick Controls</Text>
-        <View style={styles.controlGrid}>
-          <TouchableOpacity
-            style={[
-              styles.controlButton,
-              { backgroundColor: colors.green },
-              (isLoading || serviceInfo?.isTracking) && styles.disabledButton,
-            ]}
-            onPress={() => handleServiceAction('start')}
-            disabled={isLoading || serviceInfo?.isTracking}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" size="small" />
-            ) : (
-              <Ionicons name="play" size={24} color="white" />
-            )}
-            <Text style={styles.controlButtonText}>Start</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.controlButton,
-              { backgroundColor: colors.gmailText },
-              (isLoading || !serviceInfo?.isTracking) && styles.disabledButton,
-            ]}
-            onPress={() => handleServiceAction('stop')}
-            disabled={isLoading || !serviceInfo?.isTracking}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" size="small" />
-            ) : (
-              <Ionicons name="stop" size={24} color="white" />
-            )}
-            <Text style={styles.controlButtonText}>Stop</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.controlButton,
-              { backgroundColor: colors.yellow },
-              (isLoading || !serviceInfo?.isTracking || serviceInfo?.isPaused) &&
-                styles.disabledButton,
-            ]}
-            onPress={() => handleServiceAction('pause')}
-            disabled={isLoading || !serviceInfo?.isTracking || serviceInfo?.isPaused}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" size="small" />
-            ) : (
-              <Ionicons name="pause" size={24} color="white" />
-            )}
-            <Text style={styles.controlButtonText}>Pause</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.controlButton,
-              { backgroundColor: colors.blue },
-              (isLoading || !serviceInfo?.isPaused) && styles.disabledButton,
-            ]}
-            onPress={() => handleServiceAction('resume')}
-            disabled={isLoading || !serviceInfo?.isPaused}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" size="small" />
-            ) : (
-              <Ionicons name="play" size={24} color="white" />
-            )}
-            <Text style={styles.controlButtonText}>Resume</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
-
-  const renderRemindersTab = () => (
-    <View style={styles.tabContent}>
-      {/* Active Reminders */}
-      {serviceInfo?.activeReminders && serviceInfo.activeReminders.length > 0 && (
-        <View style={styles.remindersSection}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="location" size={20} color={colors.primary} />
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Active Location Reminders ({serviceInfo.activeReminders.length})
-            </Text>
-          </View>
-          {serviceInfo.activeReminders.map((reminder: any) => (
-            <View
-              key={reminder.id}
-              style={[styles.reminderCard, { backgroundColor: colors.grayBackground }]}
-            >
-              <View style={styles.reminderCardHeader}>
-                <View style={styles.reminderInfo}>
-                  <Text style={[styles.reminderTitle, { color: colors.text }]}>
-                    {reminder.title}
-                  </Text>
-                  <Text style={[styles.reminderMessage, { color: colors.grayTitle }]}>
-                    {reminder.message}
-                  </Text>
-                </View>
-                <View style={[styles.statusBadge, { backgroundColor: colors.green }]}>
-                  <Text style={styles.statusBadgeText}>Active</Text>
-                </View>
-              </View>
-              <View style={styles.reminderDetails}>
-                <View style={styles.reminderDetail}>
-                  <Ionicons name="location" size={16} color={colors.grayTitle} />
-                  <Text style={[styles.reminderDetailText, { color: colors.grayTitle }]}>
-                    {reminder.latitude.toFixed(4)}, {reminder.longitude.toFixed(4)}
-                  </Text>
-                </View>
-                <View style={styles.reminderDetail}>
-                  <Ionicons name="radio" size={16} color={colors.grayTitle} />
-                  <Text style={[styles.reminderDetailText, { color: colors.grayTitle }]}>
-                    Radius: {reminder.radius}m
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                style={[styles.removeButton, { backgroundColor: colors.gmailText }]}
-                onPress={() => {
-                  LocationService.removeLocationReminder(reminder.id);
-                  updateServiceInfo();
-                  showMessage({
-                    message: 'Reminder removed',
-                    type: 'info',
-                  });
-                }}
-              >
-                <Ionicons name="trash" size={16} color="white" />
-                <Text style={styles.removeButtonText}>Remove</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-      )}
-
-      {/* Inactive Reminders */}
-      {serviceInfo?.inactiveReminders && serviceInfo.inactiveReminders.length > 0 && (
-        <View style={styles.remindersSection}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="location-outline" size={20} color={colors.grayTitle} />
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Inactive Location Reminders ({serviceInfo.inactiveReminders.length})
-            </Text>
-          </View>
-          {serviceInfo.inactiveReminders.map((reminder: any) => (
-            <View
-              key={reminder.id}
-              style={[styles.reminderCard, { backgroundColor: colors.grayBackground }]}
-            >
-              <View style={styles.reminderCardHeader}>
-                <View style={styles.reminderInfo}>
-                  <Text style={[styles.reminderTitle, { color: colors.text }]}>
-                    {reminder.title}
-                  </Text>
-                  <Text style={[styles.reminderMessage, { color: colors.grayTitle }]}>
-                    {reminder.message}
-                  </Text>
-                </View>
-                <View style={[styles.statusBadge, { backgroundColor: colors.grayTitle }]}>
-                  <Text style={styles.statusBadgeText}>Inactive</Text>
-                </View>
-              </View>
-              <View style={styles.reminderDetails}>
-                <View style={styles.reminderDetail}>
-                  <Ionicons name="location" size={16} color={colors.grayTitle} />
-                  <Text style={[styles.reminderDetailText, { color: colors.grayTitle }]}>
-                    {reminder.latitude.toFixed(4)}, {reminder.longitude.toFixed(4)}
-                  </Text>
-                </View>
-                <View style={styles.reminderDetail}>
-                  <Ionicons name="radio" size={16} color={colors.grayTitle} />
-                  <Text style={[styles.reminderDetailText, { color: colors.grayTitle }]}>
-                    Radius: {reminder.radius}m
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.reminderActions}>
-                <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: colors.green }]}
-                  onPress={() => {
-                    LocationService.activateReminder(reminder.id);
-                    updateServiceInfo();
-                    showMessage({
-                      message: 'Reminder activated',
-                      type: 'success',
-                    });
-                  }}
-                >
-                  <Ionicons name="play" size={16} color="white" />
-                  <Text style={styles.actionButtonText}>Activate</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: colors.gmailText }]}
-                  onPress={() => {
-                    LocationService.removeLocationReminder(reminder.id);
-                    updateServiceInfo();
-                    showMessage({
-                      message: 'Reminder removed',
-                      type: 'info',
-                    });
-                  }}
-                >
-                  <Ionicons name="trash" size={16} color="white" />
-                  <Text style={styles.actionButtonText}>Remove</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-        </View>
-      )}
-
-      {/* Empty State */}
-      {(!serviceInfo?.activeReminders || serviceInfo.activeReminders.length === 0) &&
-        (!serviceInfo?.inactiveReminders || serviceInfo.inactiveReminders.length === 0) && (
-          <View style={styles.emptyState}>
-            <View style={styles.emptyStateIcon}>
-              <Ionicons name="location-outline" size={64} color={colors.grayTitle} />
-            </View>
-            <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
-              No Location Reminders
-            </Text>
-            <Text style={[styles.emptyStateMessage, { color: colors.grayTitle }]}>
-              Add location reminders to get notified when you reach specific locations
-            </Text>
-            <TouchableOpacity
-              style={[styles.addReminderButton, { backgroundColor: colors.primary }]}
-              onPress={() => handleServiceAction('addTest')}
-            >
-              <Ionicons name="add" size={20} color="white" />
-              <Text style={styles.addReminderButtonText}>Add Test Reminder</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-    </View>
-  );
-
-  const renderAdvancedTab = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.advancedSection}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Advanced Controls</Text>
-
-        <TouchableOpacity
-          style={[styles.advancedButton, { backgroundColor: colors.blue }]}
-          onPress={() => handleServiceAction('test')}
-          disabled={isLoading}
-        >
-          <Ionicons name="notifications" size={24} color="white" />
-          <Text style={styles.advancedButtonText}>Test Notification</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.advancedButton, { backgroundColor: colors.gmailText }]}
-          onPress={() => handleServiceAction('forceStop')}
-          disabled={isLoading}
-        >
-          <Ionicons name="trash" size={24} color="white" />
-          <Text style={styles.advancedButtonText}>Force Stop All</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.advancedButton, { backgroundColor: colors.gmailDark }]}
-          onPress={() => handleServiceAction('emergency')}
-          disabled={isLoading}
-        >
-          <Ionicons name="warning" size={24} color="white" />
-          <Text style={styles.advancedButtonText}>Emergency Stop</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.advancedButton, { backgroundColor: colors.green }]}
-          onPress={() => handleServiceAction('addTest')}
-          disabled={isLoading}
-        >
-          <Ionicons name="add-circle" size={24} color="white" />
-          <Text style={styles.advancedButtonText}>Add Test Reminder</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Service Summary */}
-      {serviceInfo?.isAnyServiceRunning && (
-        <View style={[styles.summarySection, { backgroundColor: colors.grayBackground }]}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="information-circle" size={20} color={colors.primary} />
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Running Services</Text>
-          </View>
-          <Text style={[styles.summaryText, { color: colors.grayTitle }]}>
-            {LocationService.getRunningServicesSummary()}
-          </Text>
-        </View>
-      )}
-    </View>
-  );
-
-  console.log('ServiceManager: Rendering with isVisible:', isVisible, 'serviceInfo:', serviceInfo);
-
-  if (!isVisible) {
-    return null;
-  }
 
   return (
     <Modal
-      visible={isVisible}
-      animationType="none"
-      transparent={true}
-      onRequestClose={onClose}
-      statusBarTranslucent={true}
+      isVisible={isVisible}
+      style={{ margin: 0 }}
+      onBackButtonPress={onClose}
+      statusBarTranslucent
+      animationIn="slideInUp"
+      animationOut="slideOutDown"
+      deviceHeight={Dimensions.get('screen').height}
     >
-      <Animated.View
-        style={[
-          styles.overlay,
-          {
-            backgroundColor: theme === 'dark' ? 'rgba(30,31,31,0.7)' : 'rgba(0,0,0,0.18)',
-            opacity: fadeAnim,
-          },
-        ]}
-      >
-        <Animated.View
-          style={[
-            styles.container,
-            {
-              backgroundColor: colors.background,
-              borderRadius: 28,
-              shadowColor: 'rgba(0,0,0,0.18)',
-              shadowOpacity: 0.18,
-              shadowRadius: 32,
-              elevation: 12,
-              borderColor: colors.borderColor,
-              borderWidth: 1,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
+      <Animated.View style={[styles.overlay, overlayStyle]}>
+        <Animated.View style={[styles.container, { backgroundColor: colors.background }]}>
           {/* Header */}
           <LinearGradient
             colors={[colors.primary, colors.primary + 'CC']}
@@ -815,13 +222,11 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ isVisible, onClose }) =
           >
             <View style={styles.headerLeft}>
               <View style={[styles.headerIconContainer, { backgroundColor: colors.primary }]}>
-                {' '}
-                {/* theme-aware */}
                 <Ionicons name="settings" size={24} color={colors.white} />
               </View>
               <View>
                 <Text style={[styles.title, { color: colors.white }]}>Service Manager</Text>
-                <Text style={[styles.subtitle, { color: colors.white08 }]}>
+                <Text style={[styles.subtitle, { color: colors.grayTitle }]}>
                   Location Tracking Control Center
                 </Text>
               </View>
@@ -835,35 +240,284 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ isVisible, onClose }) =
           </LinearGradient>
 
           {/* Tab Navigation */}
-          <View
-            style={[
-              styles.tabNavigation,
-              {
-                backgroundColor: colors.grayBackground,
-                borderBottomWidth: 1,
-                borderBottomColor: colors.borderColor,
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-                elevation: 2,
-                shadowColor: 'rgba(0,0,0,0.08)',
-                shadowOpacity: 0.08,
-                shadowRadius: 8,
-              },
-            ]}
-          >
-            {renderTabButton('overview', 'Overview', 'grid')}
-            {renderTabButton('reminders', 'Reminders', 'location')}
-            {renderTabButton('advanced', 'Advanced', 'settings')}
-          </View>
+          <TabNavigation selectedTab={selectedTab} onSelectTab={setSelectedTab} colors={colors} />
 
-          <ScrollView
+          <Animated.ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.contentContainer}
           >
-            {selectedTab === 'overview' && renderOverviewTab()}
-            {selectedTab === 'reminders' && renderRemindersTab()}
-            {selectedTab === 'advanced' && renderAdvancedTab()}
-          </ScrollView>
+            {selectedTab === 'overview' && (
+              <View style={styles.tabContent}>
+                <StatusCard
+                  status={serviceInfo?.serviceStatus || 'stopped'}
+                  colors={stripGradient(colors)}
+                  dotScale={dotScale}
+                  debugInfo={debugInfo}
+                  showDebug={__DEV__}
+                />
+                {/* Modern Dashboard Summary Card for Stats - solid background, white icons */}
+                <View style={[styles.statsSummaryCard, { backgroundColor: colors.primary }]}>
+                  <View style={styles.statsRow}>
+                    <View
+                      style={[
+                        styles.statsIconCircle,
+                        {
+                          backgroundColor: serviceInfo?.isTracking
+                            ? colors.green
+                            : colors.gmailText,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name={serviceInfo?.isTracking ? 'play-circle' : 'close-circle'}
+                        size={26}
+                        color={colors.white}
+                      />
+                    </View>
+                    <Text style={[styles.statsLabel, { color: colors.white }]}>Tracking</Text>
+                    <Text style={[styles.statsValue, { color: colors.white }]}>
+                      {serviceInfo?.isTracking ? 'Active' : 'Inactive'}
+                    </Text>
+                  </View>
+                  {/* Paused */}
+                  <View style={styles.statsRow}>
+                    <View
+                      style={[
+                        styles.statsIconCircle,
+                        {
+                          backgroundColor: serviceInfo?.isPaused ? colors.yellow : colors.grayTitle,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name={serviceInfo?.isPaused ? 'pause-circle' : 'play-forward'}
+                        size={26}
+                        color={colors.white}
+                      />
+                    </View>
+                    <Text style={[styles.statsLabel, { color: colors.white }]}>Paused</Text>
+                    <Text style={[styles.statsValue, { color: colors.white }]}>
+                      {serviceInfo?.isPaused ? 'Yes' : 'No'}
+                    </Text>
+                  </View>
+                  {/* Active Reminders */}
+                  <View style={styles.statsRow}>
+                    <View style={[styles.statsIconCircle, { backgroundColor: colors.blue }]}>
+                      <Ionicons name="notifications" size={26} color={colors.white} />
+                    </View>
+                    <Text style={[styles.statsLabel, { color: colors.white }]}>Active</Text>
+                    <Text style={[styles.statsValue, { color: colors.white }]}>
+                      {serviceInfo?.activeRemindersCount || 0}
+                    </Text>
+                  </View>
+                  {/* Total Reminders */}
+                  <View style={styles.statsRow}>
+                    <View style={[styles.statsIconCircle, { backgroundColor: colors.darkBlue }]}>
+                      <Ionicons name="list-circle" size={26} color={colors.white} />
+                    </View>
+                    <Text style={[styles.statsLabel, { color: colors.white }]}>Total</Text>
+                    <Text style={[styles.statsValue, { color: colors.white }]}>
+                      {serviceInfo?.totalReminders || 0}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Control Buttons */}
+                <View style={styles.controlSection}>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Quick Controls</Text>
+                  <ControlGrid
+                    isLoading={isLoading}
+                    isTracking={!!serviceInfo?.isTracking}
+                    isPaused={!!serviceInfo?.isPaused}
+                    colors={colors}
+                    onStart={() => handleServiceAction('start')}
+                    onStop={() => handleServiceAction('stop')}
+                    onPause={() => handleServiceAction('pause')}
+                    onResume={() => handleServiceAction('resume')}
+                    onPressIn={handleButtonPressIn}
+                    onPressOut={handleButtonPressOut}
+                  />
+                </View>
+              </View>
+            )}
+            {selectedTab === 'reminders' && (
+              <RemindersList
+                activeReminders={serviceInfo?.activeReminders || []}
+                inactiveReminders={serviceInfo?.inactiveReminders || []}
+                colors={colors}
+                onActivate={(id) => {
+                  LocationService.activateReminder(id);
+                  updateServiceInfo();
+                  showMessage({ message: 'Reminder activated', type: 'success' });
+                }}
+                onRemove={(id) => {
+                  LocationService.removeLocationReminder(id);
+                  updateServiceInfo();
+                  showMessage({ message: 'Reminder removed', type: 'info' });
+                }}
+              />
+            )}
+            {selectedTab === 'advanced' && (
+              <View>
+                {/* Advanced Controls Card - vertical feature list, no buttons */}
+                <View
+                  style={{
+                    backgroundColor: colors.background,
+                    borderRadius: 22,
+                    shadowColor: colors.primary,
+                    shadowOpacity: 0.1,
+                    shadowRadius: 16,
+                    elevation: 6,
+                    marginBottom: 10,
+                    padding: 0,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <View style={{ paddingHorizontal: 22, gap: 5 }}>
+                    <Text style={[styles.sectionTitle, { color: colors.text, fontSize: 20 }]}>
+                      Advanced Controls
+                    </Text>
+                    <Text
+                      style={[styles.sectionLabel, { color: colors.grayTitle, marginBottom: 10 }]}
+                    >
+                      Power features for advanced users
+                    </Text>
+                    {/* Feature Rows - no buttons, just details */}
+                    <View style={{ gap: 18 }}>
+                      {/* Test Notification */}
+                      <Pressable
+                        onPress={() => handleServiceAction('test')}
+                        style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}
+                      >
+                        <View style={[styles.headerIconCircle, { backgroundColor: colors.blue }]}>
+                          <Ionicons name="notifications" size={22} color={colors.white} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.advancedRowLabel, { color: colors.text }]}>
+                            Test Notification
+                          </Text>
+                          <Text style={[styles.advancedRowDesc, { color: colors.grayTitle }]}>
+                            Send a test notification to verify setup
+                          </Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={20} color={colors.grayTitle} />
+                      </Pressable>
+                      {/* Add Test Reminder */}
+                      <Pressable
+                        onPress={() => handleServiceAction('addTest')}
+                        style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}
+                      >
+                        <View style={[styles.headerIconCircle, { backgroundColor: colors.green }]}>
+                          <Ionicons name="add-circle" size={22} color={colors.white} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.advancedRowLabel, { color: colors.text }]}>
+                            Add Test Reminder
+                          </Text>
+                          <Text style={[styles.advancedRowDesc, { color: colors.grayTitle }]}>
+                            Add a sample location-based reminder
+                          </Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={20} color={colors.grayTitle} />
+                      </Pressable>
+                    </View>
+                    {/* Divider */}
+                    <View
+                      style={{ height: 1, backgroundColor: colors.borderColor, marginVertical: 8 }}
+                    />
+                    {/* Danger Zone - details only */}
+                    <View style={{ gap: 18, marginBottom: 10 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                        <Ionicons
+                          name="warning"
+                          size={20}
+                          color={colors.gmailText}
+                          style={{ marginRight: 8 }}
+                        />
+                        <Text
+                          style={[styles.sectionTitle, { color: colors.gmailText, fontSize: 16 }]}
+                        >
+                          Danger Zone
+                        </Text>
+                      </View>
+                      {/* Force Stop All */}
+                      <Pressable
+                        onPress={() => handleServiceAction('forceStop')}
+                        style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}
+                      >
+                        <View
+                          style={[styles.headerIconCircle, { backgroundColor: colors.gmailText }]}
+                        >
+                          <Ionicons name="trash" size={22} color={colors.white} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.advancedRowLabel, { color: colors.text }]}>
+                            Force Stop All
+                          </Text>
+                          <Text style={[styles.advancedRowDesc, { color: colors.grayTitle }]}>
+                            Stop all services and clear reminders
+                          </Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={20} color={colors.grayTitle} />
+                      </Pressable>
+                      {/* Emergency Stop */}
+                      <Pressable
+                        onPress={() => handleServiceAction('emergency')}
+                        style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}
+                      >
+                        <View
+                          style={[styles.headerIconCircle, { backgroundColor: colors.gmailDark }]}
+                        >
+                          <Ionicons name="warning" size={22} color={colors.white} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.advancedRowLabel, { color: colors.text }]}>
+                            Emergency Stop
+                          </Text>
+                          <Text style={[styles.advancedRowDesc, { color: colors.grayTitle }]}>
+                            Immediately stop all services
+                          </Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={20} color={colors.grayTitle} />
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+                {/* Service Summary Chip/Card */}
+                {serviceInfo?.isAnyServiceRunning && (
+                  <View
+                    style={{
+                      backgroundColor: colors.background,
+                      borderRadius: 18,
+                      padding: 14,
+                      shadowColor: colors.blue,
+                      shadowOpacity: 0.18,
+                      shadowRadius: 18,
+                      elevation: 8,
+                      borderLeftWidth: 6,
+                      borderLeftColor: colors.blue,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 12,
+                      alignSelf: 'flex-start',
+                      marginLeft: 8,
+                      marginTop: 20,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.summaryText,
+                        { color: colors.grayTitle, fontSize: 14, flex: 1 },
+                      ]}
+                    >
+                      {LocationService.getRunningServicesSummary()}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </Animated.ScrollView>
         </Animated.View>
       </Animated.View>
     </Modal>
@@ -905,26 +559,22 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    // backgroundColor: '#000', // replaced with theme-aware
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
     fontSize: 24,
     fontFamily: FONTS.Bold,
-    // color: '#000', // replaced with theme-aware
   },
   subtitle: {
     fontSize: 14,
     fontFamily: FONTS.Regular,
-    // color: '#000', // replaced with theme-aware
     marginTop: 2,
   },
   closeButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    // backgroundColor: '#000', // replaced with theme-aware
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -933,9 +583,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 8,
-    // backgroundColor: '#000', // replaced with theme-aware
-    // Use a slightly darker gray for light mode
-    // Will be overridden inline below
   },
   tabButton: {
     flex: 1,
@@ -951,8 +598,6 @@ const styles = StyleSheet.create({
   tabButtonText: {
     fontSize: 14,
     fontFamily: FONTS.Medium,
-    // color: '#000', // replaced with theme-aware
-    // Will be overridden inline below
   },
   contentContainer: {
     padding: 20,
@@ -966,8 +611,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    // borderColor: '#000', // replaced with theme-aware
-    // backgroundColor: '#000', // replaced with theme-aware
   },
   debugHeader: {
     flexDirection: 'row',
@@ -978,12 +621,10 @@ const styles = StyleSheet.create({
   debugTitle: {
     fontSize: 14,
     fontFamily: FONTS.SemiBold,
-    // color: '#000', // replaced with theme-aware
   },
   debugText: {
     fontSize: 12,
     fontFamily: FONTS.Regular,
-    // color: '#000', // replaced with theme-aware
   },
   statusCard: {
     borderRadius: 24,
@@ -995,7 +636,6 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   statusCardGlow: {
-    // shadowColor: '#000', // replaced with theme-aware
     shadowOpacity: 0.25,
     shadowRadius: 32,
     elevation: 16,
@@ -1009,7 +649,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    // backgroundColor: '#000', // replaced with theme-aware
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1019,12 +658,10 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 24,
     fontFamily: FONTS.Bold,
-    // color: '#000', // replaced with theme-aware
   },
   statusSubtext: {
     fontSize: 16,
     fontFamily: FONTS.Regular,
-    // color: '#000', // replaced with theme-aware
     marginTop: 4,
   },
   statusIndicator: {
@@ -1057,7 +694,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    // backgroundColor: '#000', // replaced with theme-aware
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -1066,12 +702,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: FONTS.Bold,
     marginBottom: 4,
-    // color: '#000', // replaced with theme-aware
   },
   statLabel: {
     fontSize: 14,
     fontFamily: FONTS.Regular,
-    // color: '#000', // replaced with theme-aware
   },
   controlSection: {
     gap: 16,
@@ -1079,7 +713,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontFamily: FONTS.SemiBold,
-    // color: '#000', // replaced with theme-aware
   },
   controlGrid: {
     flexDirection: 'row',
@@ -1104,7 +737,6 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   controlButtonText: {
-    color: 'white',
     fontSize: 16,
     fontFamily: FONTS.SemiBold,
   },
@@ -1138,12 +770,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: FONTS.SemiBold,
     marginBottom: 4,
-    // color: '#000', // replaced with theme-aware
   },
   reminderMessage: {
     fontSize: 14,
     fontFamily: FONTS.Regular,
-    // color: '#000', // replaced with theme-aware
   },
   statusBadge: {
     paddingVertical: 6,
@@ -1151,7 +781,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusBadgeText: {
-    color: 'white',
     fontSize: 12,
     fontFamily: FONTS.Medium,
   },
@@ -1168,7 +797,6 @@ const styles = StyleSheet.create({
   reminderDetailText: {
     fontSize: 14,
     fontFamily: FONTS.Regular,
-    // color: '#000', // replaced with theme-aware
   },
   removeButton: {
     flexDirection: 'row',
@@ -1180,7 +808,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   removeButtonText: {
-    color: 'white',
     fontSize: 14,
     fontFamily: FONTS.Medium,
   },
@@ -1199,7 +826,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButtonText: {
-    color: 'white',
     fontSize: 14,
     fontFamily: FONTS.Medium,
   },
@@ -1234,14 +860,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 12,
     elevation: 8,
-    // Use theme color in component, fallback here
-    shadowColor: '#000', // replaced with theme-aware in component
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.18,
     shadowRadius: 8,
   },
   addReminderButtonText: {
-    color: 'white',
     fontSize: 18,
     fontFamily: FONTS.Bold,
     letterSpacing: 0.1,
@@ -1262,7 +885,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
   },
   advancedButtonText: {
-    color: 'white',
     fontSize: 16,
     fontFamily: FONTS.SemiBold,
   },
@@ -1274,7 +896,153 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: FONTS.Regular,
     lineHeight: 20,
-    // color: '#000', // replaced with theme-aware
+  },
+  statsGridModern: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 18,
+    marginBottom: 18,
+  },
+  statCardModern: {
+    width: '47%',
+    aspectRatio: 1.1,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  statAccentDot: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    zIndex: 2,
+    borderWidth: 2,
+    borderColor: 'white',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statIconModern: {
+    marginBottom: 10,
+    marginTop: 8,
+  },
+  statValueModern: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  statLabelModern: {
+    fontSize: 15,
+    fontWeight: '500',
+    opacity: 0.8,
+  },
+  statsGridModernSolid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 14,
+    marginBottom: 18,
+  },
+  statCardModernSolid: {
+    width: '48%',
+    aspectRatio: 1.1,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    paddingVertical: 18,
+    paddingHorizontal: 8,
+  },
+  statIconModernSolid: {
+    marginBottom: 12,
+    marginTop: 2,
+  },
+  statValueModernSolid: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  statLabelModernSolid: {
+    fontSize: 15,
+    fontWeight: '500',
+    opacity: 0.95,
+  },
+  statsSummaryCard: {
+    borderRadius: 24,
+    padding: 12, // reduced from 20
+    marginBottom: 12, // reduced from 22
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 18,
+    elevation: 8,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8, // reduced from 16
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.10)',
+  },
+  statsIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  statsLabel: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  statsValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    minWidth: 54,
+    textAlign: 'right',
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontFamily: FONTS.Regular,
+  },
+  advancedRowLabel: {
+    fontSize: 15,
+    fontWeight: '700',
+    flexWrap: 'wrap',
+  },
+  advancedRowDesc: {
+    fontSize: 13,
+    fontWeight: '400',
+    opacity: 0.8,
+    marginTop: 2,
+  },
+  advancedRowAction: {
+    minWidth: 54,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+    paddingHorizontal: 14,
+  },
+  headerIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
