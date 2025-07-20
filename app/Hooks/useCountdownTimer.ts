@@ -13,7 +13,7 @@ export function useCountdownTimer(
   const [timeLeft, setTimeLeft] = useState('00:00:00');
   const [formattedTimeLeft, setFormattedTimeLeft] = useState('00Hrs : 00Min : 00Sec');
   const [timeIsOver, setTimeIsOver] = useState(false);
-  const intervalId = useRef<NodeJS.Timeout | null>(null);
+  const intervalId = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!endDate) {

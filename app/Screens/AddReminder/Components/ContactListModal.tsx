@@ -103,7 +103,7 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
   const style = styles();
   const colors = useThemeColors();
   const flatListRef = useRef<FlatList>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [searchText, setSearchText] = useState('');
   const [debouncedSearchText, setDebouncedSearchText] = useState('');
