@@ -118,9 +118,12 @@ const Home = () => {
             await notifee.openBatteryOptimizationSettings();
           };
 
-          setTimeout(() => {
+          const timeoutId = setTimeout(() => {
             setShowBatteryModal(true);
           }, 1500);
+
+          // Cleanup: clear timeout on unmount
+          return () => clearTimeout(timeoutId);
         }
       });
     } catch (error) {
@@ -285,6 +288,10 @@ const Home = () => {
             }}
             keyExtractor={(item, index) => index.toString()}
             showsHorizontalScrollIndicator={false}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            removeClippedSubviews={true}
           />
         </Animated.View>
 
@@ -327,6 +334,10 @@ const Home = () => {
                   deleteReminder={deleteReminder}
                 />
               )}
+              initialNumToRender={10}
+              maxToRenderPerBatch={10}
+              windowSize={5}
+              removeClippedSubviews={true}
             />
           ) : (
             <View style={{ height: '80%' }}>

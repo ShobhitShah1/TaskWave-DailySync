@@ -3,7 +3,6 @@ import { useNavigation } from '@react-navigation/native';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Platform } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-
 import { useAppContext } from '@Contexts/ThemeProvider';
 import isGridView from '@Hooks/isGridView';
 import { useAddressFromCoords } from '@Hooks/useAddressFromCoords';
@@ -93,10 +92,17 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
   }, [notification]);
 
   const onEditPress = useCallback(() => {
-    navigation.navigate('CreateReminder', {
-      notificationType: notification.type,
-      id: notification?.id,
-    });
+    if (notification.type === 'location') {
+      navigation.navigate('LocationDetails', {
+        notificationType: notification.type,
+        id: notification?.id,
+      });
+    } else {
+      navigation.navigate('CreateReminder', {
+        notificationType: notification.type,
+        id: notification?.id,
+      });
+    }
   }, [notification]);
 
   const onDuplicatePress = useCallback(() => {
@@ -167,22 +173,13 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
         const created = await createNotification(data);
 
         if (!created) {
-          showMessage({
-            message: String(created),
-            type: 'danger',
-          });
+          showMessage({ message: String(created), type: 'danger' });
         } else {
-          showMessage({
-            message: 'Reminder duplicated successfully.',
-            type: 'success',
-          });
+          showMessage({ message: 'Reminder duplicated successfully.', type: 'success' });
           onRefreshData?.();
         }
       } else {
-        showMessage({
-          message: 'Failed to schedule notification.',
-          type: 'danger',
-        });
+        showMessage({ message: 'Failed to schedule notification.', type: 'danger' });
       }
     } catch (error: any) {
       showMessage({

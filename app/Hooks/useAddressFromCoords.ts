@@ -8,13 +8,14 @@ export function useAddressFromCoords(coords: GeoLatLng | null) {
 
   useEffect(() => {
     let isMounted = true;
+
     const fetch = async () => {
       if (coords) {
         setLoading(true);
         const details = await getAddressFromCoords(coords.latitude, coords.longitude);
+
         if (isMounted) {
           setAddressDetails(details);
-          console.log('Fetched address details:', details);
         }
         setLoading(false);
       } else {
@@ -22,7 +23,9 @@ export function useAddressFromCoords(coords: GeoLatLng | null) {
         setLoading(false);
       }
     };
+
     fetch();
+
     return () => {
       isMounted = false;
     };

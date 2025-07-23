@@ -40,7 +40,8 @@ export const getDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
       longitude REAL,
       radius INTEGER,
       locationName TEXT,
-      priority TEXT
+      priority TEXT,
+      status TEXT DEFAULT 'pending'
     );`);
     console.log('[Database] notifications table ensured');
 
@@ -51,6 +52,13 @@ export const getDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
     const hasPriority = columns.some((col) => col.name === 'priority');
     if (!hasPriority) {
       await databaseInstance.execAsync(`ALTER TABLE notifications ADD COLUMN priority TEXT;`);
+    }
+    // Add migration: add 'status' column if it does not exist
+    const hasStatus = columns.some((col) => col.name === 'status');
+    if (!hasStatus) {
+      await databaseInstance.execAsync(
+        `ALTER TABLE notifications ADD COLUMN status TEXT DEFAULT 'pending';`,
+      );
     }
 
     // Create contacts table if it does not exist

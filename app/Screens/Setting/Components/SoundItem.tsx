@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { Animated as RNAnimated, Pressable, Text, View } from 'react-native';
+import { Pressable, Animated as RNAnimated, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -106,8 +106,6 @@ const SoundItem = ({ item, isSelected, isPlaying, onSelect, onPlay }: SoundItemP
         </View>
 
         <View style={style.rightSection}>
-          {/* <AudioVisualizer uri={item.uri} isPlaying={isPlaying} theme={theme} /> */}
-
           {isPlaying &&
             item.canPlay &&
             waveAnimation.current[item.id]?.map((anim, index) => (

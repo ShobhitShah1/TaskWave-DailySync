@@ -4,7 +4,7 @@ import * as QuickActions from 'expo-quick-actions';
 import * as TaskManager from 'expo-task-manager';
 import { showMessage } from 'react-native-flash-message';
 
-import { Notification } from '@Types/Interface';
+import { Notification, LocationReminderStatus } from '@Types/Interface';
 
 // Proper type for notification action events
 interface NotificationActionEvent {
@@ -27,6 +27,7 @@ interface LocationReminder {
   notification: Notification;
   isActive: boolean;
   createdAt: Date;
+  status: LocationReminderStatus;
 }
 
 interface LocationServiceState {
@@ -251,6 +252,10 @@ class LocationService {
       const notificationId = `location_${reminder.id}_${Date.now()}`;
       this.notificationIds.add(notificationId);
 
+      // Set status to Sent
+      const r = this.locationReminders.get(reminder.id);
+      if (r) r.status = LocationReminderStatus.Sent;
+
       const notificationConfig = {
         id: notificationId,
         title: reminder.title,
@@ -465,11 +470,12 @@ class LocationService {
     });
   }
 
-  addLocationReminder(reminder: Omit<LocationReminder, 'isActive' | 'createdAt'>): void {
+  addLocationReminder(reminder: Omit<LocationReminder, 'isActive' | 'createdAt' | 'status'>): void {
     const locationReminder: LocationReminder = {
       ...reminder,
       isActive: true,
       createdAt: new Date(),
+      status: LocationReminderStatus.Pending,
     };
 
     this.locationReminders.set(reminder.id, locationReminder);
@@ -510,6 +516,8 @@ class LocationService {
     const reminder = this.locationReminders.get(id);
     if (reminder) {
       reminder.isActive = false;
+      // Optionally, set status to Expired if you want to mark deactivated as expired
+      // reminder.status = LocationReminderStatus.Expired;
       this.state.activeRemindersCount = this.getActiveRemindersCount();
       console.log(`Deactivated reminder: ${reminder.title}`);
     }
@@ -550,6 +558,8 @@ class LocationService {
 
       return await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
+        distanceInterval: 0,
+        timeInterval: 0,
       });
     } catch (error) {
       console.error('Error getting current location:', error);
@@ -621,6 +631,7 @@ class LocationService {
         },
         isActive: true,
         createdAt: new Date(),
+        status: LocationReminderStatus.Pending,
       };
 
       console.log('Testing interactive notification...');
@@ -643,7 +654,7 @@ class LocationService {
 
   // Add a test location reminder to see data in ServiceManager
   addTestLocationReminder(): void {
-    const testReminder: Omit<LocationReminder, 'isActive' | 'createdAt'> = {
+    const testReminder: Omit<LocationReminder, 'isActive' | 'createdAt' | 'status'> = {
       id: `test-reminder-${Date.now()}`,
       latitude: 37.78825,
       longitude: -122.4324,

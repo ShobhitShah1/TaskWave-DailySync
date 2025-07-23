@@ -39,7 +39,10 @@ export type RootStackParamList = {
   AboutApp: undefined;
   HowAppWorks: undefined;
   NotificationSound: undefined;
-  LocationDetails: undefined;
+  LocationDetails: {
+    notificationType: NotificationType;
+    id?: string;
+  };
 };
 
 export interface AppContextProps {
@@ -95,8 +98,8 @@ export interface Notification {
   days: string[];
   memo?: Memo[];
   telegramUsername: string;
-  latitude?: number;
-  longitude?: number;
+  latitude?: number | string;
+  longitude?: number | string;
   radius?: number;
   locationName?: string;
   rescheduleInfo?: {
@@ -104,6 +107,7 @@ export interface Notification {
     delayMinutes?: number;
     retryCount?: number;
   };
+  status?: LocationReminderStatus;
 }
 
 export interface SimplifiedContact {
@@ -298,6 +302,7 @@ export interface LocationMapViewProps {
   onLocationSelect: (coordinate: GeoLatLng) => void;
   selectedLocation: GeoLatLng | null;
   children?: React.ReactNode;
+  userLocation?: GeoLatLng;
 }
 
 /**
@@ -352,4 +357,37 @@ export interface MapLibreUserLocationEvent {
     latitude: number;
     longitude: number;
   };
+}
+
+export interface NominatimResult {
+  display_name: string;
+  lat: string;
+  lon: string;
+}
+
+export interface LocationSearchBarProps {
+  value: string;
+  onChangeText: (text: string) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  onResultSelect?: (result: NominatimResult) => void;
+}
+
+export enum LocationReminderStatus {
+  Pending = 'pending',
+  Sent = 'sent',
+  Expired = 'expired',
+}
+
+export interface LocationReminder {
+  id: string;
+  latitude: number;
+  longitude: number;
+  radius: number;
+  title: string;
+  message: string;
+  notification: Notification;
+  isActive: boolean;
+  createdAt: Date;
+  status: LocationReminderStatus; // <-- NEW
 }

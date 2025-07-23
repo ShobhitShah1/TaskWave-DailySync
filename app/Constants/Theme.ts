@@ -56,6 +56,12 @@ const ColorGroups = {
       dark: 'rgba(204, 153, 1, 1)',
       text: 'rgba(102, 85, 0, 1)',
     },
+    location: {
+      primary: 'rgba(172, 212, 255, 1)',
+      background: 'rgba(82, 114, 150, 0.1)',
+      dark: 'rgba(172, 212, 255, 1)',
+      text: 'rgba(59, 94, 131, 1)',
+    },
   },
   accent: {
     green: 'rgba(21, 255, 0, 1)',
@@ -99,6 +105,11 @@ const CommunicationPlatformColors = {
   noteBackground: ColorGroups.communication.note.background,
   noteDark: ColorGroups.communication.note.dark,
   noteText: ColorGroups.communication.note.text,
+
+  location: ColorGroups.communication.location.primary,
+  locationBackground: ColorGroups.communication.location.background,
+  locationDark: ColorGroups.communication.location.dark,
+  locationText: ColorGroups.communication.location.text,
 };
 
 export const LightThemeColors = {

@@ -25,6 +25,7 @@
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
+    "@types/geojson": "^7946.0.16",
     "expo": "53.0.20",
     "expo-av": "~15.1.7",
     "expo-blur": "~14.1.5",
@@ -92,5 +93,10 @@
     "send-message",
     "app"
   ],
-  "packageManager": "yarn@4.9.2"
+  "packageManager": "yarn@4.9.2",
+  "unimported": {
+    "entry": [
+      "App.tsx"
+    ]
+  }
 }

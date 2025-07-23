@@ -3,7 +3,7 @@ import { showMessage } from 'react-native-flash-message';
 import { sendMail, sendSms, sendTelegramMessage, sendWhatsapp } from 'send-message';
 
 import { navigationRef } from '@Routes/RootNavigation';
-import { Notification } from '@Types/Interface';
+import type { Notification } from '@Types/Interface';
 import { parseNotificationData } from '@Utils/notificationParser';
 
 const parseContacts = (toContact: any): string[] => {
@@ -159,7 +159,7 @@ const notificationHandlers = {
     try {
       const parseData = parseNotificationData(data);
 
-      navigationRef.navigate('ReminderPreview', {
+      navigationRef.navigate('LocationPreview', {
         notificationData: parseData,
       });
     } catch (error: any) {
@@ -168,8 +168,10 @@ const notificationHandlers = {
   },
 };
 
-export const handleNotificationPress = async (notification: any) => {
+export const handleNotificationPress = async (notification: Notification) => {
   try {
+    console.log('click notification:', notification.type);
+
     const handler = notificationHandlers[notification.type as keyof typeof notificationHandlers];
     if (handler) {
       await handler(notification as Notification);

@@ -1,11 +1,25 @@
+import ReusableBottomSheet from '@Components/ReusableBottomSheet';
+import TextString from '@Constants/TextString';
+import { FONTS } from '@Constants/Theme';
+import { BottomSheetProvider, useBottomSheet } from '@Contexts/BottomSheetProvider';
 import {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
-  BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
+import { useBottomSheetBackHandler } from '@Hooks/useBottomSheetBackHandler';
+import useThemeColors from '@Hooks/useThemeMode';
 import { useNavigation } from '@react-navigation/native';
+import AddReminder from '@Screens/AddReminder/AddReminder';
+import History from '@Screens/History/History';
+import Home from '@Screens/Home/Home';
+import Notification from '@Screens/Notification/Notification';
+import Setting from '@Screens/Setting/Setting';
+import { NotificationCategory, NotificationType, RenderTabBarProps } from '@Types/Interface';
+import { getCategories } from '@Utils/getCategories';
+import { getIconSourceForBottomTabs } from '@Utils/getIconSourceForBottomTabs';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Location from 'expo-location';
 import React, { memo, useCallback, useState } from 'react';
 import {
   Dimensions,
@@ -21,20 +35,6 @@ import { CurvedBottomBar } from 'react-native-curved-bottom-bar';
 import { showMessage } from 'react-native-flash-message';
 import { Shadow } from 'react-native-shadow-2';
 import { isAppInstalled } from 'send-message';
-
-import TextString from '@Constants/TextString';
-import { FONTS } from '@Constants/Theme';
-import { BottomSheetProvider, useBottomSheet } from '@Contexts/BottomSheetProvider';
-import { useBottomSheetBackHandler } from '@Hooks/useBottomSheetBackHandler';
-import useThemeColors from '@Hooks/useThemeMode';
-import AddReminder from '@Screens/AddReminder/AddReminder';
-import History from '@Screens/History/History';
-import Home from '@Screens/Home/Home';
-import Notification from '@Screens/Notification/Notification';
-import Setting from '@Screens/Setting/Setting';
-import { NotificationCategory, NotificationType, RenderTabBarProps } from '@Types/Interface';
-import { getCategories } from '@Utils/getCategories';
-import { getIconSourceForBottomTabs } from '@Utils/getIconSourceForBottomTabs';
 import RenderSheetView from './Components/RenderSheetView';
 
 const { width } = Dimensions.get('window');
@@ -148,7 +148,7 @@ const BottomTab = () => {
     [isAppInstalled, navigation, selectedCategory],
   );
 
-  const onPressNext = useCallback(() => {
+  const onPressNext = useCallback(async () => {
     switch (selectedCategory) {
       case 'whatsapp':
         checkAppAndNavigate(
@@ -178,6 +178,16 @@ const BottomTab = () => {
         );
         break;
       case 'location':
+        const response = await Location.requestForegroundPermissionsAsync();
+
+        if (response.status !== 'granted') {
+          showMessage({
+            message: 'Location Permission required',
+            description: 'Allow location permission to use this feature',
+          });
+          return;
+        }
+
         onCloseSheet();
         setTimeout(() => {
           navigation.navigate('LocationDetails');
@@ -266,7 +276,7 @@ const BottomTab = () => {
       </CurvedBottomBar.Navigator>
 
       <BottomSheetProvider>
-        <BottomSheetModal
+        <ReusableBottomSheet
           enablePanDownToClose
           footerComponent={() => {
             return (
@@ -308,7 +318,7 @@ const BottomTab = () => {
               setSelectedCategory={setSelectedCategory}
             />
           </BottomSheetScrollView>
-        </BottomSheetModal>
+        </ReusableBottomSheet>
       </BottomSheetProvider>
     </React.Fragment>
   );

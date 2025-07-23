@@ -4,7 +4,7 @@ import { showMessage } from 'react-native-flash-message';
 
 import { sounds } from '@Constants/Data';
 import { storage } from '@Contexts/ThemeProvider';
-import { Contact, Notification, RescheduleConfig } from '@Types/Interface';
+import { Contact, Notification, RescheduleConfig, LocationReminderStatus } from '@Types/Interface';
 import { executeWithRetry, getDatabase } from '@Utils/databaseUtils';
 import {
   buildNotifeeNotification,
@@ -104,21 +104,23 @@ export const scheduleNotification = async (
     );
 
     // Ensure all .data fields are strings (Notifee expects string values)
-    const notificationData = {
-      ...notification,
-      id: id || '',
-      type,
-      message,
-      date: notificationDate.toISOString(),
-      subject: subject || '',
-      days: JSON.stringify(days),
-      toContact: JSON.stringify(toContact),
-      toMail: JSON.stringify(toMail),
-      attachments: JSON.stringify(attachments),
-      memo: JSON.stringify(memo),
-      telegramUsername: telegramUsername || '',
-      rescheduleInfo: rescheduleInfoString,
-    };
+    const notificationData = Object.fromEntries(
+      Object.entries({
+        ...notification,
+        id: id || '',
+        type,
+        message,
+        date: notificationDate.toISOString(),
+        subject: subject || '',
+        days: JSON.stringify(days),
+        toContact: JSON.stringify(toContact),
+        toMail: JSON.stringify(toMail),
+        attachments: JSON.stringify(attachments),
+        memo: JSON.stringify(memo),
+        telegramUsername: telegramUsername || '',
+        rescheduleInfo: rescheduleInfoString,
+      }).map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)]),
+    );
 
     const notifeeNotificationId = await notifee.createTriggerNotification(
       {
@@ -146,6 +148,7 @@ export const scheduleNotification = async (
 
     return id;
   } catch (error: any) {
+    console.log('error:', error);
     if (error.message?.toString()?.includes('invalid notification ID')) {
       return null;
     }
@@ -185,7 +188,7 @@ const useReminder = () => {
       }
 
       const insertNotificationSQL = `
-      INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail, telegramUsername, days, latitude, longitude, radius, locationName)
+      INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail, telegramUsername, days, latitude, longitude, radius, locationName, status)
       VALUES (
         '${data.id}',
         '${data.type}',
@@ -201,7 +204,8 @@ const useReminder = () => {
         ${data.latitude || 'NULL'},
         ${data.longitude || 'NULL'},
         ${data.radius || 'NULL'},
-        '${data.locationName || ''}'
+        '${data.locationName || ''}',
+        '${data.status || LocationReminderStatus.Pending}'
       )`;
 
       let insertContactsSQL = '';
@@ -285,7 +289,8 @@ const useReminder = () => {
           telegramUsername = '${data.telegramUsername}',
           latitude = ${data.latitude || 'NULL'},
           longitude = ${data.longitude || 'NULL'},
-          radius = ${data.radius || 'NULL'}
+          radius = ${data.radius || 'NULL'},
+          status = '${data.status || LocationReminderStatus.Pending}'
         WHERE id = '${data.id}'
       `;
 
@@ -381,8 +386,6 @@ const useReminder = () => {
         return [];
       }
 
-      console.log('[Notification] Fetching all notifications');
-
       try {
         const notifications = await database.getAllAsync<any>('SELECT * FROM notifications');
         const result: Notification[] = [];
@@ -419,6 +422,8 @@ const useReminder = () => {
             longitude: notification.longitude,
             radius: notification.radius,
             locationName: notification.locationName,
+            status:
+              (notification.status as LocationReminderStatus) || LocationReminderStatus.Pending,
           });
         }
 
@@ -441,6 +446,16 @@ const useReminder = () => {
           message: 'Database connection error. Please try again.',
           type: 'danger',
         });
+        return null;
+      }
+
+      if (!id) {
+        console.error('[Notification] Missing notification ID');
+        showMessage({
+          message: 'Failed to fetch notification. Please try again.',
+          type: 'danger',
+        });
+
         return null;
       }
 
@@ -484,6 +499,7 @@ const useReminder = () => {
           longitude: notification.longitude,
           radius: notification.radius,
           locationName: notification.locationName,
+          status: (notification.status as LocationReminderStatus) || LocationReminderStatus.Pending,
         };
 
         console.log('[Notification] Successfully fetched notification by ID:', id);

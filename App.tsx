@@ -7,7 +7,6 @@ import { LogBox, StatusBar, StyleSheet, Text } from 'react-native';
 import FlashMessage, { showMessage } from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { BottomSheetProvider } from './app/Contexts/BottomSheetProvider';
 import { AppProvider, useAppContext } from './app/Contexts/ThemeProvider';
 import { handleNotificationPress } from './app/Hooks/handleNotificationPress';
@@ -222,13 +221,13 @@ const AppContent = () => {
               (n: any) => n.latitude && n.longitude,
             );
 
-            locationNotifications.forEach((notification: any) => {
+            locationNotifications.forEach((notification: Notification) => {
               LocationService.addLocationReminder({
                 id: notification.id,
-                latitude: notification.latitude,
-                longitude: notification.longitude,
+                latitude: Number(notification.latitude),
+                longitude: Number(notification.longitude),
                 radius: notification.radius || 100,
-                title: notification.message || 'Location Reminder',
+                title: notification.subject || 'Location Reminder',
                 message: notification.message || '',
                 notification: {
                   ...notification,
@@ -240,6 +239,13 @@ const AppContent = () => {
                 },
               });
             });
+
+            // Ensure tracking starts if reminders exist ---
+            if (locationNotifications.length > 0) {
+              // Start location tracking if not already started
+              await LocationService.startLocationTracking();
+            }
+            // -----------------------------------------------------
           } catch (error) {
             console.error('Error initializing location service:', error);
           }

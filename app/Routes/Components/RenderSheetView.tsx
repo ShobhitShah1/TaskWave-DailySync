@@ -1,8 +1,9 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
-import { Dimensions, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 
 import { useAppContext } from '@Contexts/ThemeProvider';
+import { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import useThemeColors from '@Hooks/useThemeMode';
 import { NotificationType, RenderSheetViewProps } from '@Types/Interface';
 import { getCategories } from '@Utils/getCategories';
@@ -80,9 +81,9 @@ const RenderSheetView = ({
   const rows = useMemo(() => createRows(sortedCategories), [sortedCategories, createRows]);
 
   return (
-    <View style={styles.container}>
+    <BottomSheetView style={styles.container}>
       {/* Top Category Selection */}
-      <ScrollView
+      <BottomSheetScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.contentContainerStyle}
@@ -119,16 +120,16 @@ const RenderSheetView = ({
             </Pressable>
           );
         })}
-      </ScrollView>
+      </BottomSheetScrollView>
 
       {/* Grid Container */}
-      <View style={styles.gridContainer}>
+      <BottomSheetView style={styles.gridContainer}>
         {rows.map((row, rowIndex) => (
-          <View key={`row-${rowIndex}`} style={styles.row}>
+          <BottomSheetView key={`row-${rowIndex}`} style={styles.row}>
             {row.map((item, itemIndex) =>
               item ? (
                 <Animated.View
-                  key={`${item?.id}`} // Simplified key for stability
+                  key={`${item?.id} + ${itemIndex}`}
                   layout={LinearTransition.springify().damping(15).stiffness(100)}
                   style={styles.itemContainer}
                 >
@@ -144,10 +145,10 @@ const RenderSheetView = ({
                 <View key={`empty-${rowIndex}-${itemIndex}`} style={styles.emptyItem} />
               ),
             )}
-          </View>
+          </BottomSheetView>
         ))}
-      </View>
-    </View>
+      </BottomSheetView>
+    </BottomSheetView>
   );
 };
 

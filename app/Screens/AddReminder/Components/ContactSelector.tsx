@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { Contact, NotificationType } from 'Types/Interface';
+import { Contact, NotificationType } from '@Types/Interface';
 
 import styles from '../styles';
 import AddContact from './AddContact';

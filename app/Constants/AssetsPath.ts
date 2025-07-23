@@ -28,6 +28,7 @@ const ic_phone_history = require('../../assets/Icons/ic_phone_history.png');
 const ic_telegram_history = require('../../assets/Icons/ic_telegram_history.png');
 const ic_notes_history = require('../../assets/Icons/ic_notes_history.png');
 const ic_history_location_icon = require('../../assets/Icons/ic_history_location_icon.png');
+const ic_location_history = require('../../assets/Icons/ic_location_history.png');
 
 // Glow
 const ic_gmailGlow = require('../../assets/Icons/ic_gmailGlow.png');
@@ -128,6 +129,7 @@ export default {
   // ic_instagram_history,
   ic_telegram_history,
   ic_notes_history,
+  ic_location_history,
 
   ic_gmailGlow,
   ic_smsGlow,

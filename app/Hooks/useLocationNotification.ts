@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { showMessage } from 'react-native-flash-message';
-
 import LocationService from '@Services/LocationService';
 import { Notification } from '@Types/Interface';
 import useLocationPermission from './useLocationPermission';
@@ -60,15 +59,12 @@ const useLocationNotification = () => {
         // Add to location service for tracking
         LocationService.addLocationReminder({
           id: createdId,
-          latitude: notification.latitude,
-          longitude: notification.longitude,
+          latitude: Number(notification.latitude),
+          longitude: Number(notification.longitude),
           radius: notification.radius,
-          title: notification.message || 'Location Reminder',
+          title: notification.subject || 'Location Reminder',
           message: notification.message || '',
-          notification: {
-            ...notificationData,
-            id: createdId,
-          },
+          notification: { ...notificationData, id: createdId },
         });
 
         showMessage({

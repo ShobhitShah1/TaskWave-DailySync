@@ -1,6 +1,6 @@
 import { Audio } from 'expo-av';
 import { Recording } from 'expo-av/build/Audio';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { Linking } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { check, PERMISSIONS, request } from 'react-native-permissions';
@@ -115,6 +115,14 @@ const useAudioRecorder = (createViewColor: string, iconColor: string) => {
       setMemos((existingMemos) => [{ uri, metering: audioMetering }, ...existingMemos]);
     }
   }, [recording, audioMetering]);
+
+  useEffect(() => {
+    return () => {
+      if (recording) {
+        recording.stopAndUnloadAsync();
+      }
+    };
+  }, [recording]);
 
   const animatedRecordWave = useAnimatedStyle(() => {
     const size = withTiming(

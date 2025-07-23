@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, View, Image } from 'react-native';
 import AssetsPath from '@Constants/AssetsPath';
+import React from 'react';
+import { Image, StyleSheet, View } from 'react-native';
 
 interface MapMarkerProps {
   color: string;
@@ -8,23 +8,18 @@ interface MapMarkerProps {
 }
 
 const MapMarker: React.FC<MapMarkerProps> = ({ color, backgroundColor }) => (
-  <View style={[styles.markerContainer, { backgroundColor: color }]}>
-    <Image
-      source={AssetsPath.ic_history_location_icon}
-      style={[styles.icon, { tintColor: 'red' }]}
-      resizeMode="contain"
-    />
+  <View key={color + backgroundColor} style={styles.markerContainer}>
+    <Image source={AssetsPath.ic_history_location_icon} style={styles.icon} resizeMode="contain" />
   </View>
 );
 
 const styles = StyleSheet.create({
   markerContainer: {
-    width: 30,
-    height: 30,
+    width: 36,
+    height: 36,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    // No border, no shadow for a clean look
   },
   icon: {
     width: 30,

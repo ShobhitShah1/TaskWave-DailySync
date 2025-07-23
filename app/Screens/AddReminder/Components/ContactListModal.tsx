@@ -1,28 +1,20 @@
-import { BlurView } from 'expo-blur';
+import {
+  BottomSheetFlatList,
+  BottomSheetTextInput,
+  BottomSheetFlatListMethods,
+} from '@gorhom/bottom-sheet';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { FC, memo, useCallback, useMemo, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
-  Image,
-  Pressable,
-  RefreshControl,
-  StatusBar,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import Modal from 'react-native-modal';
+import { ActivityIndicator, Image, Pressable, RefreshControl, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
+import ReusableBottomSheet from '@Components/ReusableBottomSheet';
 import AssetsPath from '@Constants/AssetsPath';
 import useThemeColors from '@Hooks/useThemeMode';
 import { Contact, ContactListModalProps } from '@Types/Interface';
 import styles from '../styles';
 import RenderContactList from './RenderContactList';
-
-const { height } = Dimensions.get('window');
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 interface ContactListModalPropsWithSync extends ContactListModalProps {
   syncContacts: () => void;
@@ -102,14 +94,24 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
 }) => {
   const style = styles();
   const colors = useThemeColors();
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<BottomSheetFlatListMethods>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  const contactModalRef = useRef<BottomSheetModal>(null);
   const [searchText, setSearchText] = useState('');
   const [debouncedSearchText, setDebouncedSearchText] = useState('');
 
+  // Present/dismiss bottom sheet based on isVisible
+  React.useEffect(() => {
+    if (isVisible) {
+      contactModalRef.current?.present();
+    } else {
+      contactModalRef.current?.dismiss();
+    }
+  }, [isVisible]);
+
   const handleClose = useCallback(() => {
     onClose();
+    contactModalRef.current?.dismiss();
   }, [onClose]);
 
   const handleSearchTextChange = useCallback((text: string) => {
@@ -180,32 +182,8 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
   );
 
   return (
-    <Modal
-      isVisible={isVisible}
-      statusBarTranslucent
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
-      animationInTiming={200} // Reduced from 300
-      animationOutTiming={150} // Reduced from 250
-      useNativeDriver
-      useNativeDriverForBackdrop
-      hasBackdrop
-      onBackButtonPress={handleClose}
-      style={{ margin: 0, justifyContent: 'flex-end' }}
-      deviceHeight={height + (StatusBar.currentHeight || 30)}
-      customBackdrop={
-        <Pressable style={style.customBackdrop} onPress={onClose}>
-          <BlurView
-            style={style.customBackdrop}
-            intensity={15}
-            tint="dark"
-            experimentalBlurMethod="dimezisBlurView"
-          />
-        </Pressable>
-      }
-      avoidKeyboard
-    >
-      <View style={[style.contactModalContainer, { paddingTop: 50 }]}>
+    <ReusableBottomSheet snapPoints={['100%']} ref={contactModalRef} onDismiss={onClose}>
+      <View style={[style.contactModalContainer, { paddingTop: 20, flex: 1 }]}>
         <View style={style.contactHeaderContainer}>
           <Pressable hitSlop={15} onPress={handleClose}>
             <Image
@@ -214,7 +192,6 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
               style={style.contactHeaderIcon}
             />
           </Pressable>
-
           <Pressable
             style={{ width: 30, height: 30 }}
             hitSlop={15}
@@ -232,8 +209,7 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
             )}
           </Pressable>
         </View>
-
-        <TextInput
+        <BottomSheetTextInput
           placeholder="Search.."
           placeholderTextColor={colors.placeholderText}
           style={[style.contactSearchInput, { color: colors.text }]}
@@ -241,14 +217,12 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
           onChangeText={handleSearchTextChange}
           autoCapitalize="none"
           autoCorrect={false}
-          clearButtonMode="while-editing"
           returnKeyType="search"
         />
-
         {isContactLoading ? (
           <Animated.View
-            entering={FadeIn.duration(200)} // Reduced from 300
-            exiting={FadeOut.duration(150)} // Reduced from 200
+            entering={FadeIn.duration(200)}
+            exiting={FadeOut.duration(150)}
             style={style.contactLoadingContainer}
           >
             <ActivityIndicator size="large" color={colors.text} />
@@ -257,41 +231,28 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
             </Text>
           </Animated.View>
         ) : (
-          <FlatList
+          <BottomSheetFlatList
             ref={flatListRef}
             data={filteredContacts}
-            refreshControl={refreshControl}
-            keyboardShouldPersistTaps="handled"
-            maxToRenderPerBatch={50}
-            initialNumToRender={50}
-            updateCellsBatchingPeriod={100}
-            contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
-            keyExtractor={(item) => item.recordID?.toString()}
             renderItem={renderContactItem}
-            onEndReachedThreshold={0.8}
-            scrollEventThrottle={32}
+            keyExtractor={(item) => item.recordID?.toString()}
+            initialNumToRender={20}
+            maxToRenderPerBatch={20}
+            windowSize={10}
+            updateCellsBatchingPeriod={50}
+            removeClippedSubviews={true}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
             extraData={selectedContacts}
             ListEmptyComponent={<ContactListEmptyView />}
           />
         )}
-
         <LinearGradient
-          start={{ x: 0, y: 1 }}
-          end={{ x: 0, y: 0 }}
-          colors={[
-            colors.background,
-            colors.background + 'F0',
-            colors.background + 'E0',
-            colors.background + 'C0',
-            colors.background + 'A0',
-            colors.background + '80',
-            colors.background + '60',
-            colors.background + '40',
-            colors.background + '20',
-            colors.background + '10',
-            colors.background + '00',
-          ]}
-          style={style.contactDoneButton}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.7)', 'rgba(0, 0, 0, 1)']}
+          style={[style.contactDoneButton, { backgroundColor: 'transparent' }]}
+          pointerEvents="none"
         >
           <Pressable
             style={style.contactDoneButtonView}
@@ -302,7 +263,7 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
           </Pressable>
         </LinearGradient>
       </View>
-    </Modal>
+    </ReusableBottomSheet>
   );
 };
 

@@ -27,6 +27,7 @@ export function prepareNotificationData(notification: Notification) {
     radius,
     locationName,
   } = notification;
+  const status = notification.status || 'pending';
 
   // Helper to escape single quotes for SQL
   const escapeForSQL = (str?: string) => (str ? str.replace(/'/g, "''") : '');
@@ -72,5 +73,6 @@ export function prepareNotificationData(notification: Notification) {
     longitude,
     radius,
     locationName: escapeForSQL(locationName),
+    status,
   };
 }

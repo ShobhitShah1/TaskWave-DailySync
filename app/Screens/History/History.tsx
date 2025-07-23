@@ -15,7 +15,6 @@ import {
 import { showMessage } from 'react-native-flash-message';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import RenderCalenderView from '@Components/RenderCalenderView';
 import YearMonthPicker from '@Components/YearMonthPicker';
 import AssetsPath from '@Constants/AssetsPath';
@@ -39,7 +38,8 @@ const History = () => {
   const { bottom } = useSafeAreaInsets();
   const isFocus = useIsFocused();
   const colors = useThemeColors();
-  const flashListRef = useRef<Animated.FlatList<Notification>>(null);
+  const notificationListRef = useRef<Animated.FlatList<Notification>>(null);
+  const daysListRef = useRef<FlatList>(null);
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filteredNotifications, setFilteredNotifications] = useState<Notification[]>([]);
@@ -63,8 +63,6 @@ const History = () => {
     setCurrentMonth,
     currentMonth,
   } = useCalendar(new Date());
-
-  const flatListRef = useRef<FlatList>(null);
 
   const [daysArray, setDaysArray] = useState(() => generateDaysArray(new Date()));
 
@@ -129,23 +127,23 @@ const History = () => {
 
   const scrollToIndex = useCallback(() => {
     try {
-      if (flatListRef.current && isFocus) {
+      if (daysListRef.current && isFocus) {
         const index = findSelectedIndex();
-        flatListRef.current.scrollToIndex({
+        daysListRef.current.scrollToIndex({
           animated: true,
           index: index !== -1 ? index : 0,
           viewPosition: 0.5,
         });
       }
     } catch (error) {}
-  }, [flatListRef, isFocus]);
+  }, [daysListRef, isFocus]);
 
   const handleScrollToIndexFailed = useCallback(
     (info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
-      if (flatListRef.current) {
+      if (daysListRef.current) {
         setTimeout(() => {
-          if (flatListRef.current) {
-            flatListRef.current.scrollToIndex({
+          if (daysListRef.current) {
+            daysListRef.current.scrollToIndex({
               index: info.index,
               animated: true,
               viewPosition: 0.5,
@@ -348,7 +346,7 @@ const History = () => {
           <Animated.View style={{ marginVertical: 10 }}>
             <FlatList
               horizontal
-              ref={flatListRef}
+              ref={daysListRef}
               data={daysArray}
               onLayout={() => scrollToIndex()}
               onScrollToIndexFailed={handleScrollToIndexFailed}
@@ -366,6 +364,10 @@ const History = () => {
               }}
               keyExtractor={(item, index) => index.toString()}
               showsHorizontalScrollIndicator={false}
+              initialNumToRender={10}
+              maxToRenderPerBatch={10}
+              windowSize={5}
+              removeClippedSubviews={true}
             />
           </Animated.View>
 
@@ -375,7 +377,7 @@ const History = () => {
             </View>
           ) : (
             <Animated.FlatList
-              ref={flashListRef}
+              ref={notificationListRef}
               extraData={selectedDate || activeTabType || filteredNotifications || notifications}
               refreshControl={
                 <RefreshControl
@@ -413,6 +415,10 @@ const History = () => {
                 />
               )}
               ListEmptyComponent={<RenderEmptyView />}
+              initialNumToRender={10}
+              maxToRenderPerBatch={10}
+              windowSize={5}
+              removeClippedSubviews={true}
             />
           )}
         </View>
@@ -449,8 +455,8 @@ const History = () => {
 
                 const onTabPress = () => {
                   if (isActive) {
-                    if (flashListRef.current) {
-                      flashListRef.current?.scrollToOffset({
+                    if (notificationListRef.current) {
+                      notificationListRef.current?.scrollToOffset({
                         animated: true,
                         offset: 0,
                       });

@@ -100,13 +100,13 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       type: 'location' as NotificationType,
       title: 'Location',
       description: 'Create a location-based reminder',
-      icon: AssetsPath.ic_locationGlow,
+      icon: AssetsPath.ic_location,
       glowIcon: AssetsPath.ic_locationGlow,
-      history_icon: AssetsPath.ic_locationGlow,
+      history_icon: AssetsPath.ic_history_location_icon,
       color: {
-        background: colors.blue,
-        primary: colors.blue,
-        dark: colors.darkBlue,
+        background: colors.locationBackground,
+        primary: colors.location,
+        dark: colors.locationDark,
       },
     },
     // {

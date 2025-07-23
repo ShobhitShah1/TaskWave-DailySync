@@ -40,9 +40,15 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
     const icon = useMemo(() => getNotificationIcon(notification.type), [notification.type]);
 
     const onCardPress = useCallback(() => {
-      navigation.navigate('ReminderPreview', {
-        notificationData: notification,
-      });
+      if (notification.type === 'location') {
+        navigation.navigate('LocationPreview', {
+          notificationData: notification,
+        });
+      } else {
+        navigation.navigate('ReminderPreview', {
+          notificationData: notification,
+        });
+      }
     }, [notification]);
 
     const { showDateTimeModal, renderDateTimePicker, openDuplicateModal } = useDuplicateReminder({
@@ -84,7 +90,11 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
               <View style={styles.iconContainer}>
                 <Image
                   source={icon}
-                  tintColor={notification.type === 'gmail' ? undefined : typeColor}
+                  tintColor={
+                    notification.type === 'gmail' || notification.type === 'location'
+                      ? undefined
+                      : typeColor
+                  }
                   resizeMode="contain"
                   style={styles.notificationIcon}
                 />
@@ -142,7 +152,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                   style={{
                     justifyContent: 'center',
                     alignItems: 'center',
-                    paddingHorizontal: 5,
+                    // paddingHorizontal: 5,
                   }}
                   hitSlop={{ top: 10, bottom: 10 }}
                   onPress={onCardPress}
@@ -153,26 +163,28 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                     style={styles.actionIcon}
                   />
                 </Pressable>
+                {notification.type !== 'location' && (
+                  <Pressable
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      // paddingHorizontal: 5,
+                    }}
+                    hitSlop={{ top: 10, bottom: 10 }}
+                    onPress={openDuplicateModal}
+                  >
+                    <Image
+                      tintColor={theme === 'dark' ? colors.white : typeColor}
+                      source={AssetsPath.ic_duplicate}
+                      style={styles.actionIcon}
+                    />
+                  </Pressable>
+                )}
                 <Pressable
                   style={{
                     justifyContent: 'center',
                     alignItems: 'center',
-                    paddingHorizontal: 5,
-                  }}
-                  hitSlop={{ top: 10, bottom: 10 }}
-                  onPress={openDuplicateModal}
-                >
-                  <Image
-                    tintColor={theme === 'dark' ? colors.white : typeColor}
-                    source={AssetsPath.ic_duplicate}
-                    style={styles.actionIcon}
-                  />
-                </Pressable>
-                <Pressable
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingHorizontal: 5,
+                    // paddingHorizontal: 5,
                   }}
                   hitSlop={{ top: 10, bottom: 10 }}
                   onPress={() => notification?.id && deleteReminder(notification?.id)}
@@ -283,12 +295,12 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.Medium,
   },
   actionsContainer: {
-    gap: 6,
-    // right: 5,
+    gap: 13,
+    right: 2,
     width: '25%',
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
   },
   actionIcon: {
     width: 20,

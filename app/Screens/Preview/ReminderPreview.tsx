@@ -1,5 +1,19 @@
+import ImagePreviewModal from '@Components/ImagePreviewModal';
+import AudioMemoItem from '@Components/MemoListItem';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import { handleNotificationPress } from '@Hooks/handleNotificationPress';
+import { useCountdownTimer } from '@Hooks/useCountdownTimer';
+import useNotificationIconColors from '@Hooks/useNotificationIconColors';
+import useReminder from '@Hooks/useReminder';
+import useThemeColors from '@Hooks/useThemeMode';
 import { DocumentPickerResponse } from '@react-native-documents/picker';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { Notification } from '@Types/Interface';
+import { formatNotificationType } from '@Utils/formatNotificationType';
+import { getNotificationIcon } from '@Utils/getNotificationIcon';
+import { linkifyText } from '@Utils/linkify';
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
@@ -14,21 +28,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import ImagePreviewModal from '@Components/ImagePreviewModal';
-import AudioMemoItem from '@Components/MemoListItem';
-import AssetsPath from '@Constants/AssetsPath';
-import { FONTS, SIZE } from '@Constants/Theme';
-import { useAppContext } from '@Contexts/ThemeProvider';
-import { handleNotificationPress } from '@Hooks/handleNotificationPress';
-import { useCountdownTimer } from '@Hooks/useCountdownTimer';
-import useNotificationIconColors from '@Hooks/useNotificationIconColors';
-import useReminder from '@Hooks/useReminder';
-import useThemeColors from '@Hooks/useThemeMode';
-import { Notification } from '@Types/Interface';
-import { formatNotificationType } from '@Utils/formatNotificationType';
-import { getNotificationIcon } from '@Utils/getNotificationIcon';
-import { linkifyText } from '@Utils/linkify';
 import { formatDate, formatTime } from '../AddReminder/ReminderScheduled';
 
 type NotificationProps = {

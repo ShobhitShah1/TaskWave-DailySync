@@ -22,6 +22,50 @@ export const getZoomLevelForPoints: GetZoomLevelForPoints = (a, b) => {
   return 16; // Close together
 };
 
+/**
+ * Calculate the center and zoom level to fit two points on the map with padding.
+ * Returns { center: { latitude, longitude }, zoomLevel }
+ */
+export function fitBoundsZoomLevel(
+  pointA: { latitude: number; longitude: number },
+  pointB: { latitude: number; longitude: number },
+  options?: { padding?: number; mapWidth?: number; mapHeight?: number },
+): { center: { latitude: number; longitude: number }; zoomLevel: number } {
+  const padding = options?.padding ?? 0.02;
+  const mapWidth = options?.mapWidth ?? 400; // px
+  const mapHeight = options?.mapHeight ?? 250; // px
+  // Calculate bounds
+  const minLat = Math.min(pointA.latitude, pointB.latitude);
+  const maxLat = Math.max(pointA.latitude, pointB.latitude);
+  const minLng = Math.min(pointA.longitude, pointB.longitude);
+  const maxLng = Math.max(pointA.longitude, pointB.longitude);
+  // Center is the midpoint
+  const centerLat = (minLat + maxLat) / 2;
+  const centerLng = (minLng + maxLng) / 2;
+  // Mapbox/MapLibre zoom calculation
+  const WORLD_DIM = 256;
+  const ZOOM_MAX = 20;
+  function latRad(lat: number) {
+    const sin = Math.sin((lat * Math.PI) / 180);
+    const radX2 = Math.log((1 + sin) / (1 - sin)) / 2;
+    return Math.max(Math.min(radX2, Math.PI), -Math.PI) / 2;
+  }
+  function zoom(mapPx: number, worldPx: number, fraction: number) {
+    return Math.log2(mapPx / worldPx / fraction);
+  }
+  const latFraction = (latRad(maxLat + padding / 2) - latRad(minLat - padding / 2)) / Math.PI;
+  const lngFraction = (maxLng - minLng + padding) / 360;
+  const latZoom = zoom(mapHeight, WORLD_DIM, latFraction);
+  const lngZoom = zoom(mapWidth, WORLD_DIM, lngFraction);
+  let zoomLevel = Math.min(latZoom, lngZoom, ZOOM_MAX);
+  zoomLevel = Math.floor(zoomLevel * 100) / 100;
+  if (!isFinite(zoomLevel) || zoomLevel < 2) zoomLevel = 2;
+  return {
+    center: { latitude: centerLat, longitude: centerLng },
+    zoomLevel,
+  };
+}
+
 export interface AddressDetails {
   address: string;
   city?: string;

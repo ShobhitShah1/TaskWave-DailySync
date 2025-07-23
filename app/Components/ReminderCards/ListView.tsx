@@ -1,7 +1,3 @@
-import React, { FC, memo } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-
 import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
 import { useAppContext } from '@Contexts/ThemeProvider';
@@ -10,8 +6,11 @@ import useThemeColors from '@Hooks/useThemeMode';
 import { formatTime } from '@Screens/AddReminder/ReminderScheduled';
 import { IListViewProps } from '@Types/Interface';
 import { formatNotificationType } from '@Utils/formatNotificationType';
+import React, { FC, memo } from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-const LOGO_SIZE = 65;
+const LOGO_SIZE = 68;
 
 const ListView: FC<IListViewProps> = ({
   cardBackgroundColor,
@@ -100,8 +99,6 @@ const ListView: FC<IListViewProps> = ({
               {formatTime(new Date(notification.date))}
             </Text>
 
-            {/* {!isLocation && (
-              <> */}
             <View style={[styles.separator, { borderColor: typeColor }]} />
             <View style={styles.countdownContainer}>
               {!isLocation && (
@@ -115,8 +112,6 @@ const ListView: FC<IListViewProps> = ({
                 {isLocation ? address || '' : timeLeft}
               </Text>
             </View>
-            {/* </>
-            )} */}
           </View>
           <View style={styles.actionsContainer}>
             <Pressable onPress={onCardPress}>
@@ -127,7 +122,7 @@ const ListView: FC<IListViewProps> = ({
                 style={styles.actionIcon}
               />
             </Pressable>
-            <Pressable onPress={onEditPress} style={{ paddingHorizontal: 6 }}>
+            <Pressable onPress={onEditPress}>
               <Image
                 resizeMode="contain"
                 tintColor={typeColor}
@@ -135,14 +130,16 @@ const ListView: FC<IListViewProps> = ({
                 style={styles.actionIcon}
               />
             </Pressable>
-            <Pressable onPress={onDuplicatePress}>
-              <Image
-                resizeMode="contain"
-                tintColor={typeColor}
-                source={AssetsPath.ic_duplicate}
-                style={styles.actionIcon}
-              />
-            </Pressable>
+            {notification.type !== 'location' && (
+              <Pressable onPress={onDuplicatePress}>
+                <Image
+                  resizeMode="contain"
+                  tintColor={typeColor}
+                  source={AssetsPath.ic_duplicate}
+                  style={styles.actionIcon}
+                />
+              </Pressable>
+            )}
           </View>
         </View>
       </Pressable>
@@ -171,6 +168,7 @@ const styles = StyleSheet.create({
   },
   logoWrapper: {
     width: '20%',
+
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -249,11 +247,11 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.Medium,
   },
   actionsContainer: {
-    bottom: 3,
+    gap: 10,
     right: 3,
-    gap: 5,
-    flexDirection: 'row',
+    bottom: 3,
     width: '25%',
+    flexDirection: 'row',
     justifyContent: 'flex-end',
   },
   actionIcon: {
