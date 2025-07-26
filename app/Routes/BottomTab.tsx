@@ -190,7 +190,9 @@ const BottomTab = () => {
 
         onCloseSheet();
         setTimeout(() => {
-          navigation.navigate('LocationDetails');
+          navigation.navigate('LocationDetails', {
+            notificationType: 'location',
+          });
         }, 200);
         break;
       default:
