@@ -33,7 +33,6 @@ import HomeHeader from './Components/HomeHeader';
 import RenderEmptyView from './Components/RenderEmptyView';
 import RenderHeaderView from './Components/RenderHeaderView';
 import styles from './styles';
-import BatteryOptimizationModal from '@Components/BatteryOptimizationModal';
 
 const Home = () => {
   const style = styles();
@@ -362,11 +361,11 @@ const Home = () => {
           onCancel={() => setShowDateAndYearModal(false)}
         />
 
-        <BatteryOptimizationModal
+        {/* <BatteryOptimizationModal
           visible={showBatteryModal}
           onConfirm={batteryModalConfirmRef.current}
           onCancel={() => setShowBatteryModal(false)}
-        />
+        /> */}
 
         <ServiceManager
           isVisible={showServiceManager}

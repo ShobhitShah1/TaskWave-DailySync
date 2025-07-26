@@ -154,7 +154,8 @@ const GridView: FC<IListViewProps> = ({
           <Pressable hitSlop={15} onPress={onMenuPress} style={[styles.menuPressable]}>
             <MenuView
               ref={menuRef}
-              actions={menuActions}
+              actions={menuActions ?? []}
+              onOpenMenu={() => {}}
               style={styles.menuView}
               onPressAction={handleMenuAction}
               shouldOpenOnLongPress={true}

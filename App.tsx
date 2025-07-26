@@ -34,7 +34,6 @@ interface TextWithDefaultProps extends Text {
   allowFontScaling: false,
 };
 
-// Background event handler
 notifee.onBackgroundEvent(async ({ type, detail }) => {
   try {
     const notification: Notification = detail.notification?.data as any;
@@ -78,9 +77,33 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
   }
 });
 
-// Component to handle theme-aware styling
 const AppContent = () => {
   const { theme } = useAppContext();
+
+  return (
+    <GestureHandlerRootView
+      style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
+    >
+      <BottomSheetProvider>
+        <SafeAreaView
+          style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
+        >
+          <Routes />
+          <FlashMessage
+            animated
+            hideOnPress
+            position="top"
+            statusBarHeight={StatusBar.currentHeight || 10}
+            titleStyle={{ fontFamily: FONTS.SemiBold, fontSize: 18 }}
+            textStyle={{ fontFamily: FONTS.Medium, fontSize: 15 }}
+          />
+        </SafeAreaView>
+      </BottomSheetProvider>
+    </GestureHandlerRootView>
+  );
+};
+
+export default function App() {
   const { updateNotification, createNotification } = useReminder();
 
   const [loaded, error] = useFonts({
@@ -91,29 +114,12 @@ const AppContent = () => {
   });
 
   useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        // Initialize notification channels
-        await createNotificationChannel();
-
-        // Handle initial notification
-        const initialNotification = await notifee.getInitialNotification();
-        if (initialNotification?.notification?.data) {
-          await handleNotificationPress(initialNotification.notification.data as any);
-          await notifee.cancelNotification(initialNotification.notification.id as string);
-        }
-      } catch (error: any) {
-        if (!error.message?.includes('invalid notification ID')) {
-          console.error('App initialization error:', error);
-        }
-      }
-    };
-
     initializeApp();
+    getDatabase();
+    setupQuickActions();
   }, []);
 
   useEffect(() => {
-    // Set up foreground event listener
     const unsubscribe = notifee.onForegroundEvent(async ({ type, detail }) => {
       try {
         const notification: Notification = detail.notification?.data as any;
@@ -188,111 +194,91 @@ const AppContent = () => {
     return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    const setupQuickActions = async () => {
-      try {
-        await QuickActions.setItems([
-          {
-            title: 'Add Reminder',
-            subtitle: 'Schedule a reminder to take your medication',
-            icon: 'plus_icon',
-            id: '0',
-            params: { href: '/schedule' },
-          },
-          {
-            title: "Wait! Don't delete me!",
-            subtitle: "We're here to help",
-            icon: 'wave_icon',
-            id: '1',
-            params: { href: '/help' },
-          },
-        ]);
+  const initializeApp = async () => {
+    try {
+      await createNotificationChannel();
 
-        // Initialize location service
-        const initializeLocationService = async () => {
-          try {
-            // Load existing location reminders from database using the centralized database utility
-            const database = await getDatabase();
+      const initialNotification = await notifee.getInitialNotification();
 
-            const notifications = await database.getAllAsync<any>(
-              'SELECT * FROM notifications WHERE type = "location"',
-            );
-            const locationNotifications = notifications.filter(
-              (n: any) => n.latitude && n.longitude,
-            );
-
-            locationNotifications.forEach((notification: Notification) => {
-              LocationService.addLocationReminder({
-                id: notification.id,
-                latitude: Number(notification.latitude),
-                longitude: Number(notification.longitude),
-                radius: notification.radius || 100,
-                title: notification.subject || 'Location Reminder',
-                message: notification.message || '',
-                notification: {
-                  ...notification,
-                  date: new Date(notification.date),
-                  toContact: [],
-                  toMail: [],
-                  attachments: [],
-                  memo: [],
-                },
-              });
-            });
-
-            // Ensure tracking starts if reminders exist ---
-            if (locationNotifications.length > 0) {
-              // Start location tracking if not already started
-              await LocationService.startLocationTracking();
-            }
-            // -----------------------------------------------------
-          } catch (error) {
-            console.error('Error initializing location service:', error);
-          }
-        };
-
-        initializeLocationService();
-      } catch (error) {
-        console.error('Error setting up quick actions:', error);
+      if (initialNotification?.notification?.data) {
+        await handleNotificationPress(initialNotification.notification.data as any);
+        await notifee.cancelNotification(initialNotification.notification.id as string);
       }
-    };
+    } catch (error: any) {
+      if (!error.message?.includes('invalid notification ID')) {
+        console.error('App initialization error:', error);
+      }
+    }
+  };
 
-    setupQuickActions();
-  }, []);
+  const setupQuickActions = async () => {
+    try {
+      await QuickActions.setItems([
+        {
+          title: 'Add Reminder',
+          subtitle: 'Schedule a reminder to take your medication',
+          icon: 'plus_icon',
+          id: '0',
+          params: { href: '/schedule' },
+        },
+        {
+          title: "Wait! Don't delete me!",
+          subtitle: "We're here to help",
+          icon: 'wave_icon',
+          id: '1',
+          params: { href: '/help' },
+        },
+      ]);
+
+      initializeLocationService();
+    } catch (error) {
+      console.error('Error setting up quick actions:', error);
+    }
+  };
+
+  const initializeLocationService = async () => {
+    try {
+      // Load existing location reminders from database using the centralized database utility
+      const database = await getDatabase();
+
+      const notifications = await database.getAllAsync<any>(
+        'SELECT * FROM notifications WHERE type = "location"',
+      );
+      const locationNotifications = notifications.filter((n: any) => n.latitude && n.longitude);
+
+      locationNotifications.forEach((notification: Notification) => {
+        LocationService.addLocationReminder({
+          id: notification.id,
+          latitude: Number(notification.latitude),
+          longitude: Number(notification.longitude),
+          radius: notification.radius || 100,
+          title: notification.subject || 'Location Reminder',
+          message: notification.message || '',
+          notification: {
+            ...notification,
+            date: new Date(notification.date),
+            toContact: [],
+            toMail: [],
+            attachments: [],
+            memo: [],
+          },
+        });
+      });
+
+      // Ensure tracking starts if reminders exist ---
+      if (locationNotifications.length > 0) {
+        // Start location tracking if not already started
+        await LocationService.startLocationTracking();
+      }
+      // -----------------------------------------------------
+    } catch (error) {
+      console.error('Error initializing location service:', error);
+    }
+  };
 
   if (!loaded || error) {
     return null;
   }
-
-  return (
-    <GestureHandlerRootView
-      style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
-    >
-      <BottomSheetProvider>
-        <SafeAreaView
-          style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
-        >
-          <Routes />
-          <FlashMessage
-            animated
-            hideOnPress
-            position="top"
-            statusBarHeight={StatusBar.currentHeight || 10}
-            titleStyle={{ fontFamily: FONTS.SemiBold, fontSize: 18 }}
-            textStyle={{ fontFamily: FONTS.Medium, fontSize: 15 }}
-          />
-        </SafeAreaView>
-      </BottomSheetProvider>
-    </GestureHandlerRootView>
-  );
-};
-
-export default function App() {
-  useEffect(() => {
-    getDatabase()
-      .then(() => console.log('[App] Database initialized'))
-      .catch((err) => console.error('[App] Database init error', err));
-  }, []);
 
   return (
     <AppProvider>
