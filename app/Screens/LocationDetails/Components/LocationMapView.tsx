@@ -183,7 +183,7 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
               id={`selected-location-${selectedLocation.longitude}-${selectedLocation.latitude}`}
               coordinate={[selectedLocation.longitude, selectedLocation.latitude]}
             >
-              <MapMarker color={colors.blue} backgroundColor={colors.background} />
+              <MapMarker />
             </PointAnnotation>
           )}
           <UserLocation visible={true} onUpdate={() => {}} />
