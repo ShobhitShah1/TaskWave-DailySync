@@ -51,16 +51,6 @@ const BottomTab = () => {
 
   const [categories, setCategories] = useState<NotificationCategory[]>(initialCategories);
 
-  // const [showThemOnFace, setShowThemOnFace] = useState(false);
-
-  // const state = useQuickAction();
-  // console.log('state:', state);
-
-  // useQuickActionCallback((action) => {
-  //   console.log('action', action);
-  //   setShowThemOnFace(action.id === '1');
-  // });
-
   const handleTabChange = useCallback(
     (selectedTab: string) => {
       const shouldHide = selectedTab === 'History' || selectedTab === 'Setting';

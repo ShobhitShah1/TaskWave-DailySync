@@ -55,8 +55,8 @@ const styles = () => {
       marginRight: 5,
     },
     statusText: {
-      color: colors.text,
       fontSize: 16,
+      color: colors.text,
       fontFamily: FONTS.Medium,
     },
     emptyViewContainer: {

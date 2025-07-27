@@ -14,123 +14,122 @@ import { ReminderCardProps } from '@Types/Interface';
 import { getNotificationIcon } from '@Utils/getNotificationIcon';
 import { getNotificationTitle } from '@Utils/getNotificationTitle';
 import { formatDate, formatTime } from '../../AddReminder/ReminderScheduled';
+import { useAddressFromCoords } from '@Hooks/useAddressFromCoords';
 
-const RenderHistoryList: React.FC<ReminderCardProps> = memo(
-  ({ notification, deleteReminder, loadNotifications }) => {
-    const colors = useThemeColors();
-    const { theme } = useAppContext();
-    const navigation = useNavigation();
-    const notificationColors = useNotificationIconColors(notification.type);
+const RenderHistoryList: React.FC<ReminderCardProps> = ({
+  notification,
+  deleteReminder,
+  loadNotifications,
+}) => {
+  const colors = useThemeColors();
+  const { theme } = useAppContext();
+  const navigation = useNavigation();
+  const notificationColors = useNotificationIconColors(notification.type);
+  const isLocation = notification.type === 'location';
 
-    const typeColor = useMemo(() => {
-      return notification.type === 'gmail' && theme === 'light'
-        ? colors.gmailText
-        : notification.type === 'whatsappBusiness'
-          ? notificationColors.createViewColor
-          : notificationColors.typeColor;
-    }, [notification.type, theme, colors.gmailText, notificationColors]);
+  const typeColor = useMemo(() => {
+    return notification.type === 'gmail' && theme === 'light'
+      ? colors.gmailText
+      : notification.type === 'whatsappBusiness'
+        ? notificationColors.createViewColor
+        : notificationColors.typeColor;
+  }, [notification.type, theme, colors.gmailText, notificationColors]);
 
-    const gmailBorder = useMemo(
-      () => (notification.type === 'gmail' ? notificationColors.iconColor : typeColor),
-      [notificationColors],
-    );
+  const gmailBorder = useMemo(
+    () => (notification.type === 'gmail' ? notificationColors.iconColor : typeColor),
+    [notificationColors],
+  );
 
-    const title = useMemo(() => getNotificationTitle(notification), [notification]);
+  const title = useMemo(() => getNotificationTitle(notification), [notification]);
 
-    const icon = useMemo(() => getNotificationIcon(notification.type), [notification.type]);
+  const icon = useMemo(() => getNotificationIcon(notification.type), [notification.type]);
 
-    const onCardPress = useCallback(() => {
-      if (notification.type === 'location') {
-        navigation.navigate('LocationPreview', {
-          notificationData: notification,
-        });
-      } else {
-        navigation.navigate('ReminderPreview', {
-          notificationData: notification,
-        });
-      }
-    }, [notification]);
+  const coords = useMemo(
+    () => ({
+      latitude: notification.latitude as number,
+      longitude: notification.longitude as number,
+    }),
+    [notification.latitude, notification.longitude],
+  );
 
-    const { showDateTimeModal, renderDateTimePicker, openDuplicateModal } = useDuplicateReminder({
-      notification: notification,
-      theme: theme,
-      onSuccess() {
-        loadNotifications && loadNotifications();
-      },
-    });
+  const { addressDetails } = useAddressFromCoords(coords);
+  const location =
+    `${addressDetails?.area?.toString() || ''}, ${addressDetails?.city?.toString() || ''}` ||
+    'unknown';
 
-    return (
-      <>
-        <Animated.View
-          entering={FadeIn.duration(1 * Number(notification.id))}
-          style={[
-            styles.cardContainer,
-            {
-              borderColor: notification.type === 'gmail' ? gmailBorder : typeColor,
-            },
-          ]}
+  const onCardPress = useCallback(() => {
+    if (notification.type === 'location') {
+      navigation.navigate('LocationPreview', {
+        notificationData: notification,
+      });
+    } else {
+      navigation.navigate('ReminderPreview', {
+        notificationData: notification,
+      });
+    }
+  }, [notification]);
+
+  const { showDateTimeModal, renderDateTimePicker, openDuplicateModal } = useDuplicateReminder({
+    notification: notification,
+    theme: theme,
+    onSuccess() {
+      loadNotifications && loadNotifications();
+    },
+  });
+
+  return (
+    <>
+      <Animated.View
+        entering={FadeIn.duration(1 * Number(notification.id))}
+        style={[
+          styles.cardContainer,
+          {
+            borderColor: notification.type === 'gmail' ? gmailBorder : typeColor,
+          },
+        ]}
+      >
+        <Pressable
+          style={styles.pressableContainer}
+          onPress={onCardPress}
+          onLongPress={() => notification.id && deleteReminder(notification.id)}
         >
-          <Pressable
-            style={styles.pressableContainer}
-            onPress={onCardPress}
-            onLongPress={() => notification.id && deleteReminder(notification.id)}
-          >
-            <View style={styles.rowContainer}>
-              <View style={styles.textContainer}>
-                <Text numberOfLines={1} style={[styles.titleText, { color: colors.text }]}>
-                  To: {title?.toString()}
-                </Text>
-                <Text
-                  style={[styles.descriptionText, { color: colors.grayTitle }]}
-                  numberOfLines={2}
-                >
-                  {notification?.message || notification.subject}
-                </Text>
-              </View>
-              <View style={styles.iconContainer}>
-                <Image
-                  source={icon}
-                  tintColor={
-                    notification.type === 'gmail' || notification.type === 'location'
-                      ? undefined
-                      : typeColor
-                  }
-                  resizeMode="contain"
-                  style={styles.notificationIcon}
-                />
-              </View>
+          <View style={styles.rowContainer}>
+            <View style={styles.textContainer}>
+              <Text numberOfLines={1} style={[styles.titleText, { color: colors.text }]}>
+                To: {title?.toString()}
+              </Text>
+              <Text style={[styles.descriptionText, { color: colors.grayTitle }]} numberOfLines={2}>
+                {notification?.message || notification.subject}
+              </Text>
             </View>
-            <View style={styles.footerContainer}>
-              <View style={styles.timeContainer}>
-                <View
-                  style={[
-                    styles.timeBadge,
-                    {
-                      backgroundColor: theme === 'dark' ? colors.darkPrimaryBackground : typeColor,
-                    },
-                  ]}
-                >
+            <View style={styles.iconContainer}>
+              <Image
+                source={isLocation ? AssetsPath.ic_history_location_icon : icon}
+                tintColor={
+                  notification.type === 'gmail' || notification.type === 'location'
+                    ? undefined
+                    : typeColor
+                }
+                resizeMode="contain"
+                style={styles.notificationIcon}
+              />
+            </View>
+          </View>
+          <View style={styles.footerContainer}>
+            <View style={styles.timeContainer}>
+              <View
+                style={[
+                  styles.timeBadge,
+                  {
+                    backgroundColor: theme === 'dark' ? colors.darkPrimaryBackground : typeColor,
+                  },
+                ]}
+              >
+                {isLocation ? (
                   <View style={styles.dateContainer}>
                     <Image
                       tintColor={colors.white}
-                      source={AssetsPath.ic_calender}
-                      style={styles.dateIcon}
-                    />
-                    <Text
-                      style={[
-                        styles.dateText,
-                        {
-                          color: theme === 'dark' ? colors.grayTitle : colors.white,
-                        },
-                      ]}
-                    >
-                      {formatDate(notification.date, true)}
-                    </Text>
-                  </View>
-                  <View style={styles.timeIconContainer}>
-                    <Image
-                      tintColor={colors.white}
-                      source={AssetsPath.ic_timerClock}
+                      source={AssetsPath.ic_history_location_icon}
                       style={styles.timeIcon}
                     />
                     <Text
@@ -141,70 +140,95 @@ const RenderHistoryList: React.FC<ReminderCardProps> = memo(
                         },
                       ]}
                     >
-                      {formatTime(new Date(notification.date))}
+                      {location || ''}
                     </Text>
                   </View>
-                </View>
+                ) : (
+                  <>
+                    <View style={styles.dateContainer}>
+                      <Image
+                        tintColor={colors.white}
+                        source={AssetsPath.ic_calender}
+                        style={styles.dateIcon}
+                      />
+                      <Text
+                        style={[
+                          styles.dateText,
+                          {
+                            color: theme === 'dark' ? colors.grayTitle : colors.white,
+                          },
+                        ]}
+                      >
+                        {formatDate(notification.date, true)}
+                      </Text>
+                    </View>
+                    <View style={styles.timeIconContainer}>
+                      <Image
+                        tintColor={colors.white}
+                        source={AssetsPath.ic_timerClock}
+                        style={styles.timeIcon}
+                      />
+                      <Text
+                        style={[
+                          styles.timeText,
+                          {
+                            color: theme === 'dark' ? colors.grayTitle : colors.white,
+                          },
+                        ]}
+                      >
+                        {formatTime(new Date(notification.date))}
+                      </Text>
+                    </View>
+                  </>
+                )}
               </View>
+            </View>
 
-              <View style={styles.actionsContainer}>
+            <View style={styles.actionsContainer}>
+              <Pressable
+                style={{ justifyContent: 'center', alignItems: 'center' }}
+                hitSlop={{ top: 10, bottom: 10 }}
+                onPress={onCardPress}
+              >
+                <Image
+                  tintColor={theme === 'dark' ? colors.white : typeColor}
+                  source={AssetsPath.ic_view}
+                  style={styles.actionIcon}
+                />
+              </Pressable>
+              {notification.type !== 'location' && (
                 <Pressable
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    // paddingHorizontal: 5,
-                  }}
+                  style={{ justifyContent: 'center', alignItems: 'center' }}
                   hitSlop={{ top: 10, bottom: 10 }}
-                  onPress={onCardPress}
+                  onPress={openDuplicateModal}
                 >
                   <Image
                     tintColor={theme === 'dark' ? colors.white : typeColor}
-                    source={AssetsPath.ic_view}
+                    source={AssetsPath.ic_duplicate}
                     style={styles.actionIcon}
                   />
                 </Pressable>
-                {notification.type !== 'location' && (
-                  <Pressable
-                    style={{
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      // paddingHorizontal: 5,
-                    }}
-                    hitSlop={{ top: 10, bottom: 10 }}
-                    onPress={openDuplicateModal}
-                  >
-                    <Image
-                      tintColor={theme === 'dark' ? colors.white : typeColor}
-                      source={AssetsPath.ic_duplicate}
-                      style={styles.actionIcon}
-                    />
-                  </Pressable>
-                )}
-                <Pressable
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    // paddingHorizontal: 5,
-                  }}
-                  hitSlop={{ top: 10, bottom: 10 }}
-                  onPress={() => notification?.id && deleteReminder(notification?.id)}
-                >
-                  <Image
-                    tintColor={theme === 'dark' ? colors.white : typeColor}
-                    source={AssetsPath.ic_delete}
-                    style={[styles.actionIcon, { height: 17, width: 17 }]}
-                  />
-                </Pressable>
-              </View>
+              )}
+              <Pressable
+                style={{ justifyContent: 'center', alignItems: 'center' }}
+                hitSlop={{ top: 10, bottom: 10 }}
+                onPress={() => notification?.id && deleteReminder(notification?.id)}
+              >
+                <Image
+                  tintColor={theme === 'dark' ? colors.white : typeColor}
+                  source={AssetsPath.ic_delete}
+                  style={[styles.actionIcon, { height: 17, width: 17 }]}
+                />
+              </Pressable>
             </View>
-          </Pressable>
-        </Animated.View>
+          </View>
+        </Pressable>
+      </Animated.View>
 
-        {showDateTimeModal && renderDateTimePicker()}
-      </>
-    );
-  },
-);
+      {showDateTimeModal && renderDateTimePicker()}
+    </>
+  );
+};
 
 export default memo(RenderHistoryList);
 

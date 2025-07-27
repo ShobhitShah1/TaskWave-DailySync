@@ -76,7 +76,7 @@ const Routes = () => {
 
           setTimeout(() => {
             BootSplash.hide({ fade: true });
-          }, 500);
+          }, 0);
         }}
       >
         <SafeAreaView style={styles.container}>

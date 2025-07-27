@@ -13,26 +13,26 @@ import {
   ShapeSource,
 } from '@maplibre/maplibre-react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import MapMarker from '@Screens/LocationDetails/Components/LocationMapView/MapMarker';
+import { navigationRef } from '@Routes/RootNavigation';
 import { SATELLITE_MAP_STYLE } from '@Screens/LocationDetails/Components/LocationMapView/MapStyles';
 import { Notification } from '@Types/Interface';
 import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
+import { linkifyText } from '@Utils/linkify';
+import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Animated,
-  Dimensions,
-  Image,
-  Pressable,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Image, Linking, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
+import Animated, {
+  Easing,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const { height } = Dimensions.get('window');
 
 type LocationPreviewRoute = RouteProp<{ params: { notificationData: Notification } }, 'params'>;
 
@@ -42,58 +42,119 @@ const LocationPreview = () => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
 
-  const { location: currentLocation, permissionStatus } = useLiveLocation({
-    timeInterval: 10000,
-    distanceInterval: 100,
-  });
+  const locationOptions = useMemo(
+    () => ({
+      timeInterval: 10000,
+      distanceInterval: 100,
+    }),
+    [],
+  );
+
+  const { location: currentLocation, permissionStatus } = useLiveLocation(locationOptions);
 
   const [shouldFollowUser, setShouldFollowUser] = useState(true);
   const cameraRef = useRef<any>(null);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const fadeValue = useSharedValue(0);
+  const slideValue = useSharedValue(-100);
+  const scaleValue = useSharedValue(0.8);
+  const fabPulseValue = useSharedValue(1);
+  const markerPulseValue = useSharedValue(1);
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
+    // Staggered entrance animations with improved timing
+    fadeValue.value = withTiming(1, {
+      duration: 1000,
+      easing: Easing.out(Easing.cubic),
+    });
+
+    slideValue.value = withDelay(
+      100,
+      withTiming(0, {
+        duration: 800,
+        easing: Easing.out(Easing.back(1.5)),
+      }),
+    );
+
+    scaleValue.value = withDelay(
+      200,
+      withSpring(1, {
+        damping: 15,
+        stiffness: 150,
+        mass: 1,
+      }),
+    );
+
+    // Start continuous pulse animations
+    const startPulseAnimations = () => {
+      fabPulseValue.value = withSequence(
+        withTiming(1.1, { duration: 1000 }),
+        withTiming(1, { duration: 1000 }),
+      );
+
+      markerPulseValue.value = withSequence(
+        withTiming(1.2, { duration: 1500 }),
+        withTiming(1, { duration: 1500 }),
+      );
+    };
+
+    setTimeout(startPulseAnimations, 1000);
+  }, []);
+
+  // Continuous pulse animation for FAB
+  useEffect(() => {
+    const pulseAnimation = () => {
+      fabPulseValue.value = withSequence(
+        withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+      );
+    };
+
+    const interval = setInterval(pulseAnimation, 6000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Continuous pulse animation for marker
+  useEffect(() => {
+    const markerPulseAnimation = () => {
+      markerPulseValue.value = withSequence(
+        withTiming(1.15, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
+      );
+    };
+
+    const interval = setInterval(markerPulseAnimation, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     if (shouldFollowUser && currentLocation && cameraRef.current) {
       cameraRef.current.setCamera({
         centerCoordinate: [currentLocation.coords.longitude, currentLocation.coords.latitude],
-        animationDuration: 1000,
+        animationDuration: 1200,
       });
     }
   }, [currentLocation, shouldFollowUser]);
 
-  const bottomSheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['10%', '40%'], []);
+  const snapPoints = useMemo(() => ['12%', '45%', '85%'], []);
 
   const handleCenterUser = () => {
     setShouldFollowUser(true);
+
+    scaleValue.value = withSequence(
+      withTiming(0.95, { duration: 100 }),
+      withSpring(1, { damping: 10, stiffness: 300 }),
+    );
+
     if (currentLocation && cameraRef.current) {
       cameraRef.current.setCamera({
         centerCoordinate: [currentLocation.coords.longitude, currentLocation.coords.latitude],
-        animationDuration: 800,
+        animationDuration: 1000,
+        zoomLevel: 16,
       });
     }
   };
-
-  const handleOpenBottomSheet = () => {
-    bottomSheetRef.current?.expand();
-  };
-
-  if (typeof notification.latitude !== 'number' || typeof notification.longitude !== 'number') {
-    return (
-      <View style={[styles.centered, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text, fontFamily: FONTS.Medium }}>
-          No location data available.
-        </Text>
-      </View>
-    );
-  }
 
   const coords = useMemo(
     () => ({
@@ -111,13 +172,45 @@ const LocationPreview = () => {
     [coords, notification.radius],
   );
 
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: fadeValue.value,
+      transform: [{ translateY: slideValue.value }],
+    };
+  });
+
+  const markerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: interpolate(scaleValue.value * markerPulseValue.value, [0.8, 1.2], [0.8, 1.2]) },
+      ],
+    };
+  });
+
+  const errorContainerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: fadeValue.value,
+      transform: [{ scale: scaleValue.value }, { translateY: slideValue.value }],
+    };
+  });
+
+  if (typeof notification.latitude !== 'number' || typeof notification.longitude !== 'number') {
+    return (
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <Animated.View style={[styles.errorContainer, errorContainerAnimatedStyle]}>
+          <Text style={styles.errorIcon}>📍</Text>
+          <Text style={[styles.errorTitle, { color: colors.text }]}>Location Unavailable</Text>
+          <Text style={[styles.errorSubtitle, { color: colors.grayTitle }]}>
+            No location data available for this reminder.
+          </Text>
+        </Animated.View>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar
-        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-        backgroundColor="transparent"
-        translucent
-      />
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
       <View style={styles.mapContainer}>
         <MapView
@@ -151,9 +244,9 @@ const LocationPreview = () => {
               <FillLayer
                 id="radius-fill"
                 style={{
-                  fillColor: '#6366F1',
-                  fillOpacity: 0.2,
-                  fillOutlineColor: '#6366F1',
+                  fillColor: colors.darkBlue,
+                  fillOpacity: 0.4,
+                  fillOutlineColor: colors.darkBlue,
                 }}
               />
             </ShapeSource>
@@ -163,7 +256,16 @@ const LocationPreview = () => {
             id="notification-location"
             coordinate={[coords.longitude as number, coords.latitude as number]}
           >
-            <MapMarker color={colors.blue} backgroundColor={colors.background} />
+            <Animated.View style={[styles.modernMarker, markerAnimatedStyle]}>
+              <LinearGradient
+                colors={[colors.blue, colors.darkBlue]}
+                style={styles.markerCore}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.markerIcon}>📍</Text>
+              </LinearGradient>
+            </Animated.View>
           </PointAnnotation>
 
           {permissionStatus === 'granted' && currentLocation && (
@@ -172,118 +274,164 @@ const LocationPreview = () => {
               coordinate={[currentLocation.coords.longitude, currentLocation.coords.latitude]}
             >
               <View style={styles.currentLocationMarker}>
-                <Image source={AssetsPath.ic_locationGlow} style={styles.currentLocationGlowIcon} />
+                <View style={styles.currentLocationPulse} />
+                <LinearGradient
+                  colors={[colors.blue, colors.darkBlue]}
+                  style={styles.currentLocationCore}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                />
               </View>
             </PointAnnotation>
           )}
         </MapView>
 
         <LinearGradient
-          colors={[
-            theme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.3)',
-            'transparent',
-            theme === 'dark' ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.6)',
-          ]}
+          colors={['rgba(0,0,0,0.4)', 'transparent', 'transparent', 'rgba(0,0,0,0.6)']}
+          locations={[0, 0.3, 0.7, 1]}
           style={styles.gradientOverlay}
           pointerEvents="none"
         />
       </View>
 
-      <View style={styles.modernHeader}>
-        <Pressable style={styles.backButton} onPress={() => {}}>
-          <View style={[styles.iconButton, { backgroundColor: colors.background }]}>
-            <Image
-              source={AssetsPath.ic_leftArrow}
-              style={{ width: 18, height: 18, tintColor: colors.text, resizeMode: 'contain' }}
-            />
-          </View>
-        </Pressable>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Location Preview</Text>
-          <Text style={styles.headerSubtitle} numberOfLines={1}>
-            {loading ? 'Loading...' : address?.toString().split(',')[0] || ''}
-          </Text>
-        </View>
-        <Pressable
-          style={[styles.iconButton, { backgroundColor: colors.background }]}
-          onPress={handleCenterUser}
-        >
-          <Image
-            source={AssetsPath.ic_history_location_icon}
-            style={{ width: 20, height: 20, tintColor: colors.text }}
-          />
-        </Pressable>
-      </View>
+      <Animated.View style={[styles.modernHeader, headerAnimatedStyle]}>
+        <BlurView intensity={80} tint={theme} style={styles.headerBlur}>
+          <View style={styles.headerContent}>
+            <Pressable
+              style={styles.headerButton}
+              onPress={() => navigationRef.canGoBack() && navigationRef.goBack()}
+            >
+              <LinearGradient
+                colors={['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                style={styles.headerButtonGradient}
+              >
+                <Image source={AssetsPath.ic_leftArrow} style={styles.headerIcon} />
+              </LinearGradient>
+            </Pressable>
 
-      <View style={styles.fabContainer}>
-        <TouchableOpacity style={styles.fab} onPress={handleOpenBottomSheet}>
-          <LinearGradient
-            colors={['#6366F1', '#8B5CF6']}
-            style={styles.fabGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Text style={styles.fabIcon}>ⓘ</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.headerTitle}>Location Preview</Text>
+              <Text style={styles.headerSubtitle} numberOfLines={1}>
+                {loading ? 'Locating...' : address?.toString().split(',')[0] || 'Unknown Location'}
+              </Text>
+            </View>
+
+            <Pressable style={styles.headerButton} onPress={handleCenterUser}>
+              <LinearGradient
+                colors={['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                style={styles.headerButtonGradient}
+              >
+                <Image source={AssetsPath.ic_history_location_icon} style={styles.headerIcon} />
+              </LinearGradient>
+            </Pressable>
+          </View>
+        </BlurView>
+      </Animated.View>
 
       <BottomSheet
-        ref={bottomSheetRef}
-        index={-1}
         snapPoints={snapPoints}
-        enablePanDownToClose
-        handleIndicatorStyle={{ backgroundColor: colors.grayTitle }}
-        backgroundStyle={{ backgroundColor: colors.reminderCardBackground }}
+        handleIndicatorStyle={{
+          backgroundColor: colors.grayTitle,
+          width: 48,
+          height: 5,
+        }}
+        backgroundStyle={{
+          backgroundColor: colors.reminderCardBackground,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+        }}
+        style={styles.bottomSheetShadow}
       >
         <BottomSheetView style={styles.bottomSheetContent}>
-          {/* Quick Info Bar */}
-          <View style={[styles.quickInfoBar, { backgroundColor: colors.reminderCardBackground }]}>
-            <View style={styles.quickInfoItem}>
-              <Text style={[styles.quickInfoLabel, { color: colors.grayTitle }]}>TITLE</Text>
-              <Text style={[styles.quickInfoValue, { color: colors.text }]} numberOfLines={1}>
+          <View style={styles.sheetHeaderContainer}>
+            <LinearGradient
+              colors={[colors.primary, colors.location]}
+              style={styles.sheetHeaderGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.sheetHeaderIcon}>🎯</Text>
+            </LinearGradient>
+            <View style={styles.sheetHeaderTextContainer}>
+              <Text style={[styles.sheetHeaderTitle, { color: colors.text }]}>
+                Location Details
+              </Text>
+              <Text style={[styles.sheetHeaderSubtitle, { color: colors.grayTitle }]}>
                 {notification.subject || 'Location Reminder'}
               </Text>
             </View>
-            {notification.radius && (
-              <View style={styles.quickInfoItem}>
-                <Text style={[styles.quickInfoLabel, { color: colors.grayTitle }]}>RADIUS</Text>
-                <View style={styles.radiusBadge}>
-                  <Text style={styles.radiusBadgeText}>{notification.radius}m</Text>
-                </View>
-              </View>
-            )}
           </View>
-          {/* Message Card */}
-          <View style={[styles.messageCard, { backgroundColor: colors.reminderCardBackground }]}>
-            <View style={styles.messageHeader}>
-              <View style={styles.messageIcon}>
-                <Text style={styles.messageIconText}>💬</Text>
-              </View>
-              <Text style={[styles.messageTitle, { color: colors.text }]}>Message</Text>
+
+          <View style={styles.quickStatsContainer}>
+            <View style={[styles.statCard, { backgroundColor: colors.reminderCardBackground }]}>
+              <LinearGradient
+                colors={[colors.location, colors.locationText]}
+                style={styles.statIcon}
+              >
+                <Text style={styles.statIconText}>📏</Text>
+              </LinearGradient>
+              <Text style={[styles.statLabel, { color: colors.grayTitle }]}>RADIUS</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>
+                {notification.radius ? `${notification.radius}m` : 'N/A'}
+              </Text>
             </View>
-            <Text style={[styles.messageText, { color: colors.grayTitle }]}>
-              {notification.message || 'No message provided'}
+
+            <View style={[styles.statCard, { backgroundColor: colors.reminderCardBackground }]}>
+              <LinearGradient
+                colors={[colors.location, colors.locationText]}
+                style={styles.statIcon}
+              >
+                <Text style={styles.statIconText}>⏰</Text>
+              </LinearGradient>
+              <Text style={[styles.statLabel, { color: colors.grayTitle }]}>TYPE</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>Geofence</Text>
+            </View>
+          </View>
+
+          <View style={[styles.sectionCard, { backgroundColor: colors.reminderCardBackground }]}>
+            <View style={styles.sectionHeader}>
+              <LinearGradient
+                colors={[colors.location, colors.locationText]}
+                style={styles.sectionIcon}
+              >
+                <Text style={styles.sectionIconText}>💬</Text>
+              </LinearGradient>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Message</Text>
+            </View>
+            <Text style={[styles.sectionContent, { color: colors.grayTitle }]}>
+              {linkifyText(String(notification.message)).map((part, idx) => {
+                if (part.type === 'url') {
+                  return (
+                    <Text
+                      key={idx}
+                      style={{ color: colors.location, textDecorationLine: 'underline' }}
+                      onPress={() => Linking.openURL(part.value)}
+                    >
+                      {part.value}
+                    </Text>
+                  );
+                }
+                return <Text key={idx}>{part.value}</Text>;
+              })}
             </Text>
           </View>
-          {/* Location Details */}
-          <View style={[styles.locationCard, { backgroundColor: colors.reminderCardBackground }]}>
-            <View style={styles.locationHeader}>
-              <View style={styles.locationIcon}>
-                <Text style={styles.locationIconText}>📍</Text>
-              </View>
-              <View style={styles.locationInfo}>
-                <Text style={[styles.locationTitle, { color: colors.text }]}>
-                  {notification.locationName || 'Unnamed Location'}
-                </Text>
-                <Text
-                  style={[styles.locationAddress, { color: colors.grayTitle }]}
-                  numberOfLines={2}
-                >
-                  {address?.toString() || 'Fetching address...'}
-                </Text>
-              </View>
+
+          <View style={[styles.sectionCard, { backgroundColor: colors.reminderCardBackground }]}>
+            <View style={styles.sectionHeader}>
+              <LinearGradient
+                colors={[colors.location, colors.locationText]}
+                style={styles.sectionIcon}
+              >
+                <Text style={styles.sectionIconText}>📍</Text>
+              </LinearGradient>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Address</Text>
             </View>
+            <Text style={[styles.locationName, { color: colors.text }]}>
+              {notification.locationName || 'Unnamed Location'}
+            </Text>
+            <Text style={[styles.sectionContent, { color: colors.grayTitle }]}>
+              {loading ? 'Fetching address...' : address?.toString() || 'Address unavailable'}
+            </Text>
           </View>
         </BottomSheetView>
       </BottomSheet>
@@ -313,63 +461,64 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
+
   modernHeader: {
     position: 'absolute',
-    top: 15,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
+    top: 10,
+    left: 10,
+    right: 10,
     zIndex: 100,
+    borderRadius: 20,
+    overflow: 'hidden',
   },
-  backButton: {
-    marginRight: 16,
-  },
-  iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  backIcon: {
-    fontSize: 20,
-    color: '#333',
-    fontWeight: 'bold',
-  },
-  centerIcon: {
-    fontSize: 18,
-    color: '#333',
-    fontWeight: 'bold',
+  headerBlur: {
+    borderRadius: 20,
   },
   headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  headerButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  headerButtonGradient: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+  },
+  headerIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#fff',
+    resizeMode: 'contain',
+  },
+  headerTextContainer: {
     flex: 1,
     alignItems: 'center',
+    marginHorizontal: 16,
   },
   headerTitle: {
     fontSize: 18,
     fontFamily: FONTS.SemiBold,
     color: '#fff',
     fontWeight: '700',
-    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowColor: 'rgba(0,0,0,0.3)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    textShadowRadius: 2,
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: FONTS.Medium,
     color: 'rgba(255,255,255,0.8)',
     marginTop: 2,
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    textAlign: 'center',
   },
+
   modernMarker: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -380,22 +529,19 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: 'rgba(99, 102, 241, 0.3)',
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
     borderWidth: 2,
-    borderColor: 'rgba(99, 102, 241, 0.5)',
+    borderColor: 'rgba(139, 92, 246, 0.4)',
   },
   markerCore: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#6366F1',
-    borderWidth: 3,
-    borderColor: '#fff',
-    shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 8,
+    width: 35,
+    height: 35,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markerIcon: {
+    fontSize: 16,
   },
   currentLocationMarker: {
     alignItems: 'center',
@@ -407,224 +553,215 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
     borderWidth: 1,
-    borderColor: 'rgba(34, 197, 94, 0.4)',
+    borderColor: 'rgba(16, 185, 129, 0.4)',
   },
   currentLocationCore: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#22C55E',
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     borderWidth: 2,
     borderColor: '#fff',
-    shadowColor: '#22C55E',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
   },
+
   fabContainer: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 20,
     right: 15,
     zIndex: 100,
   },
   fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 12,
+    width: 55,
+    height: 55,
+    borderRadius: 32,
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 16,
   },
   fabGradient: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 28,
+    width: '95%',
+    height: '95%',
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
   },
   fabIcon: {
-    fontSize: 24,
+    fontSize: 28,
     color: '#fff',
     fontWeight: 'bold',
   },
-  bottomSheet: {
+  fabRipple: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    height: height * 0.65,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 12,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
-  bottomSheetHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginTop: 12,
-    marginBottom: 20,
+
+  bottomSheetShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 24,
+    elevation: 24,
   },
   bottomSheetContent: {
     flex: 1,
     paddingHorizontal: 20,
+    paddingTop: 8,
   },
-  quickInfoBar: {
+
+  sheetHeaderContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  sheetHeaderGradient: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  sheetHeaderIcon: {
+    fontSize: 24,
+  },
+  sheetHeaderTextContainer: {
+    flex: 1,
+  },
+  sheetHeaderTitle: {
+    fontSize: 20,
+    fontFamily: FONTS.SemiBold,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  sheetHeaderSubtitle: {
+    fontSize: 14,
+    fontFamily: FONTS.Medium,
+  },
+
+  quickStatsContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
     padding: 16,
     borderRadius: 16,
-    marginBottom: 16,
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
   },
-  quickInfoItem: {
-    flex: 1,
+  statIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
-  quickInfoLabel: {
+  statIconText: {
+    fontSize: 16,
+  },
+  statLabel: {
     fontSize: 11,
     fontFamily: FONTS.Medium,
     letterSpacing: 1,
     marginBottom: 4,
   },
-  quickInfoValue: {
+  statValue: {
     fontSize: 16,
     fontFamily: FONTS.SemiBold,
     fontWeight: '600',
   },
-  radiusBadge: {
-    backgroundColor: '#22C55E',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-  },
-  radiusBadgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontFamily: FONTS.SemiBold,
-    fontWeight: '600',
-  },
-  messageCard: {
+
+  sectionCard: {
     padding: 20,
-    borderRadius: 16,
+    borderRadius: 20,
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  messageHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
   },
-  messageIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+  sectionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  messageIconText: {
+  sectionIconText: {
     fontSize: 16,
   },
-  messageTitle: {
+  sectionTitle: {
     fontSize: 18,
     fontFamily: FONTS.SemiBold,
     fontWeight: '600',
   },
-  messageText: {
+  sectionContent: {
     fontSize: 15,
-    fontFamily: FONTS.Regular,
+    fontFamily: FONTS.Medium,
     lineHeight: 22,
   },
-  locationCard: {
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  locationHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  locationIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  locationIconText: {
-    fontSize: 16,
-  },
-  locationInfo: {
-    flex: 1,
-  },
-  locationTitle: {
+  locationName: {
     fontSize: 16,
     fontFamily: FONTS.SemiBold,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 6,
   },
-  locationAddress: {
-    fontSize: 14,
-    fontFamily: FONTS.Regular,
-    lineHeight: 20,
-  },
+
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 20,
   },
-  detailRow: {
-    flexDirection: 'row',
+  errorContainer: {
     alignItems: 'center',
-    marginBottom: 18,
+    padding: 32,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
-  detailIcon: {
-    width: 28,
-    height: 28,
-    marginRight: 14,
-    resizeMode: 'contain',
+  errorIcon: {
+    fontSize: 48,
+    marginBottom: 16,
   },
-  detailTextContainer: {
-    flex: 1,
-  },
-  detailLabel: {
-    fontSize: 11,
-    fontFamily: FONTS.Medium,
-    letterSpacing: 1,
-    marginBottom: 2,
-  },
-  detailValue: {
-    fontSize: 16,
+  errorTitle: {
+    fontSize: 20,
     fontFamily: FONTS.SemiBold,
     fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
   },
-  currentLocationGlowIcon: {
-    width: 36,
-    height: 36,
-    resizeMode: 'contain',
+  errorSubtitle: {
+    fontSize: 14,
+    fontFamily: FONTS.Medium,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

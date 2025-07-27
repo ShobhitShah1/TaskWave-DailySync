@@ -1,20 +1,3 @@
-import notifee from '@notifee/react-native';
-import { useIsFocused } from '@react-navigation/native';
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  SafeAreaView,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
-import { showMessage } from 'react-native-flash-message';
-import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
-
 import FullScreenPreviewModal from '@Components/FullScreenPreviewModal';
 import ReminderCard from '@Components/ReminderCard';
 import RenderCalenderView from '@Components/RenderCalenderView';
@@ -26,8 +9,24 @@ import useCalendar from '@Hooks/useCalendar';
 import useNotificationPermission from '@Hooks/useNotificationPermission';
 import { default as useDatabase } from '@Hooks/useReminder';
 import useThemeColors from '@Hooks/useThemeMode';
+import { useIsFocused } from '@react-navigation/native';
 import { Notification, NotificationStatus, NotificationType } from '@Types/Interface';
 import { fromNowText } from '@Utils/isSameDat';
+import React, { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  SafeAreaView,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
+import { AnimatedRollingNumber } from 'react-native-animated-rolling-numbers';
+import { showMessage } from 'react-native-flash-message';
+import Animated, { Easing, FadeIn, LinearTransition } from 'react-native-reanimated';
 import { formatDate } from '../AddReminder/ReminderScheduled';
 import HomeHeader from './Components/HomeHeader';
 import RenderEmptyView from './Components/RenderEmptyView';
@@ -58,9 +57,7 @@ const Home = () => {
   const [fullScreenPreview, setFullScreenPreview] = useState(false);
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showBatteryModal, setShowBatteryModal] = useState(false);
   const [showServiceManager, setShowServiceManager] = useState(false);
-  const batteryModalConfirmRef = useRef<() => void>(() => {});
 
   const [notificationsState, setNotificationsState] = useState<NotificationStatus>({
     all: [] as Notification[],
@@ -71,27 +68,21 @@ const Home = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<NotificationType | 'all'>('all');
 
-  const findSelectedIndex = () => {
-    return daysArray.findIndex((item) => item.formattedDate === selectedDate);
-  };
-
   const scrollToIndex = async () => {
-    if (flatListRef.current && isFocus) {
-      const index = findSelectedIndex();
+    const index = daysArray.findIndex((item) => item.formattedDate === selectedDate);
 
+    if (flatListRef.current) {
       if (index >= 0 && index <= daysArray.length) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
         flatListRef.current.scrollToIndex({
           animated: true,
           index,
           viewPosition: 0.5,
         });
-      } else {
       }
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     scrollToIndex();
   }, [selectedDate, isFocus, notificationsState, flatListRef.current]);
 
@@ -99,36 +90,12 @@ const Home = () => {
     if (isFocus) {
       setIsLoading(notificationsState?.allByDate?.length === 0);
       loadNotifications();
+
+      if (permissionStatus !== 'granted') {
+        requestPermission();
+      }
     }
-  }, [isFocus, selectedDate, selectedFilter]);
-
-  useEffect(() => {
-    if (permissionStatus !== 'granted') {
-      requestPermission();
-    }
-  }, [permissionStatus]);
-
-  useEffect(() => {
-    try {
-      notifee.isBatteryOptimizationEnabled().then((isBatteryOptimizationEnabled) => {
-        if (isBatteryOptimizationEnabled) {
-          batteryModalConfirmRef.current = async () => {
-            setShowBatteryModal(false);
-            await notifee.openBatteryOptimizationSettings();
-          };
-
-          const timeoutId = setTimeout(() => {
-            setShowBatteryModal(true);
-          }, 1500);
-
-          // Cleanup: clear timeout on unmount
-          return () => clearTimeout(timeoutId);
-        }
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }, []);
+  }, [isFocus, selectedDate, selectedFilter, permissionStatus]);
 
   const onRefresh = useCallback(async () => {
     try {
@@ -136,7 +103,6 @@ const Home = () => {
       await loadNotifications();
       setRefreshing(false);
     } catch (error) {
-      console.log(error);
       setRefreshing(false);
     }
   }, [selectedDate, selectedFilter]);
@@ -191,7 +157,6 @@ const Home = () => {
         inactive: inactive,
       });
     } catch (error) {
-      console.log(error);
     } finally {
       setIsLoading(false);
     }
@@ -257,11 +222,24 @@ const Home = () => {
           <View style={style.statusContainer}>
             <View style={style.statusItem}>
               <View style={[style.statusDot, { backgroundColor: colors.green }]} />
-              <Text style={style.statusText}>{notificationsState?.active.length}</Text>
+              <AnimatedRollingNumber
+                value={notificationsState?.active.length}
+                enableCompactNotation
+                compactToFixed={2}
+                textStyle={style.statusText}
+                numberStyle={style.statusText}
+                spinningAnimationConfig={{ duration: 500, easing: Easing.bounce }}
+              />
             </View>
             <View style={style.statusItem}>
               <View style={[style.statusDot, { backgroundColor: 'gray' }]} />
-              <Text style={style.statusText}>{notificationsState?.inactive.length}</Text>
+              <AnimatedRollingNumber
+                value={notificationsState?.inactive.length}
+                enableCompactNotation
+                compactToFixed={2}
+                textStyle={style.statusText}
+                spinningAnimationConfig={{ duration: 500, easing: Easing.bounce }}
+              />
             </View>
           </View>
         </Animated.View>

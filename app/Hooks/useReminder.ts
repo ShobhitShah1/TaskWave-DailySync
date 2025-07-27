@@ -148,7 +148,6 @@ export const scheduleNotification = async (
 
     return id;
   } catch (error: any) {
-    console.log('error:', error);
     if (error.message?.toString()?.includes('invalid notification ID')) {
       return null;
     }

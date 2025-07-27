@@ -1,7 +1,7 @@
 export function createGeoJSONCircle(
   center: { latitude: number; longitude: number },
   radiusInMeters: number,
-  points = 64,
+  points = 16, // Reduced points for dotted effect
 ): {
   type: 'Feature';
   properties: {};

@@ -1,8 +1,8 @@
 import useThemeColors from '@Hooks/useThemeMode';
 import { NominatimResult } from '@Types/Interface';
 import React from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 
 interface LocationSearchBarDropdownProps {
   show: boolean;
@@ -20,7 +20,11 @@ const LocationSearchBarDropdown: React.FC<LocationSearchBarDropdownProps> = ({
   animStyle,
 }) => {
   const colors = useThemeColors();
-  if (!show) return null;
+
+  if (!show) {
+    return null;
+  }
+
   return (
     <Animated.View
       style={[
@@ -39,10 +43,12 @@ const LocationSearchBarDropdown: React.FC<LocationSearchBarDropdownProps> = ({
           <Text style={[styles.loadingText, { color: colors.grayTitle }]}>Searching...</Text>
         </View>
       ) : results.length > 0 ? (
-        <FlatList
+        <Animated.FlatList
           data={results}
           nestedScrollEnabled
           overScrollMode="always"
+          layout={LinearTransition.springify(200).damping(20)}
+          itemLayoutAnimation={LinearTransition.springify(200).damping(20)}
           keyExtractor={(item, idx) => item.lat + item.lon + idx}
           renderItem={({ item }) => (
             <Pressable style={styles.resultItem} onPress={() => onSelect(item)}>

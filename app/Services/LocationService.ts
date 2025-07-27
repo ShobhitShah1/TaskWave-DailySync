@@ -265,26 +265,26 @@ class LocationService {
           importance: 4, // HIGH
           sound: 'default',
           vibration: true,
-          actions: [
-            {
-              title: 'Stop Tracking',
-              pressAction: {
-                id: 'stop-tracking',
-              },
-            },
-            {
-              title: 'Pause',
-              pressAction: {
-                id: 'pause-tracking',
-              },
-            },
-            {
-              title: 'Dismiss',
-              pressAction: {
-                id: 'dismiss',
-              },
-            },
-          ],
+          // actions: [
+          //   {
+          //     title: 'Stop Tracking',
+          //     pressAction: {
+          //       id: 'stop-tracking',
+          //     },
+          //   },
+          //   {
+          //     title: 'Pause',
+          //     pressAction: {
+          //       id: 'pause-tracking',
+          //     },
+          //   },
+          //   {
+          //     title: 'Dismiss',
+          //     pressAction: {
+          //       id: 'dismiss',
+          //     },
+          //   },
+          // ],
         },
         ios: {
           sound: 'default',
@@ -392,10 +392,6 @@ class LocationService {
         accuracy: Location.Accuracy.High,
         timeInterval: 10000, // 10 seconds
         distanceInterval: 50, // 50 meters
-        foregroundService: {
-          notificationTitle: 'DailySync Location Tracking',
-          notificationBody: 'Tracking your location for reminders',
-        },
         activityType: Location.ActivityType.Fitness,
         showsBackgroundLocationIndicator: true,
       });

@@ -17,6 +17,7 @@ const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
 }) => {
   const { theme } = useAppContext();
   const colors = useThemeColors();
+
   const { results, loading, showResults, dropdownAnimStyle, handleSelect } = useLocationSearch({
     value,
     onResultSelect,
@@ -44,7 +45,9 @@ const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
         onFocus={onFocus}
         onBlur={onBlur}
       />
+
       {loading && <ActivityIndicator size="small" color={colors.blue} style={{ marginLeft: 8 }} />}
+
       <LocationSearchBarDropdown
         show={showResults}
         loading={loading}

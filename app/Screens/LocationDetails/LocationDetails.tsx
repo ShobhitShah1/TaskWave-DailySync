@@ -6,7 +6,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import HomeHeader from '@Screens/Home/Components/HomeHeader';
 import { GeoLatLng, NominatimResult, Notification, NotificationType } from '@Types/Interface';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import LocationDetailsCard from './Components/LocationDetailsCard';
 import LocationMapView from './Components/LocationMapView';
@@ -54,8 +54,9 @@ const LocationDetails = () => {
       const response = await getNotificationById(id);
 
       if (response) {
-        setTitle(response?.message || '');
-        setMessage(response?.subject || '');
+        setTitle(response?.subject || '');
+        setMessage(response?.message || '');
+
         setSelectedLocation({
           latitude: Number(response?.latitude),
           longitude: Number(response?.longitude),
@@ -90,7 +91,7 @@ const LocationDetails = () => {
   };
 
   const handleSearchResultSelect = (result: NominatimResult) => {
-    setSearch(result.display_name);
+    setSearch('');
     setSelectedLocation({ latitude: parseFloat(result.lat), longitude: parseFloat(result.lon) });
   };
 
@@ -99,19 +100,22 @@ const LocationDetails = () => {
       Alert.alert('Validation', 'Please select a location on the map.');
       return;
     }
+
     if (!title.trim()) {
       Alert.alert('Validation', 'Please enter a title.');
       return;
     }
+
     if (!message.trim()) {
       Alert.alert('Validation', 'Please enter a message.');
       return;
     }
 
     setIsLoading(true);
+
     try {
       const notificationData: Notification = {
-        id: id || '', // Use existing id if updating
+        id: id || '',
         type: 'location',
         message: message.trim(),
         date: new Date(),
@@ -240,6 +244,14 @@ const LocationDetails = () => {
           <Text style={[styles.loaderText, { color: colors.text }]}>
             Unable to get your location.
           </Text>
+          <Pressable
+            style={[
+              styles.tryAgainButton,
+              { backgroundColor: colors.darkBlue, shadowColor: colors.text },
+            ]}
+          >
+            <Text style={[styles.tryAgainText, { color: colors.text }]}>Try again</Text>
+          </Pressable>
         </View>
       )}
     </View>
@@ -259,6 +271,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: FONTS.SemiBold,
   },
+  tryAgainButton: {
+    width: 170,
+    height: 40,
+    elevation: 5,
+    margin: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    borderRadius: 10,
+
+    shadowOffset: { height: 0, width: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+  },
+  tryAgainText: { fontFamily: FONTS.SemiBold, fontSize: 14 },
 });
 
 export default memo(LocationDetails);

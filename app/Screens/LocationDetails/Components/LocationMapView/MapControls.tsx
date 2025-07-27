@@ -14,7 +14,6 @@ interface MapControlButtonProps {
   icon: any;
   backgroundColor: string;
   iconColor?: string;
-  accessibilityLabel: string;
   style?: ViewStyle;
   isFirst?: boolean;
   isLast?: boolean;
@@ -25,7 +24,6 @@ const MapControlButton: React.FC<MapControlButtonProps> = ({
   icon,
   backgroundColor,
   iconColor,
-  accessibilityLabel,
   style,
   isFirst,
   isLast,
@@ -40,7 +38,6 @@ const MapControlButton: React.FC<MapControlButtonProps> = ({
     ]}
     onPress={onPress}
     accessibilityRole="button"
-    accessibilityLabel={accessibilityLabel}
     android_ripple={{ color: iconColor + '22', borderless: true }}
   >
     <Image
@@ -70,7 +67,6 @@ const MapControls: React.FC<MapControlsProps> = ({
           icon={AssetsPath.ic_view}
           backgroundColor={colors.background}
           iconColor={colors.blue}
-          accessibilityLabel="Zoom to fit all markers"
           isFirst
         />
       )}
@@ -80,7 +76,6 @@ const MapControls: React.FC<MapControlsProps> = ({
         iconColor={colors.blue}
         backgroundColor={colors.background}
         icon={AssetsPath.ic_history_location_icon}
-        accessibilityLabel="Center map on your location"
         isLast
       />
     </View>

@@ -170,8 +170,6 @@ const notificationHandlers = {
 
 export const handleNotificationPress = async (notification: Notification) => {
   try {
-    console.log('click notification:', notification.type);
-
     const handler = notificationHandlers[notification.type as keyof typeof notificationHandlers];
     if (handler) {
       await handler(notification as Notification);

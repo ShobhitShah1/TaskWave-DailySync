@@ -35,7 +35,6 @@ export const useLocationService = () => {
     setIsLoading(true);
     try {
       const success = await LocationService.startLocationTracking();
-      console.log('startTracking', success);
 
       if (success) {
         showMessage({

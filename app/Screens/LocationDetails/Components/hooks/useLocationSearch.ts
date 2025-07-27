@@ -7,44 +7,46 @@ interface UseLocationSearchProps {
   onResultSelect?: (result: NominatimResult) => void;
 }
 
+const fetchNominatim = async (query: string): Promise<NominatimResult[]> => {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error('Nominatim blocked or returned non-JSON');
+  }
+};
+
+const fetchPhoton = async (query: string): Promise<NominatimResult[]> => {
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return (data.features || []).map((f: any) => ({
+    display_name: [f.properties.name, f.properties.city, f.properties.country]
+      .filter(Boolean)
+      .join(', '),
+    lat: f.geometry.coordinates[1].toString(),
+    lon: f.geometry.coordinates[0].toString(),
+  }));
+};
+
 export function useLocationSearch({ value, onResultSelect }: UseLocationSearchProps) {
   const [results, setResults] = useState<NominatimResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const dropdownAnim = useSharedValue(0);
 
-  const fetchNominatim = async (query: string): Promise<NominatimResult[]> => {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
-    const res = await fetch(url);
-    const text = await res.text();
-    try {
-      return JSON.parse(text);
-    } catch {
-      throw new Error('Nominatim blocked or returned non-JSON');
-    }
-  };
-
-  const fetchPhoton = async (query: string): Promise<NominatimResult[]> => {
-    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    return (data.features || []).map((f: any) => ({
-      display_name: [f.properties.name, f.properties.city, f.properties.country]
-        .filter(Boolean)
-        .join(', '),
-      lat: f.geometry.coordinates[1].toString(),
-      lon: f.geometry.coordinates[0].toString(),
-    }));
-  };
-
   useEffect(() => {
-    if (value.length < 3) {
-      setResults([]);
-      setShowResults(false);
-      dropdownAnim.value = withTiming(0, { duration: 120 });
-      return;
-    }
+    // if (value.length < 3) {
+    //   setResults([]);
+    //   setShowResults(false);
+    //   dropdownAnim.value = withTiming(0, { duration: 120 });
+    //   return;
+    // }
+
     setLoading(true);
+
     const timeout = setTimeout(() => {
       (async () => {
         try {
