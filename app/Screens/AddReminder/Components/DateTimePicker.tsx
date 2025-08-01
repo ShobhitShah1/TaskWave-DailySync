@@ -8,7 +8,6 @@ interface DateTimePickerProps {
   handleTimePress: () => void;
   pickerVisibleType: 'date' | 'time' | null;
   handlePickerChange: (event: any, selectedDate: Date | undefined) => void;
-  setPickerVisibleType: (type: 'date' | 'time' | null) => void;
   themeColor: string;
   colors: any;
 }
@@ -19,7 +18,6 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
   handleTimePress,
   pickerVisibleType,
   handlePickerChange,
-  setPickerVisibleType,
   themeColor,
   colors,
 }) => {

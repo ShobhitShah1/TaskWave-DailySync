@@ -257,14 +257,14 @@ const LocationPreview = () => {
             coordinate={[coords.longitude as number, coords.latitude as number]}
           >
             <Animated.View style={[styles.modernMarker, markerAnimatedStyle]}>
-              <LinearGradient
+              {/* <LinearGradient
                 colors={[colors.blue, colors.darkBlue]}
                 style={styles.markerCore}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <Text style={styles.markerIcon}>📍</Text>
-              </LinearGradient>
+              </LinearGradient> */}
+              <Text style={[styles.markerIcon, styles.markerCore]}>📍</Text>
             </Animated.View>
           </PointAnnotation>
 
@@ -541,7 +541,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   markerIcon: {
-    fontSize: 16,
+    fontSize: 25,
+    resizeMode: 'contain',
+    textAlign: 'center',
   },
   currentLocationMarker: {
     alignItems: 'center',

@@ -1,5 +1,4 @@
 import { BottomSheetHandleProps } from '@gorhom/bottom-sheet';
-import useThemeColors from '@Hooks/useThemeMode';
 import React, { useMemo } from 'react';
 import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import Animated, {
@@ -26,7 +25,6 @@ interface HandleProps extends BottomSheetHandleProps {
 }
 
 const Handle: React.FC<HandleProps> = ({ style, animatedIndex }) => {
-  const colors = useThemeColors();
   //#region animations
   const indicatorTransformOriginY = useDerivedValue(() =>
     interpolate(animatedIndex.value, [0, 1, 2], [-1, 0, 1], Extrapolation.CLAMP),

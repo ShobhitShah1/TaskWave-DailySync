@@ -30,21 +30,30 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
 
   return (
     <View
-      style={[
-        styles.card,
-        { backgroundColor: colors.reminderCardBackground, shadowColor: colors.black },
-      ]}
+      style={[styles.card, { backgroundColor: colors.background, shadowColor: colors.black }]}
       pointerEvents="box-none"
     >
       <BottomSheetTextInput
-        style={[styles.titleInput, { backgroundColor: colors.background, color: colors.text }]}
+        style={[
+          styles.titleInput,
+          {
+            backgroundColor: theme === 'dark' ? 'rgba(63, 65, 69, 1)' : 'rgba(241, 241, 240, 1)',
+            color: colors.text,
+          },
+        ]}
         placeholder="Title"
         placeholderTextColor={colors.placeholderText}
         value={title}
         onChangeText={setTitle}
       />
       <BottomSheetTextInput
-        style={[styles.messageInput, { backgroundColor: colors.background, color: colors.text }]}
+        style={[
+          styles.messageInput,
+          {
+            backgroundColor: theme === 'dark' ? 'rgba(63, 65, 69, 1)' : 'rgba(241, 241, 240, 1)',
+            color: colors.text,
+          },
+        ]}
         placeholder="Message..."
         placeholderTextColor={colors.placeholderText}
         value={message}
@@ -76,14 +85,9 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    // position: 'absolute',
-    // left: 0,
-    // right: 0,
-    // bottom: 0,
     flex: 1,
     paddingHorizontal: 16,
-    paddingVertical: 25,
-    // borderRadius: 16,
+    paddingTop: 15,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 8,

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import { Pressable, Animated as RNAnimated, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -22,7 +22,6 @@ interface SoundItemProps {
 const SoundItem = ({ item, isSelected, isPlaying, onSelect, onPlay }: SoundItemProps) => {
   const style = styles();
   const scaleButton = useSharedValue(1);
-  const [animationsReady, setAnimationsReady] = useState(false);
 
   const waveAnimation = useRef<{ [key: string]: RNAnimated.Value[] }>({});
 
@@ -30,7 +29,6 @@ const SoundItem = ({ item, isSelected, isPlaying, onSelect, onPlay }: SoundItemP
     waveAnimation.current[item.id] = Array(5)
       .fill(0)
       .map(() => new RNAnimated.Value(0));
-    setAnimationsReady(true);
   }, []);
 
   const animateWaves = (soundId: string) => {

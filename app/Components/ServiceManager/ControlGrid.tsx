@@ -1,8 +1,7 @@
-// eslint-disable-next-line simple-import-sort/imports
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface ControlButtonProps {
   label: string;
@@ -20,14 +19,12 @@ interface ControlButtonProps {
 const ControlButton: React.FC<ControlButtonProps> = ({
   label,
   icon,
-  color,
   gradient,
   onPress,
   onPressIn,
   onPressOut,
   disabled,
   loading,
-  soft,
 }) => (
   <TouchableOpacity
     style={[styles.controlButton, disabled && styles.disabledButton]}

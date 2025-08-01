@@ -10,7 +10,7 @@ import { getCategories } from '@Utils/getCategories';
 import RenderCategoryItem from './RenderCategoryItem';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const ITEM_WIDTH = SCREEN_WIDTH / 2 - 24;
+const ITEM_WIDTH = SCREEN_WIDTH / 2 - 22;
 
 const RenderSheetView = ({
   categories,
@@ -82,7 +82,6 @@ const RenderSheetView = ({
 
   return (
     <BottomSheetView style={styles.container}>
-      {/* Top Category Selection */}
       <BottomSheetScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -122,7 +121,6 @@ const RenderSheetView = ({
         })}
       </BottomSheetScrollView>
 
-      {/* Grid Container */}
       <BottomSheetView style={styles.gridContainer}>
         {rows.map((row, rowIndex) => (
           <BottomSheetView key={`row-${rowIndex}`} style={styles.row}>
@@ -184,7 +182,7 @@ const styles = StyleSheet.create({
   },
   gridContainer: {
     paddingTop: 10,
-    paddingBottom: 90,
+    paddingBottom: 20,
   },
   row: {
     flexDirection: 'row',
@@ -194,10 +192,10 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     width: ITEM_WIDTH,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    overflow: 'hidden',
+    // borderWidth: 1,
+    // borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 10,
+    // overflow: 'hidden',
   },
   emptyItem: {
     width: ITEM_WIDTH,

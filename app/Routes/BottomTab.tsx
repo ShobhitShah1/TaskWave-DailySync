@@ -1,10 +1,9 @@
-import ReusableBottomSheet from '@Components/ReusableBottomSheet';
-import TextString from '@Constants/TextString';
 import { FONTS } from '@Constants/Theme';
 import { BottomSheetProvider, useBottomSheet } from '@Contexts/BottomSheetProvider';
 import {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
+  BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import { useBottomSheetBackHandler } from '@Hooks/useBottomSheetBackHandler';
@@ -18,7 +17,6 @@ import Setting from '@Screens/Setting/Setting';
 import { NotificationCategory, NotificationType, RenderTabBarProps } from '@Types/Interface';
 import { getCategories } from '@Utils/getCategories';
 import { getIconSourceForBottomTabs } from '@Utils/getIconSourceForBottomTabs';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 import React, { memo, useCallback, useState } from 'react';
 import {
@@ -46,7 +44,7 @@ const BottomTab = () => {
   const { handleSheetPositionChange } = useBottomSheetBackHandler(bottomSheetModalRef);
 
   const [hideBottomTab, setHideBottomTab] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<NotificationType>('whatsapp');
+  const [selectedCategory, setSelectedCategory] = useState<NotificationType | null>(null);
   const initialCategories = getCategories(colors);
 
   const [categories, setCategories] = useState<NotificationCategory[]>(initialCategories);
@@ -112,20 +110,25 @@ const BottomTab = () => {
   );
 
   const onCloseSheet = useCallback(() => {
-    if (bottomSheetModalRef.current) {
-      bottomSheetModalRef.current.dismiss();
-    }
+    bottomSheetModalRef?.current?.dismiss();
   }, [bottomSheetModalRef]);
 
   const checkAppAndNavigate = useCallback(
-    async (packageName: string, appStoreUrl: string, errorMessage: string) => {
+    async (
+      packageName: string,
+      appStoreUrl: string,
+      categories: NotificationType,
+      errorMessage: string,
+    ) => {
       try {
         const result = await isAppInstalled(packageName);
+
         if (result) {
           onCloseSheet();
+
           setTimeout(() => {
             navigation.navigate('CreateReminder', {
-              notificationType: selectedCategory,
+              notificationType: categories,
             });
           }, 200);
         } else {
@@ -145,66 +148,75 @@ const BottomTab = () => {
         });
       }
     },
-    [isAppInstalled, navigation, selectedCategory],
+    [isAppInstalled, navigation],
   );
 
-  const onPressNext = useCallback(async () => {
-    switch (selectedCategory) {
-      case 'whatsapp':
-        checkAppAndNavigate(
-          'com.whatsapp',
-          Platform.OS === 'android'
-            ? 'https://play.google.com/store/apps/details?id=com.whatsapp'
-            : 'https://apps.apple.com/app/whatsapp-messenger/id310633997',
-          'WhatsApp is not installed',
-        );
-        break;
-      case 'whatsappBusiness':
-        checkAppAndNavigate(
-          'com.whatsapp.w4b',
-          Platform.OS === 'android'
-            ? 'https://play.google.com/store/apps/details?id=com.whatsapp.w4b'
-            : 'https://apps.apple.com/app/whatsapp-business/id1386412985',
-          'WhatsApp Business is not installed',
-        );
-        break;
-      case 'instagram':
-        checkAppAndNavigate(
-          'com.instagram.android',
-          Platform.OS === 'android'
-            ? 'https://play.google.com/store/apps/details?id=com.instagram.android'
-            : 'https://apps.apple.com/us/app/instagram/id389801252',
-          'Instagram is not installed',
-        );
-        break;
-      case 'location':
-        const response = await Location.requestForegroundPermissionsAsync();
+  const onPressNext = useCallback(
+    async (category: NotificationType) => {
+      switch (category) {
+        case 'whatsapp':
+          await checkAppAndNavigate(
+            'com.whatsapp',
+            Platform.OS === 'android'
+              ? 'https://play.google.com/store/apps/details?id=com.whatsapp'
+              : 'https://apps.apple.com/app/whatsapp-messenger/id310633997',
+            category,
+            'WhatsApp is not installed',
+          );
+          break;
+        case 'whatsappBusiness':
+          await checkAppAndNavigate(
+            'com.whatsapp.w4b',
+            Platform.OS === 'android'
+              ? 'https://play.google.com/store/apps/details?id=com.whatsapp.w4b'
+              : 'https://apps.apple.com/app/whatsapp-business/id1386412985',
+            category,
+            'WhatsApp Business is not installed',
+          );
+          break;
+        case 'instagram':
+          await checkAppAndNavigate(
+            'com.instagram.android',
+            Platform.OS === 'android'
+              ? 'https://play.google.com/store/apps/details?id=com.instagram.android'
+              : 'https://apps.apple.com/us/app/instagram/id389801252',
+            category,
+            'Instagram is not installed',
+          );
+          break;
+        case 'location':
+          const response = await Location.requestForegroundPermissionsAsync();
 
-        if (response.status !== 'granted') {
-          showMessage({
-            message: 'Location Permission required',
-            description: 'Allow location permission to use this feature',
-          });
-          return;
-        }
+          if (response.status !== 'granted') {
+            showMessage({
+              message: 'Location Permission required',
+              description: 'Allow location permission to use this feature',
+            });
 
-        onCloseSheet();
-        setTimeout(() => {
-          navigation.navigate('LocationDetails', {
-            notificationType: 'location',
-          });
-        }, 200);
-        break;
-      default:
-        onCloseSheet();
-        setTimeout(() => {
-          navigation.navigate('CreateReminder', {
-            notificationType: selectedCategory,
-          });
-        }, 200);
-        break;
-    }
-  }, [checkAppAndNavigate, selectedCategory, navigation]);
+            return;
+          }
+
+          onCloseSheet();
+
+          setTimeout(() => {
+            navigation.navigate('LocationDetails', {
+              notificationType: 'location',
+            });
+          }, 200);
+          break;
+        default:
+          onCloseSheet();
+
+          setTimeout(() => {
+            navigation.navigate('CreateReminder', {
+              notificationType: category,
+            });
+          }, 200);
+          break;
+      }
+    },
+    [checkAppAndNavigate, navigation, onCloseSheet],
+  );
 
   const onCategoryClick = useCallback(
     (item: any, isSort: boolean) => {
@@ -213,7 +225,7 @@ const BottomTab = () => {
 
       setSelectedCategory(item.type);
     },
-    [categories],
+    [categories, selectedCategory],
   );
 
   return (
@@ -278,36 +290,17 @@ const BottomTab = () => {
       </CurvedBottomBar.Navigator>
 
       <BottomSheetProvider>
-        <ReusableBottomSheet
+        <BottomSheetModal
           enablePanDownToClose
-          footerComponent={() => {
-            return (
-              <LinearGradient
-                start={{ x: 0, y: 1 }}
-                end={{ x: 0, y: 0 }}
-                colors={['rgba(0,0,0,1)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.0)']}
-                style={styles.sheetNextButtonContainer}
-              >
-                <Pressable
-                  disabled={selectedCategory?.length === 0}
-                  onPress={onPressNext}
-                  style={styles.sheetNextButton}
-                >
-                  <Text style={[styles.sheetNextButtonText, { color: colors.white }]}>
-                    {TextString.Next}
-                  </Text>
-                </Pressable>
-              </LinearGradient>
-            );
-          }}
           backdropComponent={renderBackdrop}
           containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
           backgroundStyle={{ backgroundColor: colors.background }}
           handleStyle={[styles.handleStyle, { backgroundColor: colors.background }]}
           handleIndicatorStyle={[styles.handleIndicatorStyle, { backgroundColor: colors.text }]}
           ref={bottomSheetModalRef}
-          snapPoints={['80%']}
+          snapPoints={['80%', '100%']}
           onChange={handleSheetPositionChange}
+          onDismiss={() => setSelectedCategory(null)}
         >
           <BottomSheetScrollView
             style={[styles.contentContainer, { backgroundColor: colors.background }]}
@@ -315,12 +308,18 @@ const BottomTab = () => {
           >
             <RenderSheetView
               categories={categories}
-              onCategoryClick={onCategoryClick}
+              onCategoryClick={(category, isTopCategory) => {
+                onCategoryClick(category, isTopCategory);
+
+                if (!isTopCategory && category?.type) {
+                  onPressNext(category?.type);
+                }
+              }}
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
             />
           </BottomSheetScrollView>
-        </ReusableBottomSheet>
+        </BottomSheetModal>
         {/* <DoNotDelete isVisible={true} onClose={() => setShowThemOnFace(false)} /> */}
       </BottomSheetProvider>
     </React.Fragment>
@@ -365,7 +364,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    // paddingBottom: 16,
     paddingTop: 10,
   },
   flatListContainer: {

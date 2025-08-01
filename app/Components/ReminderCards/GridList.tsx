@@ -131,6 +131,7 @@ const GridView: FC<IListViewProps> = ({
             <Text style={[styles.timeText, { color: typeColor }]}>
               {formatTime(new Date(notification.date))}
             </Text>
+
             <View style={[styles.separator, { borderColor: typeColor }]} />
 
             <View style={styles.countdownContainer}>
@@ -142,6 +143,7 @@ const GridView: FC<IListViewProps> = ({
                 />
               )}
               <Text
+                numberOfLines={2}
                 style={[
                   styles.countdownText,
                   { color: typeColor, marginHorizontal: isLocation ? 4 : 0 },
@@ -242,11 +244,13 @@ const styles = StyleSheet.create({
   },
   timeWrapper: {
     width: '95%',
+    overflow: 'hidden',
     flexDirection: 'row',
     alignItems: 'center',
   },
   timeText: {
     fontSize: 13,
+    marginRight: 4,
     fontFamily: FONTS.Medium,
   },
   countdownContainer: {
@@ -259,16 +263,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   countdownText: {
+    width: '80%',
+    marginLeft: 4,
     fontSize: 12.5,
-    letterSpacing: 0.5,
     fontFamily: FONTS.Medium,
   },
   separator: {
-    height: 14,
+    height: 13,
     justifyContent: 'center',
     alignSelf: 'center',
-    marginLeft: 4,
-    borderRightWidth: 1.5,
+    borderRightWidth: 1,
   },
   menu: {
     width: 12.5,

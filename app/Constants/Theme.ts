@@ -1,6 +1,6 @@
 import { DimensionValue } from 'react-native';
 
-const ColorGroups = {
+export const ColorGroups = {
   base: {
     white: 'rgba(255, 255, 255, 1)',
     black: '#000',

@@ -31,6 +31,13 @@ const RenderCategoryItem = ({
               ? item?.color?.dark
               : item?.color?.primary
             : colors.borderColor,
+          boxShadow: `0px 0px 6px ${
+            isSelected
+              ? item?.type === 'gmail'
+                ? item?.color?.dark
+                : item?.color?.primary
+              : 'transparent'
+          }`,
         },
       ]}
       entering={FadeIn.delay(80 * index)}
@@ -49,7 +56,7 @@ const RenderCategoryItem = ({
               ? item?.type === 'gmail'
                 ? item?.color?.dark
                 : item?.color?.primary
-              : undefined
+              : 'rgba(171, 171, 171, 1)'
           }
           source={AssetsPath.ic_categoryFrame}
           style={styles.imageBackground}
@@ -77,8 +84,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 180,
     borderRadius: 10,
-    borderWidth: 1,
-    overflow: 'hidden',
+    borderWidth: 0.5,
   },
   imageBackground: {
     width: '100%',

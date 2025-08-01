@@ -15,6 +15,7 @@ export const useBottomSheetBackHandler = (
           'hardwareBackPress',
           () => {
             bottomSheetRef.current?.dismiss();
+            bottomSheetRef.current?.close();
             return true;
           },
         );

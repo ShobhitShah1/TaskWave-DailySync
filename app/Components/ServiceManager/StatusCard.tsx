@@ -40,15 +40,7 @@ const getStatusIcon = (status: string) => {
   }
 };
 
-const StatusCard: React.FC<StatusCardProps> = ({
-  status,
-  colors,
-  dotScale,
-  debugInfo,
-  showDebug,
-  onRefresh,
-  refreshing,
-}) => {
+const StatusCard: React.FC<StatusCardProps> = ({ status, colors, debugInfo, showDebug }) => {
   const accent = getStatusAccent(status, colors);
   const [debugOpen, setDebugOpen] = useState(false);
   return (

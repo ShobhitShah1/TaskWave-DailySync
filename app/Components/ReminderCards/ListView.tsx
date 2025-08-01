@@ -108,7 +108,7 @@ const ListView: FC<IListViewProps> = ({
                   style={styles.timerIcon}
                 />
               )}
-              <Text style={[styles.countdownText, { color: typeColor }]}>
+              <Text numberOfLines={1} style={[styles.countdownText, { color: typeColor }]}>
                 {isLocation ? address || '' : timeLeft}
               </Text>
             </View>
@@ -151,7 +151,7 @@ export default memo(ListView);
 
 const styles = StyleSheet.create({
   cardContainer: {
-    height: 128,
+    minHeight: 128,
     borderRadius: 15,
     marginVertical: 5,
     overflow: 'hidden',
@@ -242,6 +242,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   countdownText: {
+    width: '90%',
     fontSize: 16,
     letterSpacing: 1.5,
     fontFamily: FONTS.Medium,

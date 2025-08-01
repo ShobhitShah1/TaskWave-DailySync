@@ -9,11 +9,9 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 
 import satelliteStyle from '@Constants/satellite-style.json';
-import useThemeColors from '@Hooks/useThemeMode';
 import LocationService from '@Services/LocationService';
 import { CameraPosition, GeoLatLng, LocationMapViewProps } from '@Types/Interface';
 import { fitBoundsZoomLevel } from '@Utils/geoUtils';
-import MapControls from './LocationMapView/MapControls';
 import MapMarker from './LocationMapView/MapMarker';
 
 const LocationMapView: React.FC<LocationMapViewProps> = ({
@@ -22,7 +20,6 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
   children,
   userLocation: userLocationProp,
 }) => {
-  const colors = useThemeColors();
   const cameraRef = useRef<any>(null);
 
   const [isMapReady, setIsMapReady] = useState<boolean>(false);
@@ -189,14 +186,14 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
           <UserLocation visible={true} onUpdate={() => {}} />
         </MapView>
       )}
-      <MapControls
+      {/* <MapControls
         onZoomToFit={zoomToFitAll}
         onCenterUser={() => {
           centerOnUser();
         }}
         showZoomToFit={!!selectedLocation}
         colors={{ background: colors.background, blue: colors.blue, text: colors.text }}
-      />
+      /> */}
       {children}
     </View>
   );

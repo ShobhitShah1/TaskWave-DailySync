@@ -351,7 +351,7 @@ const History = () => {
               onLayout={() => scrollToIndex()}
               onScrollToIndexFailed={handleScrollToIndexFailed}
               onContentSizeChange={() => scrollToIndex()}
-              contentContainerStyle={{ gap: 20 }}
+              contentContainerStyle={{ gap: 15 }}
               renderItem={({ index, item }) => {
                 return (
                   <RenderCalenderView

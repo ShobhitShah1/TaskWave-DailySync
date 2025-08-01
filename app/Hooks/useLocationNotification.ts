@@ -5,7 +5,6 @@ import { Notification } from '@Types/Interface';
 import useLocationPermission from './useLocationPermission';
 import useDatabase from './useReminder';
 
-// Helper function to generate unique notification ID
 const generateNotificationId = (): string => {
   return `location_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };

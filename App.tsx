@@ -20,6 +20,13 @@ import Routes from './app/Routes/Routes';
 import LocationService from './app/Services/LocationService';
 import { Notification } from './app/Types/Interface';
 import { getDatabase } from './app/Utils/databaseUtils';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+
+// This is the default configuration
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.error,
+  strict: false, // Reanimated runs in strict mode by default
+});
 
 if (__DEV__) {
   LogBox.ignoreAllLogs();

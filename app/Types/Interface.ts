@@ -163,8 +163,8 @@ export interface NotificationStatus {
 
 export interface RenderSheetViewProps {
   categories: NotificationCategory[];
-  onCategoryClick: (category: remindersCategoriesType, isSelected: boolean) => void;
-  selectedCategory: NotificationType;
+  onCategoryClick: (category: remindersCategoriesType, isTopCategory: boolean) => void;
+  selectedCategory: NotificationType | null;
   setSelectedCategory: (category: NotificationType) => void;
 }
 
@@ -366,11 +366,7 @@ export interface NominatimResult {
 }
 
 export interface LocationSearchBarProps {
-  value: string;
-  onChangeText: (text: string) => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  onResultSelect?: (result: NominatimResult) => void;
+  onSearchPress?: () => void;
 }
 
 export enum LocationReminderStatus {

@@ -37,8 +37,6 @@ const MapControlButton: React.FC<MapControlButtonProps> = ({
       style,
     ]}
     onPress={onPress}
-    accessibilityRole="button"
-    android_ripple={{ color: iconColor + '22', borderless: true }}
   >
     <Image
       source={icon}

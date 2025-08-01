@@ -52,10 +52,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = ({
     [notification.latitude, notification.longitude],
   );
 
-  const { addressDetails } = useAddressFromCoords(coords);
-  const location =
-    `${addressDetails?.area?.toString() || ''}, ${addressDetails?.city?.toString() || ''}` ||
-    'unknown';
+  const { locationLabel } = useAddressFromCoords(coords);
 
   const onCardPress = useCallback(() => {
     if (notification.type === 'location') {
@@ -133,6 +130,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = ({
                       style={styles.timeIcon}
                     />
                     <Text
+                      numberOfLines={1}
                       style={[
                         styles.timeText,
                         {
@@ -140,7 +138,7 @@ const RenderHistoryList: React.FC<ReminderCardProps> = ({
                         },
                       ]}
                     >
-                      {location || ''}
+                      {locationLabel?.trim() || ''}
                     </Text>
                   </View>
                 ) : (
@@ -279,7 +277,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   timeContainer: {
-    maxWidth: '70%',
+    maxWidth: '74%',
   },
   timeBadge: {
     flexDirection: 'row',

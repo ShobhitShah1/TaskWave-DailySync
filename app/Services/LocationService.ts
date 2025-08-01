@@ -553,9 +553,9 @@ class LocationService {
       }
 
       return await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-        distanceInterval: 0,
-        timeInterval: 0,
+        accuracy: Location.Accuracy.Highest,
+        distanceInterval: 100,
+        timeInterval: 1000,
       });
     } catch (error) {
       console.error('Error getting current location:', error);

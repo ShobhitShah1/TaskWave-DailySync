@@ -13,7 +13,6 @@ const DOT_SIZE = 11;
 const Paginator: FC<PaginatorProps> = ({ data, scrollX }) => {
   const { width } = useWindowDimensions();
   const style = styles();
-  const colors = useThemeColors();
 
   return (
     <View style={style.container}>

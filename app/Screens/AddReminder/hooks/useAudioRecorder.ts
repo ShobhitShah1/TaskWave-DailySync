@@ -10,7 +10,7 @@ import { Memo } from '@Types/Interface';
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
-const useAudioRecorder = (createViewColor: string, iconColor: string) => {
+const useAudioRecorder = (createViewColor: string) => {
   const [recording, setRecording] = useState<Recording | undefined>();
   const [memos, setMemos] = useState<Memo[]>([]);
   const [audioMetering, setAudioMetering] = useState<number[]>([]);

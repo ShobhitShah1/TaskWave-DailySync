@@ -53,10 +53,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
     [notification.latitude, notification.longitude],
   );
 
-  const { addressDetails } = useAddressFromCoords(coords);
-  const location =
-    `${addressDetails?.area?.toString() || ''}, ${addressDetails?.city?.toString() || ''}` ||
-    'unknown';
+  const { shortLocationLabel } = useAddressFromCoords(coords);
 
   const cardBackgroundColor = useMemo(() => {
     return theme === 'dark' ? colors.reminderCardBackground : notificationColors.backgroundColor;
@@ -216,7 +213,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           title={title}
           typeColor={typeColor}
           deleteReminder={deleteReminder}
-          address={location}
+          address={shortLocationLabel}
         />
       ) : (
         <ListView
@@ -229,7 +226,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           title={title}
           typeColor={typeColor}
           deleteReminder={deleteReminder}
-          address={location}
+          address={shortLocationLabel}
         />
       )}
 

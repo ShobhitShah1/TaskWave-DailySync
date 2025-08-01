@@ -100,7 +100,6 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
   const [searchText, setSearchText] = useState('');
   const [debouncedSearchText, setDebouncedSearchText] = useState('');
 
-  // Present/dismiss bottom sheet based on isVisible
   React.useEffect(() => {
     if (isVisible) {
       contactModalRef.current?.present();
@@ -111,8 +110,9 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
 
   const handleClose = useCallback(() => {
     onClose();
+
     contactModalRef.current?.dismiss();
-  }, [onClose]);
+  }, [onClose, contactModalRef]);
 
   const handleSearchTextChange = useCallback((text: string) => {
     setSearchText(text);
@@ -252,13 +252,8 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
           end={{ x: 0, y: 1 }}
           colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.7)', 'rgba(0, 0, 0, 1)']}
           style={[style.contactDoneButton, { backgroundColor: 'transparent' }]}
-          pointerEvents="none"
         >
-          <Pressable
-            style={style.contactDoneButtonView}
-            onPress={handleClose}
-            android_ripple={{ color: colors.text + '30' }}
-          >
+          <Pressable style={style.contactDoneButtonView} onPress={handleClose}>
             <Text style={style.contactDoneButtonText}>Done</Text>
           </Pressable>
         </LinearGradient>

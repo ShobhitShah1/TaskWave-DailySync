@@ -58,8 +58,6 @@ export const buildTimestampTrigger = (date: Date, scheduleFrequency?: string): T
 export const buildNotifeeNotification = (
   notification: Notification,
   channelId: string | null | undefined,
-  notificationDate: Date,
-  rescheduleInfoString?: string,
 ) => {
   const safeChannelId = channelId || 'default';
   const imageAttachment = notification.attachments?.find((attachment) =>
