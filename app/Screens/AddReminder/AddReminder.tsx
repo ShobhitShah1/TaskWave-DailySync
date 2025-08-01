@@ -330,7 +330,6 @@ const AddReminder = () => {
             }}
             pickerVisibleType={pickerVisibleType}
             handlePickerChange={handlePickerChange}
-            setPickerVisibleType={setPickerVisibleType}
             themeColor={createViewColor}
             colors={colors}
           />
