@@ -38,7 +38,7 @@ export const updateNotification = async (notification: Notification): Promise<bo
     await createNotificationChannelIfNeeded();
     const channelId = storage.getString('notificationSound') || 'default';
     const trigger = buildTimestampTrigger(new Date(date), scheduleFrequency || undefined);
-    const notifeeNotification = buildNotifeeNotification(notification, channelId, new Date(date));
+    const notifeeNotification = buildNotifeeNotification(notification, channelId);
 
     const notificationData = {
       id: String(data.id),

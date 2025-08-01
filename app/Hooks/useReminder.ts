@@ -96,12 +96,7 @@ export const scheduleNotification = async (
         })
       : '';
 
-    const notifeeNotification = buildNotifeeNotification(
-      notification,
-      channelId,
-      notificationDate,
-      rescheduleInfoString,
-    );
+    const notifeeNotification = buildNotifeeNotification(notification, channelId);
 
     // Ensure all .data fields are strings (Notifee expects string values)
     const notificationData = Object.fromEntries(

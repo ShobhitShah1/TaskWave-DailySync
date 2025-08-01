@@ -80,7 +80,7 @@ const AddReminder = () => {
   const { createViewColor, iconColor } = useNotificationIconColors(notificationType);
 
   const { recording, memos, setMemos, onRecordingPress, stopRecording, animatedRecordWave } =
-    useAudioRecorder(createViewColor, iconColor);
+    useAudioRecorder(createViewColor);
 
   const {
     contacts,
