@@ -63,7 +63,7 @@ class LocationService {
   constructor() {
     this.initializeTaskManager();
     this.setupNotificationListener();
-    this.setupQuickActions();
+    // this.setupQuickActions();
   }
 
   private async createNotificationChannels() {
@@ -548,15 +548,25 @@ class LocationService {
   async getCurrentLocation(): Promise<Location.LocationObject | null> {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
+
       if (status !== 'granted') {
         return null;
       }
 
-      return await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Highest,
-        distanceInterval: 100,
-        timeInterval: 1000,
+      const result = await Location.getLastKnownPositionAsync({
+        maxAge: 0,
+        requiredAccuracy: Location.Accuracy.Highest,
       });
+
+      if (result) {
+        return result;
+      } else {
+        return await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Highest,
+          distanceInterval: 100,
+          timeInterval: 1000,
+        });
+      }
     } catch (error) {
       console.error('Error getting current location:', error);
       return null;

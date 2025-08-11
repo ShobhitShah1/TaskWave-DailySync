@@ -31,7 +31,6 @@ import {
 } from 'react-native';
 import { CurvedBottomBar } from 'react-native-curved-bottom-bar';
 import { showMessage } from 'react-native-flash-message';
-import { Shadow } from 'react-native-shadow-2';
 import { isAppInstalled } from 'send-message';
 import RenderSheetView from './Components/RenderSheetView';
 
@@ -254,21 +253,18 @@ const BottomTab = () => {
         borderTopLeftRight
         renderCircle={() => (
           <View style={styles.btnCircleUp}>
-            <Shadow
-              distance={4}
-              startColor={'rgba(64, 93, 240, 0.2)'}
-              endColor={'rgba(64, 93, 240, 0.1)'}
-              offset={[0, 0]}
-              paintInside
-              corners={{ bottomEnd: true, bottomStart: true }}
+            <Pressable
+              style={[
+                styles.addButton,
+                {
+                  backgroundColor: colors.darkBlue,
+                  boxShadow: '0px 0px 10px rgba(64, 93, 240, 0.8)',
+                },
+              ]}
+              onPress={handlePresentModalPress}
             >
-              <Pressable
-                style={[styles.addButton, { backgroundColor: colors.darkBlue }]}
-                onPress={handlePresentModalPress}
-              >
-                <Text style={styles.addButtonText}>+</Text>
-              </Pressable>
-            </Shadow>
+              <Text style={styles.addButtonText}>+</Text>
+            </Pressable>
           </View>
         )}
         tabBar={renderTabBar}
@@ -291,18 +287,20 @@ const BottomTab = () => {
 
       <BottomSheetProvider>
         <BottomSheetModal
-          enablePanDownToClose
+          ref={bottomSheetModalRef}
+          snapPoints={['80%', '100%']}
+          // enableContentPanningGesture={false}
+          // enableOverDrag={false}
           backdropComponent={renderBackdrop}
+          onChange={handleSheetPositionChange}
+          onDismiss={() => setSelectedCategory(null)}
           containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
           backgroundStyle={{ backgroundColor: colors.background }}
           handleStyle={[styles.handleStyle, { backgroundColor: colors.background }]}
           handleIndicatorStyle={[styles.handleIndicatorStyle, { backgroundColor: colors.text }]}
-          ref={bottomSheetModalRef}
-          snapPoints={['80%', '100%']}
-          onChange={handleSheetPositionChange}
-          onDismiss={() => setSelectedCategory(null)}
         >
           <BottomSheetScrollView
+            bounces={false}
             style={[styles.contentContainer, { backgroundColor: colors.background }]}
             showsVerticalScrollIndicator={false}
           >
@@ -332,9 +330,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
   },
   btnCircleUp: {
+    bottom: 27,
     alignItems: 'center',
     justifyContent: 'center',
-    bottom: 27,
   },
   tabBarItem: {
     flex: 1,
@@ -350,7 +348,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: 60,
     height: 60,
-    borderRadius: 30,
+    borderRadius: 500,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -364,7 +362,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 16,
-    // paddingBottom: 16,
+    paddingBottom: 10,
     paddingTop: 10,
   },
   flatListContainer: {

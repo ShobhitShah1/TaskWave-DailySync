@@ -213,7 +213,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           title={title}
           typeColor={typeColor}
           deleteReminder={deleteReminder}
-          address={shortLocationLabel}
+          address={notification?.locationName ?? shortLocationLabel}
         />
       ) : (
         <ListView
@@ -226,7 +226,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           title={title}
           typeColor={typeColor}
           deleteReminder={deleteReminder}
-          address={shortLocationLabel}
+          address={notification?.locationName ?? shortLocationLabel}
         />
       )}
 

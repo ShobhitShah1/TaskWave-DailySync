@@ -1,8 +1,9 @@
 import { DocumentPickerResponse } from '@react-native-documents/picker';
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { ImageSourcePropType } from 'react-native';
 
 import { FrequencyType } from '@Screens/AddReminder/Components/AddScheduleFrequency';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 declare global {
   namespace ReactNavigation {
@@ -303,6 +304,16 @@ export interface LocationMapViewProps {
   selectedLocation: GeoLatLng | null;
   children?: React.ReactNode;
   userLocation?: GeoLatLng;
+  title: string;
+  setTitle: React.Dispatch<React.SetStateAction<string>>;
+  message: string;
+  setMessage: React.Dispatch<React.SetStateAction<string>>;
+  validateAndSubmit: () => void;
+  isLoading: boolean;
+  id?: string; // Optional ID for editing existing location reminders
+  bottomSheetRef?: React.RefObject<BottomSheet | null>;
+  address: string;
+  setAddress: React.Dispatch<React.SetStateAction<string>>;
 }
 
 /**

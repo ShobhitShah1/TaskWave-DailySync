@@ -251,6 +251,8 @@ const LocationSearchBottomSheet: React.FC<LocationSearchBottomSheetProps> = ({
     [colors],
   );
 
+  console.log('results', results);
+
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
@@ -486,7 +488,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    marginTop: 16,
+    marginTop: 5,
   },
 });
 

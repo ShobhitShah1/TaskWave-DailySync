@@ -29,41 +29,109 @@ export const getZoomLevelForPoints: GetZoomLevelForPoints = (a, b) => {
 export function fitBoundsZoomLevel(
   pointA: { latitude: number; longitude: number },
   pointB: { latitude: number; longitude: number },
-  options?: { padding?: number; mapWidth?: number; mapHeight?: number },
+  options?: {
+    paddingPercent?: number;
+    mapWidth?: number;
+    mapHeight?: number;
+    minZoom?: number;
+    maxZoom?: number;
+  },
 ): { center: { latitude: number; longitude: number }; zoomLevel: number } {
-  const padding = options?.padding ?? 0.02;
-  const mapWidth = options?.mapWidth ?? 400; // px
-  const mapHeight = options?.mapHeight ?? 250; // px
+  const paddingPercent = options?.paddingPercent ?? 0.1; // 10% default
+  const mapWidth = options?.mapWidth ?? 400;
+  const mapHeight = options?.mapHeight ?? 600;
+  const minZoom = options?.minZoom ?? 2;
+  const maxZoom = options?.maxZoom ?? 18;
+
   // Calculate bounds
   const minLat = Math.min(pointA.latitude, pointB.latitude);
   const maxLat = Math.max(pointA.latitude, pointB.latitude);
   const minLng = Math.min(pointA.longitude, pointB.longitude);
   const maxLng = Math.max(pointA.longitude, pointB.longitude);
-  // Center is the midpoint
-  const centerLat = (minLat + maxLat) / 2;
-  const centerLng = (minLng + maxLng) / 2;
-  // Mapbox/MapLibre zoom calculation
-  const WORLD_DIM = 256;
-  const ZOOM_MAX = 20;
-  function latRad(lat: number) {
-    const sin = Math.sin((lat * Math.PI) / 180);
-    const radX2 = Math.log((1 + sin) / (1 - sin)) / 2;
-    return Math.max(Math.min(radX2, Math.PI), -Math.PI) / 2;
+
+  // Calculate distances
+  const latDiff = maxLat - minLat;
+  const lngDiff = maxLng - minLng;
+
+  // Apply dynamic padding based on distance
+  const latPadding = Math.max(latDiff * paddingPercent, 0.001); // Minimum padding
+  const lngPadding = Math.max(lngDiff * paddingPercent, 0.001);
+
+  // Adjusted bounds with padding
+  const paddedMinLat = minLat - latPadding;
+  const paddedMaxLat = maxLat + latPadding;
+  const paddedMinLng = minLng - lngPadding;
+  const paddedMaxLng = maxLng + lngPadding;
+
+  // Center calculation
+  const centerLat = (paddedMinLat + paddedMaxLat) / 2;
+  const centerLng = (paddedMinLng + paddedMaxLng) / 2;
+
+  // Improved zoom calculation
+  const EARTH_CIRCUMFERENCE = 40075017; // meters
+  const TILE_SIZE = 256;
+
+  // Calculate the ground resolution needed for each dimension
+  const latSpan = paddedMaxLat - paddedMinLat;
+  const lngSpan = paddedMaxLng - paddedMinLng;
+
+  // Convert latitude span to meters (approximate)
+  const latSpanMeters = latSpan * (EARTH_CIRCUMFERENCE / 360);
+
+  // Convert longitude span to meters at this latitude
+  const avgLat = (centerLat * Math.PI) / 180;
+  const lngSpanMeters = lngSpan * (EARTH_CIRCUMFERENCE / 360) * Math.cos(avgLat);
+
+  // Calculate zoom levels for each dimension
+  const latZoom = Math.log2((mapHeight * EARTH_CIRCUMFERENCE) / (latSpanMeters * TILE_SIZE));
+  const lngZoom = Math.log2((mapWidth * EARTH_CIRCUMFERENCE) / (lngSpanMeters * TILE_SIZE));
+
+  // Use the more restrictive zoom level
+  let zoomLevel = Math.min(latZoom, lngZoom);
+
+  // Apply constraints
+  zoomLevel = Math.max(minZoom, Math.min(maxZoom, zoomLevel));
+
+  // Round to reasonable precision
+  zoomLevel = Math.round(zoomLevel * 100) / 100;
+
+  // Fallback for invalid calculations
+  if (!isFinite(zoomLevel) || isNaN(zoomLevel)) {
+    zoomLevel = minZoom;
   }
-  function zoom(mapPx: number, worldPx: number, fraction: number) {
-    return Math.log2(mapPx / worldPx / fraction);
-  }
-  const latFraction = (latRad(maxLat + padding / 2) - latRad(minLat - padding / 2)) / Math.PI;
-  const lngFraction = (maxLng - minLng + padding) / 360;
-  const latZoom = zoom(mapHeight, WORLD_DIM, latFraction);
-  const lngZoom = zoom(mapWidth, WORLD_DIM, lngFraction);
-  let zoomLevel = Math.min(latZoom, lngZoom, ZOOM_MAX);
-  zoomLevel = Math.floor(zoomLevel * 100) / 100;
-  if (!isFinite(zoomLevel) || zoomLevel < 2) zoomLevel = 2;
+
   return {
     center: { latitude: centerLat, longitude: centerLng },
     zoomLevel,
   };
+}
+
+export function getDistanceBetweenPoints(
+  point1: { latitude: number; longitude: number },
+  point2: { latitude: number; longitude: number },
+): number {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = ((point2.latitude - point1.latitude) * Math.PI) / 180;
+  const dLon = ((point2.longitude - point1.longitude) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((point1.latitude * Math.PI) / 180) *
+      Math.cos((point2.latitude * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in kilometers
+}
+
+// Adaptive zoom based on distance
+export function getAdaptiveZoomLevel(distance: number): number {
+  if (distance < 1) return 15; // Very close
+  if (distance < 5) return 13; // Close
+  if (distance < 25) return 11; // Medium
+  if (distance < 100) return 9; // Far
+  if (distance < 500) return 7; // Very far
+  if (distance < 2000) return 5; // Continental
+  return 3; // Global
 }
 
 export interface AddressDetails {

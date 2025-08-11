@@ -40,7 +40,7 @@ const RenderCategoryItem = ({
           }`,
         },
       ]}
-      entering={FadeIn.delay(80 * index)}
+      entering={FadeIn.delay(40 * index)}
     >
       <Pressable
         style={{ flex: 1 }}

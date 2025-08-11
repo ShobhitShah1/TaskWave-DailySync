@@ -1,12 +1,11 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
-import { Dimensions, Pressable, StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
-
 import { useAppContext } from '@Contexts/ThemeProvider';
-import { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetView } from '@gorhom/bottom-sheet';
 import useThemeColors from '@Hooks/useThemeMode';
 import { NotificationType, RenderSheetViewProps } from '@Types/Interface';
 import { getCategories } from '@Utils/getCategories';
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { Dimensions, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import RenderCategoryItem from './RenderCategoryItem';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -26,7 +25,6 @@ const RenderSheetView = ({
 
   const initialCategories = getCategories(colors);
 
-  // Improved shift to top function with animation control
   const shiftToTop = useCallback(
     (selectedType: string) => {
       if (isAnimating || previousSelectedRef.current === selectedType) return;
@@ -81,9 +79,10 @@ const RenderSheetView = ({
   const rows = useMemo(() => createRows(sortedCategories), [sortedCategories, createRows]);
 
   return (
-    <BottomSheetView style={styles.container}>
-      <BottomSheetScrollView
+    <View style={styles.container}>
+      <ScrollView
         horizontal
+        nestedScrollEnabled
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.contentContainerStyle}
       >
@@ -119,18 +118,14 @@ const RenderSheetView = ({
             </Pressable>
           );
         })}
-      </BottomSheetScrollView>
+      </ScrollView>
 
       <BottomSheetView style={styles.gridContainer}>
         {rows.map((row, rowIndex) => (
           <BottomSheetView key={`row-${rowIndex}`} style={styles.row}>
             {row.map((item, itemIndex) =>
               item ? (
-                <Animated.View
-                  key={`${item?.id} + ${itemIndex}`}
-                  layout={LinearTransition.springify().damping(15).stiffness(100)}
-                  style={styles.itemContainer}
-                >
+                <View key={`${item?.id} + ${itemIndex}`} style={styles.itemContainer}>
                   <RenderCategoryItem
                     item={item}
                     index={itemIndex}
@@ -138,7 +133,7 @@ const RenderSheetView = ({
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
                   />
-                </Animated.View>
+                </View>
               ) : (
                 <View key={`empty-${rowIndex}-${itemIndex}`} style={styles.emptyItem} />
               ),
@@ -146,7 +141,7 @@ const RenderSheetView = ({
           </BottomSheetView>
         ))}
       </BottomSheetView>
-    </BottomSheetView>
+    </View>
   );
 };
 
@@ -158,7 +153,7 @@ const styles = StyleSheet.create({
   },
   contentContainerStyle: {
     flexGrow: 1,
-    columnGap: 13,
+    columnGap: 8,
     paddingTop: 5,
     paddingBottom: 15,
     alignItems: 'center',

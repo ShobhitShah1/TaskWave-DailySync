@@ -1,7 +1,6 @@
 import LocationSearchBottomSheet from '@Components/LocationSearchBottomSheet';
-import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 import useLocationNotification from '@Hooks/useLocationNotification';
 import useDatabase from '@Hooks/useReminder';
 import useThemeColors from '@Hooks/useThemeMode';
@@ -10,34 +9,14 @@ import HomeHeader from '@Screens/Home/Components/HomeHeader';
 import LocationService from '@Services/LocationService';
 import { GeoLatLng, NominatimResult, Notification, NotificationType } from '@Types/Interface';
 import React, { memo, useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Image,
-  Keyboard,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
-import LocationDetailsCard from './Components/LocationDetailsCard';
 import LocationMapView from './Components/LocationMapView';
 import LocationSearchBar from './Components/LocationSearchBar';
 
 type ReminderScheduledProps = {
   params: { notificationType: NotificationType; id?: string };
 };
-
-const snapPoints = [40, 280];
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const LocationDetails = () => {
   const colors = useThemeColors();
@@ -49,12 +28,12 @@ const LocationDetails = () => {
   const { getNotificationById, updateNotification } = useDatabase();
   const { scheduleLocationNotification, getCurrentLocation } = useLocationNotification();
 
-  const bottomSheetRef = useRef<BottomSheet>(null);
-  const animatedPosition = useSharedValue(0);
-  const keyboardVisible = useSharedValue(0);
+  const bottomSheetRef = useRef<BottomSheet | null>(null);
 
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
+  const [address, setAddress] = useState('');
+
   const [isLoading, setIsLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<GeoLatLng | null>(null);
   const [userLocation, setUserLocation] = useState<GeoLatLng | null>(null);
@@ -66,20 +45,6 @@ const LocationDetails = () => {
       getExistingNotificationData();
     }
   }, [id, notificationType]);
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
-      keyboardVisible.value = withTiming(1, { duration: 250 });
-    });
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-      keyboardVisible.value = withTiming(0, { duration: 250 });
-    });
-
-    return () => {
-      keyboardDidHideListener?.remove();
-      keyboardDidShowListener?.remove();
-    };
-  }, []);
 
   const getExistingNotificationData = async () => {
     try {
@@ -126,6 +91,10 @@ const LocationDetails = () => {
 
   const handleSearchResultSelect = (result: NominatimResult) => {
     setSelectedLocation({ latitude: parseFloat(result.lat), longitude: parseFloat(result.lon) });
+    setAddress(result.display_name || '');
+    setTimeout(() => {
+      bottomSheetRef?.current?.snapToIndex(1);
+    }, 500);
   };
 
   const validateAndSubmit = async () => {
@@ -163,7 +132,7 @@ const LocationDetails = () => {
         latitude: selectedLocation.latitude,
         longitude: selectedLocation.longitude,
         radius: 100, // 100 meters default
-        locationName: '',
+        locationName: address.trim() || '',
       };
 
       if (id) {
@@ -214,46 +183,9 @@ const LocationDetails = () => {
     }
   };
 
-  const handleFloatingButtonPress = () => {
-    // Add your floating button functionality here
-    // For example: toggle map view, center on user location, etc.
-    console.log('Floating button pressed');
-
-    // Example: Center map on user location
-    if (userLocation) {
-      setSelectedLocation(userLocation);
-    }
-  };
-
   const handleTryAgain = () => {
     fetchUserLocation();
   };
-
-  const floatingButtonStyle = useAnimatedStyle(() => {
-    'worklet';
-
-    // Get current bottom sheet height from animated position
-    const currentSheetHeight = SCREEN_HEIGHT - animatedPosition.value;
-
-    // Position button 45px above the bottom sheet
-    const buttonBottom = currentSheetHeight - 45;
-
-    // Hide button when keyboard is visible
-    const opacity = interpolate(keyboardVisible.value, [0, 1], [1, 0], 'clamp');
-
-    const translateY = interpolate(keyboardVisible.value, [0, 1], [0, 50], 'clamp');
-
-    return {
-      bottom: buttonBottom,
-      opacity,
-      transform: [
-        { translateY },
-        {
-          scale: interpolate(currentSheetHeight, [snapPoints[0], snapPoints[1]], [0.9, 1], 'clamp'),
-        },
-      ],
-    };
-  });
 
   return (
     <>
@@ -277,56 +209,18 @@ const LocationDetails = () => {
             onLocationSelect={handleLocationSelect}
             selectedLocation={selectedLocation}
             userLocation={userLocation}
+            title={title}
+            setTitle={setTitle}
+            message={message}
+            setMessage={setMessage}
+            validateAndSubmit={validateAndSubmit}
+            isLoading={isLoading}
+            id={id}
+            bottomSheetRef={bottomSheetRef}
+            address={address}
+            setAddress={setAddress}
           >
             <LocationSearchBar onSearchPress={() => setIsSearchPress(true)} />
-
-            {/* Floating Button - Fixed implementation */}
-            <Animated.View style={[styles.floatingButton, floatingButtonStyle]}>
-              <Pressable style={styles.buttonTouchable} onPress={handleFloatingButtonPress}>
-                <Image
-                  source={AssetsPath.ic_fullScreen}
-                  style={{ width: '43%', height: '43%' }}
-                  resizeMode="contain"
-                />
-              </Pressable>
-            </Animated.View>
-
-            <BottomSheet
-              handleStyle={{
-                borderBottomWidth: 0.5,
-                borderColor: colors.background,
-                backgroundColor: colors.background,
-              }}
-              handleIndicatorStyle={{ backgroundColor: colors.text }}
-              style={{
-                borderBottomWidth: 0,
-                zIndex: 999999999,
-                backgroundColor: colors.background,
-              }}
-              backgroundStyle={{
-                backgroundColor: colors.background,
-              }}
-              animatedPosition={animatedPosition}
-              snapPoints={snapPoints}
-              ref={bottomSheetRef}
-              keyboardBlurBehavior="restore"
-              keyboardBehavior="interactive"
-              android_keyboardInputMode="adjustPan"
-            >
-              <BottomSheetView
-                style={[styles.contentContainer, { backgroundColor: colors.background }]}
-              >
-                <LocationDetailsCard
-                  title={title}
-                  setTitle={setTitle}
-                  message={message}
-                  setMessage={setMessage}
-                  onCreate={validateAndSubmit}
-                  isLoading={isLoading}
-                  isUpdate={!!id}
-                />
-              </BottomSheetView>
-            </BottomSheet>
           </LocationMapView>
         ) : (
           <View style={styles.loaderContainer}>

@@ -134,11 +134,12 @@ const RenderHistoryList: React.FC<ReminderCardProps> = ({
                       style={[
                         styles.timeText,
                         {
+                          maxWidth: '95%',
                           color: theme === 'dark' ? colors.grayTitle : colors.white,
                         },
                       ]}
                     >
-                      {locationLabel?.trim() || ''}
+                      {notification?.locationName?.trim() || locationLabel?.trim() || ''}
                     </Text>
                   </View>
                 ) : (

@@ -8,12 +8,14 @@ import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 
 interface LocationDetailsCardProps {
   title: string;
-  setTitle: (t: string) => void;
+  setTitle: React.Dispatch<React.SetStateAction<string>>;
   message: string;
-  setMessage: (m: string) => void;
+  setMessage: React.Dispatch<React.SetStateAction<string>>;
   onCreate: () => void;
   isLoading?: boolean;
   isUpdate?: boolean;
+  address: string;
+  setAddress: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
@@ -24,6 +26,8 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
   onCreate,
   isLoading = false,
   isUpdate,
+  address,
+  setAddress,
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
@@ -33,6 +37,22 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
       style={[styles.card, { backgroundColor: colors.background, shadowColor: colors.black }]}
       pointerEvents="box-none"
     >
+      <BottomSheetTextInput
+        style={[
+          styles.titleInput,
+          {
+            backgroundColor: theme === 'dark' ? 'rgba(63, 65, 69, 1)' : 'rgba(241, 241, 240, 1)',
+            color: colors.text,
+          },
+        ]}
+        placeholder="Address"
+        multiline
+        numberOfLines={2}
+        textAlignVertical="top"
+        placeholderTextColor={colors.placeholderText}
+        value={address}
+        onChangeText={setAddress}
+      />
       <BottomSheetTextInput
         style={[
           styles.titleInput,

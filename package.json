@@ -57,7 +57,6 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
-    "react-native-shadow-2": "^7.1.1",
     "react-native-share": "^12.1.0",
     "react-native-svg": "15.11.2",
     "send-message": "./send-message"
