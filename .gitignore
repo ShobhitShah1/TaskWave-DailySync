@@ -37,12 +37,5 @@ scripts/setup-env.js
 # typescript
 *.tsbuildinfo
 
-# android apk
-android/app/release
-
-# Yarn lockfile
-yarn.lock
-# Yarn install state
-.install-state.gz
-
+# android
 android/
