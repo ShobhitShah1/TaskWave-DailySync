@@ -288,7 +288,9 @@ const BottomTab = () => {
       <BottomSheetProvider>
         <BottomSheetModal
           ref={bottomSheetModalRef}
+          index={0}
           snapPoints={['80%', '100%']}
+          enableDynamicSizing={false}
           // enableContentPanningGesture={false}
           // enableOverDrag={false}
           backdropComponent={renderBackdrop}
@@ -318,7 +320,6 @@ const BottomTab = () => {
             />
           </BottomSheetScrollView>
         </BottomSheetModal>
-        {/* <DoNotDelete isVisible={true} onClose={() => setShowThemOnFace(false)} /> */}
       </BottomSheetProvider>
     </React.Fragment>
   );

@@ -113,8 +113,8 @@ const styles = () => {
     contactDoneButton: {
       width: '100%',
       height: 70,
-      bottom: 0,
-      position: 'absolute',
+      // bottom: 0,
+      // position: 'absolute',
       justifyContent: 'center',
       alignItems: 'center',
     },

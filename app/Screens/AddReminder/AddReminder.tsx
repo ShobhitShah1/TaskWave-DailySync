@@ -236,117 +236,119 @@ const AddReminder = () => {
   };
 
   return (
-    <SafeAreaView style={style.container}>
-      <View style={style.contentContainer}>
-        <Header
-          onBackPress={() => {
-            if (navigation.canGoBack()) {
-              navigation.goBack();
-            }
-          }}
-          title={formatNotificationType(notificationType)}
-          themeColor={createViewColor}
-          textColor={colors.text}
-          style={style}
-        />
-
-        <Animated.ScrollView
-          style={style.itemsContainer}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {notificationType === 'gmail' && (
-            <AddMailTo to={to} setTo={setTo} themeColor={createViewColor} />
-          )}
-
-          {notificationType === 'gmail' && (
-            <AddMailSubject
-              subject={subject}
-              setSubject={setSubject}
-              themeColor={createViewColor}
-            />
-          )}
-
-          <ContactSelector
-            selectedContacts={selectedContacts}
-            onHandelContactClick={onHandelContactClick}
-            handleRemoveContact={handleRemoveContact}
+    <>
+      <SafeAreaView style={style.container}>
+        <View style={style.contentContainer}>
+          <Header
+            onBackPress={() => {
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              }
+            }}
+            title={formatNotificationType(notificationType)}
             themeColor={createViewColor}
-            notificationType={notificationType}
-            telegramUsername={telegramUsername}
-            setTelegramUsername={setTelegramUsername}
+            textColor={colors.text}
+            style={style}
           />
 
-          {notificationType !== 'gmail' && (
-            <AddMessage
-              message={message}
-              setMessage={setMessage}
-              themeColor={createViewColor}
-              title={notificationType === 'phone' ? 'Note' : 'Message'}
-            />
-          )}
+          <Animated.ScrollView
+            style={style.itemsContainer}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {notificationType === 'gmail' && (
+              <AddMailTo to={to} setTo={setTo} themeColor={createViewColor} />
+            )}
 
-          {notificationType !== 'phone' &&
-            notificationType !== 'telegram' &&
-            notificationType !== 'note' && (
-              <DocumentPickerComponent
+            {notificationType === 'gmail' && (
+              <AddMailSubject
+                subject={subject}
+                setSubject={setSubject}
                 themeColor={createViewColor}
-                onRemoveDocument={onRemoveDocument}
-                selectedDocuments={selectedDocuments}
-                onHandelAttachmentClick={onHandelAttachmentClick}
               />
             )}
 
-          {(notificationType === 'whatsapp' || notificationType === 'whatsappBusiness') && (
-            <AudioRecorder
-              memos={memos}
-              setMemos={setMemos}
-              recording={recording}
-              onRecordingPress={onRecordingPress}
-              animatedRecordWave={animatedRecordWave}
+            <ContactSelector
+              selectedContacts={selectedContacts}
+              onHandelContactClick={onHandelContactClick}
+              handleRemoveContact={handleRemoveContact}
               themeColor={createViewColor}
-              iconColor={iconColor}
-              style={style}
+              notificationType={notificationType}
+              telegramUsername={telegramUsername}
+              setTelegramUsername={setTelegramUsername}
             />
-          )}
 
-          <ScheduleFrequencyPicker
-            selectedDays={selectedDays}
-            setSelectedDays={setSelectedDays}
-            scheduleFrequency={scheduleFrequency}
-            setScheduleFrequency={setScheduleFrequency}
-            themeColor={createViewColor}
-          />
+            {notificationType !== 'gmail' && (
+              <AddMessage
+                message={message}
+                setMessage={setMessage}
+                themeColor={createViewColor}
+                title={notificationType === 'phone' ? 'Note' : 'Message'}
+              />
+            )}
 
-          <DateTimePicker
-            selectedDateAndTime={selectedDateAndTime}
-            handleDatePress={() => {
-              Keyboard.dismiss();
-              handleDatePress();
-            }}
-            handleTimePress={() => {
-              Keyboard.dismiss();
-              handleTimePress();
-            }}
-            pickerVisibleType={pickerVisibleType}
-            handlePickerChange={handlePickerChange}
-            themeColor={createViewColor}
-            colors={colors}
-          />
-        </Animated.ScrollView>
+            {notificationType !== 'phone' &&
+              notificationType !== 'telegram' &&
+              notificationType !== 'note' && (
+                <DocumentPickerComponent
+                  themeColor={createViewColor}
+                  onRemoveDocument={onRemoveDocument}
+                  selectedDocuments={selectedDocuments}
+                  onHandelAttachmentClick={onHandelAttachmentClick}
+                />
+              )}
 
-        <Pressable
-          disabled={isLoading}
-          onPress={handleCreateNotification}
-          style={[style.createButton, { backgroundColor: createViewColor }]}
-        >
-          {isLoading ? (
-            <ActivityIndicator size="small" color={colors.white} />
-          ) : (
-            <Text style={style.createButtonText}>{id ? 'Update' : 'Create'}</Text>
-          )}
-        </Pressable>
-      </View>
+            {(notificationType === 'whatsapp' || notificationType === 'whatsappBusiness') && (
+              <AudioRecorder
+                memos={memos}
+                setMemos={setMemos}
+                recording={recording}
+                onRecordingPress={onRecordingPress}
+                animatedRecordWave={animatedRecordWave}
+                themeColor={createViewColor}
+                iconColor={iconColor}
+                style={style}
+              />
+            )}
+
+            <ScheduleFrequencyPicker
+              selectedDays={selectedDays}
+              setSelectedDays={setSelectedDays}
+              scheduleFrequency={scheduleFrequency}
+              setScheduleFrequency={setScheduleFrequency}
+              themeColor={createViewColor}
+            />
+
+            <DateTimePicker
+              selectedDateAndTime={selectedDateAndTime}
+              handleDatePress={() => {
+                Keyboard.dismiss();
+                handleDatePress();
+              }}
+              handleTimePress={() => {
+                Keyboard.dismiss();
+                handleTimePress();
+              }}
+              pickerVisibleType={pickerVisibleType}
+              handlePickerChange={handlePickerChange}
+              themeColor={createViewColor}
+              colors={colors}
+            />
+          </Animated.ScrollView>
+
+          <Pressable
+            disabled={isLoading}
+            onPress={handleCreateNotification}
+            style={[style.createButton, { backgroundColor: createViewColor }]}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <Text style={style.createButtonText}>{id ? 'Update' : 'Create'}</Text>
+            )}
+          </Pressable>
+        </View>
+      </SafeAreaView>
 
       <ContactListModal
         contacts={contacts}
@@ -361,7 +363,7 @@ const AddReminder = () => {
         syncContacts={syncContacts}
         isSyncing={isContactLoading.isRefreshing}
       />
-    </SafeAreaView>
+    </>
   );
 };
 

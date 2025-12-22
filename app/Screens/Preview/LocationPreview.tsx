@@ -5,7 +5,6 @@ import { useAppContext } from '@Contexts/ThemeProvider';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useAddressFromCoords } from '@Hooks/useAddressFromCoords';
 import { useLiveLocation } from '@Hooks/useLiveLocation';
-import useLocationNotification from '@Hooks/useLocationNotification';
 import useThemeColors from '@Hooks/useThemeMode';
 import {
   Camera,
@@ -16,7 +15,7 @@ import {
 } from '@maplibre/maplibre-react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { navigationRef } from '@Routes/RootNavigation';
-import { GeoLatLng, Notification } from '@Types/Interface';
+import { Notification } from '@Types/Interface';
 import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
 import { linkifyText } from '@Utils/linkify';
 import { BlurView } from 'expo-blur';
@@ -24,21 +23,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Image, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
-  Easing,
-  interpolate,
+  FadeIn,
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
-  withSequence,
   withSpring,
-  withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 type LocationPreviewRoute = RouteProp<{ params: { notificationData: Notification } }, 'params'>;
 
-const calculateDistance = (lat1: number, lon1: number, lat2: any, lon2: any) => {
-  const R = 6371; // Earth's radius in km
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -50,10 +45,10 @@ const calculateDistance = (lat1: number, lon1: number, lat2: any, lon2: any) => 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
+
 const LocationPreview = () => {
   const { theme } = useAppContext();
   const colors = useThemeColors();
-
   const { params } = useRoute<LocationPreviewRoute>();
   const notification = params.notificationData;
 
@@ -66,78 +61,25 @@ const LocationPreview = () => {
   );
 
   const { location: currentLocation, permissionStatus } = useLiveLocation(locationOptions);
-
   const [estimatedTime, setEstimatedTime] = useState<{
     distance: number;
     walking: number;
     driving: number;
   } | null>(null);
   const cameraRef = useRef<any>(null);
-
-  const fadeValue = useSharedValue(0);
-  const slideValue = useSharedValue(-100);
-  const scaleValue = useSharedValue(0.8);
-  const markerPulseValue = useSharedValue(1);
+  const scaleValue = useSharedValue(1);
 
   useEffect(() => {
-    fadeValue.value = withTiming(1, {
-      duration: 800,
-      easing: Easing.out(Easing.cubic),
-    });
-
-    slideValue.value = withDelay(
-      100,
-      withTiming(0, {
-        duration: 600,
-        easing: Easing.out(Easing.back(1.2)),
-      }),
-    );
-
-    scaleValue.value = withDelay(
-      200,
-      withSpring(1, {
-        damping: 12,
-        stiffness: 120,
-        mass: 1,
-      }),
-    );
-  }, []);
-
-  // Marker pulse animation
-  useEffect(() => {
-    const markerPulseAnimation = () => {
-      markerPulseValue.value = withSequence(
-        withTiming(1.1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-      );
-    };
-
-    const interval = setInterval(markerPulseAnimation, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // useEffect(() => {
-  //   if (notification.latitude && notification.longitude && cameraRef.current) {
-  //     cameraRef.current.setCamera({
-  //       centerCoordinate: [notification.longitude, notification.latitude],
-  //       animationDuration: 1200,
-  //     });
-  //   }
-  // }, [notification]);
-
-  // Calculate estimated travel time and distance
-  useEffect(() => {
-    if (currentLocation && notification.latitude && notification.longitude) {
+    if (currentLocation && notification?.latitude && notification?.longitude) {
       const distance = calculateDistance(
         currentLocation.coords.latitude,
         currentLocation.coords.longitude,
-        notification.latitude,
-        notification.longitude,
+        notification?.latitude,
+        notification?.longitude,
       );
 
-      // Rough estimation: 5 km/h walking, 40 km/h driving
-      const walkingTime = Math.round((distance / 5) * 60); // minutes
-      const drivingTime = Math.round((distance / 40) * 60); // minutes
+      const walkingTime = Math.round((distance / 5) * 60);
+      const drivingTime = Math.round((distance / 40) * 60);
 
       setEstimatedTime({
         distance: distance,
@@ -147,7 +89,7 @@ const LocationPreview = () => {
     }
   }, [currentLocation, notification.latitude, notification.longitude]);
 
-  const snapPoints = useMemo(() => ['16%', '60%', '90%'], []);
+  const snapPoints = useMemo(() => ['20%', '50%', '85%'], []);
 
   const zoomToFitAll = useCallback(async () => {
     try {
@@ -160,8 +102,8 @@ const LocationPreview = () => {
         cameraRef.current?.fitBounds(
           [notification.longitude, notification.latitude],
           [currentLocation.coords.longitude, currentLocation.coords.latitude],
-          [100, 100, 100, 100],
-          1000,
+          [80, 80, 80, 80],
+          800,
         );
       } else if (notification) {
         handleMarkedLocationClick();
@@ -177,15 +119,12 @@ const LocationPreview = () => {
   }, [currentLocation, notification]);
 
   const handleMarkedLocationClick = () => {
-    scaleValue.value = withSequence(
-      withTiming(0.95, { duration: 100 }),
-      withSpring(1, { damping: 10, stiffness: 300 }),
-    );
+    scaleValue.value = withSpring(1, { damping: 15, stiffness: 200 });
 
-    if (currentLocation && cameraRef.current) {
+    if (cameraRef.current) {
       cameraRef.current.setCamera({
         centerCoordinate: [notification.longitude, notification.latitude],
-        animationDuration: 1000,
+        animationDuration: 800,
         zoomLevel: 16,
       });
     }
@@ -206,7 +145,6 @@ const LocationPreview = () => {
     [coords, notification.radius],
   );
 
-  // Open location in Google Maps
   const openInGoogleMaps = () => {
     const url = Platform.select({
       ios: `maps:0,0?q=${coords.latitude},${coords.longitude}`,
@@ -215,9 +153,7 @@ const LocationPreview = () => {
 
     const fallbackUrl = `https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}`;
 
-    if (!url) {
-      return;
-    }
+    if (!url) return;
 
     Linking.canOpenURL(url).then((supported) => {
       if (supported) {
@@ -228,7 +164,6 @@ const LocationPreview = () => {
     });
   };
 
-  // Open in navigation apps
   const openNavigation = () => {
     if (Platform.OS === 'android') {
       const url = `https://www.google.com/maps/dir/?api=1&destination=${coords.latitude},${coords.longitude}`;
@@ -255,24 +190,10 @@ const LocationPreview = () => {
     ]);
   };
 
-  const headerAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: fadeValue.value,
-      transform: [{ translateY: slideValue.value }],
-    };
-  });
-
-  const errorContainerAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: fadeValue.value,
-      transform: [{ scale: scaleValue.value }, { translateY: slideValue.value }],
-    };
-  });
-
   if (typeof notification.latitude !== 'number' || typeof notification.longitude !== 'number') {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
-        <Animated.View style={[styles.errorContainer, errorContainerAnimatedStyle]}>
+        <Animated.View entering={FadeIn.duration(400)} style={styles.errorContainer}>
           <Image source={AssetsPath.ic_history_location_icon} style={styles.errorIcon} />
           <Text style={[styles.errorTitle, { color: colors.text }]}>Location Unavailable</Text>
           <Text style={[styles.errorSubtitle, { color: colors.grayTitle }]}>
@@ -284,7 +205,7 @@ const LocationPreview = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.mapContainer}>
         <MapView
           style={styles.fullMap}
@@ -304,9 +225,9 @@ const LocationPreview = () => {
                 currentLocation?.coords.latitude ??
                 coords.latitude) as number,
             ]}
-            zoomLevel={16}
+            zoomLevel={15}
             animationDuration={0}
-            pitch={45}
+            pitch={0}
             heading={0}
             minZoomLevel={2}
             maxZoomLevel={20}
@@ -318,7 +239,7 @@ const LocationPreview = () => {
                 id="radius-fill"
                 style={{
                   fillColor: colors.primary,
-                  fillOpacity: 0.2,
+                  fillOpacity: 0.15,
                   fillOutlineColor: colors.primary,
                 }}
               />
@@ -329,16 +250,10 @@ const LocationPreview = () => {
             id={`notification-location-${notification.id}`}
             coordinate={[coords.longitude as number, coords.latitude as number]}
           >
-            <Animated.View style={[styles.modernMarker]}>
-              {/* <LinearGradient
-                colors={[colors.blue, colors.darkBlue]}
-                style={styles.markerCore}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-              </LinearGradient> */}
-              <Text style={[styles.markerIcon]}>📍</Text>
-            </Animated.View>
+            <View style={styles.markerContainer}>
+              <View style={[styles.markerShadow, { backgroundColor: colors.primary }]} />
+              <Text style={styles.markerIcon}>📍</Text>
+            </View>
           </PointAnnotation>
 
           {permissionStatus === 'granted' && currentLocation && (
@@ -347,76 +262,60 @@ const LocationPreview = () => {
               coordinate={[currentLocation.coords.longitude, currentLocation.coords.latitude]}
             >
               <View style={styles.currentLocationMarker}>
-                <View style={styles.currentLocationPulse} />
-                <LinearGradient
-                  colors={[colors.blue, colors.darkBlue]}
-                  style={styles.currentLocationCore}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                />
+                <View style={[styles.currentLocationRing, { borderColor: colors.blue }]} />
+                <View style={[styles.currentLocationDot, { backgroundColor: colors.blue }]} />
               </View>
             </PointAnnotation>
           )}
         </MapView>
 
         <LinearGradient
-          colors={['rgba(0,0,0,0.3)', 'transparent', 'transparent', 'rgba(0,0,0,0.4)']}
-          locations={[0, 0.25, 0.75, 1]}
+          colors={['rgba(0,0,0,0.1)', 'transparent', 'transparent', 'rgba(0,0,0,0.2)']}
+          locations={[0, 0.2, 0.8, 1]}
           style={styles.gradientOverlay}
           pointerEvents="none"
         />
       </View>
 
-      <Animated.View style={[styles.modernHeader, headerAnimatedStyle]}>
-        <BlurView intensity={80} tint={theme} style={styles.headerBlur}>
+      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
+        <BlurView intensity={theme === 'dark' ? 60 : 80} tint={theme} style={styles.headerBlur}>
           <View style={styles.headerContent}>
             <Pressable
-              style={styles.headerButton}
+              style={[
+                styles.iconButton,
+                {
+                  backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                },
+              ]}
               onPress={() => navigationRef.canGoBack() && navigationRef.goBack()}
             >
-              <LinearGradient
-                colors={
-                  theme === 'dark'
-                    ? ['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']
-                    : ['rgba(0,0,0,0.2)', 'rgba(0,0,0,0.1)']
-                }
-                style={styles.headerButtonGradient}
-              >
-                <Image
-                  source={AssetsPath.ic_leftArrow}
-                  style={styles.headerIcon}
-                  tintColor={colors.text}
-                />
-              </LinearGradient>
+              <Image source={AssetsPath.ic_leftArrow} style={styles.icon} tintColor={colors.text} />
             </Pressable>
 
             <View style={styles.headerTextContainer}>
-              <Text style={[styles.headerTitle, { color: colors.text }]}>Location Reminder</Text>
-              <Text style={[styles.headerSubtitle, { color: colors.text }]} numberOfLines={2}>
+              <Text style={[styles.headerTitle, { color: colors.text }]}>
                 {notification?.locationName ||
-                  (loading ? 'Loading...' : address?.toString().split(',')[0] || 'Unknown')}
+                  (loading ? 'Loading...' : address?.toString().split(',')[0] || 'Location')}
+              </Text>
+              <Text style={[styles.headerSubtitle, { color: colors.grayTitle }]}>
+                Location Reminder
               </Text>
             </View>
 
             <Pressable
-              style={styles.headerButton}
-              onLongPress={handleMarkedLocationClick}
+              style={[
+                styles.iconButton,
+                {
+                  backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                },
+              ]}
               onPress={zoomToFitAll}
             >
-              <LinearGradient
-                colors={
-                  theme === 'dark'
-                    ? ['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']
-                    : ['rgba(0,0,0,0.2)', 'rgba(0,0,0,0.1)']
-                }
-                style={styles.headerButtonGradient}
-              >
-                <Image
-                  source={AssetsPath.ic_fullScreen}
-                  style={styles.headerIcon}
-                  tintColor={colors.text}
-                />
-              </LinearGradient>
+              <Image
+                source={AssetsPath.ic_fullScreen}
+                style={styles.icon}
+                tintColor={colors.text}
+              />
             </Pressable>
           </View>
         </BlurView>
@@ -426,113 +325,148 @@ const LocationPreview = () => {
         snapPoints={snapPoints}
         handleIndicatorStyle={{
           backgroundColor: colors.grayTitle,
-          width: 50,
-          height: 5,
-          borderRadius: 3,
+          width: 40,
+          height: 4,
         }}
         backgroundStyle={{
           backgroundColor: colors.background,
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
         }}
-        style={styles.bottomSheetShadow}
+        style={styles.bottomSheet}
       >
         <BottomSheetScrollView
           style={styles.bottomSheetContent}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* Header Section with Action Buttons */}
-          <View
-            style={[
-              styles.sheetHeader,
-              { borderBottomColor: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' },
-            ]}
-          >
+          <View style={styles.sheetHeader}>
             <View style={styles.titleSection}>
               <Text style={[styles.reminderTitle, { color: colors.text }]} numberOfLines={2}>
                 {notification.subject || 'Location Reminder'}
               </Text>
-              <Text style={[styles.locationLabel, { color: colors.grayTitle }]}>
-                {notification.locationName || 'Custom Location'}
-              </Text>
+              {notification.radius && (
+                <View
+                  style={[
+                    styles.radiusBadge,
+                    {
+                      backgroundColor:
+                        theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+                    },
+                  ]}
+                >
+                  <Text style={[styles.radiusText, { color: colors.text }]}>
+                    {notification.radius}m radius
+                  </Text>
+                </View>
+              )}
             </View>
-
-            {notification.radius && (
-              <View style={[styles.radiusBadge, { backgroundColor: colors.background }]}>
-                <Text style={[styles.radiusText, { color: colors.text }]}>
-                  {notification.radius}m radius
-                </Text>
-              </View>
-            )}
           </View>
 
-          {/* Action Buttons Row */}
-          <View style={styles.actionButtonsContainer}>
-            <Pressable style={[styles.actionButton]} onPress={openInGoogleMaps}>
-              <View style={[styles.actionButtonGradient, { backgroundColor: colors.background }]}>
-                <Text style={styles.actionButtonIcon}>🗺️</Text>
-                <Text style={[styles.actionButtonText, { color: colors.text }]}>Open Maps</Text>
-              </View>
+          <View style={styles.actionButtons}>
+            <Pressable
+              style={[
+                styles.actionButton,
+                {
+                  backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+                },
+              ]}
+              onPress={openInGoogleMaps}
+            >
+              <Text style={styles.actionIcon}>🗺️</Text>
+              <Text style={[styles.actionText, { color: colors.text }]}>Open Maps</Text>
             </Pressable>
 
-            <Pressable style={[styles.actionButton]} onPress={openNavigation}>
-              <View style={[styles.actionButtonGradient, { backgroundColor: colors.background }]}>
-                <Text style={styles.actionButtonIcon}>🧭</Text>
-                <Text style={[styles.actionButtonText, { color: colors.text }]}>Navigate</Text>
-              </View>
+            <Pressable
+              style={[
+                styles.actionButton,
+                {
+                  backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+                },
+              ]}
+              onPress={openNavigation}
+            >
+              <Text style={styles.actionIcon}>🧭</Text>
+              <Text style={[styles.actionText, { color: colors.text }]}>Navigate</Text>
             </Pressable>
           </View>
 
           {currentLocation && estimatedTime && (
-            <View style={styles.statsContainer}>
-              <Text style={[styles.statsTitle, { color: colors.text }]}>Travel Information</Text>
-
+            <View style={styles.statsSection}>
               <View style={styles.statsGrid}>
-                <View style={[styles.statCard, { backgroundColor: colors.background }]}>
+                <View
+                  style={[
+                    styles.statCard,
+                    {
+                      backgroundColor:
+                        theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                    },
+                  ]}
+                >
                   <Text style={styles.statIcon}>📏</Text>
+                  <Text style={[styles.statValue, { color: colors.text }]}>
+                    {estimatedTime.distance > 1
+                      ? `${estimatedTime.distance.toFixed(1)} km`
+                      : `${Math.round(estimatedTime.distance * 1000)} m`}
+                  </Text>
                   <Text style={[styles.statLabel, { color: colors.grayTitle }]}>Distance</Text>
-                  <Text style={[styles.statValue, { color: colors.text }]}>
-                    {estimatedTime?.distance > 1
-                      ? `${estimatedTime?.distance.toFixed(1)} km*`
-                      : `${Math.round(estimatedTime?.distance * 1000)} m*`}
-                  </Text>
                 </View>
 
-                <View style={[styles.statCard, { backgroundColor: colors.background }]}>
+                <View
+                  style={[
+                    styles.statCard,
+                    {
+                      backgroundColor:
+                        theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                    },
+                  ]}
+                >
                   <Text style={styles.statIcon}>🚗</Text>
-                  <Text style={[styles.statLabel, { color: colors.grayTitle }]}>Driving</Text>
                   <Text style={[styles.statValue, { color: colors.text }]}>
-                    {estimatedTime?.driving < 60
-                      ? `${estimatedTime?.driving} min*`
-                      : `${Math.floor(estimatedTime?.driving / 60)}h ${estimatedTime?.driving % 60}m*`}
+                    {estimatedTime.driving < 60
+                      ? `${estimatedTime.driving} min`
+                      : `${Math.floor(estimatedTime.driving / 60)}h ${estimatedTime.driving % 60}m`}
                   </Text>
+                  <Text style={[styles.statLabel, { color: colors.grayTitle }]}>Driving</Text>
                 </View>
 
-                <View style={[styles.statCard, { backgroundColor: colors.background }]}>
+                <View
+                  style={[
+                    styles.statCard,
+                    {
+                      backgroundColor:
+                        theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                    },
+                  ]}
+                >
                   <Text style={styles.statIcon}>🚶</Text>
-                  <Text style={[styles.statLabel, { color: colors.grayTitle }]}>Walking</Text>
                   <Text style={[styles.statValue, { color: colors.text }]}>
-                    {estimatedTime?.walking < 60
-                      ? `${estimatedTime?.walking} min*`
-                      : `${Math.floor(estimatedTime?.walking / 60)}h ${estimatedTime?.walking % 60}m*`}
+                    {estimatedTime.walking < 60
+                      ? `${estimatedTime.walking} min`
+                      : `${Math.floor(estimatedTime.walking / 60)}h ${estimatedTime.walking % 60}m`}
                   </Text>
+                  <Text style={[styles.statLabel, { color: colors.grayTitle }]}>Walking</Text>
                 </View>
               </View>
 
               <Text style={[styles.estimationNote, { color: colors.grayTitle }]}>
-                * Estimated times based on straight-line distance (5 km/h walking, 40 km/h driving)
+                Estimated times based on straight-line distance
               </Text>
             </View>
           )}
 
-          {/* Message Section */}
           {notification.message && (
-            <View style={styles.infoSection}>
-              <View style={styles.sectionHeader}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Message</Text>
-              </View>
-              <View style={[styles.messageContainer, { backgroundColor: colors.background }]}>
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Message</Text>
+              <View
+                style={[
+                  styles.messageBox,
+                  {
+                    backgroundColor:
+                      theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                  },
+                ]}
+              >
                 <Text style={[styles.messageText, { color: colors.text }]}>
                   {linkifyText(String(notification.message)).map((part, idx) => {
                     if (part.type === 'url') {
@@ -553,32 +487,36 @@ const LocationPreview = () => {
             </View>
           )}
 
-          {/* Address Section */}
-          <View style={styles.infoSection}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Address Details</Text>
-            </View>
-            <View style={[styles.addressContainer, { backgroundColor: colors.background }]}>
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Address</Text>
+            <View
+              style={[
+                styles.addressBox,
+                {
+                  backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                },
+              ]}
+            >
               <Text style={[styles.addressText, { color: colors.text }]}>
                 {loading ? 'Fetching address...' : address?.toString() || 'Address not available'}
               </Text>
               <View
                 style={[
-                  styles.coordinatesContainer,
+                  styles.coordsRow,
                   {
-                    borderTopColor: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                    borderTopColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
                   },
                 ]}
               >
-                <Text style={[styles.coordinatesLabel, { color: colors.grayTitle }]}>
-                  Coordinates:
-                </Text>
-                <Text style={[styles.coordinatesText, { color: colors.text }]}>
-                  {coords.latitude?.toString()}, {coords.longitude?.toString()}
+                <Text style={[styles.coordsLabel, { color: colors.grayTitle }]}>Coordinates</Text>
+                <Text style={[styles.coordsValue, { color: colors.text }]}>
+                  {coords.latitude?.toFixed(6)}, {coords.longitude?.toFixed(6)}
                 </Text>
               </View>
             </View>
           </View>
+
+          <View style={{ height: 20 }} />
         </BottomSheetScrollView>
       </BottomSheet>
     </SafeAreaView>
@@ -608,37 +546,34 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
 
-  // Header Styles
-  modernHeader: {
+  // Header
+  header: {
     position: 'absolute',
-    top: 10,
+    top: 8,
     left: 16,
     right: 16,
     zIndex: 100,
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   headerBlur: {
-    borderRadius: 20,
+    borderRadius: 16,
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 12,
   },
-  headerButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  headerButtonGradient: {
+  iconButton: {
     width: 40,
     height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
   },
-  headerIcon: {
+  icon: {
     width: 20,
     height: 20,
     resizeMode: 'contain',
@@ -646,110 +581,93 @@ const styles = StyleSheet.create({
   headerTextContainer: {
     flex: 1,
     alignItems: 'center',
-    marginHorizontal: 16,
   },
   headerTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontFamily: FONTS.SemiBold,
-    color: '#fff',
     fontWeight: '600',
   },
   headerSubtitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: FONTS.Medium,
-    color: 'rgba(255,255,255,0.8)',
     marginTop: 2,
-    textAlign: 'center',
   },
 
-  // Marker Styles
-  modernMarker: {
+  // Markers
+  markerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
   },
-  markerPulse: {
+  markerShadow: {
     position: 'absolute',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    opacity: 0.3,
+    bottom: -2,
   },
   markerIcon: {
-    fontSize: 22,
+    fontSize: 32,
   },
   currentLocationMarker: {
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
+    width: 24,
+    height: 24,
   },
-  currentLocationPulse: {
+  currentLocationRing: {
     position: 'absolute',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.4)',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    opacity: 0.3,
   },
-  currentLocationCore: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+  currentLocationDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     borderWidth: 2,
     borderColor: '#fff',
   },
 
-  // Bottom Sheet Styles
-  bottomSheetShadow: {
+  // Bottom Sheet
+  bottomSheet: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 24,
-    elevation: 24,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 16,
   },
   bottomSheetContent: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 8,
+    paddingHorizontal: 20,
+    paddingTop: 12,
   },
 
   // Sheet Header
   sheetHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    // boxShadow: `0 2px 4px rgba(0,0,0,0.2)`,
+    marginBottom: 20,
   },
   titleSection: {
-    flex: 1,
-    marginRight: 16,
+    gap: 8,
   },
   reminderTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontFamily: FONTS.Bold,
     fontWeight: '700',
-    lineHeight: 30,
-    marginBottom: 6,
-  },
-  locationLabel: {
-    fontSize: 15,
-    fontFamily: FONTS.Medium,
+    lineHeight: 28,
   },
   radiusBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
     alignSelf: 'flex-start',
-    boxShadow: `0 2px 2px rgba(0,0,0,0.5)`,
   },
   radiusText: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: FONTS.SemiBold,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -757,199 +675,115 @@ const styles = StyleSheet.create({
   },
 
   // Action Buttons
-  actionButtonsContainer: {
+  actionButtons: {
     flexDirection: 'row',
-    marginBottom: 28,
     gap: 12,
+    marginBottom: 24,
   },
   actionButton: {
     flex: 1,
-    borderRadius: 16,
-  },
-  actionButtonGradient: {
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 16,
-    boxShadow: `0 2px 4px rgba(0,0,0,0.2)`,
+    gap: 4,
   },
-  actionButtonIcon: {
-    fontSize: 20,
-    marginBottom: 4,
+  actionIcon: {
+    fontSize: 24,
   },
-  actionButtonText: {
-    fontSize: 14,
-    marginTop: 3,
+  actionText: {
+    fontSize: 13,
     fontFamily: FONTS.SemiBold,
-    color: '#fff',
-    textAlign: 'center',
+    fontWeight: '600',
   },
 
-  // Stats Container
-  statsContainer: {
-    marginBottom: 28,
-  },
-  statsTitle: {
-    fontSize: 18,
-    fontFamily: FONTS.SemiBold,
-    marginBottom: 16,
+  // Stats
+  statsSection: {
+    marginBottom: 24,
   },
   statsGrid: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
+    marginBottom: 12,
   },
   statCard: {
     flex: 1,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    borderRadius: 14,
     alignItems: 'center',
-    boxShadow: `0 2px 4px rgba(0,0,0,0.2)`,
-  },
-  statIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
+    gap: 6,
   },
   statIcon: {
-    fontSize: 25,
-    marginBottom: 10,
-  },
-  statLabel: {
-    fontSize: 12,
-    fontFamily: FONTS.Medium,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    opacity: 0.8,
+    fontSize: 24,
   },
   statValue: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: FONTS.Bold,
-    textAlign: 'center',
-    marginTop: 3,
+    fontWeight: '700',
+  },
+  statLabel: {
+    fontSize: 11,
+    fontFamily: FONTS.Medium,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   estimationNote: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: FONTS.Regular,
-    marginTop: 10,
+    textAlign: 'center',
+    opacity: 0.7,
   },
 
-  // Info Sections
-  infoSection: {
-    marginBottom: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-    boxShadow: `0 2px 4px rgba(0,0,0,0.2)`,
-  },
-  sectionIcon: {
-    fontSize: 16,
-  },
-  sectionIconImage: {
-    width: 16,
-    height: 16,
+  // Sections
+  section: {
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 15,
     fontFamily: FONTS.SemiBold,
+    fontWeight: '600',
+    marginBottom: 10,
   },
-
-  // Message Container
-  messageContainer: {
-    padding: 20,
-    borderRadius: 16,
-    borderLeftWidth: 4,
+  messageBox: {
+    padding: 16,
+    borderRadius: 14,
+    borderLeftWidth: 3,
     borderLeftColor: '#3B82F6',
-    boxShadow: `0 2px 4px rgba(0,0,0,0.2)`,
   },
   messageText: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: FONTS.Medium,
-    lineHeight: 22,
+    lineHeight: 20,
   },
   linkText: {
     textDecorationLine: 'underline',
   },
-
-  // Address Container
-  addressContainer: {
-    padding: 20,
-    borderRadius: 16,
-    boxShadow: `0 2px 4px rgba(0,0,0,0.2)`,
+  addressBox: {
+    padding: 16,
+    borderRadius: 14,
   },
   addressText: {
-    fontSize: 15,
-    fontFamily: FONTS.Medium,
-    lineHeight: 22,
-    marginBottom: 12,
-  },
-  coordinatesContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 12,
-    borderTopWidth: 1,
-  },
-  coordinatesLabel: {
-    fontSize: 13,
-    fontFamily: FONTS.Medium,
-    marginRight: 8,
-  },
-  coordinatesText: {
-    fontSize: 13,
-    fontFamily: FONTS.SemiBold,
-  },
-
-  // Additional Info
-  additionalInfo: {
-    marginBottom: 16,
-  },
-  infoCard: {
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  infoCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  infoCardIcon: {
-    fontSize: 20,
-    marginRight: 10,
-  },
-  infoCardTitle: {
-    fontSize: 16,
-    fontFamily: FONTS.SemiBold,
-  },
-  infoCardContent: {
-    paddingLeft: 30,
-  },
-  infoCardText: {
     fontSize: 14,
     fontFamily: FONTS.Medium,
     lineHeight: 20,
-    marginBottom: 4,
+    marginBottom: 12,
+  },
+  coordsRow: {
+    paddingTop: 12,
+    borderTopWidth: 1,
+    gap: 4,
+  },
+  coordsLabel: {
+    fontSize: 12,
+    fontFamily: FONTS.Medium,
+  },
+  coordsValue: {
+    fontSize: 12,
+    fontFamily: FONTS.SemiBold,
+    fontWeight: '600',
   },
 
-  // Error States
+  // Error State
   centered: {
     flex: 1,
     alignItems: 'center',
@@ -959,24 +793,24 @@ const styles = StyleSheet.create({
   errorContainer: {
     alignItems: 'center',
     padding: 32,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   errorIcon: {
-    width: 40,
-    height: 40,
+    width: 48,
+    height: 48,
     marginBottom: 16,
+    opacity: 0.6,
   },
   errorTitle: {
     fontSize: 20,
     fontFamily: FONTS.SemiBold,
+    fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'center',
   },
   errorSubtitle: {
     fontSize: 14,
     fontFamily: FONTS.Medium,
     textAlign: 'center',
     lineHeight: 20,
+    opacity: 0.8,
   },
 });

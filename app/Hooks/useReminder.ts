@@ -11,6 +11,7 @@ import {
   buildTimestampTrigger,
   CHANNEL_NAME,
   createNotificationChannelIfNeeded,
+  ensureExactAlarmPermission,
 } from '@Utils/notificationHelpers';
 import { prepareNotificationData } from '@Utils/prepareNotificationData';
 
@@ -79,6 +80,15 @@ export const scheduleNotification = async (
     } = notification;
 
     await notifee.requestPermission();
+
+    // Check exact alarm permission on Android 12+ (required for precise scheduling)
+    const hasExactAlarmPermission = await ensureExactAlarmPermission();
+    if (!hasExactAlarmPermission) {
+      console.warn(
+        '[Notification] Exact alarm permission not granted - notifications may be delayed by 1-2 minutes',
+      );
+    }
+
     await createNotificationChannelIfNeeded();
     const channelId = storage.getString('notificationSound') || 'default';
 

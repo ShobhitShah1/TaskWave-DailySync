@@ -84,6 +84,29 @@ export const formatDateTime = (date: Date | string) => {
   }
 };
 
+// Format remaining time in short format like "2h 30m" or "45m" or "30s"
+export const formatRemainingTimeShort = (date: Date | string | undefined | null): string => {
+  if (!date) return '';
+
+  const now = new Date();
+  const targetDate = new Date(date);
+  const diff = targetDate.getTime() - now.getTime();
+
+  if (diff <= 0) return 'now';
+
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+  if (hours > 0) {
+    return `in ${hours}h ${minutes}m`;
+  } else if (minutes > 0) {
+    return `in ${minutes}m`;
+  } else {
+    return `in ${seconds}s`;
+  }
+};
+
 const ReminderScheduled = () => {
   const style = styles();
   const colors = useThemeColors();
@@ -102,6 +125,11 @@ const ReminderScheduled = () => {
   }, [params]);
 
   const title = useMemo(() => getNotificationTitle(notificationData), [notificationData]);
+
+  const remainingTimeShort = useMemo(
+    () => formatRemainingTimeShort(notificationData?.date),
+    [notificationData?.date],
+  );
 
   const [hours, minutes, seconds] = formattedTimeLeft.split(' : ');
 
@@ -143,29 +171,30 @@ const ReminderScheduled = () => {
           </View>
 
           <View style={style.notificationWrapper}>
-            <View style={[style.card, { backgroundColor: colors.previewBackground }]}>
+            <View style={style.card}>
               <View style={style.cardHeader}>
-                <View style={style.userInfo}>
-                  <Image
-                    resizeMode="contain"
-                    source={AssetsPath.appLogoAndroid}
-                    style={style.userImage}
-                  />
-                  <Text numberOfLines={2} style={[style.userName, { color: colors.text }]}>
+                <Image
+                  resizeMode="contain"
+                  source={AssetsPath.appLogoAndroid}
+                  style={style.userImage}
+                />
+                <View style={style.titleContainer}>
+                  <Text numberOfLines={1} style={[style.userName, { color: colors.text }]}>
                     {title?.toString()?.trim()}
                   </Text>
-                  <Text style={[style.timeAgo, { color: colors.placeholderText }]}>12m ago</Text>
+                  <Text
+                    style={[style.notificationText, { color: colors.placeholderText }]}
+                    numberOfLines={2}
+                  >
+                    {notificationData.message?.trim() ||
+                      notificationData.subject?.trim() ||
+                      'No Message Available'}
+                  </Text>
                 </View>
+                <Text style={[style.timeAgo, { color: colors.placeholderText }]}>
+                  {remainingTimeShort}
+                </Text>
               </View>
-
-              <Text
-                style={[style.notificationText, { color: colors.placeholderText }]}
-                numberOfLines={3}
-              >
-                {notificationData.message?.trim() ||
-                  notificationData.subject?.trim() ||
-                  'No Message Available'}
-              </Text>
 
               <Image
                 resizeMode="contain"
@@ -220,41 +249,35 @@ const styles = () => {
       width: '100%',
       borderRadius: 10,
       marginBottom: 50,
+      backgroundColor: colors.previewBackground,
     },
     cardHeader: {
-      maxWidth: '100%',
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      // alignItems: "center",
-    },
-    userInfo: {
-      flexDirection: 'row',
-      // alignItems: "center",
-      justifyContent: 'space-between',
+      alignItems: 'flex-start',
     },
     userImage: {
       width: 38,
       height: 38,
       borderRadius: 5,
     },
+    titleContainer: {
+      flex: 1,
+      marginHorizontal: 10,
+    },
     userName: {
-      width: '68%',
       fontSize: 18,
-      marginLeft: 10,
       fontFamily: FONTS.Medium,
+      marginBottom: 4,
     },
     timeAgo: {
       fontFamily: FONTS.Medium,
       fontSize: 16,
-      alignItems: 'flex-end',
+      color: colors.placeholderText,
     },
     notificationText: {
-      width: '85%',
-      marginLeft: -8,
       fontSize: 16,
-      marginTop: -10,
-      alignSelf: 'flex-end',
-      fontFamily: FONTS.Medium,
+      fontFamily: FONTS.Regular,
+      lineHeight: 20,
     },
     handImage: {
       width: 33,

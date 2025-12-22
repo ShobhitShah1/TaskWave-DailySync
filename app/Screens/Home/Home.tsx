@@ -19,7 +19,6 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   Text,
   useWindowDimensions,
   View,
@@ -27,11 +26,13 @@ import {
 import { AnimatedRollingNumber } from 'react-native-animated-rolling-numbers';
 import { showMessage } from 'react-native-flash-message';
 import Animated, { Easing, FadeIn, LinearTransition } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { formatDate } from '../AddReminder/ReminderScheduled';
 import HomeHeader from './Components/HomeHeader';
 import RenderEmptyView from './Components/RenderEmptyView';
 import RenderHeaderView from './Components/RenderHeaderView';
 import styles from './styles';
+import { useAppContext } from '@Contexts/ThemeProvider';
 
 const Home = () => {
   const style = styles();
@@ -39,6 +40,7 @@ const Home = () => {
   const colors = useThemeColors();
   const isFocus = useIsFocused();
   const { height } = useWindowDimensions();
+  const { theme } = useAppContext();
 
   const flatListRef = useRef<FlatList>(null);
   const { getAllNotifications, deleteNotification } = useDatabase();
@@ -226,6 +228,7 @@ const Home = () => {
                 value={notificationsState?.active.length}
                 enableCompactNotation
                 compactToFixed={2}
+                key={notificationsState?.active.length + theme?.toString()}
                 textStyle={style.statusText}
                 numberStyle={style.statusText}
                 spinningAnimationConfig={{ duration: 500, easing: Easing.bounce }}
@@ -237,6 +240,7 @@ const Home = () => {
                 value={notificationsState?.inactive.length}
                 enableCompactNotation
                 compactToFixed={2}
+                key={notificationsState?.inactive.length + theme?.toString()}
                 textStyle={style.statusText}
                 spinningAnimationConfig={{ duration: 500, easing: Easing.bounce }}
               />
@@ -287,7 +291,7 @@ const Home = () => {
           ) : notificationsState.allByDate?.length !== 0 ? (
             <Animated.FlatList
               layout={LinearTransition}
-              itemLayoutAnimation={LinearTransition.springify().damping(80).stiffness(200)}
+              itemLayoutAnimation={LinearTransition.springify()}
               columnWrapperStyle={isGrid ? { justifyContent: 'space-between' } : undefined}
               key={isGrid ? 'grid' : 'list'}
               numColumns={isGrid ? 2 : undefined}

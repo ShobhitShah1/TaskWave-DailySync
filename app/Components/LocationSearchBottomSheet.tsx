@@ -257,6 +257,7 @@ const LocationSearchBottomSheet: React.FC<LocationSearchBottomSheetProps> = ({
     <BottomSheetModal
       ref={bottomSheetRef}
       snapPoints={snapPoints}
+      enableDynamicSizing={false}
       onDismiss={() => {
         onClose();
         clearSearch();
@@ -326,7 +327,9 @@ const LocationSearchBottomSheet: React.FC<LocationSearchBottomSheetProps> = ({
             <BottomSheetFlatList
               data={results}
               renderItem={renderResultItem}
-              keyExtractor={(item, index) => `${item.lat}-${item.lon}-${index}`}
+              keyExtractor={(item: NominatimResult, index: number) =>
+                `${item.lat}-${item.lon}-${index}`
+              }
               style={styles.resultsList}
               contentContainerStyle={styles.resultsContent}
               showsVerticalScrollIndicator={false}

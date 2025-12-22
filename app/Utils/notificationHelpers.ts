@@ -7,6 +7,7 @@ import notifee, {
   TimestampTrigger,
   TriggerType,
 } from '@notifee/react-native';
+import { Platform } from 'react-native';
 
 import { sounds } from '@Constants/Data';
 import { storage } from '@Contexts/ThemeProvider';
@@ -15,8 +16,65 @@ import { getNotificationTitleAndBody } from './getNotificationTitleAndBody';
 
 export const CHANNEL_NAME = 'Reminder';
 
+/**
+ * Check if the app can schedule exact alarms (Android 12+)
+ * Returns true on iOS or if permission is granted on Android
+ */
+export const canScheduleExactAlarms = async (): Promise<boolean> => {
+  if (Platform.OS !== 'android') {
+    return true;
+  }
+
+  try {
+    const settings = await notifee.getNotificationSettings();
+    // On Android 12+, we need to check if exact alarms are allowed
+    return settings.android.alarm === 1; // 1 = ENABLED
+  } catch (error) {
+    console.error('[Notification] Error checking exact alarm permission:', error);
+    return false;
+  }
+};
+
+/**
+ * Request exact alarm permission by opening system settings
+ * User must manually enable "Alarms & reminders" permission
+ */
+export const requestExactAlarmPermission = async (): Promise<void> => {
+  if (Platform.OS !== 'android') {
+    return;
+  }
+
+  try {
+    await notifee.openAlarmPermissionSettings();
+  } catch (error) {
+    console.error('[Notification] Error opening alarm permission settings:', error);
+  }
+};
+
+/**
+ * Check and ensure exact alarm permission is granted
+ * Returns true if permission is granted, false if user needs to grant it
+ */
+export const ensureExactAlarmPermission = async (): Promise<boolean> => {
+  const canSchedule = await canScheduleExactAlarms();
+
+  if (!canSchedule) {
+    console.warn(
+      '[Notification] Exact alarm permission not granted. Notifications may be delayed.',
+    );
+    // Optionally open settings - but this should be done from UI with user interaction
+    // await requestExactAlarmPermission();
+    return false;
+  }
+
+  return true;
+};
+
 export const createNotificationChannelIfNeeded = async () => {
   try {
+    // Check exact alarm permission on Android 12+
+    await ensureExactAlarmPermission();
+
     const channelId = storage.getString('notificationSound');
     if (!channelId) {
       storage.set('notificationSound', 'default');

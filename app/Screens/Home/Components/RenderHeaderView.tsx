@@ -34,7 +34,7 @@ const RenderHeaderView: FC<headerInterface> = ({
 
   const selectedColor = useMemo(
     () => (selectedFilter === 'all' ? colors.text : colors.grayTitle),
-    [selectedFilter],
+    [selectedFilter, theme],
   );
 
   return (

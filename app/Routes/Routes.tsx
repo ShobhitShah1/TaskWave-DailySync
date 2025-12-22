@@ -1,16 +1,8 @@
-import { DefaultTheme, NavigationContainer, Theme } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useQuickActionCallback } from 'expo-quick-actions/hooks';
-import * as SystemUI from 'expo-system-ui';
-import React from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
-import BootSplash from 'react-native-bootsplash';
-import { SystemBars } from 'react-native-edge-to-edge';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useBottomSheet } from '@Contexts/BottomSheetProvider';
 import { storage, useAppContext } from '@Contexts/ThemeProvider';
 import useThemeColors from '@Hooks/useThemeMode';
+import { DefaultTheme, NavigationContainer, Theme } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AddReminder from '@Screens/AddReminder/AddReminder';
 import ReminderScheduled from '@Screens/AddReminder/ReminderScheduled';
 import LocationDetails from '@Screens/LocationDetails/LocationDetails';
@@ -21,6 +13,13 @@ import AboutApp from '@Screens/Setting/AboutApp';
 import HowAppWorks from '@Screens/Setting/HowAppWorks';
 import NotificationSound from '@Screens/Setting/NotificationSound';
 import { RootStackParamList } from '@Types/Interface';
+import { useQuickActionCallback } from 'expo-quick-actions/hooks';
+import * as SystemUI from 'expo-system-ui';
+import React from 'react';
+import { StatusBar, StyleSheet } from 'react-native';
+import BootSplash from 'react-native-bootsplash';
+import { SystemBars } from 'react-native-edge-to-edge';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomTab from './BottomTab';
 import { navigationRef } from './RootNavigation';
 
@@ -43,6 +42,10 @@ const Routes = () => {
   useQuickActionCallback((action) => {
     if (action.id === '0') {
       bottomSheetModalRef.current?.present();
+    }
+    if (action.id === '1') {
+      alert(action);
+      // navigationRef.current?.navigate('AddReminder');
     }
   });
 
@@ -81,7 +84,10 @@ const Routes = () => {
       >
         <SafeAreaView style={styles.container}>
           <Stack.Navigator
-            screenOptions={({}) => ({ headerShown: false, animation: 'ios_from_right' })}
+            screenOptions={{
+              headerShown: false,
+              animation: 'ios_from_right',
+            }}
           >
             {showOnboarding !== 'no' && <Stack.Screen name="OnBoarding" component={OnBoarding} />}
             <Stack.Screen name="BottomTab" component={BottomTab} />

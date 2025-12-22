@@ -1,12 +1,7 @@
-import {
-  BottomSheetModal,
-  BottomSheetModalProps,
-  useBottomSheetTimingConfigs,
-} from '@gorhom/bottom-sheet';
-import React, { forwardRef, useMemo, useRef, useCallback } from 'react';
-import { BackHandler, NativeEventSubscription } from 'react-native';
+import { BottomSheetModal, BottomSheetModalProps } from '@gorhom/bottom-sheet';
 import useThemeColors from '@Hooks/useThemeMode';
-import { Easing } from 'react-native-reanimated';
+import React, { forwardRef, useCallback, useMemo, useRef } from 'react';
+import { BackHandler, NativeEventSubscription } from 'react-native';
 
 interface ReusableBottomSheetProps extends BottomSheetModalProps {
   children: React.ReactNode;
@@ -25,7 +20,7 @@ const ReusableBottomSheet = forwardRef<BottomSheetModal, ReusableBottomSheetProp
     }, []);
 
     const handleSheetPositionChange = useCallback<NonNullable<BottomSheetModalProps['onChange']>>(
-      (index) => {
+      (index, position, type) => {
         const isBottomSheetVisible = index >= 0;
         if (isBottomSheetVisible && !backHandlerSubscriptionRef.current) {
           backHandlerSubscriptionRef.current = BackHandler.addEventListener(
@@ -42,7 +37,7 @@ const ReusableBottomSheet = forwardRef<BottomSheetModal, ReusableBottomSheetProp
           backHandlerSubscriptionRef.current?.remove();
           backHandlerSubscriptionRef.current = null;
         }
-        if (onChange) onChange(index);
+        if (onChange) onChange(index, position, type);
       },
       [ref, onChange],
     );
@@ -57,15 +52,11 @@ const ReusableBottomSheet = forwardRef<BottomSheetModal, ReusableBottomSheetProp
     );
     const handleIndicatorStyle = useMemo(() => ({ backgroundColor: colors.text }), [colors.text]);
 
-    const animationConfigs = useBottomSheetTimingConfigs({
-      duration: 350,
-      easing: Easing.out(Easing.exp),
-    });
-
     return (
       <BottomSheetModal
         ref={ref}
         snapPoints={snapPoints}
+        enableDynamicSizing={false}
         enablePanDownToClose
         backgroundStyle={backgroundStyle}
         handleStyle={handleStyle}
@@ -74,8 +65,8 @@ const ReusableBottomSheet = forwardRef<BottomSheetModal, ReusableBottomSheetProp
         keyboardBehavior="interactive"
         android_keyboardInputMode="adjustPan"
         onChange={handleSheetPositionChange}
-        animateOnMount
-        animationConfigs={animationConfigs}
+        // animateOnMount
+        // animationConfigs={animationConfigs}
         {...rest}
       >
         {children}

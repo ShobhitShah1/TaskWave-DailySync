@@ -11,12 +11,7 @@ import {
   View,
 } from 'react-native';
 import Modal from 'react-native-modal';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { FONTS, SIZE } from '@Constants/Theme';
 import { useAppContext } from '@Contexts/ThemeProvider';
@@ -203,23 +198,13 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       statusBarTranslucent
       useNativeDriverForBackdrop
       hideModalContentWhileAnimating
+      backdropTransitionInTiming={0}
+      backdropTransitionOutTiming={0}
       deviceHeight={height + ((StatusBar.currentHeight || 30) + 50)}
       useNativeDriver
-      onModalShow={() => {
-        animationProgress.value = withTiming(1, {
-          duration: 200,
-          easing: Easing.out(Easing.cubic),
-        });
-      }}
-      onModalWillHide={() => {
-        animationProgress.value = withTiming(0, {
-          duration: 200,
-          easing: Easing.in(Easing.cubic),
-        });
-      }}
     >
       <View style={styles.centeredView}>
-        <Animated.View
+        <View
           style={[
             styles.modalView,
             {
@@ -230,7 +215,6 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
               shadowRadius: 0,
               elevation: 10,
             },
-            animatedStyle,
           ]}
         >
           <View style={styles.pickerContainer}>
@@ -256,7 +240,7 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
               <Text style={[styles.buttonText, { color: colors.white }]}>Confirm</Text>
             </Pressable>
           </View>
-        </Animated.View>
+        </View>
       </View>
     </Modal>
   );

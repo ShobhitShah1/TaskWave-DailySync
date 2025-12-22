@@ -7,7 +7,7 @@ export const useBottomSheetBackHandler = (
 ) => {
   const backHandlerSubscriptionRef = useRef<NativeEventSubscription | null>(null);
   const handleSheetPositionChange = useCallback<NonNullable<BottomSheetModalProps['onChange']>>(
-    (index) => {
+    (index, _position, _type) => {
       const isBottomSheetVisible = index >= 0;
       if (isBottomSheetVisible && !backHandlerSubscriptionRef.current) {
         // setup the back handler if the bottom sheet is right in front of the user

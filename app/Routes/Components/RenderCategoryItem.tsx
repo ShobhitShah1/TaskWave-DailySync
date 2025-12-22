@@ -1,6 +1,5 @@
 import React, { memo, useMemo } from 'react';
 import { Image, ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
 
 import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
@@ -22,7 +21,7 @@ const RenderCategoryItem = ({
   );
 
   return (
-    <Animated.View
+    <View
       style={[
         styles.pressableContainer,
         {
@@ -40,7 +39,6 @@ const RenderCategoryItem = ({
           }`,
         },
       ]}
-      entering={FadeIn.delay(40 * index)}
     >
       <Pressable
         style={{ flex: 1 }}
@@ -75,7 +73,7 @@ const RenderCategoryItem = ({
           </View>
         </ImageBackground>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -102,6 +100,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
+    boxShadow: '0px -3px 4px -2px #0A0909B2 inset',
   },
   icon: {
     width: 55,

@@ -396,7 +396,7 @@ const History = () => {
                 />
               }
               layout={LinearTransition}
-              itemLayoutAnimation={LinearTransition.springify().damping(80).stiffness(200)}
+              itemLayoutAnimation={LinearTransition.springify()}
               data={filteredNotifications}
               onScrollToIndexFailed={() => {}}
               stickyHeaderHiddenOnScroll={true}
@@ -481,15 +481,13 @@ const History = () => {
         </View>
       </View>
 
-      {showDateAndYearModal && (
-        <YearMonthPicker
-          isVisible={showDateAndYearModal}
-          selectedYear={selectedDateObject.getFullYear()}
-          selectedMonth={selectedDateObject.getMonth()}
-          onConfirm={handleDateChange}
-          onCancel={() => setShowDateAndYearModal(false)}
-        />
-      )}
+      <YearMonthPicker
+        isVisible={showDateAndYearModal}
+        selectedYear={selectedDateObject.getFullYear()}
+        selectedMonth={selectedDateObject.getMonth()}
+        onConfirm={handleDateChange}
+        onCancel={() => setShowDateAndYearModal(false)}
+      />
     </SafeAreaView>
   );
 };
