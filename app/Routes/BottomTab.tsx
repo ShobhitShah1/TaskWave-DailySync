@@ -231,6 +231,7 @@ const BottomTab = () => {
     <React.Fragment>
       <CurvedBottomBar.Navigator
         type="DOWN"
+        circlePosition="CENTER"
         id="bottom-tab"
         width={width}
         borderColor="transparent"
