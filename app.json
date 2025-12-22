@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "icon": "./assets/images/Dailysync_Android.png",
+    "icon": "./assets/Images/Dailysync_Android.png",
     "runtimeVersion": {
       "policy": "appVersion"
     },

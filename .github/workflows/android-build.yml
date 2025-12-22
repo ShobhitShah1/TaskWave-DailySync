@@ -45,7 +45,9 @@ jobs:
         run: yarn install --no-immutable
 
       - name: Expo prebuild
-        run: yarn expo prebuild --clean --platform android --non-interactive
+        env:
+          CI: 1
+        run: yarn expo prebuild --clean --platform android
 
       - name: Build Release APK
         working-directory: android
