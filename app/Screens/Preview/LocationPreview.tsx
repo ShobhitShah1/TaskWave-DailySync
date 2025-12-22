@@ -74,8 +74,8 @@ const LocationPreview = () => {
       const distance = calculateDistance(
         currentLocation.coords.latitude,
         currentLocation.coords.longitude,
-        notification?.latitude,
-        notification?.longitude,
+        Number(notification?.latitude),
+        Number(notification?.longitude),
       );
 
       const walkingTime = Math.round((distance / 5) * 60);
