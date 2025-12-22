@@ -196,7 +196,7 @@ export function useLocationSearch({
   const [error, setError] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
-  const timeoutRef = useRef<number | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Service priority order (higher priority tried first)
   const services: LocationService[] = [
