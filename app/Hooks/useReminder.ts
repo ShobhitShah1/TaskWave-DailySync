@@ -220,7 +220,7 @@ const useReminder = () => {
           .map(
             (email) => `
           INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-          VALUES ('${data.id}', '${email}', null, '${email}', null)
+          VALUES ('${data.id}', '${email.replace(/'/g, "''")}', null, '${email.replace(/'/g, "''")}', null)
         `,
           )
           .join(';');
@@ -230,7 +230,13 @@ const useReminder = () => {
           .map(
             (contact) => `
           INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-          VALUES ('${data.id}', '${contact.name}', ${contact.number ? `'${contact.number}'` : 'null'}, '${contact.recordID}', ${contact.thumbnailPath ? `'${contact.thumbnailPath}'` : 'null'})
+          VALUES (
+            '${data.id}', 
+            '${contact.name.replace(/'/g, "''")}', 
+            ${contact.number ? `'${contact.number.replace(/'/g, "''")}'` : 'null'}, 
+            '${contact.recordID.replace(/'/g, "''")}', 
+            ${contact.thumbnailPath ? `'${contact.thumbnailPath.replace(/'/g, "''")}'` : 'null'}
+          )
         `,
           )
           .join(';');
@@ -306,7 +312,7 @@ const useReminder = () => {
           .map(
             (email: string) => `
             INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-            VALUES ('${data.id}', '${email?.trim()}', null, '${email?.trim()}', null)
+            VALUES ('${data.id}', '${email?.trim().replace(/'/g, "''")}', null, '${email?.trim().replace(/'/g, "''")}', null)
           `,
           )
           .join(';');
@@ -430,8 +436,6 @@ const useReminder = () => {
               (notification.status as LocationReminderStatus) || LocationReminderStatus.Pending,
           });
         }
-
-        console.log('[Notification] Successfully fetched notifications:', result.length);
         return result;
       } catch (error: any) {
         console.error('[Notification] Get all notifications error:', error);

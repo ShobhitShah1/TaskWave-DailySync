@@ -6,6 +6,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
+import { useAppChecker } from '@Hooks/useAppChecker';
 import { useBottomSheetBackHandler } from '@Hooks/useBottomSheetBackHandler';
 import useThemeColors from '@Hooks/useThemeMode';
 import { useNavigation } from '@react-navigation/native';
@@ -19,19 +20,9 @@ import { getCategories } from '@Utils/getCategories';
 import { getIconSourceForBottomTabs } from '@Utils/getIconSourceForBottomTabs';
 import * as Location from 'expo-location';
 import React, { memo, useCallback, useState } from 'react';
-import {
-  Dimensions,
-  Image,
-  Linking,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CurvedBottomBar } from 'react-native-curved-bottom-bar';
 import { showMessage } from 'react-native-flash-message';
-import { isAppInstalled } from 'send-message';
 import RenderSheetView from './Components/RenderSheetView';
 
 const { width } = Dimensions.get('window');
@@ -112,76 +103,22 @@ const BottomTab = () => {
     bottomSheetModalRef?.current?.dismiss();
   }, [bottomSheetModalRef]);
 
-  const checkAppAndNavigate = useCallback(
-    async (
-      packageName: string,
-      appStoreUrl: string,
-      categories: NotificationType,
-      errorMessage: string,
-    ) => {
-      try {
-        const result = await isAppInstalled(packageName);
-
-        if (result) {
-          onCloseSheet();
-
-          setTimeout(() => {
-            navigation.navigate('CreateReminder', {
-              notificationType: categories,
-            });
-          }, 200);
-        } else {
-          showMessage({
-            message: errorMessage,
-            description: 'Click here to install application',
-            type: 'warning',
-            onPress: () => Linking.openURL(appStoreUrl),
-            duration: 5000,
-            floating: true,
-          });
-        }
-      } catch (error) {
-        showMessage({
-          message: errorMessage,
-          type: 'danger',
-        });
-      }
-    },
-    [isAppInstalled, navigation],
-  );
+  const { checkAppAndNavigate } = useAppChecker();
 
   const onPressNext = useCallback(
     async (category: NotificationType) => {
       switch (category) {
         case 'whatsapp':
-          await checkAppAndNavigate(
-            'com.whatsapp',
-            Platform.OS === 'android'
-              ? 'https://play.google.com/store/apps/details?id=com.whatsapp'
-              : 'https://apps.apple.com/app/whatsapp-messenger/id310633997',
-            category,
-            'WhatsApp is not installed',
-          );
+          await checkAppAndNavigate('whatsapp', category, onCloseSheet);
           break;
         case 'whatsappBusiness':
-          await checkAppAndNavigate(
-            'com.whatsapp.w4b',
-            Platform.OS === 'android'
-              ? 'https://play.google.com/store/apps/details?id=com.whatsapp.w4b'
-              : 'https://apps.apple.com/app/whatsapp-business/id1386412985',
-            category,
-            'WhatsApp Business is not installed',
-          );
+          await checkAppAndNavigate('whatsappBusiness', category, onCloseSheet);
           break;
         case 'instagram':
-          await checkAppAndNavigate(
-            'com.instagram.android',
-            Platform.OS === 'android'
-              ? 'https://play.google.com/store/apps/details?id=com.instagram.android'
-              : 'https://apps.apple.com/us/app/instagram/id389801252',
-            category,
-            'Instagram is not installed',
-          );
+          await checkAppAndNavigate('instagram', category, onCloseSheet);
+          break;
+        case 'telegram':
+          await checkAppAndNavigate('telegram', category, onCloseSheet);
           break;
         case 'location':
           const response = await Location.requestForegroundPermissionsAsync();
@@ -191,7 +128,6 @@ const BottomTab = () => {
               message: 'Location Permission required',
               description: 'Allow location permission to use this feature',
             });
-
             return;
           }
 
@@ -292,8 +228,6 @@ const BottomTab = () => {
           index={0}
           snapPoints={['80%', '100%']}
           enableDynamicSizing={false}
-          // enableContentPanningGesture={false}
-          // enableOverDrag={false}
           backdropComponent={renderBackdrop}
           onChange={handleSheetPositionChange}
           onDismiss={() => setSelectedCategory(null)}

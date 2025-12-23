@@ -28,7 +28,7 @@ const RenderFilterTabData: FC<filterTabProps> = ({ res, index, onTabPress, isAct
         {res.icon && (
           <Image
             resizeMode="contain"
-            tintColor={colors.grayTitle}
+            tintColor={isActive ? colors.white : colors.grayTitle}
             source={res.history_icon}
             style={style.iconStyle}
           />

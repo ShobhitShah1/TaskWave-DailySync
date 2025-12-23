@@ -4,21 +4,13 @@ import { Linking, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Share from 'react-native-share';
 
-import RateUsModal from '@Components/RateUsModal';
+import { APP_CONFIG } from '@Constants/AppConfig';
 import AssetsPath from '@Constants/AssetsPath';
 import { SIZE } from '@Constants/Theme';
+import RateUsModal from '@Components/RateUsModal';
 import useThemeColors from '@Hooks/useThemeMode';
 import HomeHeader from '../Home/Components/HomeHeader';
 import SettingItem from './Components/SettingItem';
-
-const SHARE_MESSAGE =
-  '🗓️ Boost your productivity with DailySync! 🎯\n\nSet reminders for WhatsApp, WhatsApp Business, SMS, Gmail, and phone calls all in one app. 💬📧📞\n\nDownload now and never miss a task again! ⏰👇\nhttps://play.google.com/store/apps/details?id=com.taskwave.dailysync';
-
-const PRIVACY_POLICY = 'https://www.termsfeed.com/live/81b88b8e-c6ab-4149-9efa-1373c47f4268';
-
-const CONTACT_US = 'mailto:nirvanatechlabs@gmail.com';
-
-const PORTFOLIO_URL = 'https://dailysynctaskwave.netlify.app/';
 
 const Settings = () => {
   const style = styles();
@@ -39,7 +31,7 @@ const Settings = () => {
       icon: AssetsPath.ic_share,
       onPress: () => {
         try {
-          Share.open({ message: SHARE_MESSAGE });
+          Share.open({ message: APP_CONFIG.shareMessage });
         } catch (error) {}
       },
     },
@@ -48,7 +40,7 @@ const Settings = () => {
       icon: AssetsPath.ic_support,
       onPress: () => {
         try {
-          Linking.openURL(PRIVACY_POLICY);
+          Linking.openURL(APP_CONFIG.privacyPolicyUrl);
         } catch (error) {}
       },
     },
@@ -62,7 +54,7 @@ const Settings = () => {
       icon: AssetsPath.ic_contact,
       onPress: () => {
         try {
-          Linking.openURL(CONTACT_US);
+          Linking.openURL(`mailto:${APP_CONFIG.supportEmail}`);
         } catch (error) {}
       },
     },
@@ -83,7 +75,7 @@ const Settings = () => {
       icon: AssetsPath.ic_portfolio,
       onPress: () => {
         try {
-          Linking.openURL(PORTFOLIO_URL);
+          Linking.openURL(APP_CONFIG.portfolioUrl);
         } catch (error) {}
       },
     },

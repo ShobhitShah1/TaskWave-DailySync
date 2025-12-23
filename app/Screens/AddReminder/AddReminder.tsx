@@ -14,13 +14,13 @@ import { validateDateTime } from '@Utils/validateDateTime';
 import AddMailSubject from './Components/AddMailSubject';
 import AddMailTo from './Components/AddMailTo';
 import AddMessage from './Components/AddMessage';
+import AddScheduleFrequency from './Components/AddScheduleFrequency';
+import AttachFile from './Components/AttachFile';
 import AudioRecorder from './Components/AudioRecorder';
 import ContactListModal from './Components/ContactListModal';
 import ContactSelector from './Components/ContactSelector';
 import DateTimePicker from './Components/DateTimePicker';
-import DocumentPickerComponent from './Components/DocumentPicker';
 import Header from './Components/Header';
-import ScheduleFrequencyPicker from './Components/ScheduleFrequencyPicker';
 import useAddReminderForm from './hooks/useAddReminderForm';
 import useAudioRecorder from './hooks/useAudioRecorder';
 import useContactSelector from './hooks/useContactSelector';
@@ -84,13 +84,11 @@ const AddReminder = () => {
 
   const {
     contacts,
-    setContacts,
     selectedContacts,
     setSelectedContacts,
     contactModalVisible,
     setContactModalVisible,
     isContactLoading,
-    setIsContactLoading,
     onHandelContactClick,
     requestContactData,
     handleRemoveContact,
@@ -127,7 +125,6 @@ const AddReminder = () => {
         time: new Date(response?.date),
       });
       setSelectedDocuments(response?.attachments);
-      setContacts(response?.toContact);
       setSelectedContacts(response?.toContact);
       setMemos(response?.memo || []);
     }
@@ -290,7 +287,7 @@ const AddReminder = () => {
             {notificationType !== 'phone' &&
               notificationType !== 'telegram' &&
               notificationType !== 'note' && (
-                <DocumentPickerComponent
+                <AttachFile
                   themeColor={createViewColor}
                   onRemoveDocument={onRemoveDocument}
                   selectedDocuments={selectedDocuments}
@@ -311,12 +308,12 @@ const AddReminder = () => {
               />
             )}
 
-            <ScheduleFrequencyPicker
+            <AddScheduleFrequency
+              themeColor={createViewColor}
               selectedDays={selectedDays}
               setSelectedDays={setSelectedDays}
               scheduleFrequency={scheduleFrequency}
               setScheduleFrequency={setScheduleFrequency}
-              themeColor={createViewColor}
             />
 
             <DateTimePicker

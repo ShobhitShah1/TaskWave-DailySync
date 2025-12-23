@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -66,4 +66,4 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   );
 };
 
-export default AudioRecorder;
+export default memo(AudioRecorder);

@@ -1,11 +1,11 @@
+import { APP_CONFIG } from '@Constants/AppConfig';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 import { BlurView } from 'expo-blur';
 import React, { FC, useState } from 'react';
 import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import ReactNativeModal from 'react-native-modal';
-
-import AssetsPath from '@Constants/AssetsPath';
-import { FONTS } from '@Constants/Theme';
-import useThemeColors from '@Hooks/useThemeMode';
 
 interface RateUsModalProps {
   isVisible: boolean;
@@ -71,9 +71,7 @@ const RateUsModal: FC<RateUsModalProps> = ({ isVisible, onClose }) => {
             <Pressable
               style={style.submitButton}
               onPress={() => {
-                Linking.openURL(
-                  'https://play.google.com/store/apps/details?id=com.taskwave.dailysync',
-                );
+                Linking.openURL(APP_CONFIG.playStoreUrl);
                 onClose();
               }}
             >

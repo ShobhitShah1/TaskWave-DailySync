@@ -1,12 +1,6 @@
 import React, { FC, memo, useEffect } from 'react';
 import { Keyboard, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
-import Animated, {
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { FONTS } from '@Constants/Theme';
 import useThemeColors from '@Hooks/useThemeMode';
@@ -40,6 +34,7 @@ const SelectionItem: FC<SelectionItemProps> = ({
   onToggle,
   isWeekly = false,
 }) => {
+  const colors = useThemeColors();
   const backgroundColor = useSharedValue('transparent');
 
   useEffect(() => {
@@ -67,9 +62,9 @@ const SelectionItem: FC<SelectionItemProps> = ({
           animatedStyle,
         ]}
       >
-        <Animated.Text style={[styles.checkmark, opacity]}>✓</Animated.Text>
+        <Animated.Text style={[styles.checkmark, { color: colors.text }, opacity]}>✓</Animated.Text>
       </Animated.View>
-      <Text style={{ color: useThemeColors().text, fontSize: !isWeekly ? 16 : 14 }}>{label}</Text>
+      <Text style={{ color: colors.text, fontSize: !isWeekly ? 16 : 14 }}>{label}</Text>
     </Pressable>
   );
 };
@@ -101,7 +96,7 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.container}>
       <Text style={[styles.title, { color: colors.text }]}>Reminder:</Text>
 
-      <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.frequencyContainer}>
+      <Animated.View style={styles.frequencyContainer}>
         {frequencies.map((frequency, index) => (
           <SelectionItem
             key={index}
@@ -115,7 +110,7 @@ const AddScheduleFrequency: FC<AddScheduleFrequencyProps> = ({
       </Animated.View>
 
       {scheduleFrequency === 'Weekly' && (
-        <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.weekDaysContainer}>
+        <Animated.View style={styles.weekDaysContainer}>
           {weekDays.map((day) => (
             <SelectionItem
               key={day}
@@ -173,6 +168,6 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: 'white',
-    fontSize: 13,
+    fontSize: 14,
   },
 });

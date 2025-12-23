@@ -32,9 +32,12 @@ import HomeHeader from './Components/HomeHeader';
 import RenderEmptyView from './Components/RenderEmptyView';
 import RenderHeaderView from './Components/RenderHeaderView';
 import styles from './styles';
+import { useContacts } from '@Contexts/ContactProvider';
 import { useAppContext } from '@Contexts/ThemeProvider';
 
 const Home = () => {
+  // ...
+
   const style = styles();
   const isGrid = isGridView();
   const colors = useThemeColors();
@@ -88,6 +91,12 @@ const Home = () => {
     scrollToIndex();
   }, [selectedDate, isFocus, notificationsState, flatListRef.current]);
 
+  const {
+    requestPermission: requestContactPermission,
+    syncContacts,
+    permissionStatus: contactPermissionStatus,
+  } = useContacts();
+
   useEffect(() => {
     if (isFocus) {
       setIsLoading(notificationsState?.allByDate?.length === 0);
@@ -96,8 +105,15 @@ const Home = () => {
       if (permissionStatus !== 'granted') {
         requestPermission();
       }
+
+      // Contact permission logic requested by user
+      if (contactPermissionStatus === 'unavailable' || contactPermissionStatus === 'denied') {
+        requestContactPermission();
+      } else if (contactPermissionStatus === 'granted') {
+        syncContacts();
+      }
     }
-  }, [isFocus, selectedDate, selectedFilter, permissionStatus]);
+  }, [isFocus, selectedDate, selectedFilter, permissionStatus, contactPermissionStatus]);
 
   const onRefresh = useCallback(async () => {
     try {
@@ -124,7 +140,8 @@ const Home = () => {
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
       const [day, month, year] = selectedDate.split('-');
-      const selectedDateObj = new Date(`${year}-${month}-${day}`);
+      // Construct date using numeric component to ensure Local Midnight (consistent with useCalendar)
+      const selectedDateObj = new Date(Number(year), Number(month) - 1, Number(day));
 
       if (isNaN(selectedDateObj.getTime())) {
         console.error('Invalid selectedDate:', selectedDate);
@@ -211,6 +228,7 @@ const Home = () => {
         title={TextString.DailySync}
         titleAlignment="center"
         leftIconType="grid"
+        showThemeSwitch={false}
         onServicePress={() => setShowServiceManager(true)}
       />
 

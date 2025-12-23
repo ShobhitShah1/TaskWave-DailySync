@@ -251,8 +251,6 @@ const LocationSearchBottomSheet: React.FC<LocationSearchBottomSheetProps> = ({
     [colors],
   );
 
-  console.log('results', results);
-
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
@@ -263,9 +261,6 @@ const LocationSearchBottomSheet: React.FC<LocationSearchBottomSheetProps> = ({
         clearSearch();
       }}
       index={1}
-      // keyboardBehavior="interactive"
-      // keyboardBlurBehavior="restore"
-      // android_keyboardInputMode="adjustResize"
       onChange={handleSheetChanges}
       backgroundStyle={[styles.bottomSheetBackground, { backgroundColor: colors.background }]}
       handleIndicatorStyle={[styles.handleIndicator, { backgroundColor: colors.grayTitle }]}

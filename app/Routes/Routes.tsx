@@ -16,10 +16,9 @@ import { RootStackParamList } from '@Types/Interface';
 import { useQuickActionCallback } from 'expo-quick-actions/hooks';
 import * as SystemUI from 'expo-system-ui';
 import React from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import { StatusBar } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import { SystemBars } from 'react-native-edge-to-edge';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomTab from './BottomTab';
 import { navigationRef } from './RootNavigation';
 
@@ -59,9 +58,8 @@ const Routes = () => {
       />
 
       <StatusBar
-        backgroundColor={
-          showOnboarding !== 'no' ? '#ffffff' : theme === 'dark' ? '#303334' : '#ffffff'
-        }
+        backgroundColor="transparent"
+        translucent
         barStyle={
           showOnboarding !== 'no'
             ? 'light-content'
@@ -82,32 +80,21 @@ const Routes = () => {
           }, 0);
         }}
       >
-        <SafeAreaView style={styles.container}>
-          <Stack.Navigator
-            screenOptions={{
-              headerShown: false,
-              animation: 'ios_from_right',
-            }}
-          >
-            {showOnboarding !== 'no' && <Stack.Screen name="OnBoarding" component={OnBoarding} />}
-            <Stack.Screen name="BottomTab" component={BottomTab} />
-            <Stack.Screen name="CreateReminder" component={AddReminder} />
-            <Stack.Screen name="ReminderScheduled" component={ReminderScheduled} />
-            <Stack.Screen name="ReminderPreview" component={ReminderPreview} />
-            <Stack.Screen name="AboutApp" component={AboutApp} />
-            <Stack.Screen name="HowAppWorks" component={HowAppWorks} />
-            <Stack.Screen name="NotificationSound" component={NotificationSound} />
-            <Stack.Screen name="LocationDetails" component={LocationDetails} />
-            <Stack.Screen name="LocationPreview" component={LocationPreview} />
-          </Stack.Navigator>
-        </SafeAreaView>
+        <Stack.Navigator screenOptions={{ headerShown: false, animation: 'ios_from_right' }}>
+          {showOnboarding !== 'no' && <Stack.Screen name="OnBoarding" component={OnBoarding} />}
+          <Stack.Screen name="BottomTab" component={BottomTab} />
+          <Stack.Screen name="CreateReminder" component={AddReminder} />
+          <Stack.Screen name="ReminderScheduled" component={ReminderScheduled} />
+          <Stack.Screen name="ReminderPreview" component={ReminderPreview} />
+          <Stack.Screen name="AboutApp" component={AboutApp} />
+          <Stack.Screen name="HowAppWorks" component={HowAppWorks} />
+          <Stack.Screen name="NotificationSound" component={NotificationSound} />
+          <Stack.Screen name="LocationDetails" component={LocationDetails} />
+          <Stack.Screen name="LocationPreview" component={LocationPreview} />
+        </Stack.Navigator>
       </NavigationContainer>
     </>
   );
 };
 
 export default Routes;
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-});

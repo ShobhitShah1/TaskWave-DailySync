@@ -3,11 +3,12 @@ import notifee, { EventType } from '@notifee/react-native';
 import { useFonts } from 'expo-font';
 import * as QuickActions from 'expo-quick-actions';
 import React, { useEffect } from 'react';
-import { LogBox, StatusBar, StyleSheet, Text } from 'react-native';
+import { LogBox, StatusBar, StyleSheet, Text, View } from 'react-native';
 import FlashMessage, { showMessage } from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import { BottomSheetProvider } from './app/Contexts/BottomSheetProvider';
+import { ContactProvider } from './app/Contexts/ContactProvider';
 import { AppProvider, useAppContext } from './app/Contexts/ThemeProvider';
 import { handleNotificationPress } from './app/Hooks/handleNotificationPress';
 import { updateNotification } from './app/Hooks/updateNotification';
@@ -20,7 +21,6 @@ import Routes from './app/Routes/Routes';
 import LocationService from './app/Services/LocationService';
 import { Notification } from './app/Types/Interface';
 import { getDatabase } from './app/Utils/databaseUtils';
-import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 
 // This is the default configuration
 configureReanimatedLogger({
@@ -92,7 +92,7 @@ const AppContent = () => {
       style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
     >
       <BottomSheetProvider>
-        <SafeAreaView
+        <View
           style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
         >
           <Routes />
@@ -104,7 +104,7 @@ const AppContent = () => {
             titleStyle={{ fontFamily: FONTS.SemiBold, fontSize: 18 }}
             textStyle={{ fontFamily: FONTS.Medium, fontSize: 15 }}
           />
-        </SafeAreaView>
+        </View>
       </BottomSheetProvider>
     </GestureHandlerRootView>
   );
@@ -289,7 +289,9 @@ export default function App() {
 
   return (
     <AppProvider>
-      <AppContent />
+      <ContactProvider>
+        <AppContent />
+      </ContactProvider>
     </AppProvider>
   );
 }

@@ -83,7 +83,11 @@
             "extraMavenRepos": ["../../node_modules/@notifee/react-native/android/libs"],
             "compileSdkVersion": 36,
             "targetSdkVersion": 36,
-            "minSdkVersion": 24
+            "minSdkVersion": 24,
+            "usesCleartextTraffic": true,
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "enableMinifyInReleaseBuilds": true
           },
           "ios": {}
         }
@@ -105,7 +109,10 @@
       [
         "react-native-bootsplash",
         {
-          "assetsDir": "assets/bootsplash"
+          "assetsDir": "assets/bootsplash",
+          "android": {
+            "parentTheme": "EdgeToEdge"
+          }
         }
       ],
       [

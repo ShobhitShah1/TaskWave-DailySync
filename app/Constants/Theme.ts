@@ -114,7 +114,7 @@ const CommunicationPlatformColors = {
 
 export const LightThemeColors = {
   background: 'rgba(255, 255, 255, 1)',
-  text: '#000000',
+  text: '#303334',
   grayBackground: 'rgba(255, 255, 255, 0.21)',
   black: '#000',
   white: 'rgba(255, 255, 255, 1)',

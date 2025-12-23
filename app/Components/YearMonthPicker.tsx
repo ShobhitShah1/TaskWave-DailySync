@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import Modal from 'react-native-modal';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-
 import { FONTS, SIZE } from '@Constants/Theme';
 import { useAppContext } from '@Contexts/ThemeProvider';
 import useThemeColors from '@Hooks/useThemeMode';
@@ -197,9 +196,11 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
       hasBackdrop
       statusBarTranslucent
       useNativeDriverForBackdrop
-      hideModalContentWhileAnimating
-      backdropTransitionInTiming={0}
-      backdropTransitionOutTiming={0}
+      hideModalContentWhileAnimating={true}
+      animationInTiming={500}
+      animationOutTiming={500}
+      backdropTransitionInTiming={500}
+      backdropTransitionOutTiming={500}
       deviceHeight={height + ((StatusBar.currentHeight || 30) + 50)}
       useNativeDriver
     >

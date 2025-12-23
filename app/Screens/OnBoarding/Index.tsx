@@ -1,8 +1,6 @@
 import { useIsFocused, useNavigation } from '@react-navigation/native';
-import * as SystemUI from 'expo-system-ui';
-import React, { memo, useEffect, useRef, useState } from 'react';
-import { Animated, FlatList, StatusBar, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { memo, useRef, useState } from 'react';
+import { Animated, FlatList, StyleSheet, View } from 'react-native';
 
 import { OnBoardingData } from '@Constants/Data';
 import { storage, useAppContext } from '@Contexts/ThemeProvider';
@@ -34,40 +32,13 @@ const OnBoarding = () => {
     if (CurrentIndex < OnBoardingData.length - 1) {
       sliderRef.current?.scrollToIndex({ index: CurrentIndex + 1 });
     } else {
-      StatusBar.setBackgroundColor(barColor);
-      StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
-
-      SystemUI.setBackgroundColorAsync(barColor);
-
       storage.set('onboardingShown', 'no');
       navigation.replace('BottomTab');
     }
   };
 
-  useEffect(() => {
-    if (isFocus) {
-      StatusBar.setTranslucent(true);
-      StatusBar.setBackgroundColor('#ffffff');
-      StatusBar.setBarStyle('dark-content');
-
-      SystemUI.setBackgroundColorAsync('#ffffff');
-    } else {
-      StatusBar.setBackgroundColor(barColor);
-      StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
-
-      SystemUI.setBackgroundColorAsync(barColor);
-    }
-
-    return () => {
-      StatusBar.setBackgroundColor(barColor);
-      StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
-
-      SystemUI.setBackgroundColorAsync(barColor);
-    };
-  }, [isFocus, theme]);
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
+    <View style={[styles.container, { backgroundColor: colors.white }]}>
       <View style={{ flex: 2 }}>
         <FlatList
           horizontal
@@ -93,7 +64,7 @@ const OnBoarding = () => {
         <Paginator data={OnBoardingData} scrollX={scrollX} />
         <NextButton scrollTo={scrollTo} isLast={CurrentIndex === OnBoardingData.length - 1} />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

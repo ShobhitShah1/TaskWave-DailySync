@@ -1,23 +1,15 @@
-import {
-  BottomSheetFlatList,
-  BottomSheetTextInput,
-  BottomSheetFlatListMethods,
-  BottomSheetFooter,
-  BottomSheetFooterProps,
-} from '@gorhom/bottom-sheet';
-import { LinearGradient } from 'expo-linear-gradient';
-import React, { FC, memo, useCallback, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
-
 import ReusableBottomSheet from '@Components/ReusableBottomSheet';
 import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
+import { BottomSheetFlatList, BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import useThemeColors from '@Hooks/useThemeMode';
 import { Contact, ContactListModalProps } from '@Types/Interface';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { FC, memo, useCallback, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import styles from '../styles';
 import RenderContactList from './RenderContactList';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface ContactListModalPropsWithSync extends ContactListModalProps {
   syncContacts: () => void;
@@ -76,7 +68,6 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
 }) => {
   const style = styles();
   const colors = useThemeColors();
-  const flatListRef = useRef<BottomSheetFlatListMethods>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const contactModalRef = useRef<BottomSheetModal>(null);
   const [searchText, setSearchText] = useState('');
@@ -149,37 +140,8 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
     [selectedContacts, handleSelectContact],
   );
 
-  const keyExtractor = useCallback((item: Contact) => item.recordID?.toString(), []);
-
-  const renderFooter = useCallback(
-    (props: BottomSheetFooterProps) => (
-      <BottomSheetFooter {...props} bottomInset={0}>
-        <LinearGradient
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.8)', 'rgba(0, 0, 0, 1)']}
-          style={localStyles.footerGradient}
-        >
-          <Pressable style={style.contactDoneButtonView} onPress={handleClose}>
-            <Text style={style.contactDoneButtonText}>Done</Text>
-          </Pressable>
-        </LinearGradient>
-      </BottomSheetFooter>
-    ),
-    [handleClose, style.contactDoneButtonView, style.contactDoneButtonText],
-  );
-
-  const listContentStyle = useMemo(() => ({ paddingBottom: 80, flexGrow: 1 }), []);
-
   return (
-    <ReusableBottomSheet
-      snapPoints={['100%']}
-      ref={contactModalRef}
-      onDismiss={onClose}
-      index={0}
-
-      // footerComponent={renderFooter}
-    >
+    <ReusableBottomSheet snapPoints={['100%']} ref={contactModalRef} onDismiss={onClose} index={0}>
       <SafeAreaView style={style.contactModalContainer}>
         <View style={style.contactHeaderContainer}>
           <Pressable hitSlop={15} onPress={handleClose}>
@@ -192,7 +154,7 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
           <Pressable
             style={localStyles.syncButton}
             hitSlop={15}
-            onPress={syncContacts}
+            onPress={() => syncContacts()}
             disabled={isSyncing}
           >
             {isSyncing ? (
@@ -227,24 +189,14 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
           </View>
         ) : (
           <BottomSheetFlatList
-            ref={flatListRef}
+            style={{ flex: 1 }}
             data={filteredContacts}
             renderItem={renderContactItem}
-            keyExtractor={keyExtractor}
-            initialNumToRender={15}
-            maxToRenderPerBatch={10}
-            windowSize={5}
-            updateCellsBatchingPeriod={100}
-            removeClippedSubviews={true}
+            keyExtractor={(item: Contact) => item.recordID?.toString()}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={listContentStyle}
+            contentContainerStyle={{ paddingBottom: 80, flexGrow: 1 }}
             extraData={selectedContacts}
             ListEmptyComponent={ContactListEmptyView}
-            getItemLayout={(_: any, index: number) => ({
-              length: 70,
-              offset: 70 * index,
-              index,
-            })}
           />
         )}
       </SafeAreaView>

@@ -1,15 +1,15 @@
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import { useCountdownTimer } from '@Hooks/useCountdownTimer';
+import useThemeColors from '@Hooks/useThemeMode';
+import { RouteProp, StackActions, useNavigation, useRoute } from '@react-navigation/native';
+import { Notification } from '@Types/Interface';
+import { getNotificationTitle } from '@Utils/getNotificationTitle';
 import LottieView from 'lottie-react-native';
 import React, { memo, useMemo } from 'react';
 import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import AssetsPath from '@Constants/AssetsPath';
-import { FONTS, SIZE } from '@Constants/Theme';
-import { useCountdownTimer } from '@Hooks/useCountdownTimer';
-import useThemeColors from '@Hooks/useThemeMode';
-import { Notification } from '@Types/Interface';
-import { getNotificationTitle } from '@Utils/getNotificationTitle';
 
 type ReminderScheduledProps = {
   params: { themeColor: string; notification: Notification };
@@ -109,6 +109,7 @@ export const formatRemainingTimeShort = (date: Date | string | undefined | null)
 
 const ReminderScheduled = () => {
   const style = styles();
+  const { theme } = useAppContext();
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
@@ -203,7 +204,12 @@ const ReminderScheduled = () => {
               />
             </View>
 
-            <Text style={[style.receivedNotificationText, { color: colors.text }]}>
+            <Text
+              style={[
+                style.receivedNotificationText,
+                { color: theme === 'dark' ? colors.text : 'rgba(139, 142, 142, 1)' },
+              ]}
+            >
               {`You have received a notification at ${formatDateTime(
                 notificationData.date,
               )}, tap on it.`}
@@ -212,7 +218,12 @@ const ReminderScheduled = () => {
         </View>
       </View>
 
-      <Pressable onPress={() => navigation.navigate('Home')} style={style.contactDoneButtonView}>
+      <Pressable
+        onPress={() => {
+          navigation.dispatch(StackActions.popTo('BottomTab', { screen: 'Home' }));
+        }}
+        style={style.contactDoneButtonView}
+      >
         <Image
           resizeMode="contain"
           source={AssetsPath.ic_leftPointyArrow}

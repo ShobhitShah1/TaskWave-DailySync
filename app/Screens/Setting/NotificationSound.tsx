@@ -4,7 +4,12 @@ import { Audio } from 'expo-av';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, Text } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { sounds } from '@Constants/Data';
@@ -41,7 +46,7 @@ const NotificationSound = () => {
   const buttonTranslateY = useSharedValue(100);
 
   useEffect(() => {
-    buttonTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+    buttonTranslateY.value = withTiming(0);
     loadSoundDurations();
 
     return () => {

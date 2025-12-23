@@ -10,26 +10,25 @@ export const storage = new MMKV();
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
+export const updateStatusBarAndSystemUI = (currentTheme: Theme) => {
+  try {
+    // Set status bar style based on theme
+    setStatusBarStyle(currentTheme === 'dark' ? 'light' : 'dark');
+
+    // Set system UI background color based on theme
+    const backgroundColor = currentTheme === 'dark' ? '#303334' : '#ffffff';
+    SystemUI.setBackgroundColorAsync(backgroundColor);
+  } catch (error) {
+    console.error('Error updating status bar and system UI:', error);
+  }
+};
+
 export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>('dark');
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const storedViewMode = storage.getString('viewMode');
     return (storedViewMode as ViewMode) || 'list';
   });
-
-  // Function to update status bar and system UI based on theme
-  const updateStatusBarAndSystemUI = (currentTheme: Theme) => {
-    try {
-      // Set status bar style based on theme
-      setStatusBarStyle(currentTheme === 'dark' ? 'light' : 'dark');
-
-      // Set system UI background color based on theme
-      const backgroundColor = currentTheme === 'dark' ? '#303334' : '#ffffff';
-      SystemUI.setBackgroundColorAsync(backgroundColor);
-    } catch (error) {
-      console.error('Error updating status bar and system UI:', error);
-    }
-  };
 
   useEffect(() => {
     storeViewMode();

@@ -27,7 +27,7 @@ const RenderContactList: React.FC<RenderContactListProps> = ({
   const animatedStyle = useAnimatedStyle(
     () => ({
       backgroundColor: withTiming(isSelected ? 'rgba(1, 133, 226, 1)' : colors.contactBackground, {
-        duration: 500,
+        duration: 300,
       }),
     }),
     [isSelected, colors.reminderCardBackground],
