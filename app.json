@@ -5,24 +5,47 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/Images/Dailysync_Android.png",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "ios": {
       "supportsTablet": false,
-      "runtimeVersion": {
-        "policy": "appVersion"
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Allow DailySync to access your location while using the app.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow DailySync to access your location in the background.",
+        "NSLocationAlwaysUsageDescription": "Allow DailySync to always access your location."
       }
     },
-    "splash": {
-      "image": "./assets/Images/Splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
-    },
     "android": {
-      "package": "com.taskwave.dailysync",
       "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "INTERNET",
+        "MODIFY_AUDIO_SETTINGS",
+        "READ_EXTERNAL_STORAGE",
+        "RECORD_AUDIO",
+        "SYSTEM_ALERT_WINDOW",
+        "VIBRATE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "READ_CONTACTS",
+        "WRITE_CONTACTS",
+        "POST_NOTIFICATIONS",
+        "SCHEDULE_EXACT_ALARM"
       ],
-      "runtimeVersion": "1.0.0"
+      "package": "com.taskwave.dailysync",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "com.taskwave.dailysync"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "plugins": [
       "expo-font",
@@ -52,7 +75,59 @@
             }
           }
         }
-      ]
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraMavenRepos": ["../../node_modules/@notifee/react-native/android/libs"],
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "minSdkVersion": 24,
+            "usesCleartextTraffic": true,
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "enableMinifyInReleaseBuilds": true
+          },
+          "ios": {}
+        }
+      ],
+      [
+        "react-native-share",
+        {
+          "ios": ["fb", "instagram", "twitter"],
+          "android": ["com.facebook.katana", "com.instagram.android"],
+          "enableBase64ShareAndroid": true
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ],
+      [
+        "react-native-bootsplash",
+        {
+          "assetsDir": "assets/bootsplash",
+          "android": {
+            "parentTheme": "EdgeToEdge"
+          }
+        }
+      ],
+      [
+        "react-native-edge-to-edge",
+        {
+          "android": {
+            "parentTheme": "Default",
+            "enforceNavigationBarContrast": false
+          }
+        }
+      ],
+      "expo-sqlite",
+      "@maplibre/maplibre-react-native",
+      "@react-native-community/datetimepicker",
+      "./plugins/withAndroidAssets"
     ]
   }
 }

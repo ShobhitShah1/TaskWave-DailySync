@@ -1,4 +1,4 @@
-import React, { FC, memo, useCallback, useMemo, useState } from "react";
+import React, { FC, memo, useCallback, useMemo, useState } from 'react';
 import {
   Image,
   Keyboard,
@@ -7,35 +7,30 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   View,
-} from "react-native";
-import FullScreenMessageModal from "../../../Components/FullScreenMessageModal";
-import { useAppContext } from "../../../Contexts/ThemeProvider";
-import AssetsPath from "../../../Constants/AssetsPath";
-import { FONTS, SIZE } from "../../../Constants/Theme";
-import useThemeColors from "../../../Hooks/useThemeMode";
+} from 'react-native';
+
+import FullScreenMessageModal from '@Components/FullScreenMessageModal';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface AddMessageProps {
-  title?: "Message" | "Note";
+  title?: 'Message' | 'Note';
   themeColor: string;
   message: string;
   setMessage: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const AddMessage: FC<AddMessageProps> = ({
-  themeColor,
-  message,
-  setMessage,
-  title,
-}) => {
+const AddMessage: FC<AddMessageProps> = ({ themeColor, message, setMessage, title }) => {
   const style = styles();
   const colors = useThemeColors();
   const { theme } = useAppContext();
   const [fullScreen, setFullScreen] = useState(false);
 
   const backgroundColor = useMemo(
-    () =>
-      theme === "dark" ? "rgba(48, 51, 52, 0.9)" : "rgba(255,255,255,0.9)",
-    [theme]
+    () => (theme === 'dark' ? 'rgba(48, 51, 52, 0.9)' : 'rgba(255,255,255,0.9)'),
+    [theme],
   );
 
   const toggleFullScreen = useCallback(() => {
@@ -46,45 +41,32 @@ const AddMessage: FC<AddMessageProps> = ({
     (text: string) => {
       setMessage(text);
     },
-    [setMessage]
+    [setMessage],
   );
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View
-        style={[
-          style.container,
-          { backgroundColor: colors.scheduleReminderCardBackground },
-        ]}
-      >
+      <View style={[style.container, { backgroundColor: colors.scheduleReminderCardBackground }]}>
         <TextInput
           multiline
           spellCheck
           scrollEnabled
           value={message}
-          placeholder={title || "Message"}
+          placeholder={title || 'Message'}
           textAlignVertical="top"
           onChangeText={onChangeText}
           selectionColor={themeColor}
           placeholderTextColor={colors.placeholderText}
           style={[
             style.textInputStyle,
-            { color: colors.text, height: title === "Note" ? 100 : 160 },
+            { color: colors.text, height: title === 'Note' ? 100 : 160 },
           ]}
         />
 
-        {title !== "Note" && (
-          <Pressable
-            hitSlop={8}
-            onPress={() => setFullScreen(true)}
-            style={style.fullScreen}
-          >
+        {title !== 'Note' && (
+          <Pressable hitSlop={8} onPress={() => setFullScreen(true)} style={style.fullScreen}>
             <Image
-              tintColor={
-                theme === "dark"
-                  ? "rgba(255, 255, 255, 1)"
-                  : "rgba(173, 175, 176, 1)"
-              }
+              tintColor={theme === 'dark' ? 'rgba(255, 255, 255, 1)' : 'rgba(173, 175, 176, 1)'}
               source={AssetsPath.ic_fullScreen}
               style={{ width: 15, height: 15 }}
             />
@@ -109,10 +91,10 @@ export default memo(AddMessage);
 const styles = () => {
   return StyleSheet.create({
     container: {
-      width: "100%",
+      width: '100%',
       paddingHorizontal: 15,
-      flexDirection: "row",
-      justifyContent: "space-between",
+      flexDirection: 'row',
+      justifyContent: 'space-between',
       borderRadius: SIZE.listBorderRadius,
       marginBottom: 20,
     },
@@ -129,8 +111,8 @@ const styles = () => {
       width: 15,
       height: 15,
       zIndex: 999,
-      position: "absolute",
-      resizeMode: "contain",
+      position: 'absolute',
+      resizeMode: 'contain',
     },
   });
 };

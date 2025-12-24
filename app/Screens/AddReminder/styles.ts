@@ -1,6 +1,7 @@
-import { StyleSheet } from "react-native";
-import useThemeColors from "../../Hooks/useThemeMode";
-import { FONTS, SIZE } from "../../Constants/Theme";
+import { StyleSheet } from 'react-native';
+
+import { FONTS, SIZE } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 const styles = () => {
   const colors = useThemeColors();
@@ -8,26 +9,26 @@ const styles = () => {
   return StyleSheet.create({
     container: {
       flex: 1,
-      overflow: "visible",
+      overflow: 'visible',
       backgroundColor: colors.background,
     },
     contentContainer: {
       flex: 1,
-      alignSelf: "center",
+      alignSelf: 'center',
       marginVertical: 10,
-      overflow: "visible",
+      overflow: 'visible',
       width: SIZE.appContainWidth,
     },
     headerContainer: {
-      flexDirection: "row",
+      flexDirection: 'row',
       height: 35,
-      alignItems: "center",
-      justifyContent: "space-between",
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
     headerIcon: {
       width: 20,
       height: 20,
-      resizeMode: "contain",
+      resizeMode: 'contain',
     },
     headerText: {
       right: 8,
@@ -35,17 +36,17 @@ const styles = () => {
       fontFamily: FONTS.SemiBold,
     },
     createButton: {
-      position: "absolute",
+      position: 'absolute',
       bottom: 1,
-      width: "100%",
+      width: '100%',
       height: 43,
       borderRadius: 10,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     createButtonText: {
       color: colors.white,
-      textAlign: "center",
+      textAlign: 'center',
       fontFamily: FONTS.Medium,
       fontSize: 22,
     },
@@ -59,24 +60,24 @@ const styles = () => {
       backgroundColor: colors.background,
       // borderTopLeftRadius: 20,
       // borderTopRightRadius: 20,
-      overflow: "hidden",
+      overflow: 'hidden',
     },
     contactHeaderContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       paddingHorizontal: 15,
-      marginBottom: 10,
     },
     contactHeaderIcon: {
       width: 20,
       height: 20,
-      resizeMode: "contain",
+      resizeMode: 'contain',
     },
     contactSearchInput: {
       height: 45,
       marginHorizontal: 10,
-      marginVertical: 20,
+      marginTop: 20,
+      marginBottom: 15,
       paddingHorizontal: 15,
       borderRadius: 20,
       backgroundColor: colors.contactBackground,
@@ -89,7 +90,7 @@ const styles = () => {
     },
     contactItemContainer: {
       width: SIZE.appContainWidth,
-      alignSelf: "center",
+      alignSelf: 'center',
       borderRadius: 25,
       marginBottom: 15,
       columnGap: 15,
@@ -110,12 +111,12 @@ const styles = () => {
       marginTop: 2,
     },
     contactDoneButton: {
-      width: "100%",
-      height: 80,
-      bottom: 0,
-      position: "absolute",
-      justifyContent: "center",
-      alignItems: "center",
+      width: '100%',
+      height: 70,
+      // bottom: 0,
+      // position: 'absolute',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     contactDoneButtonText: {
       color: colors.white,
@@ -126,19 +127,19 @@ const styles = () => {
       width: 140,
       height: 43,
       borderRadius: 25,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "rgba(64, 93, 240, 1)",
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(64, 93, 240, 1)',
     },
 
     contactLoadingContainer: {
       flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     loadingContent: {
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     loadingEmoji: {
       fontSize: 48,
@@ -147,16 +148,16 @@ const styles = () => {
     loadingText: {
       fontSize: 18,
       fontFamily: FONTS.Medium,
-      textAlign: "center",
+      textAlign: 'center',
     },
     memoRemoveButton: {
       width: 20,
       height: 20,
       top: -10,
       right: 0,
-      justifyContent: "center",
-      alignItems: "center",
-      position: "absolute",
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'absolute',
       borderRadius: 500,
       zIndex: 99999,
     },
@@ -168,24 +169,24 @@ const styles = () => {
 
     // recorder
     recorderContainer: {
-      justifyContent: "center",
+      justifyContent: 'center',
       marginBottom: 20,
-      overflow: "visible",
+      overflow: 'visible',
     },
     recorderFooter: {
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     recorderRecordButton: {
       width: 35,
       height: 35,
       padding: 3,
       borderRadius: 35,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     recorderRecordWave: {
-      position: "absolute",
+      position: 'absolute',
       top: -20,
       bottom: -20,
       left: -20,
@@ -196,8 +197,8 @@ const styles = () => {
       aspectRatio: 1,
     },
     orContainer: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       marginBottom: 15,
     },
     orLine: {
@@ -210,7 +211,12 @@ const styles = () => {
       color: colors.text,
       fontFamily: FONTS.SemiBold,
       fontSize: 15,
-      textAlign: "center",
+      textAlign: 'center',
+    },
+
+    customBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(48, 51, 52, 0.8)',
     },
   });
 };

@@ -1,13 +1,8 @@
-import React, { FC, memo } from "react";
-import {
-  Image,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from "react-native";
-import { FONTS } from "../../../Constants/Theme";
-import useThemeColors from "../../../Hooks/useThemeMode";
+import React, { FC, memo } from 'react';
+import { Image, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface OnBoardingProps {
   item: any;
@@ -19,11 +14,7 @@ const OnBoardingListView: FC<OnBoardingProps> = ({ item }) => {
 
   return (
     <View key={item.id} style={[style.container, { width }]}>
-      <Image
-        resizeMode="cover"
-        source={item?.image}
-        style={[style.backgroundImage, { width }]}
-      />
+      <Image resizeMode="cover" source={item?.image} style={[style.backgroundImage, { width }]} />
 
       <View style={style.TextViewContainer}>
         <Text style={style.TitleText}>{item.title}</Text>
@@ -49,24 +40,24 @@ const styles = () => {
     },
     TextViewContainer: {
       flex: 0.3,
-      justifyContent: "center",
+      justifyContent: 'center',
     },
     TitleText: {
-      width: "95%",
-      alignSelf: "center",
+      width: '95%',
+      alignSelf: 'center',
       fontSize: 26,
-      textAlign: "center",
+      textAlign: 'center',
       marginBottom: 5,
       fontFamily: FONTS.SemiBold,
       color: colors.black,
     },
     DescriptionText: {
-      width: "95%",
+      width: '95%',
       fontSize: 18,
-      alignSelf: "center",
-      textAlign: "center",
+      alignSelf: 'center',
+      textAlign: 'center',
       fontFamily: FONTS.Medium,
-      color: "rgba(90, 90, 90, 1)",
+      color: 'rgba(90, 90, 90, 1)',
     },
   });
 };

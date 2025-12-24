@@ -1,17 +1,11 @@
-import { BlurView } from "expo-blur";
-import React, { FC, useState } from "react";
-import {
-  Image,
-  Linking,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import ReactNativeModal from "react-native-modal";
-import AssetsPath from "../Constants/AssetsPath";
-import { FONTS } from "../Constants/Theme";
-import useThemeColors from "../Hooks/useThemeMode";
+import { APP_CONFIG } from '@Constants/AppConfig';
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
+import { BlurView } from 'expo-blur';
+import React, { FC, useState } from 'react';
+import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import ReactNativeModal from 'react-native-modal';
 
 interface RateUsModalProps {
   isVisible: boolean;
@@ -52,7 +46,6 @@ const RateUsModal: FC<RateUsModalProps> = ({ isVisible, onClose }) => {
       style={style.modalContainer}
       backdropOpacity={1}
       useNativeDriverForBackdrop
-      removeClippedSubviews
     >
       <View style={style.mainContainer}>
         <View style={style.rateUsViewContainer}>
@@ -73,14 +66,12 @@ const RateUsModal: FC<RateUsModalProps> = ({ isVisible, onClose }) => {
           </View>
           <View style={style.buttonContainer}>
             <Pressable style={style.cancelButton} onPress={onClose}>
-              <Text style={[style.buttonText, { color: "red" }]}>Cancel</Text>
+              <Text style={[style.buttonText, { color: 'red' }]}>Cancel</Text>
             </Pressable>
             <Pressable
               style={style.submitButton}
               onPress={() => {
-                Linking.openURL(
-                  "https://play.google.com/store/apps/details?id=com.taskwave.dailysync"
-                );
+                Linking.openURL(APP_CONFIG.playStoreUrl);
                 onClose();
               }}
             >
@@ -100,16 +91,16 @@ const styles = (colors: any) =>
   StyleSheet.create({
     modalContainer: {
       margin: 0,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     mainContainer: {
-      width: "75%",
+      width: '75%',
       backgroundColor: colors.white,
       borderRadius: 10,
       padding: 20,
 
-      shadowColor: "rgba(64, 93, 240, 1)",
+      shadowColor: 'rgba(64, 93, 240, 1)',
       shadowOffset: {
         width: 0,
         height: -5,
@@ -119,8 +110,8 @@ const styles = (colors: any) =>
       elevation: 15,
     },
     rateUsViewContainer: {
-      alignItems: "center",
-      shadowColor: "red",
+      alignItems: 'center',
+      shadowColor: 'red',
       shadowOffset: {
         width: 0,
         height: 5,
@@ -137,9 +128,9 @@ const styles = (colors: any) =>
       marginBottom: 20,
     },
     emojiContainer: {
-      flexDirection: "row",
-      justifyContent: "space-around",
-      width: "100%",
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      width: '100%',
       marginBottom: 25,
     },
     emojiWrapper: {
@@ -147,28 +138,28 @@ const styles = (colors: any) =>
       borderRadius: 500,
     },
     selectedEmojiBackground: {
-      backgroundColor: "rgba(122, 129, 218, 0.25)",
+      backgroundColor: 'rgba(122, 129, 218, 0.25)',
       borderRadius: 500,
     },
     emoji: {
       width: 38,
       height: 38,
-      resizeMode: "contain",
+      resizeMode: 'contain',
     },
     buttonContainer: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      width: "100%",
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%',
       marginBottom: 10,
       marginTop: 15,
     },
     cancelButton: {
-      backgroundColor: "rgba(217, 217, 217, 0.5)",
+      backgroundColor: 'rgba(217, 217, 217, 0.5)',
       padding: 10,
       borderRadius: 15,
       flex: 1,
       marginRight: 5,
-      alignItems: "center",
+      alignItems: 'center',
     },
     submitButton: {
       backgroundColor: colors.blue,
@@ -176,7 +167,7 @@ const styles = (colors: any) =>
       borderRadius: 15,
       flex: 1,
       marginLeft: 5,
-      alignItems: "center",
+      alignItems: 'center',
     },
     buttonText: {
       fontSize: 17.5,
@@ -184,14 +175,14 @@ const styles = (colors: any) =>
       fontFamily: FONTS.SemiBold,
     },
     noThanks: {
-      color: "rgba(106, 107, 107, 1)",
+      color: 'rgba(106, 107, 107, 1)',
       fontFamily: FONTS.Medium,
       marginTop: 10,
       fontSize: 17,
     },
     customBackdrop: {
       flex: 1,
-      backgroundColor: "rgba(48, 51, 52, 0.8)",
+      backgroundColor: 'rgba(48, 51, 52, 0.8)',
     },
   });
 

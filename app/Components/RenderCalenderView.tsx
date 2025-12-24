@@ -1,8 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import React, { FC, memo } from "react";
-import { FONTS } from "../Constants/Theme";
-import useThemeColors from "../Hooks/useThemeMode";
-import { DayItem } from "../Types/Interface";
+import React, { FC, memo } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
+import { DayItem } from '@Types/Interface';
 
 interface CalenderProps {
   item: DayItem;
@@ -11,17 +12,12 @@ interface CalenderProps {
   selectedDate: string;
 }
 
-const RenderCalenderView: FC<CalenderProps> = ({
-  item,
-  index,
-  handleDayClick,
-  selectedDate,
-}) => {
+const RenderCalenderView: FC<CalenderProps> = ({ item, index, handleDayClick, selectedDate }) => {
   const style = styles();
   const colors = useThemeColors();
 
   const isSelected = item.formattedDate === selectedDate;
-  const backgroundColor = isSelected ? colors.lightBlue : "transparent";
+  const backgroundColor = isSelected ? colors.lightBlue : 'transparent';
 
   return (
     <Pressable
@@ -35,7 +31,7 @@ const RenderCalenderView: FC<CalenderProps> = ({
         style={[
           style.calenderWeekText,
           {
-            color: isSelected ? colors.text : "rgba(154, 156, 156, 0.7)",
+            color: isSelected ? colors.text : 'rgba(154, 156, 156, 0.7)',
           },
         ]}
       >
@@ -44,10 +40,7 @@ const RenderCalenderView: FC<CalenderProps> = ({
       <View style={[style.calenderDateTextView, { backgroundColor }]}>
         <Text
           numberOfLines={1}
-          style={[
-            style.calenderDayText,
-            { color: isSelected ? colors.white : colors.text },
-          ]}
+          style={[style.calenderDayText, { color: isSelected ? colors.white : colors.text }]}
         >
           {item?.date}
         </Text>
@@ -64,27 +57,28 @@ const styles = () => {
   return StyleSheet.create({
     calenderContainer: {
       gap: 7,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     calenderWeekText: {
       fontSize: 14,
       letterSpacing: 1.1,
       fontFamily: FONTS.SemiBold,
-      textAlign: "center",
+      textAlign: 'center',
     },
     calenderDateTextView: {
       width: 29,
       height: 29,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center',
       borderRadius: 500,
+      overflow: 'hidden',
     },
     calenderDayText: {
       fontSize: 14,
       color: colors.text,
       fontFamily: FONTS.Medium,
-      textAlign: "center",
+      textAlign: 'center',
     },
   });
 };

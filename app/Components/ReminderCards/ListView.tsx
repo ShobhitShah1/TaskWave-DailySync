@@ -1,21 +1,22 @@
-import React, { FC, memo, useMemo } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { useAppContext } from "../../Contexts/ThemeProvider";
-import AssetsPath from "../../Constants/AssetsPath";
-import { FONTS } from "../../Constants/Theme";
-import { useCountdownTimer } from "../../Hooks/useCountdownTimer";
-import { formatTime } from "../../Screens/AddReminder/ReminderScheduled";
-import { IListViewProps } from "../../Types/Interface";
-import { formatNotificationType } from "../../Utils/formatNotificationType";
-import useThemeColors from "../../Hooks/useThemeMode";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import { useCountdownTimer } from '@Hooks/useCountdownTimer';
+import useThemeColors from '@Hooks/useThemeMode';
+import { formatTime } from '@Screens/AddReminder/ReminderScheduled';
+import { IListViewProps } from '@Types/Interface';
+import { formatNotificationType } from '@Utils/formatNotificationType';
+import React, { FC, memo } from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-const LOGO_SIZE = 65;
+const LOGO_SIZE = 68;
 
 const ListView: FC<IListViewProps> = ({
   cardBackgroundColor,
   icon,
   title,
+  address,
   notification,
   onCardPress,
   typeColor,
@@ -24,6 +25,7 @@ const ListView: FC<IListViewProps> = ({
   onDuplicatePress,
 }) => {
   const colors = useThemeColors();
+  const isLocation = notification.type === 'location';
 
   const { theme } = useAppContext();
   const { timeLeft } = useCountdownTimer(notification.date);
@@ -32,10 +34,7 @@ const ListView: FC<IListViewProps> = ({
     <Animated.View
       entering={FadeIn}
       exiting={FadeOut}
-      style={[
-        styles.cardContainer,
-        { width: "100%", backgroundColor: cardBackgroundColor },
-      ]}
+      style={[styles.cardContainer, { width: '100%', backgroundColor: cardBackgroundColor }]}
     >
       <Pressable
         onPress={onCardPress}
@@ -44,35 +43,35 @@ const ListView: FC<IListViewProps> = ({
       >
         <View style={styles.rowContainer}>
           <View style={styles.logoWrapper}>
-            <View
-              style={[
-                styles.logoContainer,
-                {
-                  backgroundColor:
-                    notification.type === "gmail" ? colors.gmail : typeColor,
-                },
-              ]}
-            >
-              <Image source={icon} style={styles.logo} />
-            </View>
+            {isLocation ? (
+              <Image
+                source={icon}
+                style={{ width: LOGO_SIZE, height: LOGO_SIZE, borderRadius: 15 }}
+              />
+            ) : (
+              <View
+                style={[
+                  styles.logoContainer,
+                  {
+                    backgroundColor: notification.type === 'gmail' ? colors.gmail : typeColor,
+                  },
+                ]}
+              >
+                <Image source={icon} style={styles.logo} />
+              </View>
+            )}
           </View>
           <View style={styles.textContainer}>
             <Text
               numberOfLines={1}
-              style={[
-                styles.senderName,
-                { color: theme == "light" ? "#151616" : colors.text },
-              ]}
+              style={[styles.senderName, { color: theme == 'light' ? '#151616' : colors.text }]}
             >
               {title}
             </Text>
             <Text
               numberOfLines={3}
               style={{
-                color:
-                  theme === "dark"
-                    ? "rgba(255, 255, 255, 0.7)"
-                    : "rgba(139, 142, 142, 1)",
+                color: theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(139, 142, 142, 1)',
                 fontFamily: FONTS.Medium,
                 fontSize: 16,
                 lineHeight: 20,
@@ -99,15 +98,18 @@ const ListView: FC<IListViewProps> = ({
             <Text style={[styles.timeText, { color: typeColor }]}>
               {formatTime(new Date(notification.date))}
             </Text>
+
             <View style={[styles.separator, { borderColor: typeColor }]} />
             <View style={styles.countdownContainer}>
-              <Image
-                tintColor={colors.text}
-                source={AssetsPath.ic_timerClock}
-                style={styles.timerIcon}
-              />
-              <Text style={[styles.countdownText, { color: typeColor }]}>
-                {timeLeft}
+              {!isLocation && (
+                <Image
+                  tintColor={colors.text}
+                  source={AssetsPath.ic_timerClock}
+                  style={styles.timerIcon}
+                />
+              )}
+              <Text numberOfLines={1} style={[styles.countdownText, { color: typeColor }]}>
+                {isLocation ? address || '' : timeLeft}
               </Text>
             </View>
           </View>
@@ -120,7 +122,7 @@ const ListView: FC<IListViewProps> = ({
                 style={styles.actionIcon}
               />
             </Pressable>
-            <Pressable onPress={onEditPress} style={{ paddingHorizontal: 6 }}>
+            <Pressable onPress={onEditPress}>
               <Image
                 resizeMode="contain"
                 tintColor={typeColor}
@@ -128,14 +130,16 @@ const ListView: FC<IListViewProps> = ({
                 style={styles.actionIcon}
               />
             </Pressable>
-            <Pressable onPress={onDuplicatePress}>
-              <Image
-                resizeMode="contain"
-                tintColor={typeColor}
-                source={AssetsPath.ic_duplicate}
-                style={styles.actionIcon}
-              />
-            </Pressable>
+            {notification.type !== 'location' && (
+              <Pressable onPress={onDuplicatePress}>
+                <Image
+                  resizeMode="contain"
+                  tintColor={typeColor}
+                  source={AssetsPath.ic_duplicate}
+                  style={styles.actionIcon}
+                />
+              </Pressable>
+            )}
           </View>
         </View>
       </Pressable>
@@ -147,10 +151,10 @@ export default memo(ListView);
 
 const styles = StyleSheet.create({
   cardContainer: {
-    height: 128,
+    minHeight: 128,
     borderRadius: 15,
     marginVertical: 5,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   pressableContainer: {
     flex: 1,
@@ -159,28 +163,29 @@ const styles = StyleSheet.create({
   },
   rowContainer: {
     flex: 0.8,
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   logoWrapper: {
-    width: "20%",
-    alignItems: "center",
-    justifyContent: "center",
+    width: '20%',
+
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logoContainer: {
     width: LOGO_SIZE,
     height: LOGO_SIZE,
     borderRadius: 15,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   logo: {
     width: LOGO_SIZE / 1.8,
     height: LOGO_SIZE / 1.8,
-    resizeMode: "contain",
+    resizeMode: 'contain',
   },
   textContainer: {
-    width: "60%",
+    width: '60%',
     paddingHorizontal: 15,
   },
   senderName: {
@@ -188,10 +193,10 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.SemiBold,
   },
   typeContainer: {
-    width: "20%",
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignSelf: "flex-start",
+    width: '20%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignSelf: 'flex-start',
   },
   typeText: {
     fontSize: 16,
@@ -201,20 +206,20 @@ const styles = StyleSheet.create({
   notificationIcon: {
     width: 17,
     height: 17,
-    justifyContent: "center",
-    alignItems: "center",
-    resizeMode: "contain",
+    justifyContent: 'center',
+    alignItems: 'center',
+    resizeMode: 'contain',
   },
   footerContainer: {
     flex: 0.2,
     top: 4,
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   timeContainer: {
-    flexDirection: "row",
-    width: "73%",
+    flexDirection: 'row',
+    width: '73%',
   },
   timeText: {
     fontSize: 16,
@@ -222,14 +227,14 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 15,
-    justifyContent: "center",
-    alignSelf: "center",
+    justifyContent: 'center',
+    alignSelf: 'center',
     marginHorizontal: 10,
     borderRightWidth: 1.5,
   },
   countdownContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   timerIcon: {
     width: 12,
@@ -237,22 +242,23 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   countdownText: {
+    width: '90%',
     fontSize: 16,
     letterSpacing: 1.5,
     fontFamily: FONTS.Medium,
   },
   actionsContainer: {
-    bottom: 3,
+    gap: 10,
     right: 3,
-    gap: 5,
-    flexDirection: "row",
-    width: "25%",
-    justifyContent: "flex-end",
+    bottom: 3,
+    width: '25%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   actionIcon: {
     width: 20,
     height: 20,
-    resizeMode: "contain",
+    resizeMode: 'contain',
     // paddingRight: 13,
   },
 });

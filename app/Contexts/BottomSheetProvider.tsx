@@ -1,18 +1,13 @@
-import React, { createContext, useContext, useRef } from "react";
-import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import React, { createContext, useContext, useRef } from 'react';
 
 type BottomSheetContextType = {
-  bottomSheetModalRef: React.RefObject<BottomSheetModal>;
+  bottomSheetModalRef: React.RefObject<BottomSheetModal | null>;
 };
 
 const BottomSheetContext = createContext<BottomSheetContextType | null>(null);
 
-export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   return (
@@ -25,7 +20,7 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({
 export const useBottomSheet = (): BottomSheetContextType => {
   const context = useContext(BottomSheetContext);
   if (!context) {
-    throw new Error("useBottomSheet must be used within a BottomSheetProvider");
+    throw new Error('useBottomSheet must be used within a BottomSheetProvider');
   }
   return context;
 };

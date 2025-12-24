@@ -1,0 +1,8 @@
+#!/bin/sh
+
+yarn format --check
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+  printf "\n❌ Code is not formatted. Please run 'yarn format' before committing.\n"
+  exit 1
+fi 

@@ -1,13 +1,14 @@
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { useCallback, useState } from "react";
-import { Platform } from "react-native";
-import { showMessage } from "react-native-flash-message";
-import useDatabase, { scheduleNotification } from "./useReminder";
-import { Notification, Theme } from "../Types/Interface";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useCallback, useState } from 'react';
+import { Platform } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
+
+import { Notification, Theme } from '@Types/Interface';
+import useDatabase, { scheduleNotification } from './useReminder';
 
 interface DateTimePickerState {
   show: boolean;
-  mode: "date" | "time";
+  mode: 'date' | 'time';
   value: Date;
 }
 
@@ -25,14 +26,14 @@ export const useDuplicateReminder = ({
   const { createNotification } = useDatabase();
   const [dateTimeState, setDateTimeState] = useState<DateTimePickerState>({
     show: false,
-    mode: "date",
+    mode: 'date',
     value: new Date(notification.date),
   });
 
   const showErrorMessage = useCallback((error: any) => {
     showMessage({
-      message: error?.message?.toString() || "An error occurred",
-      type: "danger",
+      message: error?.message?.toString() || 'An error occurred',
+      type: 'danger',
     });
   }, []);
 
@@ -47,7 +48,7 @@ export const useDuplicateReminder = ({
   const openDuplicateModal = useCallback(() => {
     setDateTimeState({
       show: true,
-      mode: "date",
+      mode: 'date',
       value: new Date(notification.date),
     });
   }, []);
@@ -58,15 +59,13 @@ export const useDuplicateReminder = ({
         const newNotification: any = {
           ...notification,
           date: scheduledDateTime,
-          id: "",
+          id: '',
         };
 
-        const notificationScheduleId = await scheduleNotification(
-          newNotification
-        );
+        const notificationScheduleId = await scheduleNotification(newNotification);
 
         if (!notificationScheduleId?.trim()) {
-          throw new Error("Failed to schedule notification.");
+          throw new Error('Failed to schedule notification.');
         }
 
         const data = {
@@ -81,8 +80,8 @@ export const useDuplicateReminder = ({
         }
 
         showMessage({
-          message: "Reminder duplicated successfully.",
-          type: "success",
+          message: 'Reminder duplicated successfully.',
+          type: 'success',
         });
 
         onSuccess?.();
@@ -90,7 +89,7 @@ export const useDuplicateReminder = ({
         showErrorMessage(error);
       }
     },
-    [notification, onSuccess, showErrorMessage]
+    [notification, onSuccess, showErrorMessage],
   );
 
   const handleDateTimeChange = useCallback(
@@ -101,18 +100,18 @@ export const useDuplicateReminder = ({
           return;
         }
 
-        if (Platform.OS === "android") {
+        if (Platform.OS === 'android') {
           resetDateTimePicker();
 
-          if (event.type === "set") {
-            if (dateTimeState.mode === "date") {
+          if (event.type === 'set') {
+            if (dateTimeState.mode === 'date') {
               const newDateTime = new Date(selectedDateTime);
               const now = new Date();
               newDateTime.setHours(now.getHours(), now.getMinutes(), 0, 0);
 
               setDateTimeState({
                 show: true,
-                mode: "time",
+                mode: 'time',
                 value: newDateTime,
               });
             } else {
@@ -121,7 +120,7 @@ export const useDuplicateReminder = ({
                 selectedDateTime.getHours(),
                 selectedDateTime.getMinutes(),
                 0,
-                0
+                0,
               );
               await createDuplicateReminder(finalDateTime);
             }
@@ -137,12 +136,7 @@ export const useDuplicateReminder = ({
         showErrorMessage(error);
       }
     },
-    [
-      dateTimeState,
-      createDuplicateReminder,
-      resetDateTimePicker,
-      showErrorMessage,
-    ]
+    [dateTimeState, createDuplicateReminder, resetDateTimePicker, showErrorMessage],
   );
 
   const renderDateTimePicker = useCallback(() => {

@@ -1,8 +1,9 @@
-import React, { FC, memo } from "react";
-import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
-import ReactNativeModal from "react-native-modal";
-import AssetsPath from "../Constants/AssetsPath";
-import useThemeColors from "../Hooks/useThemeMode";
+import React, { FC, memo } from 'react';
+import { Image, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import ReactNativeModal from 'react-native-modal';
+
+import AssetsPath from '@Constants/AssetsPath';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface FullScreenMessageModalProps {
   isVisible: boolean;
@@ -31,9 +32,7 @@ const FullScreenMessageModal: FC<FullScreenMessageModalProps> = ({
       animationOutTiming={800}
       hideModalContentWhileAnimating
       animationOut="fadeOutDown"
-      customBackdrop={
-        <Pressable style={styles.customBackdrop} onPress={onClose} />
-      }
+      customBackdrop={<Pressable style={styles.customBackdrop} onPress={onClose} />}
       hasBackdrop
       useNativeDriver={true}
       onBackButtonPress={onClose}
@@ -66,7 +65,7 @@ const FullScreenMessageModal: FC<FullScreenMessageModalProps> = ({
             styles.textInputStyle,
             {
               padding: 10,
-              height: "100%",
+              height: '100%',
               color: colors.text,
               backgroundColor: colors.scheduleReminderCardBackground,
             },
@@ -83,28 +82,28 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 0,
     margin: 0,
-    height: "100%",
-    width: "100%",
+    height: '100%',
+    width: '100%',
   },
   mainContainer: {
     flex: 1,
-    width: "100%",
-    alignSelf: "center",
+    width: '100%',
+    alignSelf: 'center',
   },
   listHeaderView: {
-    height: "10%",
-    width: "100%",
+    height: '10%',
+    width: '100%',
     paddingHorizontal: 10,
-    justifyContent: "center",
-    alignSelf: "flex-end",
-    alignItems: "flex-end",
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    alignItems: 'flex-end',
   },
   fullScreenIcon: {
     width: 35,
     height: 35,
   },
   customBackdrop: {
-    backgroundColor: "rgba(48, 51, 52, 0.9)",
+    backgroundColor: 'rgba(48, 51, 52, 0.9)',
     opacity: 0.5,
     flex: 1,
   },

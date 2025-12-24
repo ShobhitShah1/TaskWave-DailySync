@@ -1,32 +1,32 @@
-import notifee, { EventType } from "@notifee/react-native";
-import { useFonts } from "expo-font";
-import * as QuickActions from "expo-quick-actions";
-import * as ExpoSplashScreen from "expo-splash-screen";
-import * as SystemUI from "expo-system-ui";
-import { useEffect } from "react";
-import { LogBox, StatusBar, StyleSheet, Text } from "react-native";
-import FlashMessage, { showMessage } from "react-native-flash-message";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { FONTS } from "./app/Constants/Theme";
-import { BottomSheetProvider } from "./app/Contexts/BottomSheetProvider";
-import { AppProvider } from "./app/Contexts/ThemeProvider";
-import { handleNotificationPress } from "./app/Hooks/handleNotificationPress";
-import { updateNotification } from "./app/Hooks/updateNotification";
-import updateToNextDate from "./app/Hooks/updateToNextDate";
+import { FONTS } from '@Constants/Theme';
+import notifee, { EventType } from '@notifee/react-native';
+import { useFonts } from 'expo-font';
+import * as QuickActions from 'expo-quick-actions';
+import React, { useEffect } from 'react';
+import { LogBox, StatusBar, StyleSheet, Text, View } from 'react-native';
+import FlashMessage, { showMessage } from 'react-native-flash-message';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+import { BottomSheetProvider } from './app/Contexts/BottomSheetProvider';
+import { ContactProvider } from './app/Contexts/ContactProvider';
+import { AppProvider, useAppContext } from './app/Contexts/ThemeProvider';
+import { handleNotificationPress } from './app/Hooks/handleNotificationPress';
+import { updateNotification } from './app/Hooks/updateNotification';
+import updateToNextDate from './app/Hooks/updateToNextDate';
 import useReminder, {
   createNotificationChannel,
-  RESCHEDULE_CONFIG,
   scheduleNotification,
-} from "./app/Hooks/useReminder";
-import Routes from "./app/Routes/Routes";
-import { Notification } from "./app/Types/Interface";
-import { parseNotificationData } from "./app/Utils/notificationParser";
-import { checkIfConfigIsValid } from "react-native-reanimated/lib/typescript/reanimated2/animation/springUtils";
+} from './app/Hooks/useReminder';
+import Routes from './app/Routes/Routes';
+import LocationService from './app/Services/LocationService';
+import { Notification } from './app/Types/Interface';
+import { getDatabase } from './app/Utils/databaseUtils';
 
-ExpoSplashScreen.preventAutoHideAsync();
-
-SystemUI.setBackgroundColorAsync("transparent");
+// This is the default configuration
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.error,
+  strict: false, // Reanimated runs in strict mode by default
+});
 
 if (__DEV__) {
   LogBox.ignoreAllLogs();
@@ -47,39 +47,7 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
 
     switch (type) {
       case EventType.DISMISSED:
-        // if (notification) {
-        //   const parseData = parseNotificationData(notification);
-
-        //   const rescheduleInfo = parseData.rescheduleInfo
-        //     ? JSON.parse(
-        //         typeof parseData.rescheduleInfo === "string"
-        //           ? parseData.rescheduleInfo
-        //           : JSON.stringify(parseData.rescheduleInfo)
-        //       )
-        //     : null;
-
-        //   const retryCount = rescheduleInfo?.retryCount || 0;
-
-        //   if (
-        //     !RESCHEDULE_CONFIG.maxRetries ||
-        //     retryCount < RESCHEDULE_CONFIG.maxRetries
-        //   ) {
-        //     try {
-        //       await scheduleNotification(parseData, {
-        //         isReschedule: true,
-        //         delayMinutes: RESCHEDULE_CONFIG.defaultDelay,
-        //         retryCount: retryCount,
-        //       });
-        //     } catch (error: any) {
-        //       if (!error.message?.includes("invalid notification ID")) {
-        //         showMessage({
-        //           message: String(error?.message || error),
-        //           type: "danger",
-        //         });
-        //       }
-        //     }
-        //   }
-        // }
+        // Handle dismissed notifications
         break;
       case EventType.PRESS:
         handleNotificationPress(notification);
@@ -87,17 +55,15 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
       case EventType.DELIVERED:
         if (notification && notification?.scheduleFrequency?.length !== 0) {
           try {
-            const { updatedNotification } = await updateToNextDate(
-              notification
-            );
+            const { updatedNotification } = await updateToNextDate(notification);
             if (updatedNotification) {
               await updateNotification(updatedNotification);
             }
           } catch (error: any) {
-            if (!error.message?.includes("invalid notification ID")) {
+            if (!error.message?.includes('invalid notification ID')) {
               showMessage({
                 message: String(error?.message || error),
-                type: "danger",
+                type: 'danger',
               });
             }
           }
@@ -109,94 +75,65 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
         return;
     }
   } catch (error: any) {
-    if (!error.message?.includes("invalid notification ID")) {
+    if (!error.message?.includes('invalid notification ID')) {
       showMessage({
         message: String(error?.message || error),
-        type: "danger",
+        type: 'danger',
       });
     }
   }
 });
 
+const AppContent = () => {
+  const { theme } = useAppContext();
+
+  return (
+    <GestureHandlerRootView
+      style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
+    >
+      <BottomSheetProvider>
+        <View
+          style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
+        >
+          <Routes />
+          <FlashMessage
+            animated
+            hideOnPress
+            position="top"
+            statusBarHeight={StatusBar.currentHeight || 10}
+            titleStyle={{ fontFamily: FONTS.SemiBold, fontSize: 18 }}
+            textStyle={{ fontFamily: FONTS.Medium, fontSize: 15 }}
+          />
+        </View>
+      </BottomSheetProvider>
+    </GestureHandlerRootView>
+  );
+};
+
 export default function App() {
-  const { updateNotification, deleteNotification, createNotification } =
-    useReminder();
+  const { updateNotification, createNotification } = useReminder();
 
   const [loaded, error] = useFonts({
-    "ClashGrotesk-Bold": require("./assets/Fonts/ClashGrotesk-Bold.otf"),
-    "ClashGrotesk-Medium": require("./assets/Fonts/ClashGrotesk-Medium.otf"),
-    "ClashGrotesk-Regular": require("./assets/Fonts/ClashGrotesk-Regular.otf"),
-    "ClashGrotesk-Semibold": require("./assets/Fonts/ClashGrotesk-Semibold.otf"),
+    'ClashGrotesk-Bold': require('./assets/Fonts/ClashGrotesk-Bold.otf'),
+    'ClashGrotesk-Medium': require('./assets/Fonts/ClashGrotesk-Medium.otf'),
+    'ClashGrotesk-Regular': require('./assets/Fonts/ClashGrotesk-Regular.otf'),
+    'ClashGrotesk-Semibold': require('./assets/Fonts/ClashGrotesk-Semibold.otf'),
   });
 
   useEffect(() => {
-    try {
-      notifee
-        .getInitialNotification()
-        .then(async (res) => {
-          if (res?.notification?.data) {
-            await handleNotificationPress(res?.notification?.data as any);
-            notifee.cancelNotification(res?.notification?.id as string);
-          }
-        })
-        .catch((error) => {
-          if (!error.message?.includes("invalid notification ID")) {
-            showMessage({
-              message: String(error?.message || error),
-              type: "danger",
-            });
-          }
-        });
-    } catch (error: any) {
-      if (!error.message?.includes("invalid notification ID")) {
-        showMessage({
-          message: String(error?.message || error),
-          type: "danger",
-        });
-      }
-    }
+    initializeApp();
+    getDatabase();
+    setupQuickActions();
   }, []);
 
   useEffect(() => {
-    return notifee.onForegroundEvent(async ({ type, detail }) => {
+    const unsubscribe = notifee.onForegroundEvent(async ({ type, detail }) => {
       try {
         const notification: Notification = detail.notification?.data as any;
 
         switch (type) {
           case EventType.DISMISSED:
-            // if (notification) {
-            //   const parseData = parseNotificationData(notification);
-
-            //   const rescheduleInfo = parseData.rescheduleInfo
-            //     ? JSON.parse(
-            //         typeof parseData.rescheduleInfo === "string"
-            //           ? parseData.rescheduleInfo
-            //           : JSON.stringify(parseData.rescheduleInfo)
-            //       )
-            //     : null;
-
-            //   const retryCount = rescheduleInfo?.retryCount || 0;
-
-            //   if (
-            //     !RESCHEDULE_CONFIG.maxRetries ||
-            //     retryCount < RESCHEDULE_CONFIG.maxRetries
-            //   ) {
-            //     try {
-            //       await scheduleNotification(parseData, {
-            //         isReschedule: true,
-            //         delayMinutes: RESCHEDULE_CONFIG.defaultDelay,
-            //         retryCount: retryCount,
-            //       });
-            //     } catch (error: any) {
-            //       if (!error.message?.includes("invalid notification ID")) {
-            //         showMessage({
-            //           message: String(error?.message || error),
-            //           type: "danger",
-            //         });
-            //       }
-            //     }
-            //   }
-            // }
+            // Handle dismissed notifications
             break;
           case EventType.PRESS:
             handleNotificationPress(notification);
@@ -204,9 +141,7 @@ export default function App() {
           case EventType.DELIVERED:
             if (notification && notification?.scheduleFrequency?.length !== 0) {
               try {
-                const { updatedNotification } = await updateToNextDate(
-                  notification
-                );
+                const { updatedNotification } = await updateToNextDate(notification);
 
                 if (!updatedNotification) {
                   return;
@@ -220,11 +155,7 @@ export default function App() {
                 const notificationDate = new Date(updatedNotification.date);
                 notificationDate.setHours(0, 0, 0, 0);
 
-                if (
-                  notificationDate >= now &&
-                  updatedNotification &&
-                  updatedNotification.date
-                ) {
+                if (notificationDate >= now && updatedNotification && updatedNotification.date) {
                   let notificationScheduleId;
 
                   await createNotificationChannel();
@@ -235,9 +166,7 @@ export default function App() {
                       id,
                     });
                   } else {
-                    notificationScheduleId = await scheduleNotification(
-                      updatedNotification
-                    );
+                    notificationScheduleId = await scheduleNotification(updatedNotification);
 
                     if (notificationScheduleId?.trim()) {
                       const data = {
@@ -249,10 +178,10 @@ export default function App() {
                   }
                 }
               } catch (error: any) {
-                if (!error.message?.includes("invalid notification ID")) {
+                if (!error.message?.includes('invalid notification ID')) {
                   showMessage({
                     message: String(error?.message || error),
-                    type: "danger",
+                    type: 'danger',
                   });
                 }
               }
@@ -260,63 +189,115 @@ export default function App() {
             break;
         }
       } catch (error: any) {
-        if (!error.message?.includes("invalid notification ID")) {
+        if (!error.message?.includes('invalid notification ID')) {
           showMessage({
             message: String(error?.message || error),
-            type: "danger",
+            type: 'danger',
           });
         }
       }
     });
+
+    return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    QuickActions.setItems([
-      {
-        title: "Add Reminder",
-        subtitle: "Schedule a reminder to take your medication",
-        icon: "plus_icon",
-        id: "0",
-        params: { href: "/schedule" },
-      },
-      {
-        title: "Wait! Don't delete me!",
-        subtitle: "We're here to help",
-        icon: "wave_icon",
-        id: "1",
-        params: { href: "/help" },
-      },
-    ]);
-  }, []);
+  const initializeApp = async () => {
+    try {
+      await createNotificationChannel();
+
+      const initialNotification = await notifee.getInitialNotification();
+
+      if (initialNotification?.notification?.data) {
+        await handleNotificationPress(initialNotification.notification.data as any);
+        await notifee.cancelNotification(initialNotification.notification.id as string);
+      }
+    } catch (error: any) {
+      if (!error.message?.includes('invalid notification ID')) {
+        console.error('App initialization error:', error);
+      }
+    }
+  };
+
+  const setupQuickActions = async () => {
+    try {
+      await QuickActions.setItems([
+        {
+          title: 'Add Reminder',
+          subtitle: 'Schedule a reminder to take your medication',
+          icon: 'plus_icon',
+          id: '0',
+          params: { href: '/schedule' },
+        },
+        {
+          title: "Wait! Don't delete me!",
+          subtitle: "We're here to help",
+          icon: 'wave_icon',
+          id: '1',
+          params: { href: '/help' },
+        },
+      ]);
+
+      initializeLocationService();
+    } catch (error) {
+      console.error('Error setting up quick actions:', error);
+    }
+  };
+
+  const initializeLocationService = async () => {
+    try {
+      // Load existing location reminders from database using the centralized database utility
+      const database = await getDatabase();
+
+      const notifications = await database.getAllAsync<any>(
+        'SELECT * FROM notifications WHERE type = "location"',
+      );
+      const locationNotifications = notifications.filter((n: any) => n.latitude && n.longitude);
+
+      locationNotifications.forEach((notification: Notification) => {
+        LocationService.addLocationReminder({
+          id: notification.id,
+          latitude: Number(notification.latitude),
+          longitude: Number(notification.longitude),
+          radius: notification.radius || 100,
+          title: notification.subject || 'Location Reminder',
+          message: notification.message || '',
+          notification: {
+            ...notification,
+            date: new Date(notification.date),
+            toContact: [],
+            toMail: [],
+            attachments: [],
+            memo: [],
+          },
+        });
+      });
+
+      // Ensure tracking starts if reminders exist ---
+      if (locationNotifications.length > 0) {
+        // Start location tracking if not already started
+        await LocationService.startLocationTracking();
+      }
+      // -----------------------------------------------------
+    } catch (error) {
+      console.error('Error initializing location service:', error);
+    }
+  };
 
   if (!loaded || error) {
     return null;
   }
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <SafeAreaView style={styles.container}>
-        <AppProvider>
-          <BottomSheetProvider>
-            <Routes />
-            <FlashMessage
-              position="top"
-              duration={3500}
-              titleStyle={styles.flashTextStyle}
-              textStyle={[styles.flashTextStyle, { fontSize: 13.5 }]}
-              statusBarHeight={(StatusBar.currentHeight || 20) + 5}
-            />
-          </BottomSheetProvider>
-        </AppProvider>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+    <AppProvider>
+      <ContactProvider>
+        <AppContent />
+      </ContactProvider>
+    </AppProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  flashTextStyle: {
-    fontSize: 17,
-    fontFamily: FONTS.SemiBold,
+  container: {
+    flex: 1,
   },
 });

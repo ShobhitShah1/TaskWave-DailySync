@@ -1,25 +1,22 @@
-import { StatusBar } from "expo-status-bar";
-import React, { memo } from "react";
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
 import {
-  Dimensions,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  SequencedTransition,
-} from "react-native-reanimated";
-import { useAppContext } from "../../Contexts/ThemeProvider";
-import useThemeColors from "../../Hooks/useThemeMode";
-import { RenderSheetViewProps } from "../../Types/Interface";
-import { getCategories } from "../../Utils/getCategories";
-import RenderCategoryItem from "./RenderCategoryItem";
+  NotificationCategory,
+  NotificationType,
+  RenderSheetViewProps,
+  remindersCategoriesType,
+} from '@Types/Interface';
+import { getCategories } from '@Utils/getCategories';
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { Dimensions, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Animated, { LinearTransition } from 'react-native-reanimated';
+import RenderCategoryItem from './RenderCategoryItem';
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const ITEM_WIDTH = SCREEN_WIDTH / 2 - 24;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const ITEM_WIDTH = SCREEN_WIDTH / 2 - 22;
+const ITEM_GAP = 12;
+
+const smoothLayout = LinearTransition.springify();
 
 const RenderSheetView = ({
   categories,
@@ -29,69 +26,79 @@ const RenderSheetView = ({
 }: RenderSheetViewProps) => {
   const { theme } = useAppContext();
   const colors = useThemeColors();
+  const [sortedCategories, setSortedCategories] = useState<NotificationCategory[]>(categories);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const previousSelectedRef = useRef<NotificationType | null>(selectedCategory);
 
-  const initialCategories = getCategories(colors);
+  const initialCategories = useMemo(() => getCategories(colors), [colors]);
 
-  const createRows = (items: any) => {
-    const rows = [];
-    for (let i = 0; i < items.length; i += 2) {
-      const row = [items[i]];
-      if (i + 1 < items.length) {
-        row.push(items[i + 1]);
-      } else {
-        row.push(null);
+  const shiftToTop = useCallback(
+    (selectedType: NotificationType) => {
+      if (isAnimating || previousSelectedRef.current === selectedType) return;
+
+      setIsAnimating(true);
+      previousSelectedRef.current = selectedType;
+
+      const selectedItems = categories.filter((cat) => cat.type === selectedType);
+      const otherItems = categories.filter((cat) => cat.type !== selectedType);
+      setSortedCategories([...selectedItems, ...otherItems]);
+
+      setTimeout(() => setIsAnimating(false), 500);
+    },
+    [categories, isAnimating],
+  );
+
+  const handleTopCategoryClick = useCallback(
+    (category: NotificationCategory) => {
+      if (isAnimating) return;
+
+      if (category.type !== selectedCategory) {
+        shiftToTop(category.type);
       }
-      rows.push(row);
-    }
-    return rows;
-  };
+      onCategoryClick(category as remindersCategoriesType, true);
+      setSelectedCategory(category.type);
+    },
+    [shiftToTop, onCategoryClick, setSelectedCategory, selectedCategory, isAnimating],
+  );
 
-  const rows = createRows(categories);
+  const handleGridCategoryClick = useCallback(
+    (category: remindersCategoriesType) => {
+      if (isAnimating) return;
+      onCategoryClick(category, false);
+    },
+    [onCategoryClick, isAnimating],
+  );
 
   return (
     <View style={styles.container}>
-      <StatusBar
-        translucent
-        backgroundColor={colors.background}
-        style={theme === "dark" ? "light" : "dark"}
-      />
-
       <ScrollView
         horizontal
+        nestedScrollEnabled
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.contentContainerStyle}
       >
-        {initialCategories?.map((res) => {
-          const isSelected = res.type === selectedCategory;
-
+        {initialCategories.map((item) => {
+          const isSelected = item.type === selectedCategory;
           return (
             <Pressable
-              onPress={() => {
-                onCategoryClick(res, true);
-                setSelectedCategory(res.type);
-              }}
-              key={res.id}
+              key={item.id}
+              onPress={() => handleTopCategoryClick(item)}
               style={[
                 styles.sheetSuggestionImageView,
                 {
-                  opacity:
-                    (theme === "dark" && isSelected) || theme === "light"
-                      ? 1
-                      : 0.5,
+                  opacity: (theme === 'dark' && isSelected) || theme === 'light' ? 1 : 0.5,
                 },
               ]}
+              disabled={isAnimating}
             >
-              <Animated.Image
-                entering={FadeIn.delay(100 * res.id)}
+              <Image
                 resizeMode="contain"
-                fadeDuration={300}
-                source={isSelected ? res.glowIcon : res.icon}
+                source={isSelected ? item.glowIcon : item.icon}
                 style={[
                   styles.sheetSuggestionImage,
                   {
-                    width: isSelected ? "160%" : "155%",
-                    height: isSelected ? "160%" : "155%",
-                    overflow: "visible",
+                    width: isSelected ? '160%' : '155%',
+                    height: isSelected ? '160%' : '155%',
                   },
                 ]}
               />
@@ -100,38 +107,19 @@ const RenderSheetView = ({
         })}
       </ScrollView>
 
-      <View style={styles.gridContainer}>
-        {rows.map((row, rowIndex) => (
-          <View key={`row-${rowIndex}`} style={styles.row}>
-            {row.map((item, itemIndex) =>
-              item ? (
-                <Animated.View
-                  key={item?.id?.toString()}
-                  layout={SequencedTransition}
-                  exiting={FadeOut}
-                  style={styles.itemContainer}
-                >
-                  <RenderCategoryItem
-                    item={item}
-                    index={itemIndex}
-                    onCategoryClick={(category) =>
-                      onCategoryClick(category, false)
-                    }
-                    selectedCategory={selectedCategory}
-                    setSelectedCategory={setSelectedCategory}
-                  />
-                </Animated.View>
-              ) : (
-                <Animated.View
-                  key={`empty-${rowIndex}-${itemIndex}`}
-                  style={styles.emptyItem}
-                  layout={SequencedTransition}
-                />
-              )
-            )}
-          </View>
+      <Animated.View style={styles.gridContainer} layout={smoothLayout}>
+        {sortedCategories.map((item, index) => (
+          <Animated.View key={item.id} style={styles.itemContainer} layout={smoothLayout}>
+            <RenderCategoryItem
+              item={item as remindersCategoriesType}
+              index={index}
+              onCategoryClick={handleGridCategoryClick}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+            />
+          </Animated.View>
         ))}
-      </View>
+      </Animated.View>
     </View>
   );
 };
@@ -144,46 +132,38 @@ const styles = StyleSheet.create({
   },
   contentContainerStyle: {
     flexGrow: 1,
-    columnGap: 13,
+    columnGap: 8,
     paddingTop: 5,
     paddingBottom: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    alignContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sheetSuggestionImageView: {
     width: 35,
     height: 35,
     elevation: 5,
-    shadowColor: "rgba(0, 0, 0, 0.1)",
+    shadowColor: 'rgba(0, 0, 0, 0.1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 3,
     borderRadius: 500,
-    justifyContent: "center",
-    overflow: "visible",
+    justifyContent: 'center',
+    overflow: 'visible',
   },
   sheetSuggestionImage: {
-    alignSelf: "center",
+    alignSelf: 'center',
+    overflow: 'visible',
   },
   gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     paddingTop: 10,
-    paddingBottom: 90,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 15,
-    width: "100%",
+    paddingBottom: 20,
+    gap: ITEM_GAP,
   },
   itemContainer: {
     width: ITEM_WIDTH,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  emptyItem: {
-    width: ITEM_WIDTH,
+    marginBottom: 3,
   },
 });

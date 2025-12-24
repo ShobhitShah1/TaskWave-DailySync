@@ -1,22 +1,27 @@
-export const getNotificationTitle = (notification: any): string => {
-  if (!notification) return "";
+import { Notification } from '@Types/Interface';
 
-  if (notification.type === "note") {
-    return "Note";
+export const getNotificationTitle = (notification: Notification): string => {
+  if (!notification) return '';
+
+  switch (notification.type) {
+    case 'location':
+      return notification.subject || '';
+
+    case 'note':
+      return 'Note';
+
+    case 'gmail':
+      return notification.toMail?.[0] || '';
+
+    default:
+      if (notification.telegramUsername) {
+        return notification.telegramUsername.toString();
+      }
+
+      if (notification.toContact?.length) {
+        return notification.toContact.map((contact) => contact.name).join(', ');
+      }
+
+      return '';
   }
-
-  if (notification.type === "gmail") {
-    return notification?.toMail?.[0];
-  } else if (notification?.telegramUsername) {
-    return notification?.telegramUsername?.toString();
-  } else if (notification?.toContact) {
-    return notification.toContact
-      .map(
-        (res: { name: string }, index: number) =>
-          `${res.name}${index < notification.toContact.length - 1 ? "," : ""} `
-      )
-      .join("");
-  }
-
-  return "";
 };

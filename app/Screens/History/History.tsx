@@ -1,12 +1,5 @@
-import { useIsFocused } from "@react-navigation/native";
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useIsFocused } from '@react-navigation/native';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -18,46 +11,50 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { showMessage } from "react-native-flash-message";
-import Animated, { LinearTransition } from "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
-import RenderCalenderView from "../../Components/RenderCalenderView";
-import YearMonthPicker from "../../Components/YearMonthPicker";
-import AssetsPath from "../../Constants/AssetsPath";
-import { categoriesConfig } from "../../Constants/CategoryConfig";
-import { FONTS, SIZE } from "../../Constants/Theme";
-import { useAppContext } from "../../Contexts/ThemeProvider";
-import useCalendar from "../../Hooks/useCalendar";
-import useReminder from "../../Hooks/useReminder";
-import useThemeColors from "../../Hooks/useThemeMode";
-import { Notification } from "../../Types/Interface";
-import { countNotificationsByType } from "../../Utils/countNotificationsByType";
-import { formatNotificationType } from "../../Utils/formatNotificationType";
-import { generateDaysArray } from "../../Utils/generateDaysArray";
-import { formatDate } from "../AddReminder/ReminderScheduled";
-import HomeHeader from "../Home/Components/HomeHeader";
-import RenderFilterTabData from "./Components/RenderFilterTabData";
-import RenderHistoryList from "./Components/RenderHistoryList";
+} from 'react-native';
+import { showMessage } from 'react-native-flash-message';
+import Animated, { LinearTransition } from 'react-native-reanimated';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import RenderCalenderView from '@Components/RenderCalenderView';
+import YearMonthPicker from '@Components/YearMonthPicker';
+import AssetsPath from '@Constants/AssetsPath';
+import { categoriesConfig } from '@Constants/CategoryConfig';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useCalendar from '@Hooks/useCalendar';
+import useReminder from '@Hooks/useReminder';
+import useThemeColors from '@Hooks/useThemeMode';
+import { Notification } from '@Types/Interface';
+import { countNotificationsByType } from '@Utils/countNotificationsByType';
+import { formatNotificationType } from '@Utils/formatNotificationType';
+import { generateDaysArray } from '@Utils/generateDaysArray';
+import { formatDate } from '../AddReminder/ReminderScheduled';
+import HomeHeader from '../Home/Components/HomeHeader';
+import RenderFilterTabData from './Components/RenderFilterTabData';
+import RenderHistoryList from './Components/RenderHistoryList';
+
+const ITEM_WIDTH = 29;
+const ITEM_GAP = 15;
+const ITEM_TOTAL_WIDTH = ITEM_WIDTH + ITEM_GAP;
 
 const History = () => {
   const style = styles();
-  const colors = useThemeColors();
-  const flashListRef = useRef<any>(null);
+  const { bottom } = useSafeAreaInsets();
   const isFocus = useIsFocused();
+  const colors = useThemeColors();
+  const notificationListRef = useRef<Animated.FlatList<Notification>>(null);
+  const daysListRef = useRef<FlatList>(null);
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [filteredNotifications, setFilteredNotifications] = useState<
-    Notification[]
-  >([]);
-  const [activeTabType, setActiveTabType] = useState("all");
+  const [filteredNotifications, setFilteredNotifications] = useState<Notification[]>([]);
+  const [activeTabType, setActiveTabType] = useState('all');
   const [loading, setLoading] = useState(true);
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const notificationCounts = useMemo(
     () => countNotificationsByType(notifications),
-    [notifications]
+    [notifications],
   );
 
   const { getAllNotifications, deleteNotification } = useReminder();
@@ -71,11 +68,7 @@ const History = () => {
     currentMonth,
   } = useCalendar(new Date());
 
-  const flatListRef = useRef<FlatList>(null);
-
-  const [daysArray, setDaysArray] = useState(() =>
-    generateDaysArray(new Date())
-  );
+  const [daysArray, setDaysArray] = useState(() => generateDaysArray(new Date()));
 
   useEffect(() => {
     setDaysArray(generateDaysArray(currentMonth));
@@ -84,42 +77,30 @@ const History = () => {
   const goToPrevMonth = useCallback(() => {
     try {
       const currentDay = selectedDateObject.getDate();
-      const newDate = new Date(
-        currentMonth.getFullYear(),
-        currentMonth.getMonth() - 1,
-        currentDay
-      );
+      const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, currentDay);
 
-      const formattedDate = newDate
-        .toLocaleDateString("en-GB")
-        .replace(/\//g, "-");
+      const formattedDate = newDate.toLocaleDateString('en-GB').replace(/\//g, '-');
 
       setSelectedDate(formattedDate);
       setSelectedDateObject(newDate);
       setCurrentMonth(newDate);
     } catch (error: any) {
-      showMessage({ message: error?.message?.toString(), type: "danger" });
+      showMessage({ message: error?.message?.toString(), type: 'danger' });
     }
   }, [currentMonth, selectedDateObject]);
 
   const goToNextMonth = useCallback(() => {
     try {
       const currentDay = selectedDateObject.getDate();
-      const newDate = new Date(
-        currentMonth.getFullYear(),
-        currentMonth.getMonth() + 1,
-        currentDay
-      );
+      const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, currentDay);
 
-      const formattedDate = newDate
-        .toLocaleDateString("en-GB")
-        .replace(/\//g, "-");
+      const formattedDate = newDate.toLocaleDateString('en-GB').replace(/\//g, '-');
 
       setSelectedDate(formattedDate);
       setSelectedDateObject(newDate);
       setCurrentMonth(newDate);
     } catch (error: any) {
-      showMessage({ message: error?.message?.toString(), type: "danger" });
+      showMessage({ message: error?.message?.toString(), type: 'danger' });
     }
   }, [currentMonth, selectedDateObject]);
 
@@ -127,8 +108,8 @@ const History = () => {
     const enrichedCategories = categoriesConfig(colors).map((category) => ({
       ...category,
       title:
-        category.type === "whatsappBusiness"
-          ? "WA Business"
+        category.type === 'whatsappBusiness'
+          ? 'WA Business'
           : formatNotificationType(category.type),
       reminders: notificationCounts[category.type] || 0,
     }));
@@ -137,42 +118,45 @@ const History = () => {
 
   const selectedType = useMemo(
     () =>
-      activeTabType === "all"
-        ? "all"
+      activeTabType === 'all'
+        ? 'all'
         : filterTabData.find((tab) => tab.type === activeTabType)?.type,
-    [activeTabType, filterTabData]
+    [activeTabType, filterTabData],
   );
 
-  const findSelectedIndex = () => {
-    const index = daysArray.findIndex(
-      (item) => item.formattedDate === selectedDate
-    );
+  const findSelectedIndex = useCallback(() => {
+    const index = daysArray.findIndex((item) => item.formattedDate === selectedDate);
     return index !== -1 ? index : 0;
-  };
+  }, [daysArray, selectedDate]);
+
+  const getItemLayout = useCallback(
+    (_: any, index: number) => ({
+      length: ITEM_WIDTH,
+      offset: ITEM_TOTAL_WIDTH * index,
+      index,
+    }),
+    [],
+  );
 
   const scrollToIndex = useCallback(() => {
     try {
-      if (flatListRef.current && isFocus) {
+      if (daysListRef.current && isFocus) {
         const index = findSelectedIndex();
-        flatListRef.current.scrollToIndex({
+        daysListRef.current.scrollToIndex({
           animated: true,
           index: index !== -1 ? index : 0,
           viewPosition: 0.5,
         });
       }
     } catch (error) {}
-  }, [flatListRef, isFocus]);
+  }, [daysListRef, isFocus, findSelectedIndex]);
 
   const handleScrollToIndexFailed = useCallback(
-    (info: {
-      index: number;
-      highestMeasuredFrameIndex: number;
-      averageItemLength: number;
-    }) => {
-      if (flatListRef.current) {
+    (info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
+      if (daysListRef.current) {
         setTimeout(() => {
-          if (flatListRef.current) {
-            flatListRef.current.scrollToIndex({
+          if (daysListRef.current) {
+            daysListRef.current.scrollToIndex({
               index: info.index,
               animated: true,
               viewPosition: 0.5,
@@ -181,7 +165,7 @@ const History = () => {
         }, 100);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -203,38 +187,34 @@ const History = () => {
 
   const filterNotificationsByDate = useCallback(
     (allNotifications: Notification[]) => {
-      const [day, month, year] = selectedDate.split("-");
+      const [day, month, year] = selectedDate.split('-');
       const selectedDateObj = new Date(`${year}-${month}-${day}`);
 
       if (isNaN(selectedDateObj.getTime())) {
         showMessage({
           message: `Invalid selected date: ${selectedDate}`,
-          type: "danger",
+          type: 'danger',
         });
         return [];
       }
 
       return allNotifications.filter((notification) => {
-        const notificationDate = new Date(
-          notification.date
-        ).toLocaleDateString();
+        const notificationDate = new Date(notification.date).toLocaleDateString();
         const selected = selectedDateObj.toLocaleDateString();
         return notificationDate === selected;
       });
     },
-    [selectedDate]
+    [selectedDate],
   );
 
   const applyTypeFilter = useCallback(
     (notifications: Notification[]) => {
-      if (activeTabType === "all") return notifications;
+      if (activeTabType === 'all') return notifications;
       return selectedType
-        ? notifications.filter(
-            (notification) => notification.type === selectedType
-          )
+        ? notifications.filter((notification) => notification.type === selectedType)
         : notifications;
     },
-    [activeTabType, selectedType]
+    [activeTabType, selectedType],
   );
 
   const loadNotifications = useCallback(async () => {
@@ -250,7 +230,7 @@ const History = () => {
       const typeFiltered = applyTypeFilter(dateFiltered);
 
       const sortedTypeFiltered = typeFiltered.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
 
       setNotifications(dateFiltered);
@@ -259,42 +239,34 @@ const History = () => {
       return typeFiltered;
     } catch (error) {
       showMessage({
-        message: error instanceof Error ? error.message : "An error occurred",
-        type: "danger",
+        message: error instanceof Error ? error.message : 'An error occurred',
+        type: 'danger',
       });
       setNotifications([]);
       setFilteredNotifications([]);
     } finally {
       setLoading(false);
     }
-  }, [
-    selectedDate,
-    activeTabType,
-    selectedType,
-    filterNotificationsByDate,
-    applyTypeFilter,
-  ]);
+  }, [selectedDate, activeTabType, selectedType, filterNotificationsByDate, applyTypeFilter]);
 
   const filterNotifications = useCallback(async () => {
     try {
       const data =
-        activeTabType === "all"
+        activeTabType === 'all'
           ? notifications
           : selectedType
-          ? notifications.filter(
-              (notification) => notification.type === selectedType
-            )
-          : notifications;
+            ? notifications.filter((notification) => notification.type === selectedType)
+            : notifications;
 
       const filterData = data?.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
 
       setFilteredNotifications(filterData);
     } catch (error: any) {
       showMessage({
         message: error?.message?.toString(),
-        type: "danger",
+        type: 'danger',
       });
     }
   }, [activeTabType, selectedType, notifications]);
@@ -306,28 +278,28 @@ const History = () => {
   const deleteReminder = useCallback(async (id?: string) => {
     if (!id) {
       showMessage({
-        message: "Invalid reminder ID",
-        type: "danger",
+        message: 'Invalid reminder ID',
+        type: 'danger',
       });
       return;
     }
 
     Alert.alert(
-      "Confirmation",
-      "Are you sure you want to delete this event? This action cannot be undone.",
+      'Confirmation',
+      'Are you sure you want to delete this event? This action cannot be undone.',
       [
         {
-          text: "Cancel",
-          style: "cancel",
+          text: 'Cancel',
+          style: 'cancel',
         },
         {
-          text: "Delete",
+          text: 'Delete',
           onPress: async () => {
             await deleteNotification(id);
             await loadNotifications();
           },
         },
-      ]
+      ],
     );
   }, []);
 
@@ -337,16 +309,14 @@ const History = () => {
 
       const newDate = new Date(year, month - 1, currentDay);
 
-      const formattedDate = newDate
-        .toLocaleDateString("en-GB")
-        .replace(/\//g, "-");
+      const formattedDate = newDate.toLocaleDateString('en-GB').replace(/\//g, '-');
 
       setSelectedDate(formattedDate);
       setSelectedDateObject(newDate);
       setCurrentMonth(newDate);
       setShowDateAndYearModal(false);
     } catch (error: any) {
-      showMessage({ message: error?.message?.toString(), type: "danger" });
+      showMessage({ message: error?.message?.toString(), type: 'danger' });
     }
   };
 
@@ -361,7 +331,7 @@ const History = () => {
   return (
     <SafeAreaView style={style.container}>
       <HomeHeader
-        title={"History"}
+        title={'History'}
         titleAlignment="center"
         leftIconType="back"
         showThemeSwitch={false}
@@ -370,36 +340,17 @@ const History = () => {
       <View style={style.contentView}>
         <View style={{ flex: 1 }}>
           <View style={style.headerContainer}>
-            <Pressable
-              hitSlop={6}
-              onPress={() => setShowDateAndYearModal(true)}
-            >
-              <Text style={style.dateText}>
-                {formatDate(selectedDateObject)}
-              </Text>
+            <Pressable hitSlop={6} onPress={() => setShowDateAndYearModal(true)}>
+              <Text style={style.dateText}>{formatDate(selectedDateObject)}</Text>
             </Pressable>
             <View style={style.arrowContainer}>
-              <Pressable
-                hitSlop={5}
-                onPress={() => goToPrevMonth()}
-                style={style.arrowButton}
-              >
-                <Image
-                  source={AssetsPath.ic_leftArrow}
-                  style={style.arrowImage}
-                />
+              <Pressable hitSlop={5} onPress={() => goToPrevMonth()} style={style.arrowButton}>
+                <Image source={AssetsPath.ic_leftArrow} style={style.arrowImage} />
               </Pressable>
-              <Pressable
-                hitSlop={5}
-                onPress={() => goToNextMonth()}
-                style={style.arrowButton}
-              >
+              <Pressable hitSlop={5} onPress={() => goToNextMonth()} style={style.arrowButton}>
                 <Image
                   source={AssetsPath.ic_leftArrow}
-                  style={[
-                    style.arrowImage,
-                    { transform: [{ rotate: "180deg" }] },
-                  ]}
+                  style={[style.arrowImage, { transform: [{ rotate: '180deg' }] }]}
                 />
               </Pressable>
             </View>
@@ -408,12 +359,12 @@ const History = () => {
           <Animated.View style={{ marginVertical: 10 }}>
             <FlatList
               horizontal
-              ref={flatListRef}
+              ref={daysListRef}
               data={daysArray}
-              onLayout={() => scrollToIndex()}
+              getItemLayout={getItemLayout}
+              initialScrollIndex={findSelectedIndex()}
               onScrollToIndexFailed={handleScrollToIndexFailed}
-              onContentSizeChange={() => scrollToIndex()}
-              contentContainerStyle={{ gap: 20 }}
+              contentContainerStyle={{ gap: ITEM_GAP }}
               renderItem={({ index, item }) => {
                 return (
                   <RenderCalenderView
@@ -426,6 +377,10 @@ const History = () => {
               }}
               keyExtractor={(item, index) => index.toString()}
               showsHorizontalScrollIndicator={false}
+              initialNumToRender={15}
+              maxToRenderPerBatch={15}
+              windowSize={7}
+              removeClippedSubviews={false}
             />
           </Animated.View>
 
@@ -435,13 +390,8 @@ const History = () => {
             </View>
           ) : (
             <Animated.FlatList
-              ref={flashListRef}
-              extraData={
-                selectedDate ||
-                activeTabType ||
-                filteredNotifications ||
-                notifications
-              }
+              ref={notificationListRef}
+              extraData={selectedDate || activeTabType || filteredNotifications || notifications}
               refreshControl={
                 <RefreshControl
                   onRefresh={async () => {
@@ -459,9 +409,7 @@ const History = () => {
                 />
               }
               layout={LinearTransition}
-              itemLayoutAnimation={LinearTransition.springify()
-                .damping(80)
-                .stiffness(200)}
+              itemLayoutAnimation={LinearTransition.springify()}
               data={filteredNotifications}
               onScrollToIndexFailed={() => {}}
               stickyHeaderHiddenOnScroll={true}
@@ -480,27 +428,31 @@ const History = () => {
                 />
               )}
               ListEmptyComponent={<RenderEmptyView />}
+              initialNumToRender={10}
+              maxToRenderPerBatch={10}
+              windowSize={5}
+              removeClippedSubviews={true}
             />
           )}
         </View>
 
-        <View style={style.tabsContainer}>
+        <View style={[style.tabsContainer, { bottom: bottom + 20 }]}>
           <View
             style={{
-              width: "17.5%",
-              alignItems: "center",
-              justifyContent: "center",
+              width: '17.5%',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <RenderFilterTabData
               index={0}
-              isActive={activeTabType === "all"}
+              isActive={activeTabType === 'all'}
               onTabPress={() => {
-                if (activeTabType === "all") return;
-                handleTabPress("all");
+                if (activeTabType === 'all') return;
+                handleTabPress('all');
               }}
               res={{
-                title: "All",
+                title: 'All',
                 type: null,
                 icon: null,
                 history_icon: null,
@@ -509,15 +461,15 @@ const History = () => {
             />
           </View>
 
-          <View style={{ width: "80%", overflow: "visible" }}>
+          <View style={{ width: '80%', overflow: 'visible' }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {filterTabData.map((res, index) => {
                 const isActive = res.type === activeTabType;
 
                 const onTabPress = () => {
                   if (isActive) {
-                    if (flashListRef.current) {
-                      flashListRef.current?.scrollToOffset({
+                    if (notificationListRef.current) {
+                      notificationListRef.current?.scrollToOffset({
                         animated: true,
                         offset: 0,
                       });
@@ -542,15 +494,13 @@ const History = () => {
         </View>
       </View>
 
-      {showDateAndYearModal && (
-        <YearMonthPicker
-          isVisible={showDateAndYearModal}
-          selectedYear={selectedDateObject.getFullYear()}
-          selectedMonth={selectedDateObject.getMonth()}
-          onConfirm={handleDateChange}
-          onCancel={() => setShowDateAndYearModal(false)}
-        />
-      )}
+      <YearMonthPicker
+        isVisible={showDateAndYearModal}
+        selectedYear={selectedDateObject.getFullYear()}
+        selectedMonth={selectedDateObject.getMonth()}
+        onConfirm={handleDateChange}
+        onCancel={() => setShowDateAndYearModal(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -569,43 +519,43 @@ const styles = () => {
     contentView: {
       flex: 1,
       width: SIZE.appContainWidth,
-      alignSelf: "center",
+      alignSelf: 'center',
     },
     tabsContainer: {
-      bottom: 38,
+      // bottom: 38,
       height: 68,
-      width: "100%",
+      width: '100%',
       elevation: 5,
       borderRadius: 10,
-      shadowColor: "#000",
-      position: "absolute",
-      flexDirection: "row",
-      alignItems: "center",
+      shadowColor: '#000',
+      position: 'absolute',
+      flexDirection: 'row',
+      alignItems: 'center',
       shadowOpacity: 0.3,
       shadowRadius: 3.84,
-      overflow: "visible",
-      justifyContent: "space-around",
+      overflow: 'visible',
+      justifyContent: 'space-around',
       backgroundColor: colors.scheduleReminderCardBackground,
       shadowOffset: { width: 0, height: 2 },
     },
     tabButton: {
       flex: 1,
-      height: "98%",
-      alignItems: "center",
-      justifyContent: "center",
+      height: '98%',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     tabContainer: {
       flex: 1,
-      width: "95%",
-      height: "100%",
-      alignItems: "center",
-      justifyContent: "center",
+      width: '95%',
+      height: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     activeTab: {
       flex: 1,
-      justifyContent: "center",
+      justifyContent: 'center',
       borderRadius: 10,
-      backgroundColor: "rgba(38, 107, 235, 1)",
+      backgroundColor: 'rgba(38, 107, 235, 1)',
     },
     iconStyle: {
       width: 20,
@@ -617,33 +567,33 @@ const styles = () => {
       fontFamily: FONTS.Medium,
     },
     badgeContainer: {
-      position: "absolute",
+      position: 'absolute',
       top: -5,
       right: 0,
       borderRadius: 50,
       width: 22,
       height: 22,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     badgeText: {
       fontSize: 12,
-      textAlign: "center",
+      textAlign: 'center',
       color: colors.black,
       fontFamily: FONTS.Medium,
     },
     loaderView: {
       flex: 1,
       marginBottom: 80,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
     },
 
     headerContainer: {
-      flexDirection: "row",
+      flexDirection: 'row',
       marginVertical: 5,
-      alignItems: "center",
-      justifyContent: "space-between",
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
     dateText: {
       fontFamily: FONTS.Medium,
@@ -651,32 +601,31 @@ const styles = () => {
       color: colors.text,
     },
     arrowContainer: {
-      flexDirection: "row",
+      flexDirection: 'row',
       gap: 10,
     },
     arrowButton: {
       width: 27,
       height: 27,
       borderRadius: 5,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor:
-        theme === "light" ? "rgba(209, 209, 209, 0.5)" : colors.placeholderText,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme === 'light' ? 'rgba(209, 209, 209, 0.5)' : colors.placeholderText,
     },
     arrowImage: {
-      width: "50%",
-      height: "50%",
-      resizeMode: "contain",
+      width: '50%',
+      height: '50%',
+      resizeMode: 'contain',
       tintColor: colors.black,
     },
     emptyListView: {
       flex: 1,
       marginBottom: 80,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     emptyListText: {
-      textAlign: "center",
+      textAlign: 'center',
       color: colors.text,
       fontFamily: FONTS.SemiBold,
       fontSize: 20,

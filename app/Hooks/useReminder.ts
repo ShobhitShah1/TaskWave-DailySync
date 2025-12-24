@@ -1,21 +1,19 @@
-import notifee, {
-  AlarmType,
-  AndroidImportance,
-  AndroidStyle,
-  AndroidVisibility,
-  RepeatFrequency,
-  TimestampTrigger,
-  TriggerType,
-} from "@notifee/react-native";
-import * as SQLite from "expo-sqlite";
-import { useEffect } from "react";
-import { showMessage } from "react-native-flash-message";
-import { sounds } from "../Constants/Data";
-import { storage } from "../Contexts/ThemeProvider";
-import { Contact, Notification, RescheduleConfig } from "../Types/Interface";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import notifee, { AndroidImportance, AndroidVisibility } from '@notifee/react-native';
+import { showMessage } from 'react-native-flash-message';
 
-export const CHANNEL_ID = "reminder";
-export const CHANNEL_NAME = "Reminder";
+import { sounds } from '@Constants/Data';
+import { storage } from '@Contexts/ThemeProvider';
+import { Contact, Notification, RescheduleConfig, LocationReminderStatus } from '@Types/Interface';
+import { executeWithRetry, getDatabase } from '@Utils/databaseUtils';
+import {
+  buildNotifeeNotification,
+  buildTimestampTrigger,
+  CHANNEL_NAME,
+  createNotificationChannelIfNeeded,
+  ensureExactAlarmPermission,
+} from '@Utils/notificationHelpers';
+import { prepareNotificationData } from '@Utils/prepareNotificationData';
 
 export const RESCHEDULE_CONFIG: RescheduleConfig = {
   defaultDelay: 1, // default 1 minutes
@@ -24,36 +22,37 @@ export const RESCHEDULE_CONFIG: RescheduleConfig = {
 
 export const createNotificationChannel = async () => {
   try {
-    const channelId = storage.getString("notificationSound");
+    const channelId = storage.getString('notificationSound');
 
     if (!channelId) {
-      storage.set("notificationSound", "default");
+      storage.set('notificationSound', 'default');
     }
 
-    sounds.map(async (notification) => {
-      await notifee.createChannel({
-        id: notification?.soundKeyName,
-        name:
-          CHANNEL_NAME + " " + notification.soundKeyName?.toLocaleUpperCase(),
-        visibility: AndroidVisibility.PUBLIC,
-        importance: AndroidImportance.HIGH,
-        sound: notification?.soundKeyName,
-      });
-    });
+    await Promise.all(
+      sounds.map(async (notification) => {
+        await notifee.createChannel({
+          id: notification?.soundKeyName,
+          name: CHANNEL_NAME + ' ' + notification.soundKeyName?.toLocaleUpperCase(),
+          visibility: AndroidVisibility.PUBLIC,
+          importance: AndroidImportance.HIGH,
+          sound: notification?.soundKeyName,
+        });
+      }),
+    );
   } catch (error: any) {
-    if (!error.message?.toString()?.includes("invalid notification ID")) {
+    if (!error.message?.toString()?.includes('invalid notification ID')) {
       showMessage({
         message: error?.message?.toString(),
-        type: "danger",
+        type: 'danger',
       });
     }
   }
 };
 
 const createFutureDate = (delayMinutes: number) => {
-  const date = new Date();
-  date.setMinutes(date.getMinutes() + delayMinutes);
-  return date;
+  const futureDate = new Date();
+  futureDate.setMinutes(futureDate.getMinutes() + delayMinutes);
+  return futureDate;
 };
 
 export const scheduleNotification = async (
@@ -62,153 +61,99 @@ export const scheduleNotification = async (
     isReschedule?: boolean;
     delayMinutes?: number;
     retryCount?: number;
-  }
+  },
 ): Promise<string | null> => {
   try {
     const {
       id,
       date,
-      type,
-      message,
-      subject,
       scheduleFrequency,
+      attachments,
+      telegramUsername,
       days,
       toContact,
       toMail,
-      attachments,
+      subject,
+      type,
+      message,
       memo,
-      telegramUsername,
     } = notification;
 
     await notifee.requestPermission();
-    await createNotificationChannel();
-    const channelId = storage.getString("notificationSound");
+
+    // Check exact alarm permission on Android 12+ (required for precise scheduling)
+    const hasExactAlarmPermission = await ensureExactAlarmPermission();
+    if (!hasExactAlarmPermission) {
+      console.warn(
+        '[Notification] Exact alarm permission not granted - notifications may be delayed by 1-2 minutes',
+      );
+    }
+
+    await createNotificationChannelIfNeeded();
+    const channelId = storage.getString('notificationSound') || 'default';
 
     const notificationDate = rescheduleOptions?.isReschedule
-      ? createFutureDate(
-          rescheduleOptions.delayMinutes || RESCHEDULE_CONFIG.defaultDelay
-        )
-      : date instanceof Date
-      ? date
+      ? createFutureDate(rescheduleOptions.delayMinutes || RESCHEDULE_CONFIG.defaultDelay)
       : new Date(date);
 
-    const trigger: TimestampTrigger = {
-      type: TriggerType.TIMESTAMP,
-      timestamp: notificationDate.getTime(),
-      repeatFrequency:
-        scheduleFrequency === "Daily"
-          ? RepeatFrequency.DAILY
-          : scheduleFrequency === "Weekly"
-          ? RepeatFrequency.WEEKLY
-          : undefined,
-      alarmManager: {
-        type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
-      },
-    };
+    const trigger = buildTimestampTrigger(notificationDate, scheduleFrequency || undefined);
 
     const rescheduleInfoString = rescheduleOptions?.isReschedule
       ? JSON.stringify({
           isRescheduled: true,
           retryCount: (rescheduleOptions.retryCount || 0) + 1,
-          delayMinutes:
-            rescheduleOptions.delayMinutes || RESCHEDULE_CONFIG.defaultDelay,
+          delayMinutes: rescheduleOptions.delayMinutes || RESCHEDULE_CONFIG.defaultDelay,
         })
-      : "";
+      : '';
 
-    const notificationData = {
-      ...notification,
-      id: id || "",
-      type,
-      message,
-      date: notificationDate.toISOString(),
-      subject: subject || "",
-      days: JSON.stringify(days),
-      toContact: JSON.stringify(toContact),
-      toMail: JSON.stringify(toMail),
-      attachments: JSON.stringify(attachments),
-      memo: JSON.stringify(memo),
-      telegramUsername: telegramUsername || "",
-      rescheduleInfo: rescheduleInfoString,
-    };
+    const notifeeNotification = buildNotifeeNotification(notification, channelId);
 
-    const imageAttachment = attachments?.find((attachment) =>
-      attachment.type?.startsWith("image/")
+    // Ensure all .data fields are strings (Notifee expects string values)
+    const notificationData = Object.fromEntries(
+      Object.entries({
+        ...notification,
+        id: id || '',
+        type,
+        message,
+        date: notificationDate.toISOString(),
+        subject: subject || '',
+        days: JSON.stringify(days),
+        toContact: JSON.stringify(toContact),
+        toMail: JSON.stringify(toMail),
+        attachments: JSON.stringify(attachments),
+        memo: JSON.stringify(memo),
+        telegramUsername: telegramUsername || '',
+        rescheduleInfo: rescheduleInfoString,
+      }).map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)]),
     );
 
     const notifeeNotificationId = await notifee.createTriggerNotification(
       {
-        ...(id && {
-          id: id,
-        }),
-        title:
-          type === "gmail"
-            ? subject
-            : `Reminder: ${subject || "You have an upcoming task"}`,
-        body:
-          message.toString() ||
-          `Don't forget! You have a task with ${
-            toContact?.map((contact) => contact.name).join(", ") ||
-            toMail.join(", ")
-          }. Please check details or contact them if needed.`,
-        android: {
-          channelId,
-          sound: channelId,
-          visibility: AndroidVisibility.PUBLIC,
-          importance: AndroidImportance.HIGH,
-          pressAction: { id: "default" },
-          ...(imageAttachment?.fileCopyUri && {
-            style: {
-              type: AndroidStyle.BIGPICTURE,
-              picture: imageAttachment?.fileCopyUri || "",
-            },
-          }),
-        },
-        data: notificationData as any,
-      },
-      trigger
+        ...(id && { id: id }),
+        ...notifeeNotification,
+        data: notificationData,
+      } as any,
+      trigger,
     );
 
     if (!id) {
       await notifee.createTriggerNotification(
         {
           id: notifeeNotificationId,
-          title:
-            type === "gmail"
-              ? subject
-              : `Reminder: ${subject || "You have an upcoming task"}`,
-          body:
-            message.toString() ||
-            `Don't forget! You have a task with ${
-              toContact?.map((contact) => contact.name).join(", ") ||
-              toMail.join(", ")
-            }. Please check details or contact them if needed.`,
-          android: {
-            channelId,
-            sound: channelId,
-            visibility: AndroidVisibility.PUBLIC,
-            importance: AndroidImportance.HIGH,
-            pressAction: { id: "default" },
-            ...(imageAttachment?.fileCopyUri && {
-              style: {
-                type: AndroidStyle.BIGPICTURE,
-                picture: imageAttachment?.fileCopyUri || "",
-              },
-            }),
-          },
+          ...notifeeNotification,
           data: {
             ...(notificationData as any),
             id: notifeeNotificationId,
           },
-        },
-        trigger
+        } as any,
+        trigger,
       );
-
       return notifeeNotificationId;
     }
 
     return id;
   } catch (error: any) {
-    if (error.message?.toString()?.includes("invalid notification ID")) {
+    if (error.message?.toString()?.includes('invalid notification ID')) {
       return null;
     }
     throw new Error(error);
@@ -216,213 +161,85 @@ export const scheduleNotification = async (
 };
 
 const useReminder = () => {
-  async function openDatabase() {
-    const database = await SQLite.openDatabaseAsync("notifications.db", {
-      useNewConnection: true,
-    });
-    await initializeDatabase(database);
-    return database;
-  }
-
-  useEffect(() => {
-    openDatabase();
-  }, []);
-
-  const initializeDatabase = async (database: SQLite.SQLiteDatabase) => {
-    try {
-      await database.execAsync(`PRAGMA foreign_keys = ON;`);
-
-      type PRAGMAResult = { user_version: number };
-
-      type ColumnInfo = {
-        cid: number;
-        name: string;
-        type: string;
-        notnull: number;
-        dflt_value: any;
-        pk: number;
-      };
-
-      const result = await database.getAllAsync<PRAGMAResult>(
-        `PRAGMA user_version;`
-      );
-      const currentVersion = result[0]?.user_version || 0;
-
-      console.log(`[Database] Current version: ${currentVersion}`);
-
-      await database.execAsync("BEGIN TRANSACTION;");
-
-      try {
-        if (currentVersion < 1) {
-          console.log("[Database] Initializing version 1 schema");
-          await database.execAsync(`
-          CREATE TABLE IF NOT EXISTS notifications (
-            id TEXT PRIMARY KEY,
-            type TEXT NOT NULL,
-            message TEXT NOT NULL,
-            date TEXT NOT NULL,
-            subject TEXT,
-            attachments TEXT,
-            scheduleFrequency TEXT,
-            memo TEXT,
-            toMail TEXT
-          );
-
-          CREATE TABLE IF NOT EXISTS contacts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            notification_id TEXT,
-            name TEXT NOT NULL,
-            number TEXT,
-            recordID TEXT NOT NULL,
-            thumbnailPath TEXT,
-            FOREIGN KEY (notification_id) REFERENCES notifications (id) ON DELETE CASCADE
-          );
-        `);
-
-          await database.execAsync(`PRAGMA user_version = 1;`);
-        }
-
-        if (currentVersion < 2) {
-          console.log("[Database] Upgrading to version 2");
-          const columnCheckResult = await database.getAllAsync<ColumnInfo>(
-            `PRAGMA table_info(notifications);`
-          );
-
-          const telegramUsernameExists = columnCheckResult.some(
-            (column) => column.name === "telegramUsername"
-          );
-
-          if (!telegramUsernameExists) {
-            await database.execAsync(`
-            ALTER TABLE notifications ADD COLUMN telegramUsername TEXT;
-          `);
-          }
-
-          await database.execAsync(`PRAGMA user_version = 2;`);
-        }
-
-        if (currentVersion < 3) {
-          console.log("[Database] Upgrading to version 3");
-          const columnCheckResult = await database.getAllAsync<ColumnInfo>(
-            `PRAGMA table_info(notifications);`
-          );
-
-          const daysExists = columnCheckResult.some(
-            (column) => column.name === "days"
-          );
-
-          if (!daysExists) {
-            await database.execAsync(`
-            ALTER TABLE notifications ADD COLUMN days TEXT;
-          `);
-          }
-
-          await database.execAsync(`PRAGMA user_version = 3;`);
-        }
-
-        await database.execAsync("COMMIT;");
-        console.log("[Database] Schema update completed successfully");
-      } catch (error) {
-        await database.execAsync("ROLLBACK;");
-        console.error("[Database] Schema update failed:", error);
-        throw error;
-      }
-    } catch (error) {
-      console.error("[Database] Initialization error:", error);
-      throw error;
-    }
-  };
-
-  const createNotification = async (
-    notification: Notification
-  ): Promise<string | null> => {
-    try {
-      const database = await openDatabase();
-      await initializeDatabase(database);
+  const createNotification = async (notification: Notification): Promise<string | null> => {
+    return executeWithRetry(async () => {
+      const database = await getDatabase();
 
       if (!database) {
-        console.error("[Database] Failed to open database connection");
+        console.error('[Database] Failed to open database connection');
         showMessage({
-          message: "Database connection error. Please try again.",
-          type: "danger",
+          message: 'Database connection error. Please try again.',
+          type: 'danger',
         });
         return null;
       }
 
-      const {
-        type,
-        message,
-        date,
-        toContact,
-        toMail,
-        subject,
-        attachments,
-        days,
-        id,
-        memo,
-        telegramUsername,
-      } = notification;
+      const data = prepareNotificationData(notification);
 
-      console.log("[Notification] Creating notification:", {
-        id,
-        type,
-        subject,
+      console.log('[Notification] Creating notification:', {
+        id: data.id,
+        type: data.type,
+        subject: data.subject,
       });
 
-      if (!id) {
-        console.error("[Notification] Missing notification ID");
+      if (!data.id) {
+        console.error('[Notification] Missing notification ID');
         showMessage({
-          message: "Failed to schedule notification. Please try again.",
-          type: "danger",
+          message: 'Failed to schedule notification. Please try again.',
+          type: 'danger',
         });
         return null;
       }
 
-      const toMailString = JSON.stringify(toMail || []);
-      const daysString = JSON.stringify(days || []);
-
       const insertNotificationSQL = `
-      INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail, telegramUsername, days)
+      INSERT INTO notifications (id, type, message, date, subject, attachments, scheduleFrequency, memo, toMail, telegramUsername, days, latitude, longitude, radius, locationName, status)
       VALUES (
-        '${id}',
-        '${type}',
-        '${(message || "").toString().replace(/'/g, "''")?.trim()}',
-        '${new Date(date).toISOString()}',
-        '${(subject || "").toString().replace(/'/g, "''")?.trim()}',
-        '${JSON.stringify(attachments || [])}',
-        '${notification.scheduleFrequency}',
-        '${JSON.stringify(memo || [])}',
-        '${toMailString}',
-        '${telegramUsername?.toString().replace(/'/g, "''")?.trim() || ""}',
-        '${daysString}'
+        '${data.id}',
+        '${data.type}',
+        '${data.message}',
+        '${data.date}',
+        '${data.subject}',
+        '${data.attachments}',
+        '${data.scheduleFrequency}',
+        '${data.memo}',
+        '${data.toMail}',
+        '${data.telegramUsername}',
+        '${data.days}',
+        ${data.latitude || 'NULL'},
+        ${data.longitude || 'NULL'},
+        ${data.radius || 'NULL'},
+        '${data.locationName || ''}',
+        '${data.status || LocationReminderStatus.Pending}'
       )`;
 
-      let insertContactsSQL = "";
+      let insertContactsSQL = '';
 
-      if (type === "gmail") {
-        const emailArray = Array.isArray(toMail) ? toMail : [toMail];
-        insertContactsSQL = emailArray
+      if (data.type === 'gmail') {
+        insertContactsSQL = data.toMailArray
           .filter((email) => email)
           .map(
             (email) => `
           INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-          VALUES ('${id}', '${email}', null, '${email}', null)
-        `
+          VALUES ('${data.id}', '${email.replace(/'/g, "''")}', null, '${email.replace(/'/g, "''")}', null)
+        `,
           )
-          .join(";");
-      } else {
-        insertContactsSQL = toContact
+          .join(';');
+      } else if (data.type !== 'location' && data.toContact.length > 0) {
+        // Only insert contacts for non-location notifications that have contacts
+        insertContactsSQL = data.toContact
           .map(
             (contact) => `
           INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-          VALUES ('${id}', '${contact.name}', ${
-              contact.number ? `'${contact.number}'` : "null"
-            }, '${contact.recordID}', ${
-              contact.thumbnailPath ? `'${contact.thumbnailPath}'` : "null"
-            })
-        `
+          VALUES (
+            '${data.id}', 
+            '${contact.name.replace(/'/g, "''")}', 
+            ${contact.number ? `'${contact.number.replace(/'/g, "''")}'` : 'null'}, 
+            '${contact.recordID.replace(/'/g, "''")}', 
+            ${contact.thumbnailPath ? `'${contact.thumbnailPath.replace(/'/g, "''")}'` : 'null'}
           )
-          .join(";");
+        `,
+          )
+          .join(';');
       }
 
       const transactionSQL = `
@@ -431,128 +248,89 @@ const useReminder = () => {
     `.trim();
 
       try {
+        await database.execAsync('BEGIN TRANSACTION;');
         await database.execAsync(transactionSQL);
-        console.log("[Notification] Successfully created notification:", id);
-        return id;
+        await database.execAsync('COMMIT;');
+        console.log('[Notification] Successfully created notification:', data.id);
+        return data.id;
       } catch (error: any) {
-        console.error("[Notification] Failed to create notification:", error);
+        await database.execAsync('ROLLBACK;');
+        console.error('[Notification] Failed to create notification:', error);
         throw new Error(error.message || error);
       }
-    } catch (error) {
-      console.error("[Notification] Create notification error:", error);
-      throw error;
-    }
+    });
   };
 
-  const updateNotification = async (
-    notification: Notification
-  ): Promise<boolean> => {
-    try {
-      const database = await openDatabase();
+  const updateNotification = async (notification: Notification): Promise<boolean> => {
+    return executeWithRetry(async () => {
+      const database = await getDatabase();
 
       if (!database) {
-        console.error("[Database] Failed to open database connection");
+        console.error('[Database] Failed to open database connection');
         showMessage({
-          message: "Database connection error. Please try again.",
-          type: "danger",
+          message: 'Database connection error. Please try again.',
+          type: 'danger',
         });
         return false;
       }
 
-      const {
-        id,
-        type,
-        message,
-        date,
-        toContact,
-        toMail,
-        subject,
-        attachments,
-        days,
-        memo,
-        telegramUsername,
-      } = notification;
+      const data = prepareNotificationData(notification);
 
-      console.log("[Notification] Updating notification:", id);
+      console.log('[Notification] Updating notification:', data.id);
 
-      let toMailArray;
-      try {
-        if (Array.isArray(toMail)) {
-          toMailArray = toMail;
-        } else if (typeof toMail === "string") {
-          toMailArray = JSON.parse(toMail);
-        } else {
-          toMailArray = [];
-        }
-
-        toMailArray = toMailArray
-          .map((email: string) => email?.trim())
-          .filter(Boolean);
-      } catch (e) {
-        toMailArray = [];
+      // Only schedule with Notifee for non-location notifications
+      if (data.type !== 'location') {
+        await createNotificationChannelIfNeeded();
+        await scheduleNotification(notification);
       }
-
-      await createNotificationChannel();
-
-      await scheduleNotification(notification);
-
-      const escapedToMail = JSON.stringify(toMailArray).replace(/'/g, "''");
-      const escapedDays = JSON.stringify(days || []).replace(/'/g, "''");
 
       const updateNotificationSQL = `
         UPDATE notifications
         SET
-          type = '${type}',
-          message = '${(message || "").toString().replace(/'/g, "''")?.trim()}',
-          date = '${new Date(date).toISOString()}',
-          subject = '${(subject || "").replace(/'/g, "''")?.trim()}',
-          attachments = '${JSON.stringify(attachments || [])}',
-          scheduleFrequency = '${notification.scheduleFrequency || ""}',
-          days = '${escapedDays}',
-          memo = '${JSON.stringify(memo || [])}',
-          toMail = '${escapedToMail}',
-          telegramUsername = '${(telegramUsername || "")
-            .toString()
-            .replace(/'/g, "''")
-            ?.trim()}'
-        WHERE id = '${id}'
+          type = '${data.type}',
+          message = '${data.message}',
+          date = '${data.date}',
+          subject = '${data.subject}',
+          attachments = '${data.attachments}',
+          scheduleFrequency = '${data.scheduleFrequency}',
+          days = '${data.days}',
+          memo = '${data.memo}',
+          toMail = '${data.toMail}',
+          telegramUsername = '${data.telegramUsername}',
+          latitude = ${data.latitude || 'NULL'},
+          longitude = ${data.longitude || 'NULL'},
+          radius = ${data.radius || 'NULL'},
+          status = '${data.status || LocationReminderStatus.Pending}'
+        WHERE id = '${data.id}'
       `;
 
-      const deleteContactsSQL = `DELETE FROM contacts WHERE notification_id = '${id}'`;
+      const deleteContactsSQL = `DELETE FROM contacts WHERE notification_id = '${data.id}'`;
 
-      let insertContactsSQL = "";
-      if (type === "gmail" && toMailArray.length > 0) {
-        insertContactsSQL = toMailArray
+      let insertContactsSQL = '';
+      if (data.type === 'gmail' && data.toMailArray.length > 0) {
+        insertContactsSQL = data.toMailArray
           .map(
             (email: string) => `
             INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
-            VALUES ('${id}', '${email?.trim()}', null, '${email?.trim()}', null)
-          `
+            VALUES ('${data.id}', '${email?.trim().replace(/'/g, "''")}', null, '${email?.trim().replace(/'/g, "''")}', null)
+          `,
           )
-          .join(";");
-      } else if (toContact && toContact.length > 0) {
-        insertContactsSQL = toContact
+          .join(';');
+      } else if (data.toContact && data.toContact.length > 0) {
+        insertContactsSQL = data.toContact
           .map(
             (contact) => `
             INSERT INTO contacts (notification_id, name, number, recordID, thumbnailPath)
             VALUES (
-              '${id}',
+              '${data.id}',
               '${contact.name.replace(/'/g, "''")}',
-              ${
-                contact.number
-                  ? `'${contact.number.replace(/'/g, "''")}'`
-                  : "null"
-              },
+              ${contact.number ? `'${contact.number.replace(/'/g, "''")}'` : 'null'},
               '${contact.recordID.replace(/'/g, "''")}',
-              ${
-                contact.thumbnailPath
-                  ? `'${contact.thumbnailPath.replace(/'/g, "''")}'`
-                  : "null"
-              }
+              ${contact.thumbnailPath ? `'${contact.thumbnailPath.replace(/'/g, "''")}'` : 'null'}
             )
-          `
+          `,
           )
-          .join(";");
+          .join(';');
       }
 
       const transactionSQL = `
@@ -562,81 +340,69 @@ const useReminder = () => {
       `;
 
       try {
+        await database.execAsync('BEGIN TRANSACTION;');
         await database.execAsync(transactionSQL);
-        console.log("[Notification] Successfully updated notification:", id);
+        await database.execAsync('COMMIT;');
+        console.log('[Notification] Successfully updated notification:', data.id);
         return true;
       } catch (error: any) {
-        console.error("[Notification] Failed to update notification:", error);
+        await database.execAsync('ROLLBACK;');
+        console.error('[Notification] Failed to update notification:', error);
         throw new Error(String(error?.message || error));
       }
-    } catch (error) {
-      console.error("[Notification] Update notification error:", error);
-      throw error;
-    }
+    });
   };
 
   const deleteNotification = async (id: string): Promise<boolean> => {
-    try {
-      const database = await openDatabase();
+    return executeWithRetry(async () => {
+      const database = await getDatabase();
 
       if (!database) {
-        console.error("[Database] Failed to open database connection");
+        console.error('[Database] Failed to open database connection');
         showMessage({
-          message: "Database connection error. Please try again.",
-          type: "danger",
+          message: 'Database connection error. Please try again.',
+          type: 'danger',
         });
         return false;
       }
 
-      console.log("[Notification] Deleting notification:", id);
+      console.log('[Notification] Deleting notification:', id);
 
       try {
-        await notifee.cancelNotification(id);
-        await database.execAsync(
-          `DELETE FROM notifications WHERE id = '${id}'`
-        );
-        console.log("[Notification] Successfully deleted notification:", id);
+        await database.execAsync('BEGIN TRANSACTION;');
+        await database.execAsync(`DELETE FROM contacts WHERE notification_id = '${id}'`);
+        await database.execAsync(`DELETE FROM notifications WHERE id = '${id}'`);
+        await database.execAsync('COMMIT;');
+        console.log('[Notification] Successfully deleted notification:', id);
         return true;
       } catch (error: any) {
-        console.error("[Notification] Failed to delete notification:", error);
-        if (!error.message?.includes("invalid notification ID")) {
-          showMessage({
-            message: String(error?.message || error),
-            type: "danger",
-          });
-        }
-        return false;
+        await database.execAsync('ROLLBACK;');
+        console.error('[Notification] Failed to delete notification:', error);
+        throw new Error(String(error?.message || error));
       }
-    } catch (error) {
-      console.error("[Notification] Delete notification error:", error);
-      throw error;
-    }
+    });
   };
 
   const getAllNotifications = async (): Promise<Notification[]> => {
-    try {
-      const database = await openDatabase();
+    return executeWithRetry(async () => {
+      const database = await getDatabase();
 
       if (!database) {
-        console.error("[Database] Failed to open database connection");
+        console.error('[Database] Failed to open database connection');
         showMessage({
-          message: "Database connection error. Please try again.",
-          type: "danger",
+          message: 'Database connection error. Please try again.',
+          type: 'danger',
         });
         return [];
       }
 
-      console.log("[Notification] Fetching all notifications");
-
       try {
-        const notifications = await database.getAllAsync<any>(
-          "SELECT * FROM notifications"
-        );
+        const notifications = await database.getAllAsync<any>('SELECT * FROM notifications');
         const result: Notification[] = [];
 
         for (const notification of notifications) {
           const contacts = await database.getAllAsync<Contact>(
-            `SELECT name, number, recordID, thumbnailPath FROM contacts WHERE notification_id = '${notification.id}'`
+            `SELECT name, number, recordID, thumbnailPath FROM contacts WHERE notification_id = '${notification.id}'`,
           );
 
           let days = [];
@@ -644,9 +410,9 @@ const useReminder = () => {
             days = notification.days ? JSON.parse(notification.days) : [];
           } catch (e) {
             console.error(
-              "[Notification] Failed to parse days for notification:",
+              '[Notification] Failed to parse days for notification:',
               notification.id,
-              e
+              e,
             );
             days = [];
           }
@@ -662,72 +428,67 @@ const useReminder = () => {
               .map((contact) => contact.name),
             attachments: JSON.parse(notification.attachments),
             memo: JSON.parse(notification.memo),
+            latitude: notification.latitude,
+            longitude: notification.longitude,
+            radius: notification.radius,
+            locationName: notification.locationName,
+            status:
+              (notification.status as LocationReminderStatus) || LocationReminderStatus.Pending,
           });
         }
-
-        console.log(
-          "[Notification] Successfully fetched notifications:",
-          result.length
-        );
         return result;
       } catch (error: any) {
-        console.error("[Notification] Failed to fetch notifications:", error);
-        if (!error.message?.includes("invalid notification ID")) {
-          showMessage({
-            message: String(error?.message || error),
-            type: "danger",
-          });
-        }
-        return [];
+        console.error('[Notification] Get all notifications error:', error);
+        throw new Error(String(error?.message || error));
       }
-    } catch (error) {
-      console.error("[Notification] Get all notifications error:", error);
-      throw error;
-    }
+    });
   };
 
-  const getNotificationById = async (
-    id: string
-  ): Promise<Notification | null> => {
-    try {
-      const database = await openDatabase();
+  const getNotificationById = async (id: string): Promise<Notification | null> => {
+    return executeWithRetry(async () => {
+      const database = await getDatabase();
 
       if (!database) {
-        console.error("[Database] Failed to open database connection");
+        console.error('[Database] Failed to open database connection');
         showMessage({
-          message: "Database connection error. Please try again.",
-          type: "danger",
+          message: 'Database connection error. Please try again.',
+          type: 'danger',
         });
         return null;
       }
 
-      console.log("[Notification] Fetching notification by ID:", id);
+      if (!id) {
+        console.error('[Notification] Missing notification ID');
+        showMessage({
+          message: 'Failed to fetch notification. Please try again.',
+          type: 'danger',
+        });
+
+        return null;
+      }
+
+      console.log('[Notification] Fetching notification by ID:', id);
 
       try {
-        const notificationQuery = await database.getAllAsync<any>(
-          `SELECT * FROM notifications WHERE id = '${id}'`
+        const notifications = await database.getAllAsync<any>(
+          `SELECT * FROM notifications WHERE id = '${id}'`,
         );
 
-        if (notificationQuery.length === 0) {
-          console.log("[Notification] No notification found with ID:", id);
+        if (notifications.length === 0) {
+          console.log('[Notification] No notification found with ID:', id);
           return null;
         }
 
-        const notification = notificationQuery[0];
-
+        const notification = notifications[0];
         const contacts = await database.getAllAsync<Contact>(
-          `SELECT name, number, recordID, thumbnailPath FROM contacts WHERE notification_id = '${notification.id}'`
+          `SELECT name, number, recordID, thumbnailPath FROM contacts WHERE notification_id = '${id}'`,
         );
 
         let days = [];
         try {
           days = notification.days ? JSON.parse(notification.days) : [];
         } catch (e) {
-          console.error(
-            "[Notification] Failed to parse days for notification:",
-            id,
-            e
-          );
+          console.error('[Notification] Failed to parse days for notification:', id, e);
           days = [];
         }
 
@@ -742,33 +503,110 @@ const useReminder = () => {
             .map((contact) => contact.name),
           attachments: JSON.parse(notification.attachments),
           memo: JSON.parse(notification.memo),
+          latitude: notification.latitude,
+          longitude: notification.longitude,
+          radius: notification.radius,
+          locationName: notification.locationName,
+          status: (notification.status as LocationReminderStatus) || LocationReminderStatus.Pending,
         };
 
-        console.log("[Notification] Successfully fetched notification:", id);
+        console.log('[Notification] Successfully fetched notification by ID:', id);
         return result;
       } catch (error: any) {
-        console.error("[Notification] Failed to fetch notification:", error);
-        if (!error.message?.includes("invalid notification ID")) {
-          showMessage({
-            message: String(error?.message || error),
-            type: "danger",
-          });
-        }
-        return null;
+        console.error('[Notification] Get notification by ID error:', error);
+        throw new Error(String(error?.message || error));
       }
-    } catch (error) {
-      console.error("[Notification] Get notification by ID error:", error);
-      throw error;
-    }
+    });
+  };
+
+  const ensureDeviceContactsTable = async () => {
+    return executeWithRetry(async () => {
+      const database = await getDatabase();
+      if (!database) {
+        throw new Error('Database connection failed');
+      }
+      try {
+        await database.execAsync(`CREATE TABLE IF NOT EXISTS device_contacts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          number TEXT,
+          recordID TEXT NOT NULL,
+          thumbnailPath TEXT
+        );`);
+      } catch (err) {
+        console.error('[SQLite] Failed to ensure device_contacts table:', err);
+      }
+    });
+  };
+
+  const clearDeviceContacts = async () => {
+    return executeWithRetry(async () => {
+      const database = await getDatabase();
+      if (!database) {
+        throw new Error('Database connection failed');
+      }
+      try {
+        await ensureDeviceContactsTable();
+        await database.execAsync('DELETE FROM device_contacts');
+      } catch (err) {
+        console.error('[SQLite] clearDeviceContacts error:', err);
+      }
+    });
+  };
+
+  const insertDeviceContacts = async (contacts: Contact[]) => {
+    return executeWithRetry(async () => {
+      const database = await getDatabase();
+      if (!database) {
+        throw new Error('Database connection failed');
+      }
+      if (!contacts.length) return;
+      try {
+        await ensureDeviceContactsTable();
+        const values = contacts
+          .map(
+            (c: Contact) =>
+              `('${c.name.replace(/'/g, "''")}', '${c.number ? c.number.replace(/'/g, "''") : ''}', '${c.recordID}', '${c.thumbnailPath || ''}')`,
+          )
+          .join(',');
+        await database.execAsync(
+          `INSERT INTO device_contacts (name, number, recordID, thumbnailPath) VALUES ${values}`,
+        );
+      } catch (err) {
+        console.error('[SQLite] insertDeviceContacts error:', err);
+      }
+    });
+  };
+
+  const getAllDeviceContacts = async () => {
+    return executeWithRetry(async () => {
+      const database = await getDatabase();
+      if (!database) {
+        throw new Error('Database connection failed');
+      }
+      try {
+        await ensureDeviceContactsTable();
+        const rows = await database.getAllAsync(
+          'SELECT name, number, recordID, thumbnailPath FROM device_contacts ORDER BY name COLLATE NOCASE ASC',
+        );
+        return rows;
+      } catch (err) {
+        console.error('[SQLite] getAllDeviceContacts error:', err);
+        return [];
+      }
+    });
   };
 
   return {
-    initializeDatabase,
     createNotification,
-    getAllNotifications,
     updateNotification,
     deleteNotification,
+    getAllNotifications,
     getNotificationById,
+    ensureDeviceContactsTable,
+    clearDeviceContacts,
+    insertDeviceContacts,
+    getAllDeviceContacts,
   };
 };
 

@@ -1,56 +1,49 @@
-import notifee, {
-  AndroidImportance,
-  AndroidVisibility,
-} from "@notifee/react-native";
-import { useIsFocused } from "@react-navigation/native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import FullScreenPreviewModal from '@Components/FullScreenPreviewModal';
+import ReminderCard from '@Components/ReminderCard';
+import RenderCalenderView from '@Components/RenderCalenderView';
+import ServiceManager from '@Components/ServiceManager';
+import YearMonthPicker from '@Components/YearMonthPicker';
+import TextString from '@Constants/TextString';
+import isGridView from '@Hooks/isGridView';
+import useCalendar from '@Hooks/useCalendar';
+import useNotificationPermission from '@Hooks/useNotificationPermission';
+import { default as useDatabase } from '@Hooks/useReminder';
+import useThemeColors from '@Hooks/useThemeMode';
+import { useIsFocused } from '@react-navigation/native';
+import { Notification, NotificationStatus, NotificationType } from '@Types/Interface';
+import { fromNowText } from '@Utils/isSameDat';
+import React, { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Button,
   FlatList,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   Text,
   useWindowDimensions,
   View,
-} from "react-native";
-import { showMessage } from "react-native-flash-message";
-import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
-import FullScreenPreviewModal from "../../Components/FullScreenPreviewModal";
-import ReminderCard from "../../Components/ReminderCard";
-import RenderCalenderView from "../../Components/RenderCalenderView";
-import YearMonthPicker from "../../Components/YearMonthPicker";
-import isGridView from "../../Hooks/isGridView";
-import useCalendar from "../../Hooks/useCalendar";
-import useNotificationPermission from "../../Hooks/useNotificationPermission";
-import {
-  CHANNEL_ID,
-  CHANNEL_NAME,
-  default as useDatabase,
-} from "../../Hooks/useReminder";
-import useThemeColors from "../../Hooks/useThemeMode";
-import {
-  Notification,
-  NotificationStatus,
-  NotificationType,
-} from "../../Types/Interface";
-import { fromNowText } from "../../Utils/isSameDat";
-import { formatDate } from "../AddReminder/ReminderScheduled";
-import HomeHeader from "./Components/HomeHeader";
-import RenderEmptyView from "./Components/RenderEmptyView";
-import RenderHeaderView from "./Components/RenderHeaderView";
-import styles from "./styles";
-import { storage } from "../../Contexts/ThemeProvider";
-import TextString from "../../Constants/TextString";
+} from 'react-native';
+import { AnimatedRollingNumber } from 'react-native-animated-rolling-numbers';
+import { showMessage } from 'react-native-flash-message';
+import Animated, { Easing, FadeIn, LinearTransition } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { formatDate } from '../AddReminder/ReminderScheduled';
+import HomeHeader from './Components/HomeHeader';
+import RenderEmptyView from './Components/RenderEmptyView';
+import RenderHeaderView from './Components/RenderHeaderView';
+import styles from './styles';
+import { useContacts } from '@Contexts/ContactProvider';
+import { useAppContext } from '@Contexts/ThemeProvider';
 
 const Home = () => {
+  // ...
+
   const style = styles();
   const isGrid = isGridView();
   const colors = useThemeColors();
   const isFocus = useIsFocused();
   const { height } = useWindowDimensions();
+  const { theme } = useAppContext();
 
   const flatListRef = useRef<FlatList>(null);
   const { getAllNotifications, deleteNotification } = useDatabase();
@@ -69,83 +62,58 @@ const Home = () => {
   const [fullScreenPreview, setFullScreenPreview] = useState(false);
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showServiceManager, setShowServiceManager] = useState(false);
 
-  const [notificationsState, setNotificationsState] =
-    useState<NotificationStatus>({
-      all: [] as Notification[],
-      allByDate: [] as Notification[],
-      active: [] as Notification[],
-      inactive: [] as Notification[],
-    });
-  const [refreshing, setRefreshing] = React.useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<
-    NotificationType | "all"
-  >("all");
-
-  const findSelectedIndex = () => {
-    return daysArray.findIndex((item) => item.formattedDate === selectedDate);
-  };
+  const [notificationsState, setNotificationsState] = useState<NotificationStatus>({
+    all: [] as Notification[],
+    allByDate: [] as Notification[],
+    active: [] as Notification[],
+    inactive: [] as Notification[],
+  });
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<NotificationType | 'all'>('all');
 
   const scrollToIndex = async () => {
-    if (flatListRef.current && isFocus) {
-      const index = findSelectedIndex();
+    const index = daysArray.findIndex((item) => item.formattedDate === selectedDate);
 
+    if (flatListRef.current) {
       if (index >= 0 && index <= daysArray.length) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
         flatListRef.current.scrollToIndex({
           animated: true,
           index,
           viewPosition: 0.5,
         });
-      } else {
       }
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     scrollToIndex();
   }, [selectedDate, isFocus, notificationsState, flatListRef.current]);
+
+  const {
+    requestPermission: requestContactPermission,
+    syncContacts,
+    permissionStatus: contactPermissionStatus,
+  } = useContacts();
 
   useEffect(() => {
     if (isFocus) {
       setIsLoading(notificationsState?.allByDate?.length === 0);
       loadNotifications();
-    }
-  }, [isFocus, selectedDate, selectedFilter]);
 
-  useEffect(() => {
-    if (permissionStatus !== "granted") {
-      requestPermission();
-    }
-  }, [permissionStatus]);
+      if (permissionStatus !== 'granted') {
+        requestPermission();
+      }
 
-  useEffect(() => {
-    try {
-      notifee
-        .isBatteryOptimizationEnabled()
-        .then((isBatteryOptimizationEnabled) => {
-          if (isBatteryOptimizationEnabled) {
-            Alert.alert(
-              "Restrictions Detected",
-              "To ensure notifications are delivered, please disable battery optimization for the app.",
-              [
-                {
-                  text: "OK, open settings",
-                  onPress: async () =>
-                    await notifee.openBatteryOptimizationSettings(),
-                },
-                {
-                  text: "Cancel",
-                  onPress: () => {},
-                  style: "cancel",
-                },
-              ],
-              { cancelable: false }
-            );
-          }
-        });
-    } catch (error) {}
-  }, []);
+      // Contact permission logic requested by user
+      if (contactPermissionStatus === 'unavailable' || contactPermissionStatus === 'denied') {
+        requestContactPermission();
+      } else if (contactPermissionStatus === 'granted') {
+        syncContacts();
+      }
+    }
+  }, [isFocus, selectedDate, selectedFilter, permissionStatus, contactPermissionStatus]);
 
   const onRefresh = useCallback(async () => {
     try {
@@ -164,45 +132,32 @@ const Home = () => {
       const now = new Date();
 
       const active = allNotifications
-        .filter(
-          (notification) =>
-            new Date(notification.date).getTime() >= now.getTime()
-        )
-        .sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
+        .filter((notification) => new Date(notification.date).getTime() >= now.getTime())
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       const inactive = allNotifications
-        .filter(
-          (notification) =>
-            new Date(notification.date).getTime() < now.getTime()
-        )
-        .sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
+        .filter((notification) => new Date(notification.date).getTime() < now.getTime())
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-      const [day, month, year] = selectedDate.split("-");
-      const selectedDateObj = new Date(`${year}-${month}-${day}`);
+      const [day, month, year] = selectedDate.split('-');
+      // Construct date using numeric component to ensure Local Midnight (consistent with useCalendar)
+      const selectedDateObj = new Date(Number(year), Number(month) - 1, Number(day));
 
       if (isNaN(selectedDateObj.getTime())) {
-        console.error("Invalid selectedDate:", selectedDate);
+        console.error('Invalid selectedDate:', selectedDate);
         showMessage({
           message: `Invalid selected date: ${selectedDate?.toString()}`,
-          type: "danger",
+          type: 'danger',
         });
         return;
       }
 
       const filteredByType =
-        selectedFilter === "all"
+        selectedFilter === 'all'
           ? [...active, ...inactive]
           : [
-              ...active.filter(
-                (notification) => notification.type === selectedFilter
-              ),
-              ...inactive.filter(
-                (notification) => notification.type === selectedFilter
-              ),
+              ...active.filter((notification) => notification.type === selectedFilter),
+              ...inactive.filter((notification) => notification.type === selectedFilter),
             ];
 
       const filteredByDate = filteredByType.filter((notification) => {
@@ -229,28 +184,28 @@ const Home = () => {
   const deleteReminder = useCallback(async (id?: string) => {
     if (!id) {
       showMessage({
-        message: "Invalid reminder ID",
-        type: "danger",
+        message: 'Invalid reminder ID',
+        type: 'danger',
       });
       return;
     }
 
     Alert.alert(
-      "Confirmation",
+      'Confirmation',
       `Are you sure you want to delete this event? This action cannot be undone.`,
       [
         {
-          text: "Cancel",
-          style: "cancel",
+          text: 'Cancel',
+          style: 'cancel',
         },
         {
-          text: "Delete",
+          text: 'Delete',
           onPress: async () => {
             await deleteNotification(id);
             loadNotifications();
           },
         },
-      ]
+      ],
     );
   }, []);
 
@@ -259,9 +214,7 @@ const Home = () => {
 
     const newDate = new Date(year, month - 1, currentDay);
 
-    const formattedDate = newDate
-      .toLocaleDateString("en-GB")
-      .replace(/\//g, "-");
+    const formattedDate = newDate.toLocaleDateString('en-GB').replace(/\//g, '-');
 
     setSelectedDate(formattedDate);
     setSelectedDateObject(newDate);
@@ -275,34 +228,39 @@ const Home = () => {
         title={TextString.DailySync}
         titleAlignment="center"
         leftIconType="grid"
+        onServicePress={() => setShowServiceManager(true)}
       />
 
       <View style={style.homeContainContainer}>
         <Animated.View entering={FadeIn.duration(300)} style={style.wrapper}>
-          <Pressable
-            onPress={() => setShowDateAndYearModal(true)}
-            style={style.dateContainer}
-          >
-            <Text style={style.todayText}>
-              {fromNowText(selectedDateObject)}
-            </Text>
+          <Pressable onPress={() => setShowDateAndYearModal(true)} style={style.dateContainer}>
+            <Text style={style.todayText}>{fromNowText(selectedDateObject)}</Text>
             <Text style={style.dateText}>{formatDate(selectedDateObject)}</Text>
           </Pressable>
 
           <View style={style.statusContainer}>
             <View style={style.statusItem}>
-              <View
-                style={[style.statusDot, { backgroundColor: colors.green }]}
+              <View style={[style.statusDot, { backgroundColor: colors.green }]} />
+              <AnimatedRollingNumber
+                value={notificationsState?.active.length}
+                enableCompactNotation
+                compactToFixed={2}
+                key={notificationsState?.active.length + theme?.toString()}
+                textStyle={style.statusText}
+                numberStyle={style.statusText}
+                spinningAnimationConfig={{ duration: 500, easing: Easing.bounce }}
               />
-              <Text style={style.statusText}>
-                {notificationsState?.active.length}
-              </Text>
             </View>
             <View style={style.statusItem}>
-              <View style={[style.statusDot, { backgroundColor: "gray" }]} />
-              <Text style={style.statusText}>
-                {notificationsState?.inactive.length}
-              </Text>
+              <View style={[style.statusDot, { backgroundColor: 'gray' }]} />
+              <AnimatedRollingNumber
+                value={notificationsState?.inactive.length}
+                enableCompactNotation
+                compactToFixed={2}
+                key={notificationsState?.inactive.length + theme?.toString()}
+                textStyle={style.statusText}
+                spinningAnimationConfig={{ duration: 500, easing: Easing.bounce }}
+              />
             </View>
           </View>
         </Animated.View>
@@ -315,7 +273,7 @@ const Home = () => {
             onScrollToIndexFailed={() => {}}
             onLayout={scrollToIndex}
             onContentSizeChange={scrollToIndex}
-            contentContainerStyle={{ gap: 20 }}
+            contentContainerStyle={{ gap: 15 }}
             renderItem={({ index, item }) => {
               return (
                 <RenderCalenderView
@@ -328,6 +286,10 @@ const Home = () => {
             }}
             keyExtractor={(item, index) => index.toString()}
             showsHorizontalScrollIndicator={false}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            removeClippedSubviews={true}
           />
         </Animated.View>
 
@@ -341,18 +303,14 @@ const Home = () => {
         <View style={{ flex: 1, height }}>
           {isLoading && notificationsState?.allByDate?.length !== 0 ? (
             <View style={style.loaderContainer}>
-              <ActivityIndicator color={colors.text} size={"large"} />
+              <ActivityIndicator color={colors.text} size={'large'} />
             </View>
           ) : notificationsState.allByDate?.length !== 0 ? (
             <Animated.FlatList
               layout={LinearTransition}
-              itemLayoutAnimation={LinearTransition.springify()
-                .damping(80)
-                .stiffness(200)}
-              columnWrapperStyle={
-                isGrid ? { justifyContent: "space-between" } : undefined
-              }
-              key={isGrid ? "grid" : "list"}
+              itemLayoutAnimation={LinearTransition.springify()}
+              columnWrapperStyle={isGrid ? { justifyContent: 'space-between' } : undefined}
+              key={isGrid ? 'grid' : 'list'}
               numColumns={isGrid ? 2 : undefined}
               data={notificationsState?.allByDate}
               extraData={notificationsState?.allByDate}
@@ -366,7 +324,7 @@ const Home = () => {
               }
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 93 }}
-              keyExtractor={(item, index) => item?.id?.toString()}
+              keyExtractor={(item) => item?.id?.toString()}
               renderItem={({ item }) => (
                 <ReminderCard
                   notification={item}
@@ -374,16 +332,18 @@ const Home = () => {
                   deleteReminder={deleteReminder}
                 />
               )}
+              initialNumToRender={10}
+              maxToRenderPerBatch={10}
+              windowSize={5}
+              removeClippedSubviews={true}
             />
           ) : (
-            <View style={{ height: "80%" }}>
+            <View style={{ height: '80%' }}>
               <RenderEmptyView />
             </View>
           )}
         </View>
-      </View>
 
-      {fullScreenPreview && (
         <FullScreenPreviewModal
           isVisible={fullScreenPreview}
           notifications={notificationsState?.allByDate}
@@ -391,9 +351,7 @@ const Home = () => {
           onRefreshData={loadNotifications}
           setFullScreenPreview={setFullScreenPreview}
         />
-      )}
 
-      {showDateAndYearModal && (
         <YearMonthPicker
           isVisible={showDateAndYearModal}
           selectedYear={selectedDateObject.getFullYear()}
@@ -401,9 +359,20 @@ const Home = () => {
           onConfirm={handleDateChange}
           onCancel={() => setShowDateAndYearModal(false)}
         />
-      )}
+
+        {/* <BatteryOptimizationModal
+          visible={showBatteryModal}
+          onConfirm={batteryModalConfirmRef.current}
+          onCancel={() => setShowBatteryModal(false)}
+        /> */}
+
+        <ServiceManager
+          isVisible={showServiceManager}
+          onClose={() => setShowServiceManager(false)}
+        />
+      </View>
     </SafeAreaView>
   );
 };
 
-export default Home;
+export default memo(Home);

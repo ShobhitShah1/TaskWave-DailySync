@@ -1,17 +1,10 @@
-import React, { memo, useMemo } from "react";
-import {
-  Image,
-  ImageBackground,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
-import AssetsPath from "../../Constants/AssetsPath";
-import { FONTS } from "../../Constants/Theme";
-import useThemeColors from "../../Hooks/useThemeMode";
-import { CategoryItemType } from "../../Types/Interface";
+import React, { memo, useMemo } from 'react';
+import { Image, ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
+
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
+import { CategoryItemType } from '@Types/Interface';
 
 const RenderCategoryItem = ({
   item,
@@ -23,25 +16,29 @@ const RenderCategoryItem = ({
   const colors = useThemeColors();
 
   const isSelected = useMemo(
-    () =>
-      selectedCategory &&
-      selectedCategory?.toLowerCase() === item?.type?.toLowerCase(),
-    [selectedCategory]
+    () => selectedCategory && selectedCategory?.toLowerCase() === item?.type?.toLowerCase(),
+    [selectedCategory],
   );
 
   return (
-    <Animated.View
+    <View
       style={[
         styles.pressableContainer,
         {
           borderColor: isSelected
-            ? item?.type === "gmail"
+            ? item?.type === 'gmail'
               ? item?.color?.dark
               : item?.color?.primary
             : colors.borderColor,
+          boxShadow: `0px 0px 6px ${
+            isSelected
+              ? item?.type === 'gmail'
+                ? item?.color?.dark
+                : item?.color?.primary
+              : 'transparent'
+          }`,
         },
       ]}
-      entering={FadeIn.delay(80 * index)}
     >
       <Pressable
         style={{ flex: 1 }}
@@ -54,27 +51,21 @@ const RenderCategoryItem = ({
           resizeMode="cover"
           tintColor={
             isSelected
-              ? item?.type === "gmail"
+              ? item?.type === 'gmail'
                 ? item?.color?.dark
                 : item?.color?.primary
-              : undefined
+              : 'rgba(171, 171, 171, 1)'
           }
           source={AssetsPath.ic_categoryFrame}
           style={styles.imageBackground}
         >
           <View style={styles.innerContainer}>
             <View style={styles.iconContainer}>
-              <Image
-                source={item.glowIcon}
-                style={styles.icon}
-                resizeMode="contain"
-              />
+              <Image source={item.glowIcon} style={styles.icon} resizeMode="contain" />
             </View>
 
             <View style={styles.textContainer}>
-              <Text style={[styles.titleText, { color: colors.text }]}>
-                {item.title}
-              </Text>
+              <Text style={[styles.titleText, { color: colors.text }]}>{item.title}</Text>
               <Text style={[styles.descriptionText, { color: colors.text }]}>
                 {item.description}
               </Text>
@@ -82,23 +73,22 @@ const RenderCategoryItem = ({
           </View>
         </ImageBackground>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   pressableContainer: {
-    width: "100%",
+    width: '100%',
     height: 180,
     borderRadius: 10,
-    borderWidth: 1,
-    overflow: "hidden",
+    borderWidth: 0.5,
   },
   imageBackground: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
     borderRadius: 15,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   innerContainer: {
     paddingHorizontal: 15,
@@ -107,9 +97,10 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 500,
-    backgroundColor: "white",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    boxShadow: '0px -3px 4px -2px #0A0909B2 inset',
   },
   icon: {
     width: 55,

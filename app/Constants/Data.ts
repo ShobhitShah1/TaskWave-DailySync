@@ -1,43 +1,39 @@
-import { Sound } from "../Types/Interface";
-import AssetsPath from "./AssetsPath";
+import { Sound } from '@Types/Interface';
+import AssetsPath from './AssetsPath';
 
 export const OnBoardingData = [
   {
     id: 1,
-    title: "Schedule  text  message",
-    description:
-      "Now schedule all your text messages with just few easy clicks",
+    title: 'Schedule  text  message',
+    description: 'Now schedule all your text messages with just few easy clicks',
     image: AssetsPath.ob_TextMessage,
   },
   {
     id: 2,
-    title: "Schedule all your mail",
-    description:
-      "Schedule all your mails to send at that perticular time without any delay",
+    title: 'Schedule all your mail',
+    description: 'Schedule all your mails to send at that perticular time without any delay',
     image: AssetsPath.ob_Email,
   },
   {
     id: 3,
-    title: "WhatsApp  messages",
-    description:
-      "Schedule your WhatsApp messages to send it at perfect time at one place",
+    title: 'WhatsApp  messages',
+    description: 'Schedule your WhatsApp messages to send it at perfect time at one place',
     image: AssetsPath.ob_Whatsapp,
   },
   {
     id: 4,
-    title: "WhatsApp business",
-    description:
-      "Schedule your WhatsApp business messages to send it at perfect time",
+    title: 'WhatsApp business',
+    description: 'Schedule your WhatsApp business messages to send it at perfect time',
     image: AssetsPath.ob_WhatsappBusiness,
   },
 ];
 
 export const sounds: Sound[] = [
   {
-    name: "System default",
+    name: 'System default',
     duration: null,
-    category: "System",
-    soundKeyName: "default",
+    category: 'System',
+    soundKeyName: 'default',
     uri: null,
     canPlay: false,
   },
@@ -82,18 +78,18 @@ export const sounds: Sound[] = [
   //   canPlay: true,
   // },
   {
-    name: "Ting tong",
-    duration: "0:02",
-    soundKeyName: "ting_tong",
-    category: "Modern",
+    name: 'Ting tong',
+    duration: '0:02',
+    soundKeyName: 'ting_tong',
+    category: 'Modern',
     uri: AssetsPath.ting_tong,
     canPlay: true,
   },
   {
-    name: "Tink tink",
-    duration: "0:02",
-    soundKeyName: "tink_tink",
-    category: "Modern",
+    name: 'Tink tink',
+    duration: '0:02',
+    soundKeyName: 'tink_tink',
+    category: 'Modern',
     uri: AssetsPath.tink_tink,
     canPlay: true,
   },

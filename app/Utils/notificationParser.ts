@@ -1,44 +1,39 @@
-import { DocumentPickerResponse } from "react-native-document-picker";
-import { Notification } from "../Types/Interface";
+import { DocumentPickerResponse } from '@react-native-documents/picker';
 
-export const parseAttachments = (
-  attachments: any
-): DocumentPickerResponse[] => {
+import { Notification } from '@Types/Interface';
+
+export const parseAttachments = (attachments: any): DocumentPickerResponse[] => {
   try {
-    return typeof attachments === "string"
-      ? JSON.parse(attachments)
-      : attachments || [];
+    return typeof attachments === 'string' ? JSON.parse(attachments) : attachments || [];
   } catch (error) {
-    console.error("Failed to parse attachments:", error);
+    console.error('Failed to parse attachments:', error);
     return [];
   }
 };
 
 export const parseMemo = (memo: any): any[] => {
   try {
-    return typeof memo === "string" ? JSON.parse(memo) : memo || [];
+    return typeof memo === 'string' ? JSON.parse(memo) : memo || [];
   } catch (error) {
-    console.error("Failed to parse memo:", error);
+    console.error('Failed to parse memo:', error);
     return [];
   }
 };
 
 export const parseContacts = (toContact: any): any[] => {
   try {
-    return typeof toContact === "string"
-      ? JSON.parse(toContact)
-      : toContact || [];
+    return typeof toContact === 'string' ? JSON.parse(toContact) : toContact || [];
   } catch (error) {
-    console.error("Failed to parse toContact:", error);
+    console.error('Failed to parse toContact:', error);
     return [];
   }
 };
 
 export const parseEmails = (toMail: any): string[] => {
   try {
-    return typeof toMail === "string" ? JSON.parse(toMail) : toMail || [];
+    return typeof toMail === 'string' ? JSON.parse(toMail) : toMail || [];
   } catch (error) {
-    console.error("Failed to parse toMail:", error);
+    console.error('Failed to parse toMail:', error);
     return [];
   }
 };

@@ -1,22 +1,24 @@
-import AssetsPath from "../Constants/AssetsPath";
-import { NotificationType } from "../Types/Interface";
+import AssetsPath from '@Constants/AssetsPath';
+import { NotificationType } from '@Types/Interface';
 
 export const getNotificationIcon = (type: NotificationType) => {
   switch (type) {
-    case "whatsapp":
+    case 'whatsapp':
       return AssetsPath.ic_whatsapp_history;
-    case "whatsappBusiness":
+    case 'whatsappBusiness':
       return AssetsPath.ic_whatsappBusiness_history;
-    case "SMS":
+    case 'SMS':
       return AssetsPath.ic_sms_history;
-    case "gmail":
+    case 'gmail':
       return AssetsPath.ic_gmail_history;
-    case "phone":
+    case 'phone':
       return AssetsPath.ic_phone_history;
-    case "telegram":
+    case 'telegram':
       return AssetsPath.ic_telegram_history;
-    case "note":
+    case 'note':
       return AssetsPath.ic_notes_history;
+    case 'location':
+      return AssetsPath.ic_location_list_icon;
     default:
       return null;
   }

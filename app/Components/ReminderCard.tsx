@@ -1,19 +1,20 @@
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { useNavigation } from "@react-navigation/native";
-import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { Platform } from "react-native";
-import { showMessage } from "react-native-flash-message";
-import { useAppContext } from "../Contexts/ThemeProvider";
-import isGridView from "../Hooks/isGridView";
-import { useCountdownTimer } from "../Hooks/useCountdownTimer";
-import useNotificationIconColors from "../Hooks/useNotificationIconColors";
-import useDatabase, { scheduleNotification } from "../Hooks/useReminder";
-import useThemeColors from "../Hooks/useThemeMode";
-import { ReminderCardProps } from "../Types/Interface";
-import { getNotificationIcon } from "../Utils/getNotificationIcon";
-import { getNotificationTitle } from "../Utils/getNotificationTitle";
-import GridView from "./ReminderCards/GridList";
-import ListView from "./ReminderCards/ListView";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useNavigation } from '@react-navigation/native';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { Platform } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import isGridView from '@Hooks/isGridView';
+import { useAddressFromCoords } from '@Hooks/useAddressFromCoords';
+import { useCountdownTimer } from '@Hooks/useCountdownTimer';
+import useNotificationIconColors from '@Hooks/useNotificationIconColors';
+import useDatabase, { scheduleNotification } from '@Hooks/useReminder';
+import useThemeColors from '@Hooks/useThemeMode';
+import { ReminderCardProps } from '@Types/Interface';
+import { getNotificationIcon } from '@Utils/getNotificationIcon';
+import { getNotificationTitle } from '@Utils/getNotificationTitle';
+import GridView from './ReminderCards/GridList';
+import ListView from './ReminderCards/ListView';
 
 const ReminderCard: React.FC<ReminderCardProps> = ({
   notification,
@@ -29,7 +30,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
 
   const [dateTimePickerState, setDateTimePickerState] = useState({
     show: false,
-    mode: "date" as any,
+    mode: 'date' as any,
     value: notification.date,
   });
 
@@ -42,61 +43,69 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
     }
   }, [timeIsOver, timeLeft]);
 
-  const title = useMemo(
-    () => getNotificationTitle(notification),
-    [notification]
+  const title = useMemo(() => getNotificationTitle(notification), [notification]);
+
+  const coords = useMemo(
+    () => ({
+      latitude: notification.latitude as number,
+      longitude: notification.longitude as number,
+    }),
+    [notification.latitude, notification.longitude],
   );
+
+  const { shortLocationLabel } = useAddressFromCoords(coords);
 
   const cardBackgroundColor = useMemo(() => {
-    return theme === "dark"
-      ? colors.reminderCardBackground
-      : notificationColors.backgroundColor;
-  }, [
-    theme,
-    colors.reminderCardBackground,
-    notificationColors.backgroundColor,
-  ]);
+    return theme === 'dark' ? colors.reminderCardBackground : notificationColors.backgroundColor;
+  }, [theme, colors.reminderCardBackground, notificationColors.backgroundColor]);
 
   const typeColor = useMemo(() => {
-    return notification.type === "gmail" && theme === "light"
+    return notification.type === 'gmail' && theme === 'light'
       ? colors.gmailText
-      : notification.type === "whatsappBusiness"
-      ? notificationColors.createViewColor
-      : notificationColors.typeColor;
+      : notification.type === 'whatsappBusiness'
+        ? notificationColors.createViewColor
+        : notificationColors.typeColor;
   }, [notification.type, theme, colors.gmailText, notificationColors]);
 
-  const icon = useMemo(
-    () => getNotificationIcon(notification.type),
-    [notification.type]
-  );
+  const icon = useMemo(() => getNotificationIcon(notification.type), [notification.type]);
 
   const onCardPress = useCallback(() => {
     const notificationData = {
       ...notification,
-      date:
-        notification.date instanceof Date
-          ? notification.date.toISOString()
-          : notification.date,
+      date: notification.date instanceof Date ? notification.date.toISOString() : notification.date,
     };
 
-    navigation.navigate("ReminderPreview", {
-      notificationData,
-    });
+    if (notification.type === 'location') {
+      navigation.navigate('LocationPreview', {
+        notificationData,
+      });
+    } else {
+      navigation.navigate('ReminderPreview', {
+        notificationData,
+      });
+    }
 
     setFullScreenPreview && setFullScreenPreview(false);
   }, [notification]);
 
   const onEditPress = useCallback(() => {
-    navigation.navigate("CreateReminder", {
-      notificationType: notification.type,
-      id: notification?.id,
-    });
+    if (notification.type === 'location') {
+      navigation.navigate('LocationDetails', {
+        notificationType: notification.type,
+        id: notification?.id,
+      });
+    } else {
+      navigation.navigate('CreateReminder', {
+        notificationType: notification.type,
+        id: notification?.id,
+      });
+    }
   }, [notification]);
 
   const onDuplicatePress = useCallback(() => {
     setDateTimePickerState({
       show: true,
-      mode: "date",
+      mode: 'date',
       value: new Date(notification.date),
     });
   }, []);
@@ -105,18 +114,18 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
     (event: any, selectedDateTime?: Date) => {
       const currentState = dateTimePickerState;
 
-      if (Platform.OS === "android") {
+      if (Platform.OS === 'android') {
         setDateTimePickerState((prev) => ({ ...prev, show: false }));
 
-        if (event.type === "set" && selectedDateTime) {
-          if (currentState.mode === "date") {
+        if (event.type === 'set' && selectedDateTime) {
+          if (currentState.mode === 'date') {
             const newDateTime = new Date(selectedDateTime);
             const now = new Date();
             newDateTime.setHours(now.getHours(), now.getMinutes(), 0, 0);
 
             setDateTimePickerState({
               show: true,
-              mode: "time",
+              mode: 'time',
               value: newDateTime,
             });
           } else {
@@ -125,7 +134,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
               selectedDateTime.getHours(),
               selectedDateTime.getMinutes(),
               0,
-              0
+              0,
             );
             createDuplicateReminder(finalDateTime);
           }
@@ -139,7 +148,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
         }
       }
     },
-    [dateTimePickerState]
+    [dateTimePickerState],
   );
 
   const createDuplicateReminder = async (scheduledDateTime: Date) => {
@@ -147,12 +156,10 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
       const newNotification = {
         ...notification,
         date: scheduledDateTime,
-        id: "",
+        id: '',
       };
 
-      const notificationScheduleId = await scheduleNotification(
-        newNotification
-      );
+      const notificationScheduleId = await scheduleNotification(newNotification);
 
       if (notificationScheduleId?.trim()) {
         const data = {
@@ -163,27 +170,18 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
         const created = await createNotification(data);
 
         if (!created) {
-          showMessage({
-            message: String(created),
-            type: "danger",
-          });
+          showMessage({ message: String(created), type: 'danger' });
         } else {
-          showMessage({
-            message: "Reminder duplicated successfully.",
-            type: "success",
-          });
+          showMessage({ message: 'Reminder duplicated successfully.', type: 'success' });
           onRefreshData?.();
         }
       } else {
-        showMessage({
-          message: "Failed to schedule notification.",
-          type: "danger",
-        });
+        showMessage({ message: 'Failed to schedule notification.', type: 'danger' });
       }
     } catch (error: any) {
       showMessage({
-        message: error?.message?.toString() || "Failed to create reminder",
-        type: "danger",
+        message: error?.message?.toString() || 'Failed to create reminder',
+        type: 'danger',
       });
     }
   };
@@ -195,11 +193,11 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
         display="default"
         value={new Date(dateTimePickerState.value)}
         minimumDate={new Date()}
-        themeVariant={theme === "dark" ? "dark" : "light"}
+        themeVariant={theme === 'dark' ? 'dark' : 'light'}
         onChange={handleDateTimeChange}
       />
     ),
-    [dateTimePickerState, theme]
+    [dateTimePickerState, theme],
   );
 
   return (
@@ -215,6 +213,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           title={title}
           typeColor={typeColor}
           deleteReminder={deleteReminder}
+          address={notification?.locationName ?? shortLocationLabel}
         />
       ) : (
         <ListView
@@ -227,6 +226,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({
           title={title}
           typeColor={typeColor}
           deleteReminder={deleteReminder}
+          address={notification?.locationName ?? shortLocationLabel}
         />
       )}
 

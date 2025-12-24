@@ -1,7 +1,8 @@
-import React from "react";
-import { Text, View } from "react-native";
-import styles from "./styles";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React from 'react';
+import { Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import styles from './styles';
 
 const Notification = () => {
   const colors = styles();

@@ -1,25 +1,26 @@
-import { AVPlaybackStatus, Audio } from "expo-av";
-import { Sound } from "expo-av/build/Audio";
-import React, { useCallback, useEffect, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Audio, AVPlaybackStatus } from 'expo-av';
+import { Sound } from 'expo-av/build/Audio';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
   interpolateColor,
   useAnimatedStyle,
-} from "react-native-reanimated";
-import { useAppContext } from "../Contexts/ThemeProvider";
-import AssetsPath from "../Constants/AssetsPath";
-import { FONTS, SIZE } from "../Constants/Theme";
-import useThemeColors from "../Hooks/useThemeMode";
-import { Memo } from "../Types/Interface";
+} from 'react-native-reanimated';
+
+import AssetsPath from '@Constants/AssetsPath';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
+import { Memo } from '@Types/Interface';
 
 const AudioMemoItem = ({
   memo,
   themeColor,
   renderRightIcon,
-  gradientStart = "#FF6B6B",
-  gradientEnd = "#4ECDC4",
+  gradientStart = '#FF6B6B',
+  gradientEnd = '#4ECDC4',
 }: {
   memo: Memo;
   themeColor: string;
@@ -42,7 +43,7 @@ const AudioMemoItem = ({
       const { sound } = await Audio.Sound.createAsync(
         { uri: memo.uri },
         { progressUpdateIntervalMillis: 1000 / 60 },
-        onPlaybackStatusUpdate
+        onPlaybackStatusUpdate,
       );
       setSound(sound);
     };
@@ -65,21 +66,19 @@ const AudioMemoItem = ({
         await sound.setPositionAsync(0);
       }
     },
-    [sound]
+    [sound],
   );
 
   const playSound = async () => {
     if (!sound) return;
 
-    status?.isLoaded && status.isPlaying
-      ? await sound.pauseAsync()
-      : await sound.playAsync();
+    status?.isLoaded && status.isPlaying ? await sound.pauseAsync() : await sound.playAsync();
   };
 
   const formatMillis = (millis: number) => {
     const minutes = Math.floor(millis / (1000 * 60));
     const seconds = Math.floor((millis % (1000 * 60)) / 1000);
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
   const calculateWaveformData = (metering: number[]) => {
@@ -87,9 +86,7 @@ const AudioMemoItem = ({
     const lines = [];
     for (let i = 0; i < numLines; i++) {
       const meteringIndex = Math.floor((i * metering.length) / numLines);
-      const nextMeteringIndex = Math.ceil(
-        ((i + 1) * metering.length) / numLines
-      );
+      const nextMeteringIndex = Math.ceil(((i + 1) * metering.length) / numLines);
       const values = metering.slice(meteringIndex, nextMeteringIndex);
       const average = values.reduce((sum, a) => sum + a, 0) / values.length;
       lines.push({ value: average, color: getColorForIndex(i, numLines) });
@@ -102,9 +99,7 @@ const AudioMemoItem = ({
   const duration = status?.isLoaded ? status.durationMillis : 1;
 
   const progress = position / (duration || 1);
-  const waveformData = memo.metering
-    ? calculateWaveformData(memo.metering)
-    : [];
+  const waveformData = memo.metering ? calculateWaveformData(memo.metering) : [];
 
   const animatedIndicatorStyle = useAnimatedStyle(() => ({
     left: `${progress * 100}%`,
@@ -112,20 +107,11 @@ const AudioMemoItem = ({
 
   return (
     <>
-      <View
-        style={[
-          styles.container,
-          { backgroundColor: colors.scheduleReminderCardBackground },
-        ]}
-      >
+      <View style={[styles.container, { backgroundColor: colors.scheduleReminderCardBackground }]}>
         {memo.uri && (
           <Pressable onPress={playSound}>
             <Image
-              tintColor={
-                theme === "dark"
-                  ? "rgba(255, 255, 255, 0.7)"
-                  : "rgba(91, 87, 87, 0.7)"
-              }
+              tintColor={theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(91, 87, 87, 0.7)'}
               resizeMode="contain"
               source={isPlaying ? AssetsPath.ic_pause : AssetsPath.ic_play}
               style={{ width: 20, height: 20 }}
@@ -142,18 +128,13 @@ const AudioMemoItem = ({
                   style={[
                     styles.waveLine,
                     {
-                      height: interpolate(
-                        db.value,
-                        [-50, 0],
-                        [5, 40],
-                        Extrapolation.CLAMP
-                      ),
+                      height: interpolate(db.value, [-50, 0], [5, 40], Extrapolation.CLAMP),
                       backgroundColor:
                         progress > index / waveformData.length
                           ? db.color // Use gradient color when played
-                          : theme === "dark"
-                          ? "rgba(255, 255, 255, 0.3)"
-                          : "rgba(91, 87, 87, 0.3)",
+                          : theme === 'dark'
+                            ? 'rgba(255, 255, 255, 0.3)'
+                            : 'rgba(91, 87, 87, 0.3)',
                     },
                   ]}
                 />
@@ -186,42 +167,42 @@ const styles = StyleSheet.create({
     gap: 15,
     padding: 10,
     height: 60,
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
     borderRadius: SIZE.listBorderRadius,
   },
   playbackContainer: {
     flex: 1,
     paddingVertical: 20,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   playbackBackground: {
     height: 3,
-    backgroundColor: "gainsboro",
+    backgroundColor: 'gainsboro',
     borderRadius: 5,
   },
   playbackIndicator: {
     width: 10,
     aspectRatio: 1,
     borderRadius: 10,
-    position: "absolute",
+    position: 'absolute',
   },
   wave: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 3,
   },
   waveLine: {
     flex: 1,
     height: 30,
-    backgroundColor: "gainsboro",
+    backgroundColor: 'gainsboro',
     borderRadius: 20,
   },
   durationText: {
     marginTop: 10,
     fontFamily: FONTS.Medium,
-    textAlign: "right",
+    textAlign: 'right',
     fontSize: 12,
   },
 });

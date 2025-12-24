@@ -1,18 +1,10 @@
-import React, { memo, useEffect } from "react";
-import {
-  View,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  Image,
-} from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
-import AssetsPath from "../Constants/AssetsPath";
-import useThemeColors from "../Hooks/useThemeMode";
-import { useAppContext } from "../Contexts/ThemeProvider";
+import React, { memo, useEffect } from 'react';
+import { Image, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+
+import AssetsPath from '@Constants/AssetsPath';
+import { useAppContext } from '@Contexts/ThemeProvider';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface CustomSwitchProps {
   isOn: boolean;
@@ -52,8 +44,7 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
   }));
 
   const backgroundColor = useAnimatedStyle(() => ({
-    backgroundColor:
-      theme === "dark" ? colors.grayBackground : colors.lightGray,
+    backgroundColor: theme === 'dark' ? colors.grayBackground : colors.lightGray,
   }));
 
   const styles = getStyles(width, height, circleSize, iconSize);
@@ -64,7 +55,7 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
         <View style={styles.iconContainer}>
           <Image
             source={AssetsPath.ic_darkTheme}
-            tintColor={theme === "dark" ? colors.white : colors.lightGray}
+            tintColor={theme === 'dark' ? colors.white : colors.lightGray}
             style={styles.iconStyle}
           />
         </View>
@@ -81,39 +72,34 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
   );
 };
 
-const getStyles = (
-  width: number,
-  height: number,
-  circleSize: number,
-  iconSize: number
-) =>
+const getStyles = (width: number, height: number, circleSize: number, iconSize: number) =>
   StyleSheet.create({
     switchContainer: {
       width: width,
       height: height,
       borderRadius: height / 2,
       padding: 2,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
     circle: {
       width: circleSize,
       height: circleSize,
       borderRadius: circleSize / 2,
-      backgroundColor: "#fff",
-      position: "absolute",
+      backgroundColor: '#fff',
+      position: 'absolute',
     },
     iconContainer: {
       zIndex: 9999,
       width: circleSize,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     iconStyle: {
       width: iconSize,
       height: iconSize,
-      resizeMode: "contain",
+      resizeMode: 'contain',
     },
   });
 

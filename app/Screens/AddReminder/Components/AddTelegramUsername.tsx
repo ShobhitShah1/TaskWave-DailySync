@@ -1,4 +1,4 @@
-import React, { FC, memo, useCallback } from "react";
+import React, { FC, memo, useCallback } from 'react';
 import {
   Keyboard,
   StyleSheet,
@@ -6,9 +6,10 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   View,
-} from "react-native";
-import { FONTS, SIZE } from "../../../Constants/Theme";
-import useThemeColors from "../../../Hooks/useThemeMode";
+} from 'react-native';
+
+import { FONTS, SIZE } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface AddTelegramUsernameProps {
   themeColor: string;
@@ -28,23 +29,18 @@ const AddTelegramUsername: FC<AddTelegramUsernameProps> = ({
     (text: string) => {
       setTelegramUsername(text);
     },
-    [setTelegramUsername]
+    [setTelegramUsername],
   );
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={{ marginBottom: 10 }}>
-        <View
-          style={[
-            style.container,
-            { backgroundColor: colors.scheduleReminderCardBackground },
-          ]}
-        >
+        <View style={[style.container, { backgroundColor: colors.scheduleReminderCardBackground }]}>
           <TextInput
             spellCheck
             scrollEnabled
             value={telegramUsername}
-            placeholder={"telegram username"}
+            placeholder={'telegram username'}
             textAlignVertical="top"
             onChangeText={onChangeText}
             selectionColor={themeColor}
@@ -63,16 +59,16 @@ export default memo(AddTelegramUsername);
 const styles = () => {
   return StyleSheet.create({
     container: {
-      width: "100%",
+      width: '100%',
       paddingHorizontal: 15,
-      flexDirection: "row",
-      justifyContent: "space-between",
+      flexDirection: 'row',
+      justifyContent: 'space-between',
       borderRadius: SIZE.listBorderRadius,
     },
     textInputStyle: {
       flex: 1,
       fontSize: 18,
-      textAlignVertical: "center",
+      textAlignVertical: 'center',
       paddingVertical: 15,
       fontFamily: FONTS.Medium,
     },
@@ -82,11 +78,11 @@ const styles = () => {
       width: 15,
       height: 15,
       zIndex: 999,
-      position: "absolute",
-      resizeMode: "contain",
+      position: 'absolute',
+      resizeMode: 'contain',
     },
     infoText: {
-      color: "red",
+      color: 'red',
       fontFamily: FONTS.Medium,
       fontSize: 13,
       marginTop: 5,

@@ -1,11 +1,10 @@
-import { useMemo } from "react";
-import useThemeColors from "./useThemeMode";
-import { categoriesConfig } from "../Constants/CategoryConfig";
-import { NotificationColor } from "../Types/Interface";
+import { useMemo } from 'react';
 
-const useNotificationIconColors = (
-  notificationType: string
-): NotificationColor => {
+import { categoriesConfig } from '@Constants/CategoryConfig';
+import { NotificationColor } from '@Types/Interface';
+import useThemeColors from './useThemeMode';
+
+const useNotificationIconColors = (notificationType: string): NotificationColor => {
   const colors = useThemeColors();
 
   const colorMap = useMemo(() => {
@@ -16,7 +15,7 @@ const useNotificationIconColors = (
         typeColor: category.color.primary,
         iconColor: category.color.dark,
         createViewColor:
-          category?.type === "gmail"
+          category?.type === 'gmail'
             ? category.color.lightDark || category.color.background
             : category.color.primary,
         icon: category.icon,
@@ -27,9 +26,7 @@ const useNotificationIconColors = (
   }, [colors]);
 
   if (!colorMap[notificationType]) {
-    throw new Error(
-      `No color configuration found for notification type: ${notificationType}`
-    );
+    throw new Error(`No color configuration found for notification type: ${notificationType}`);
   }
 
   return colorMap[notificationType];

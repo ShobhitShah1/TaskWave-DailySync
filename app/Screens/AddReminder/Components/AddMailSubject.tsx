@@ -1,7 +1,8 @@
-import React, { FC, memo, useCallback } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
-import { FONTS, SIZE } from "../../../Constants/Theme";
-import useThemeColors from "../../../Hooks/useThemeMode";
+import React, { FC, memo, useCallback } from 'react';
+import { StyleSheet, TextInput, View } from 'react-native';
+
+import { FONTS, SIZE } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 
 interface AddMailSubjectProps {
   themeColor: string;
@@ -9,11 +10,7 @@ interface AddMailSubjectProps {
   setSubject: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const AddMailSubject: FC<AddMailSubjectProps> = ({
-  themeColor,
-  subject,
-  setSubject,
-}) => {
+const AddMailSubject: FC<AddMailSubjectProps> = ({ themeColor, subject, setSubject }) => {
   const style = styles();
   const colors = useThemeColors();
 
@@ -21,16 +18,11 @@ const AddMailSubject: FC<AddMailSubjectProps> = ({
     (text: string) => {
       setSubject(text);
     },
-    [setSubject]
+    [setSubject],
   );
 
   return (
-    <View
-      style={[
-        style.container,
-        { backgroundColor: colors.scheduleReminderCardBackground },
-      ]}
-    >
+    <View style={[style.container, { backgroundColor: colors.scheduleReminderCardBackground }]}>
       <TextInput
         multiline
         spellCheck
@@ -52,11 +44,11 @@ export default memo(AddMailSubject);
 const styles = () => {
   return StyleSheet.create({
     container: {
-      width: "100%",
+      width: '100%',
       minHeight: 50,
       paddingHorizontal: 15,
-      flexDirection: "row",
-      justifyContent: "space-between",
+      flexDirection: 'row',
+      justifyContent: 'space-between',
       borderRadius: SIZE.listBorderRadius,
       marginBottom: 20,
     },
