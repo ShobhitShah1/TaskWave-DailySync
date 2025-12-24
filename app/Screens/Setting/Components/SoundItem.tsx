@@ -1,14 +1,15 @@
-import { memo, useCallback, useEffect, useRef } from 'react';
-import { Pressable, Animated as RNAnimated, Text, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-
 import { Sound } from '@Types/Interface';
+import { memo, useEffect } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  withDelay,
+  cancelAnimation,
+} from 'react-native-reanimated';
 import styles from '../styles';
 
 interface SoundItemProps {
@@ -19,74 +20,50 @@ interface SoundItemProps {
   onPlay: () => void;
 }
 
-const SoundItem = ({ item, isSelected, isPlaying, onSelect, onPlay }: SoundItemProps) => {
+const WaveBar = ({ index, isPlaying }: { index: number; isPlaying: boolean }) => {
   const style = styles();
-  const scaleButton = useSharedValue(1);
-
-  const waveAnimation = useRef<{ [key: string]: RNAnimated.Value[] }>({});
+  const scale = useSharedValue(0.3);
 
   useEffect(() => {
-    waveAnimation.current[item.id] = Array(5)
-      .fill(0)
-      .map(() => new RNAnimated.Value(0));
-  }, []);
-
-  const animateWaves = (soundId: string) => {
-    const waves = waveAnimation.current[soundId];
-    if (!waves) return;
-
-    waves.forEach((anim, i) => {
-      RNAnimated.sequence([
-        RNAnimated.delay(i * 100),
-        RNAnimated.loop(
-          RNAnimated.sequence([
-            RNAnimated.timing(anim, {
-              toValue: 1,
-              duration: 500,
-              useNativeDriver: true,
-            }),
-            RNAnimated.timing(anim, {
-              toValue: 0,
-              duration: 500,
-              useNativeDriver: true,
-            }),
-          ]),
+    if (isPlaying) {
+      scale.value = withDelay(
+        index * 100,
+        withRepeat(
+          withSequence(withTiming(1, { duration: 500 }), withTiming(0.3, { duration: 500 })),
+          -1,
+          false,
         ),
-      ]).start();
-    });
-  };
+      );
+    } else {
+      cancelAnimation(scale);
+      scale.value = withTiming(0.3, { duration: 200 });
+    }
+  }, [isPlaying, index]);
 
-  const buttonStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scaleButton.value }],
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scaleY: scale.value }],
   }));
 
-  const animateButton = useCallback(() => {
-    scaleButton.value = withSequence(
-      withTiming(0.9, { duration: 100 }),
-      withSpring(1, { damping: 4 }),
-    );
-  }, []);
+  return <Animated.View style={[style.waveBar, animatedStyle]} />;
+};
 
-  const handlePlay = () => {
-    animateButton();
-    onPlay();
-    animateWaves(item.id);
-  };
+const SoundItem = ({ item, isSelected, isPlaying, onSelect, onPlay }: SoundItemProps) => {
+  const style = styles();
 
   return (
     <Pressable onPress={onSelect} style={[style.soundCard, isSelected && style.selectedCard]}>
       <View style={style.cardContent}>
         {item.canPlay && (
-          <Animated.View style={[style.playButtonContainer, buttonStyle]}>
+          <View style={style.playButtonContainer}>
             <Pressable
               style={[style.playButton, isPlaying && style.playingButton]}
-              onPress={handlePlay}
+              onPress={onPlay}
             >
               <Text style={[style.playButtonText, isPlaying && style.playingButtonText]}>
                 {isPlaying ? '■' : '▶'}
               </Text>
             </Pressable>
-          </Animated.View>
+          </View>
         )}
 
         <View style={style.soundInfo}>
@@ -104,26 +81,13 @@ const SoundItem = ({ item, isSelected, isPlaying, onSelect, onPlay }: SoundItemP
         </View>
 
         <View style={style.rightSection}>
-          {isPlaying &&
-            item.canPlay &&
-            waveAnimation.current[item.id]?.map((anim, index) => (
-              <RNAnimated.View
-                key={index}
-                style={[
-                  style.waveBar,
-                  {
-                    transform: [
-                      {
-                        scaleY: anim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0.3, 1],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              />
-            ))}
+          {isPlaying && item.canPlay && (
+            <>
+              {[0, 1, 2, 3, 4].map((index) => (
+                <WaveBar key={index} index={index} isPlaying={isPlaying} />
+              ))}
+            </>
+          )}
           {isSelected && <View style={style.selectedIndicator} />}
         </View>
       </View>

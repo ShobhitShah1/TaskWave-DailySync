@@ -182,9 +182,11 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
           [100, 100, 100, 100],
           1000,
         );
-      } else if (location) {
-        centerOnUser();
-      } else {
+      }
+      // else if (location) {
+      //   centerOnUser();
+      // }
+      else {
         Alert.alert(
           'Location Error',
           'Unable to get current location. Please check location permissions.',

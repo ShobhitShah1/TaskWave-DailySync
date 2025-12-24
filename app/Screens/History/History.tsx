@@ -33,6 +33,10 @@ import HomeHeader from '../Home/Components/HomeHeader';
 import RenderFilterTabData from './Components/RenderFilterTabData';
 import RenderHistoryList from './Components/RenderHistoryList';
 
+const ITEM_WIDTH = 29;
+const ITEM_GAP = 15;
+const ITEM_TOTAL_WIDTH = ITEM_WIDTH + ITEM_GAP;
+
 const History = () => {
   const style = styles();
   const { bottom } = useSafeAreaInsets();
@@ -120,10 +124,19 @@ const History = () => {
     [activeTabType, filterTabData],
   );
 
-  const findSelectedIndex = () => {
+  const findSelectedIndex = useCallback(() => {
     const index = daysArray.findIndex((item) => item.formattedDate === selectedDate);
     return index !== -1 ? index : 0;
-  };
+  }, [daysArray, selectedDate]);
+
+  const getItemLayout = useCallback(
+    (_: any, index: number) => ({
+      length: ITEM_WIDTH,
+      offset: ITEM_TOTAL_WIDTH * index,
+      index,
+    }),
+    [],
+  );
 
   const scrollToIndex = useCallback(() => {
     try {
@@ -136,7 +149,7 @@ const History = () => {
         });
       }
     } catch (error) {}
-  }, [daysListRef, isFocus]);
+  }, [daysListRef, isFocus, findSelectedIndex]);
 
   const handleScrollToIndexFailed = useCallback(
     (info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
@@ -348,10 +361,10 @@ const History = () => {
               horizontal
               ref={daysListRef}
               data={daysArray}
-              onLayout={() => scrollToIndex()}
+              getItemLayout={getItemLayout}
+              initialScrollIndex={findSelectedIndex()}
               onScrollToIndexFailed={handleScrollToIndexFailed}
-              onContentSizeChange={() => scrollToIndex()}
-              contentContainerStyle={{ gap: 15 }}
+              contentContainerStyle={{ gap: ITEM_GAP }}
               renderItem={({ index, item }) => {
                 return (
                   <RenderCalenderView
@@ -364,10 +377,10 @@ const History = () => {
               }}
               keyExtractor={(item, index) => index.toString()}
               showsHorizontalScrollIndicator={false}
-              initialNumToRender={10}
-              maxToRenderPerBatch={10}
-              windowSize={5}
-              removeClippedSubviews={true}
+              initialNumToRender={15}
+              maxToRenderPerBatch={15}
+              windowSize={7}
+              removeClippedSubviews={false}
             />
           </Animated.View>
 

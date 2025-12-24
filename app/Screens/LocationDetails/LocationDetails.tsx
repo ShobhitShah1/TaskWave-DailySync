@@ -13,6 +13,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'rea
 import { showMessage } from 'react-native-flash-message';
 import LocationMapView from './Components/LocationMapView';
 import LocationSearchBar from './Components/LocationSearchBar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type ReminderScheduledProps = {
   params: { notificationType: NotificationType; id?: string };
@@ -189,7 +190,7 @@ const LocationDetails = () => {
 
   return (
     <>
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <HomeHeader
           title={'Location'}
           titleAlignment="center"
@@ -238,7 +239,7 @@ const LocationDetails = () => {
             </Pressable>
           </View>
         )}
-      </View>
+      </SafeAreaView>
 
       <LocationSearchBottomSheet
         isVisible={isSearchPress}

@@ -228,7 +228,6 @@ const Home = () => {
         title={TextString.DailySync}
         titleAlignment="center"
         leftIconType="grid"
-        showThemeSwitch={false}
         onServicePress={() => setShowServiceManager(true)}
       />
 

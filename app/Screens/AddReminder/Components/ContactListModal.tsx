@@ -1,13 +1,22 @@
-import ReusableBottomSheet from '@Components/ReusableBottomSheet';
 import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
-import { BottomSheetFlatList, BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import useThemeColors from '@Hooks/useThemeMode';
+import { TrueSheet } from '@lodev09/react-native-true-sheet';
 import { Contact, ContactListModalProps } from '@Types/Interface';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { FC, memo, useCallback, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styles from '../styles';
 import RenderContactList from './RenderContactList';
 
@@ -16,27 +25,30 @@ interface ContactListModalPropsWithSync extends ContactListModalProps {
   isSyncing: boolean;
 }
 
+// Optimized contact validation with regex caching
+const PHONE_REGEX = /^(\+91\d{10}|\+\d{1,3}\d{7,14}|[1-9]\d{6,14})$/;
 const isValidContact = (contact: Contact): boolean => {
   if (!contact.number) return false;
-  const number = contact.number.trim();
-  return /^(\+91\d{10}|\+\d{1,3}\d{7,14}|[1-9]\d{6,14})$/.test(number);
+  return PHONE_REGEX.test(contact.number.trim());
 };
 
+// Custom hook for filtered contacts with memoization
 const useFilteredContacts = (contacts: Contact[], searchText: string) => {
   return useMemo(() => {
-    if (!searchText.trim()) {
+    const trimmedSearch = searchText.trim().toLowerCase();
+
+    if (!trimmedSearch) {
       return contacts.filter(isValidContact);
     }
 
-    const lowerSearchText = searchText.toLowerCase().trim();
     return contacts.filter((contact) => {
       if (!isValidContact(contact)) return false;
-      const name = contact.name?.toLowerCase();
-      return name?.includes(lowerSearchText);
+      return contact.name?.toLowerCase().includes(trimmedSearch);
     });
   }, [contacts, searchText]);
 };
 
+// Memoized empty view component
 const ContactListEmptyView = memo(() => {
   const colors = useThemeColors();
 
@@ -55,6 +67,85 @@ const ContactListEmptyView = memo(() => {
   );
 });
 
+// Header component with search - optimized as ReactElement for better performance
+interface HeaderProps {
+  searchText: string;
+  onSearchChange: (text: string) => void;
+  onClose: () => void;
+  onSync: () => void;
+  isSyncing: boolean;
+  colors: ReturnType<typeof useThemeColors>;
+  style: ReturnType<typeof styles>;
+}
+
+const ContactHeader = memo<HeaderProps>(
+  ({ searchText, onSearchChange, onClose, onSync, isSyncing, colors, style }) => (
+    <View style={localStyles.headerWrapper}>
+      <View style={style.contactHeaderContainer}>
+        <Pressable hitSlop={15} onPress={onClose}>
+          <Image
+            tintColor={colors.text}
+            source={AssetsPath.ic_leftArrow}
+            style={style.contactHeaderIcon}
+          />
+        </Pressable>
+        <Pressable
+          style={localStyles.syncButton}
+          hitSlop={15}
+          onPress={onSync}
+          disabled={isSyncing}
+        >
+          {isSyncing ? (
+            <ActivityIndicator size="small" color={colors.text} />
+          ) : (
+            <Image
+              tintColor={colors.text}
+              source={AssetsPath.ic_sync}
+              style={localStyles.syncIcon}
+            />
+          )}
+        </Pressable>
+      </View>
+
+      <TextInput
+        placeholder="Search.."
+        placeholderTextColor={colors.placeholderText}
+        style={[style.contactSearchInput, { color: colors.text }]}
+        value={searchText}
+        onChangeText={onSearchChange}
+        autoCapitalize="none"
+        autoCorrect={false}
+        returnKeyType="search"
+      />
+    </View>
+  ),
+);
+
+// Footer component with safe area handling
+interface FooterProps {
+  onClose: () => void;
+  style: ReturnType<typeof styles>;
+}
+
+const ContactFooter = memo<FooterProps>(({ onClose, style }) => {
+  const insets = useSafeAreaInsets();
+  const isIPad = Platform.OS === 'ios' && Platform.isPad;
+  const bottomInset = isIPad ? 0 : insets.bottom;
+
+  return (
+    <LinearGradient
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      colors={['rgba(48, 51, 52, 0.06)', 'rgba(7, 7, 7, 1)']}
+      style={[localStyles.footerGradient, { paddingBottom: bottomInset }]}
+    >
+      <Pressable style={style.contactDoneButtonView} onPress={onClose}>
+        <Text style={style.contactDoneButtonText}>Done</Text>
+      </Pressable>
+    </LinearGradient>
+  );
+});
+
 const ContactListModal: FC<ContactListModalPropsWithSync> = ({
   isVisible,
   onClose,
@@ -69,19 +160,31 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
   const style = styles();
   const colors = useThemeColors();
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const contactModalRef = useRef<BottomSheetModal>(null);
+  const sheetRef = useRef<TrueSheet>(null);
   const [searchText, setSearchText] = useState('');
   const [debouncedSearchText, setDebouncedSearchText] = useState('');
 
-  React.useEffect(() => {
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+        searchTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  // Present/dismiss sheet based on visibility
+  useEffect(() => {
     if (isVisible) {
-      contactModalRef.current?.present();
+      sheetRef.current?.present();
     } else {
-      contactModalRef.current?.dismiss();
+      sheetRef.current?.dismiss();
     }
   }, [isVisible]);
 
-  React.useEffect(() => {
+  // Reset search when modal closes
+  useEffect(() => {
     if (!isVisible) {
       setSearchText('');
       setDebouncedSearchText('');
@@ -89,8 +192,8 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
   }, [isVisible]);
 
   const handleClose = useCallback(() => {
+    sheetRef.current?.dismiss();
     onClose();
-    contactModalRef.current?.dismiss();
   }, [onClose]);
 
   const handleSearchTextChange = useCallback((text: string) => {
@@ -104,6 +207,10 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
       setDebouncedSearchText(text);
     }, 300);
   }, []);
+
+  const handleSync = useCallback(() => {
+    syncContacts();
+  }, [syncContacts]);
 
   const filteredContacts = useFilteredContacts(contacts, debouncedSearchText);
 
@@ -129,6 +236,7 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
     [notificationType, setSelectedContacts, handleClose],
   );
 
+  // Optimized renderItem with useCallback
   const renderContactItem = useCallback(
     ({ item }: { item: Contact }) => (
       <RenderContactList
@@ -140,46 +248,50 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
     [selectedContacts, handleSelectContact],
   );
 
+  // Optimized keyExtractor
+  const keyExtractor = useCallback((item: Contact) => item.recordID?.toString(), []);
+
+  // Memoized header component as ReactElement for best performance
+  const headerComponent = useMemo(
+    () => (
+      <ContactHeader
+        searchText={searchText}
+        onSearchChange={handleSearchTextChange}
+        onClose={handleClose}
+        onSync={handleSync}
+        isSyncing={isSyncing}
+        colors={colors}
+        style={style}
+      />
+    ),
+    [searchText, handleSearchTextChange, handleClose, handleSync, isSyncing, colors, style],
+  );
+
+  // Memoized footer component as ReactElement for best performance
+  const footerComponent = useMemo(
+    () => <ContactFooter onClose={handleClose} style={style} />,
+    [handleClose, style],
+  );
+
+  // Memoized content container style
+  const contentContainerStyle = useMemo(() => ({ paddingBottom: 100, flexGrow: 1 }), []);
+
   return (
-    <ReusableBottomSheet snapPoints={['100%']} ref={contactModalRef} onDismiss={onClose} index={0}>
-      <SafeAreaView style={style.contactModalContainer}>
-        <View style={style.contactHeaderContainer}>
-          <Pressable hitSlop={15} onPress={handleClose}>
-            <Image
-              tintColor={colors.text}
-              source={AssetsPath.ic_leftArrow}
-              style={style.contactHeaderIcon}
-            />
-          </Pressable>
-          <Pressable
-            style={localStyles.syncButton}
-            hitSlop={15}
-            onPress={() => syncContacts()}
-            disabled={isSyncing}
-          >
-            {isSyncing ? (
-              <ActivityIndicator size="small" color={colors.text} />
-            ) : (
-              <Image
-                tintColor={colors.text}
-                source={AssetsPath.ic_sync}
-                style={localStyles.syncIcon}
-              />
-            )}
-          </Pressable>
-        </View>
-
-        <BottomSheetTextInput
-          placeholder="Search.."
-          placeholderTextColor={colors.placeholderText}
-          style={[style.contactSearchInput, { color: colors.text }]}
-          value={searchText}
-          onChangeText={handleSearchTextChange}
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="search"
-        />
-
+    <TrueSheet
+      ref={sheetRef}
+      name="contact-list-modal"
+      detents={[1]}
+      cornerRadius={0}
+      backgroundColor={colors.background}
+      grabber={false}
+      dimmed
+      dismissible
+      scrollable
+      onDidDismiss={onClose}
+      header={headerComponent}
+      footer={footerComponent}
+    >
+      <View style={style.contactModalContainer}>
         {isContactLoading ? (
           <View style={style.contactLoadingContainer}>
             <ActivityIndicator size="large" color={colors.text} />
@@ -188,30 +300,28 @@ const ContactListModal: FC<ContactListModalPropsWithSync> = ({
             </Text>
           </View>
         ) : (
-          <BottomSheetFlatList
-            style={{ flex: 1 }}
+          <FlatList
+            style={localStyles.flatList}
             data={filteredContacts}
             renderItem={renderContactItem}
-            keyExtractor={(item: Contact) => item.recordID?.toString()}
+            keyExtractor={keyExtractor}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingBottom: 80, flexGrow: 1 }}
+            keyboardDismissMode="on-drag"
+            contentContainerStyle={contentContainerStyle}
             extraData={selectedContacts}
             ListEmptyComponent={ContactListEmptyView}
+            nestedScrollEnabled
+            removeClippedSubviews
+            maxToRenderPerBatch={15}
+            windowSize={10}
+            initialNumToRender={10}
+            updateCellsBatchingPeriod={50}
+            getItemLayout={undefined}
+            showsVerticalScrollIndicator={false}
           />
         )}
-      </SafeAreaView>
-
-      <LinearGradient
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        colors={['rgba(48, 51, 52, 0.06)', 'rgba(7, 7, 7, 1)']}
-        style={localStyles.footerGradient}
-      >
-        <Pressable style={style.contactDoneButtonView} onPress={handleClose}>
-          <Text style={style.contactDoneButtonText}>Done</Text>
-        </Pressable>
-      </LinearGradient>
-    </ReusableBottomSheet>
+      </View>
+    </TrueSheet>
   );
 };
 
@@ -251,11 +361,17 @@ const localStyles = StyleSheet.create({
   },
   footerGradient: {
     width: '100%',
-    height: 100,
+    minHeight: 100,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute',
-    bottom: 35,
+  },
+  headerWrapper: {
+    paddingTop: Platform.OS === 'ios' ? 50 : 10,
+    paddingBottom: 10,
+    backgroundColor: 'transparent',
+  },
+  flatList: {
+    flex: 1,
   },
 });
 

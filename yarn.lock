@@ -3548,6 +3548,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lodev09/react-native-true-sheet@npm:^3.5.5":
+  version: 3.5.5
+  resolution: "@lodev09/react-native-true-sheet@npm:3.5.5"
+  peerDependencies:
+    "@gorhom/bottom-sheet": ">=5"
+    "@react-navigation/native": ">=7"
+    react: "*"
+    react-native: "*"
+    react-native-reanimated: ">=4"
+    react-native-worklets: "*"
+  peerDependenciesMeta:
+    "@gorhom/bottom-sheet":
+      optional: true
+    "@react-navigation/native":
+      optional: true
+    react-native-reanimated:
+      optional: true
+    react-native-worklets:
+      optional: true
+  checksum: 10c0/aa27b91ae3b2e88c57357ceff64986771cafc7ff9c48c5a232ef5f6e7bdcc568a927948aaf13501ec98019dffc74bd31db93b9edfec4424973360b36f161d832
+  languageName: node
+  linkType: hard
+
 "@maplibre/maplibre-react-native@npm:^10.2.0":
   version: 10.4.2
   resolution: "@maplibre/maplibre-react-native@npm:10.4.2"
@@ -13645,12 +13668,12 @@ __metadata:
 
 "send-message@file:./send-message::locator=taskwave-dailysync%40workspace%3A.":
   version: 0.1.0
-  resolution: "send-message@file:./send-message#./send-message::hash=1f66dc&locator=taskwave-dailysync%40workspace%3A."
+  resolution: "send-message@file:./send-message#./send-message::hash=865e16&locator=taskwave-dailysync%40workspace%3A."
   peerDependencies:
     expo: "*"
     react: "*"
     react-native: "*"
-  checksum: 10c0/b25f360c2e014d98f1a242990568e5e64b0bc85a458cd5cfb65bae3338b383f364d1fe2835b54a38b37c52be9dd65406977af9431130ebb278511c1830472993
+  checksum: 10c0/9ed6414239aeed560b6365f8e6d9aae7942acdca557583ff9ce05fc6d3b6bf121779dcf01125a02e0cdf893fcc86b46afd41603833da25102023280c79bf267a
   languageName: node
   linkType: hard
 
@@ -14534,6 +14557,7 @@ __metadata:
     "@commitlint/cli": "npm:^19.8.1"
     "@commitlint/config-conventional": "npm:^19.8.1"
     "@gorhom/bottom-sheet": "npm:^5.2.8"
+    "@lodev09/react-native-true-sheet": "npm:^3.5.5"
     "@maplibre/maplibre-react-native": "npm:^10.2.0"
     "@notifee/react-native": "npm:^9.1.8"
     "@react-native-community/datetimepicker": "npm:8.4.4"
