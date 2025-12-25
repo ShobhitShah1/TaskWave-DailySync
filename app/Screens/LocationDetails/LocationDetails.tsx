@@ -7,7 +7,13 @@ import useThemeColors from '@Hooks/useThemeMode';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import HomeHeader from '@Screens/Home/Components/HomeHeader';
 import LocationService from '@Services/LocationService';
-import { GeoLatLng, NominatimResult, Notification, NotificationType } from '@Types/Interface';
+import {
+  GeoLatLng,
+  NominatimResult,
+  Notification,
+  NotificationType,
+  LocationReminderStatus,
+} from '@Types/Interface';
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
@@ -135,6 +141,7 @@ const LocationDetails = () => {
         longitude: selectedLocation.longitude,
         radius: 100, // 100 meters default
         locationName: address.trim() || '',
+        status: LocationReminderStatus.Pending, // Location reminders start as pending until user arrives
       };
 
       if (id) {

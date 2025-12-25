@@ -131,12 +131,28 @@ const Home = () => {
 
       const now = new Date();
 
+      // For location-based reminders, they are "active" unless status is 'sent'
+      // For time-based reminders, they are "active" if date is in future
       const active = allNotifications
-        .filter((notification) => new Date(notification.date).getTime() >= now.getTime())
+        .filter((notification) => {
+          if (notification.type === 'location') {
+            // Location reminders are active unless status is 'sent'
+            return notification.status !== 'sent';
+          }
+          // Time-based reminders are active if date is in the future
+          return new Date(notification.date).getTime() >= now.getTime();
+        })
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       const inactive = allNotifications
-        .filter((notification) => new Date(notification.date).getTime() < now.getTime())
+        .filter((notification) => {
+          if (notification.type === 'location') {
+            // Location reminders are inactive only when status is 'sent'
+            return notification.status === 'sent';
+          }
+          // Time-based reminders are inactive if date is in the past
+          return new Date(notification.date).getTime() < now.getTime();
+        })
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
       const [day, month, year] = selectedDate.split('-');

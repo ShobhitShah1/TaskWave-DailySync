@@ -5,6 +5,7 @@ import * as TaskManager from 'expo-task-manager';
 import { showMessage } from 'react-native-flash-message';
 
 import { Notification, LocationReminderStatus } from '@Types/Interface';
+import { updateLocationNotificationStatus } from '@Utils/updateLocationNotificationStatus';
 
 // Proper type for notification action events
 interface NotificationActionEvent {
@@ -252,9 +253,12 @@ class LocationService {
       const notificationId = `location_${reminder.id}_${Date.now()}`;
       this.notificationIds.add(notificationId);
 
-      // Set status to Sent
+      // Set status to Sent in memory
       const r = this.locationReminders.get(reminder.id);
       if (r) r.status = LocationReminderStatus.Sent;
+
+      // Persist status to database
+      await updateLocationNotificationStatus(reminder.id, LocationReminderStatus.Sent);
 
       const notificationConfig = {
         id: notificationId,
