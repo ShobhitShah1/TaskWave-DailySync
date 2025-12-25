@@ -30,7 +30,7 @@ const RenderSheetView = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const previousSelectedRef = useRef<NotificationType | null>(selectedCategory);
 
-  const initialCategories = useMemo(() => getCategories(colors), [colors]);
+  const initialCategories = useMemo(() => getCategories(colors, theme), [colors, theme]);
 
   const shiftToTop = useCallback(
     (selectedType: NotificationType) => {
@@ -93,7 +93,7 @@ const RenderSheetView = ({
             >
               <Image
                 resizeMode="contain"
-                source={isSelected ? item.glowIcon : item.icon}
+                source={item.glowIcon}
                 style={[
                   styles.sheetSuggestionImage,
                   {

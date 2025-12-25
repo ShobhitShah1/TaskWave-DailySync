@@ -54,6 +54,7 @@ const LocationDetails = () => {
       if (response) {
         setTitle(response?.subject || '');
         setMessage(response?.message || '');
+        setAddress(response?.locationName || '');
 
         setSelectedLocation({
           latitude: Number(response?.latitude),

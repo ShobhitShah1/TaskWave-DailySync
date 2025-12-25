@@ -24,18 +24,20 @@ import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-nati
 import { CurvedBottomBar } from 'react-native-curved-bottom-bar';
 import { showMessage } from 'react-native-flash-message';
 import RenderSheetView from './Components/RenderSheetView';
+import { useAppContext } from '@Contexts/ThemeProvider';
 
 const { width } = Dimensions.get('window');
 
 const BottomTab = () => {
   const colors = useThemeColors();
   const navigation = useNavigation();
+  const { theme } = useAppContext();
   const { bottomSheetModalRef } = useBottomSheet();
   const { handleSheetPositionChange } = useBottomSheetBackHandler(bottomSheetModalRef);
 
   const [hideBottomTab, setHideBottomTab] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<NotificationType | null>(null);
-  const initialCategories = getCategories(colors);
+  const initialCategories = getCategories(colors, theme);
 
   const [categories, setCategories] = useState<NotificationCategory[]>(initialCategories);
 

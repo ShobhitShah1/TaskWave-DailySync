@@ -2,13 +2,14 @@ import { NotificationType } from '@Types/Interface';
 import AssetsPath from './AssetsPath';
 import { LightThemeColors } from './Theme';
 
-export const categoriesConfig = (colors: typeof LightThemeColors) => {
+export const categoriesConfig = (colors: typeof LightThemeColors, theme: 'light' | 'dark') => {
   const categories = [
     {
       type: 'whatsapp' as NotificationType,
       title: 'Whatsapp',
       description: "Let's create whatsapp event",
       glowIcon: AssetsPath.ic_whatsappGlow,
+      normalIcon: AssetsPath.ic_whatsapp_normal,
       icon: AssetsPath.ic_whatsapp,
       history_icon: AssetsPath.ic_whatsapp_history,
       color: {
@@ -22,6 +23,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       title: 'WA Business',
       description: "Let's create business event",
       glowIcon: AssetsPath.ic_whatsappBusinessGlow,
+      normalIcon: AssetsPath.ic_whatsappBusiness_normal,
       icon: AssetsPath.ic_whatsappBusiness,
       history_icon: AssetsPath.ic_whatsappBusiness_history,
       color: {
@@ -35,6 +37,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       title: 'SMS',
       description: "Let's create text messages event",
       icon: AssetsPath.ic_sms,
+      normalIcon: AssetsPath.ic_sms_normal,
       glowIcon: AssetsPath.ic_smsGlow,
       history_icon: AssetsPath.ic_sms_history,
       color: {
@@ -48,6 +51,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       title: 'Email',
       description: "Let's compose mail event",
       icon: AssetsPath.ic_gmail,
+      normalIcon: AssetsPath.ic_gmail_normal,
       glowIcon: AssetsPath.ic_gmailGlow,
       history_icon: AssetsPath.ic_gmail_history,
       color: {
@@ -62,6 +66,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       title: 'Phone',
       description: "Let's create phone event",
       icon: AssetsPath.ic_phone,
+      normalIcon: AssetsPath.ic_phone_normal,
       glowIcon: AssetsPath.ic_phoneGlow,
       history_icon: AssetsPath.ic_phone_history,
       color: {
@@ -75,6 +80,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       title: 'Telegram',
       description: "Let's create telegram event",
       icon: AssetsPath.ic_telegram,
+      normalIcon: AssetsPath.ic_telegram_normal,
       glowIcon: AssetsPath.ic_telegramGlow,
       history_icon: AssetsPath.ic_telegram_history,
       color: {
@@ -88,6 +94,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       title: 'Note',
       description: "Let's create note event",
       icon: AssetsPath.ic_notes,
+      normalIcon: AssetsPath.ic_notes_normal,
       glowIcon: AssetsPath.ic_notesGlow,
       history_icon: AssetsPath.ic_notes_history,
       color: {
@@ -101,6 +108,7 @@ export const categoriesConfig = (colors: typeof LightThemeColors) => {
       title: 'Location',
       description: 'Create a location-based reminder',
       icon: AssetsPath.ic_location,
+      normalIcon: AssetsPath.ic_location_normal,
       glowIcon: AssetsPath.ic_locationGlow,
       history_icon: AssetsPath.ic_history_location_icon,
       color: {

@@ -5,6 +5,7 @@ import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
 import useThemeColors from '@Hooks/useThemeMode';
 import { CategoryItemType } from '@Types/Interface';
+import { useAppContext } from '@Contexts/ThemeProvider';
 
 const RenderCategoryItem = ({
   item,
@@ -13,6 +14,7 @@ const RenderCategoryItem = ({
   setSelectedCategory,
   onCategoryClick,
 }: CategoryItemType) => {
+  const { theme } = useAppContext();
   const colors = useThemeColors();
 
   const isSelected = useMemo(
@@ -61,7 +63,11 @@ const RenderCategoryItem = ({
         >
           <View style={styles.innerContainer}>
             <View style={styles.iconContainer}>
-              <Image source={item.glowIcon} style={styles.icon} resizeMode="contain" />
+              <Image
+                source={theme === 'dark' ? item.normalIcon : item.glowIcon}
+                style={styles.icon}
+                resizeMode="contain"
+              />
             </View>
 
             <View style={styles.textContainer}>

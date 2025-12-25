@@ -1,8 +1,6 @@
-import { MenuComponentRef, MenuView } from '@react-native-menu/menu';
 import React, { FC, memo, useMemo, useRef } from 'react';
 import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-
 import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
 import { useAppContext } from '@Contexts/ThemeProvider';
@@ -10,6 +8,7 @@ import { useCountdownTimer } from '@Hooks/useCountdownTimer';
 import useThemeColors from '@Hooks/useThemeMode';
 import { formatTime } from '@Screens/AddReminder/ReminderScheduled';
 import { IListViewProps } from '@Types/Interface';
+import PopupMenu, { PopupMenuItem } from '@Components/PopupMenu';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -31,7 +30,6 @@ const GridView: FC<IListViewProps> = ({
   const colors = useThemeColors();
   const isLocation = notification?.type === 'location';
   const { theme } = useAppContext();
-  const menuRef = useRef<MenuComponentRef>(null);
   const { timeLeft } = useCountdownTimer(notification.date);
 
   const description = useMemo(
@@ -39,12 +37,18 @@ const GridView: FC<IListViewProps> = ({
     [notification],
   );
 
-  const onMenuPress = () => {
-    menuRef.current?.show();
-  };
+  const menuActions: PopupMenuItem[] = useMemo(
+    () => [
+      { id: 'view', title: 'View' },
+      { id: 'edit', title: 'Edit' },
+      { id: 'duplicate', title: 'Duplicate' },
+      { id: 'delete', title: 'Delete', destructive: true },
+    ],
+    [],
+  );
 
-  const handleMenuAction = ({ nativeEvent }: { nativeEvent: { event: string } }) => {
-    switch (nativeEvent.event) {
+  const handleMenuPress = (item: PopupMenuItem, index: number) => {
+    switch (item.id) {
       case 'view':
         onCardPress();
         break;
@@ -59,20 +63,6 @@ const GridView: FC<IListViewProps> = ({
         break;
     }
   };
-
-  const menuActions = useMemo(
-    () => [
-      { id: 'view', title: 'View' },
-      { id: 'edit', title: 'Edit' },
-      { id: 'duplicate', title: 'Duplicate' },
-      {
-        id: 'delete',
-        title: 'Delete',
-        attributes: { destructive: true },
-      },
-    ],
-    [colors.text],
-  );
 
   return (
     <Animated.View
@@ -143,7 +133,7 @@ const GridView: FC<IListViewProps> = ({
                 />
               )}
               <Text
-                numberOfLines={2}
+                numberOfLines={1}
                 style={[
                   styles.countdownText,
                   { color: typeColor, marginHorizontal: isLocation ? 4 : 0 },
@@ -153,24 +143,15 @@ const GridView: FC<IListViewProps> = ({
               </Text>
             </View>
           </View>
-          <Pressable hitSlop={15} onPress={onMenuPress} style={[styles.menuPressable]}>
-            <MenuView
-              ref={menuRef}
-              actions={menuActions ?? []}
-              onOpenMenu={() => {}}
-              style={styles.menuView}
-              onPressAction={handleMenuAction}
-              shouldOpenOnLongPress={true}
-              hitSlop={{ bottom: 25, left: 25, right: 25, top: 25 }}
-            >
-              <View style={styles.dropDownContainer}>
-                <Image
-                  source={AssetsPath.ic_dotMenu}
-                  style={[styles.menu, { tintColor: colors.text }]}
-                />
-              </View>
-            </MenuView>
-          </Pressable>
+
+          <PopupMenu actions={menuActions} onPress={handleMenuPress}>
+            <View style={styles.dropDownContainer}>
+              <Image
+                source={AssetsPath.ic_dotMenu}
+                style={[styles.menu, { tintColor: colors.text }]}
+              />
+            </View>
+          </PopupMenu>
         </View>
       </Pressable>
     </Animated.View>
@@ -236,14 +217,14 @@ const styles = StyleSheet.create({
   footerContainer: {
     marginTop: 3,
     paddingHorizontal: 8,
-    paddingBottom: 7,
+    paddingBottom: 5,
     overflow: 'hidden',
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   timeWrapper: {
-    width: '95%',
+    width: '92%',
     overflow: 'hidden',
     flexDirection: 'row',
     alignItems: 'center',
@@ -264,7 +245,6 @@ const styles = StyleSheet.create({
   },
   countdownText: {
     width: '80%',
-    marginLeft: 4,
     fontSize: 12.5,
     fontFamily: FONTS.Medium,
   },
@@ -284,7 +264,7 @@ const styles = StyleSheet.create({
     height: 20,
     zIndex: 999999,
     justifyContent: 'center',
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
   menuPressable: {
     width: '5%',

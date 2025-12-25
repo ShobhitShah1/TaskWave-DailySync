@@ -242,6 +242,7 @@ export type remindersCategoriesType = {
   description: string;
   icon: ImageSourcePropType;
   glowIcon: number;
+  normalIcon: number;
   history_icon: number;
   color: {
     background: string;
