@@ -19,7 +19,7 @@ const RenderHeaderView: FC<headerInterface> = ({
   const style = styles();
   const colors = useThemeColors();
   const { theme } = useAppContext();
-  const initialCategories = getCategories(colors, theme);
+  const initialCategories = getCategories(colors);
 
   const handleSelectFilter = useCallback(
     (filter: NotificationType) => setSelectedFilter(filter),

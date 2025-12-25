@@ -2,7 +2,7 @@ import { NotificationType } from '@Types/Interface';
 import AssetsPath from './AssetsPath';
 import { LightThemeColors } from './Theme';
 
-export const categoriesConfig = (colors: typeof LightThemeColors, theme: 'light' | 'dark') => {
+export const categoriesConfig = (colors: typeof LightThemeColors) => {
   const categories = [
     {
       type: 'whatsapp' as NotificationType,

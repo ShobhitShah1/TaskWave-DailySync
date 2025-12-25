@@ -30,7 +30,7 @@ const RenderSheetView = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const previousSelectedRef = useRef<NotificationType | null>(selectedCategory);
 
-  const initialCategories = useMemo(() => getCategories(colors, theme), [colors, theme]);
+  const initialCategories = useMemo(() => getCategories(colors), [colors]);
 
   const shiftToTop = useCallback(
     (selectedType: NotificationType) => {
