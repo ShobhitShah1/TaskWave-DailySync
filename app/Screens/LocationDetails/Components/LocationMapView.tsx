@@ -3,24 +3,35 @@ import { useAppContext } from '@Contexts/ThemeProvider';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import useThemeColors from '@Hooks/useThemeMode';
 import {
+  FillLayer,
+  LineLayer,
   Logger,
   Camera as MapCamera,
   MapView,
   PointAnnotation,
-  UserLocation,
   ShapeSource,
-  FillLayer,
-  LineLayer,
+  UserLocation,
 } from '@maplibre/maplibre-react-native';
 import LocationService from '@Services/LocationService';
 import { CameraPosition, GeoLatLng, LocationMapViewProps } from '@Types/Interface';
 import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
 import { fitMapToLocations } from '@Utils/mapBoundsUtils';
+import { initializeMapCache } from '@Utils/mapCacheManager';
 import { getMapStyleUrl } from '@Utils/mapStyles';
 import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Image, Keyboard, Pressable, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import Animated, {
+  FadeIn,
+  FadeOut,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
@@ -80,6 +91,7 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
   const [containerLayout, setContainerLayout] = useState({ height: 0 });
 
   const [isMapReady, setIsMapReady] = useState<boolean>(false);
+  const [areTilesLoaded, setAreTilesLoaded] = useState<boolean>(false);
   const [cameraPosition, setCameraPosition] = useState<CameraPosition>(
     userLocationProp
       ? {
@@ -88,6 +100,22 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
         }
       : (undefined as any),
   );
+
+  useEffect(() => {
+    initializeMapCache();
+  }, []);
+
+  // Fallback: If tiles don't report as loaded within 2 seconds of map being ready, force show the map
+  useEffect(() => {
+    if (isMapReady && !areTilesLoaded) {
+      const fallbackTimer = setTimeout(() => {
+        console.log('[MapView] Fallback: Forcing tiles loaded state after timeout');
+        setAreTilesLoaded(true);
+      }, 2000);
+
+      return () => clearTimeout(fallbackTimer);
+    }
+  }, [isMapReady, areTilesLoaded]);
 
   // 100m restricted zone around user's current location
   const MIN_DISTANCE_METERS = 100;
@@ -156,8 +184,29 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
   );
 
   const handleMapReady = useCallback(() => {
+    console.log('[MapView] Map style loaded');
     setIsMapReady(true);
   }, []);
+
+  // Called when map has finished loading all visible tiles
+  const handleMapFullyRendered = useCallback(() => {
+    console.log('[MapView] All tiles rendered');
+    setAreTilesLoaded(true);
+  }, []);
+
+  // Track when tiles start loading (for logging purposes only, not for showing loader)
+  const handleRegionWillChange = useCallback(() => {
+    console.log('[MapView] Region changing - tiles may be loading');
+  }, []);
+
+  const handleRegionDidChange = useCallback(() => {
+    console.log('[MapView] Region change complete');
+    // Just ensure tiles are marked as loaded after region change
+    // Don't toggle the loading state - this prevents the loop
+    if (!areTilesLoaded) {
+      setAreTilesLoaded(true);
+    }
+  }, [areTilesLoaded]);
 
   const centerOnUser = useCallback(async () => {
     try {
@@ -242,13 +291,21 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
             compassEnabled
             onPress={handleMapPress}
             onDidFinishLoadingMap={handleMapReady}
+            onDidFinishRenderingMapFully={handleMapFullyRendered}
+            onRegionWillChange={handleRegionWillChange}
+            onRegionDidChange={handleRegionDidChange}
             zoomEnabled
             scrollEnabled
             pitchEnabled
             rotateEnabled
             attributionEnabled
             attributionPosition={{ bottom: 8, left: 8 }}
-            preferredFramesPerSecond={60}
+            // Performance optimizations
+            surfaceView={true} // Use SurfaceView for better Android GPU rendering
+            preferredFramesPerSecond={60} // Smooth rendering
+            logoEnabled={false} // Disable logo for less rendering overhead
+            regionWillChangeDebounceTime={50} // Reduce callback frequency during pan (default: 10)
+            regionDidChangeDebounceTime={300} // Faster response after pan stops (default: 500)
             localizeLabels
           >
             <MapCamera
@@ -296,6 +353,17 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
               </ShapeSource>
             )}
           </MapView>
+        )}
+
+        {/* Loading overlay while tiles are loading */}
+        {!areTilesLoaded && (
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            exiting={FadeOut.duration(300)}
+            style={[styles.mapLoadingOverlay, { backgroundColor: colors.background }]}
+          >
+            <ActivityIndicator size="large" color={colors.text} />
+          </Animated.View>
         )}
       </View>
 
@@ -360,6 +428,12 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
+  },
+  mapLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 18,
   },
   contentContainer: {
     flex: 1,

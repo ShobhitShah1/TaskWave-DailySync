@@ -4,6 +4,7 @@ import { check, request, PERMISSIONS, RESULTS, PermissionStatus } from 'react-na
 import * as Location from 'expo-location';
 import { showMessage } from 'react-native-flash-message';
 import { GeoLatLng } from '@Types/Interface';
+import { initializeMapCache } from '@Utils/mapCacheManager';
 
 interface LocationContextType {
   /** Current cached user location */
@@ -145,10 +146,13 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 
   /**
-   * Initialize on mount - check permission and fetch location if granted
+   * Initialize on mount - check permission, fetch location if granted, and setup map cache
    */
   useEffect(() => {
     const initialize = async () => {
+      // Initialize map cache early for better tile loading performance
+      initializeMapCache();
+
       const status = await checkPermission();
       if (status === RESULTS.GRANTED) {
         // Silently fetch location if already permitted
