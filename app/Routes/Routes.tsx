@@ -31,20 +31,15 @@ const Routes = () => {
 
   const MyTheme: Theme = {
     ...DefaultTheme,
-    colors: {
-      ...DefaultTheme.colors,
-      primary: colors.background,
-      card: colors.background,
-    },
+    colors: { ...DefaultTheme.colors, primary: colors.background, card: colors.background },
   };
 
   useQuickActionCallback((action) => {
     if (action.id === '0') {
       bottomSheetModalRef.current?.present();
     }
+
     if (action.id === '1') {
-      alert(action);
-      // navigationRef.current?.navigate('AddReminder');
     }
   });
 

@@ -8,9 +8,13 @@ import {
   MapView,
   PointAnnotation,
   UserLocation,
+  ShapeSource,
+  FillLayer,
+  LineLayer,
 } from '@maplibre/maplibre-react-native';
 import LocationService from '@Services/LocationService';
 import { CameraPosition, GeoLatLng, LocationMapViewProps } from '@Types/Interface';
+import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
 import { fitMapToLocations } from '@Utils/mapBoundsUtils';
 import { getMapStyleUrl } from '@Utils/mapStyles';
 import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
@@ -84,6 +88,16 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
         }
       : (undefined as any),
   );
+
+  // 100m restricted zone around user's current location
+  const MIN_DISTANCE_METERS = 100;
+  const restrictedZoneCircle = useMemo(() => {
+    if (!userLocationProp) return null;
+    return createGeoJSONCircle(
+      { latitude: userLocationProp.latitude, longitude: userLocationProp.longitude },
+      MIN_DISTANCE_METERS,
+    );
+  }, [userLocationProp]);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
@@ -260,6 +274,27 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
               </PointAnnotation>
             )}
             <UserLocation visible={true} onUpdate={() => {}} />
+            {/* 100m Restricted Zone - Cannot select within this area */}
+            {restrictedZoneCircle && (
+              <ShapeSource id="restricted-zone-source" shape={restrictedZoneCircle}>
+                <FillLayer
+                  id="restricted-zone-fill"
+                  style={{
+                    fillColor: '#FF6B6B',
+                    fillOpacity: 0.15,
+                  }}
+                />
+                <LineLayer
+                  id="restricted-zone-border"
+                  style={{
+                    lineColor: '#FF6B6B',
+                    lineWidth: 2,
+                    lineOpacity: 0.6,
+                    lineDasharray: [2, 2],
+                  }}
+                />
+              </ShapeSource>
+            )}
           </MapView>
         )}
       </View>

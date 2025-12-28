@@ -128,19 +128,72 @@ const LocationDetails = () => {
     }
   }, [fetchedAddress, selectedLocation]);
 
-  const handleLocationSelect = useCallback((coordinate: GeoLatLng) => {
-    setSelectedLocation(coordinate);
-    setAddress('');
-    bottomSheetRef?.current?.snapToIndex(1);
-  }, []);
+  // Calculate distance between two points in meters
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371e3; // Earth's radius in meters
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
-  const handleSearchResultSelect = useCallback((result: NominatimResult) => {
-    setSelectedLocation({ latitude: parseFloat(result.lat), longitude: parseFloat(result.lon) });
-    setAddress(result.display_name || '');
-    setTimeout(() => {
+  const MIN_DISTANCE_METERS = 100;
+
+  const handleLocationSelect = useCallback(
+    (coordinate: GeoLatLng) => {
+      if (userLocation) {
+        const distance = calculateDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          coordinate.latitude,
+          coordinate.longitude,
+        );
+        if (distance < MIN_DISTANCE_METERS) {
+          showMessage({
+            message: 'Too Close',
+            description: `Select a location at least ${MIN_DISTANCE_METERS}m away from your current position.`,
+            type: 'warning',
+          });
+          return;
+        }
+      }
+      setSelectedLocation(coordinate);
+      setAddress('');
       bottomSheetRef?.current?.snapToIndex(1);
-    }, 500);
-  }, []);
+    },
+    [userLocation],
+  );
+
+  const handleSearchResultSelect = useCallback(
+    (result: NominatimResult) => {
+      const lat = parseFloat(result.lat);
+      const lon = parseFloat(result.lon);
+
+      if (userLocation) {
+        const distance = calculateDistance(userLocation.latitude, userLocation.longitude, lat, lon);
+        if (distance < MIN_DISTANCE_METERS) {
+          showMessage({
+            message: 'Too Close',
+            description: `Select a location at least ${MIN_DISTANCE_METERS}m away from your current position.`,
+            type: 'warning',
+          });
+          return;
+        }
+      }
+
+      setSelectedLocation({ latitude: lat, longitude: lon });
+      setAddress(result.display_name || '');
+      setTimeout(() => {
+        bottomSheetRef?.current?.snapToIndex(1);
+      }, 500);
+    },
+    [userLocation],
+  );
 
   const handleTryAgain = async () => {
     setIsFetchingLocation(true);
