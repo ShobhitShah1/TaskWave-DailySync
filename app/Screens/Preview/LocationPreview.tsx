@@ -15,6 +15,7 @@ import {
 } from '@maplibre/maplibre-react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { navigationRef } from '@Routes/RootNavigation';
+import { fetchRoute } from '@Services/RouteService';
 import { Notification } from '@Types/Interface';
 import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
 import { linkifyText } from '@Utils/linkify';
@@ -92,7 +93,7 @@ const StatCard = memo(
     colors,
     theme,
   }: {
-    icon: string;
+    icon: any;
     value: string;
     label: string;
     colors: any;
@@ -113,7 +114,11 @@ const StatCard = memo(
           { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' },
         ]}
       >
-        <Text style={styles.statIcon}>{icon}</Text>
+        <Image
+          source={icon}
+          style={[styles.statIcon, { tintColor: colors.text }]}
+          resizeMode="contain"
+        />
       </View>
       <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
       <Text style={[styles.statLabel, { color: colors.grayTitle }]}>{label}</Text>
@@ -179,9 +184,21 @@ const LocationPreview = () => {
     walking: number;
     driving: number;
   } | null>(null);
+  const [routeGeoJSON, setRouteGeoJSON] = useState<any>(null);
   const cameraRef = useRef<any>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const scaleValue = useSharedValue(1);
+  const hasFittedRef = useRef(false);
+
+  useEffect(() => {
+    if (routeGeoJSON && currentLocation && !hasFittedRef.current) {
+      // Small delay to ensure map is ready
+      setTimeout(() => {
+        zoomToFitAll();
+        hasFittedRef.current = true;
+      }, 500);
+    }
+  }, [routeGeoJSON, currentLocation]);
 
   useEffect(() => {
     if (currentLocation && notification?.latitude && notification?.longitude) {
@@ -199,6 +216,32 @@ const LocationPreview = () => {
         distance: distance,
         walking: walkingTime,
         driving: drivingTime,
+      });
+
+      fetchRoute(
+        {
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+        },
+        {
+          latitude: Number(notification.latitude),
+          longitude: Number(notification.longitude),
+        },
+      ).then((route) => {
+        if (route) {
+          setRouteGeoJSON(route);
+          if (route.properties) {
+            const routeDistanceKm = (route.properties.distance || 0) / 1000;
+            const durationSeconds = route.properties.duration || 0;
+            setEstimatedTime({
+              distance: routeDistanceKm,
+              // Naive walking: ~5km/h => 1km ~ 12min.
+              // But OSRM 'driving' duration is usually accurate for driving.
+              driving: durationSeconds / 60, // minutes
+              walking: (routeDistanceKm / 5) * 60, // minutes (approx)
+            });
+          }
+        }
       });
     }
   }, [currentLocation, notification.latitude, notification.longitude]);
@@ -406,6 +449,33 @@ const LocationPreview = () => {
               />
             </ShapeSource>
           )}
+          {/* Route Line */}
+          {routeGeoJSON && (
+            <ShapeSource id="route-source" shape={routeGeoJSON}>
+              <LineLayer
+                id="route-line"
+                style={{
+                  lineColor: '#405DF0',
+                  lineWidth: 4,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                  lineOpacity: 0.8,
+                }}
+              />
+              {/* Inner brighter line for "glow" effect */}
+              <LineLayer
+                id="route-line-inner"
+                style={{
+                  lineColor: '#738AFE',
+                  lineWidth: 2,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                  lineOpacity: 1,
+                }}
+              />
+            </ShapeSource>
+          )}
+
           {/* Destination marker */}
           <PointAnnotation
             id={`notification-location-${notification.id}`}
@@ -553,21 +623,21 @@ const LocationPreview = () => {
               <Text style={[styles.sectionTitle, { color: colors.text }]}>Distance & Time</Text>
               <View style={styles.statsGrid}>
                 <StatCard
-                  icon="📏"
+                  icon={AssetsPath.ic_location}
                   value={formatDistance(estimatedTime.distance)}
                   label="Distance"
                   colors={colors}
                   theme={theme}
                 />
                 <StatCard
-                  icon="🚗"
+                  icon={AssetsPath.ic_time}
                   value={formatTime(estimatedTime.driving)}
                   label="Driving"
                   colors={colors}
                   theme={theme}
                 />
                 <StatCard
-                  icon="🚶"
+                  icon={AssetsPath.ic_location_list_icon}
                   value={formatTime(estimatedTime.walking)}
                   label="Walking"
                   colors={colors}
@@ -630,7 +700,11 @@ const LocationPreview = () => {
                 <View
                   style={[styles.addressIconContainer, { backgroundColor: colors.primary + '15' }]}
                 >
-                  <Text style={styles.addressIcon}>📍</Text>
+                  <Image
+                    source={AssetsPath.ic_location}
+                    style={[styles.addressIcon, { tintColor: colors.primary }]}
+                    resizeMode="contain"
+                  />
                 </View>
                 <View style={styles.addressTextContainer}>
                   <Text style={[styles.addressLabel, { color: colors.grayTitle }]}>Address</Text>
@@ -898,7 +972,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   statIcon: {
-    fontSize: 22,
+    width: 22,
+    height: 22,
   },
   statValue: {
     fontSize: 16,
@@ -953,7 +1028,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addressIcon: {
-    fontSize: 20,
+    width: 20,
+    height: 20,
   },
   addressTextContainer: {
     flex: 1,

@@ -1,7 +1,8 @@
 import { useAppContext } from '@Contexts/ThemeProvider';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
 import useThemeColors from '@Hooks/useThemeMode';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
@@ -16,6 +17,7 @@ interface LocationDetailsCardProps {
   isUpdate?: boolean;
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
+  routeStats?: { distance: number; duration: number } | null;
 }
 
 const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
@@ -28,12 +30,44 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
   isUpdate,
   address,
   setAddress,
+  routeStats,
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
 
   return (
     <View style={[styles.card, { backgroundColor: colors.background }]} pointerEvents="box-none">
+      {routeStats && (
+        <View style={styles.statsContainer}>
+          <View
+            style={[
+              styles.statItem,
+              { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' },
+            ]}
+          >
+            <View style={styles.statTextContainer}>
+              <Text style={[styles.statLabel, { color: colors.grayTitle }]}>Est. Time</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>
+                {Math.round(routeStats.duration)} min
+              </Text>
+            </View>
+          </View>
+          <View
+            style={[
+              styles.statItem,
+              { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' },
+            ]}
+          >
+            <View style={styles.statTextContainer}>
+              <Text style={[styles.statLabel, { color: colors.grayTitle }]}>Distance</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>
+                {routeStats.distance.toFixed(1)} km
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
+
       <BottomSheetTextInput
         style={[
           styles.titleInput,
@@ -78,6 +112,7 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
         multiline
         numberOfLines={3}
       />
+
       <Pressable
         style={[
           styles.button,
@@ -103,34 +138,63 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    paddingHorizontal: 16,
     paddingTop: 15,
+    paddingHorizontal: 16,
   },
   titleInput: {
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 15,
-    marginBottom: 8,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 12,
     fontSize: 15,
     fontFamily: FONTS.SemiBold,
   },
   messageInput: {
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     marginBottom: 20,
     fontSize: 15,
-    minHeight: 80,
+    minHeight: 100,
     textAlignVertical: 'top',
     fontFamily: FONTS.Medium,
   },
   button: {
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 12,
+    height: 50,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   buttonText: {
-    fontSize: 20,
+    fontSize: 18,
+    fontFamily: FONTS.Bold,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    gap: 12,
+  },
+  statItem: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  statTextContainer: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  statLabel: {
+    fontSize: 13,
+    fontFamily: FONTS.Medium,
+    opacity: 0.7,
+  },
+  statValue: {
+    fontSize: 18,
+    fontFamily: FONTS.Bold,
   },
 });
 

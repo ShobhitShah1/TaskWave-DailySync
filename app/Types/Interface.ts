@@ -315,6 +315,7 @@ export interface LocationMapViewProps {
   bottomSheetRef?: React.RefObject<BottomSheet | null>;
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
+  routeStats?: { distance: number; duration: number } | null;
 }
 
 /**

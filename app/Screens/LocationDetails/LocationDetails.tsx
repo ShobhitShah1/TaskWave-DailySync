@@ -22,6 +22,7 @@ import { showMessage } from 'react-native-flash-message';
 import LocationMapView from './Components/LocationMapView';
 import LocationSearchBar from './Components/LocationSearchBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MIN_DISTANCE_METERS } from '@Utils/geoUtils';
 
 type ReminderScheduledProps = {
   params: { notificationType: NotificationType; id?: string };
@@ -142,8 +143,6 @@ const LocationDetails = () => {
     return R * c;
   };
 
-  const MIN_DISTANCE_METERS = 100;
-
   const handleLocationSelect = useCallback(
     (coordinate: GeoLatLng) => {
       if (userLocation) {
@@ -164,7 +163,7 @@ const LocationDetails = () => {
       }
       setSelectedLocation(coordinate);
       setAddress('');
-      bottomSheetRef?.current?.snapToIndex(1);
+      bottomSheetRef?.current?.snapToIndex(0);
     },
     [userLocation],
   );
@@ -189,7 +188,7 @@ const LocationDetails = () => {
       setSelectedLocation({ latitude: lat, longitude: lon });
       setAddress(result.display_name || '');
       setTimeout(() => {
-        bottomSheetRef?.current?.snapToIndex(1);
+        bottomSheetRef?.current?.snapToIndex(0);
       }, 500);
     },
     [userLocation],
@@ -238,7 +237,7 @@ const LocationDetails = () => {
         telegramUsername: '',
         latitude: selectedLocation.latitude,
         longitude: selectedLocation.longitude,
-        radius: 100,
+        radius: MIN_DISTANCE_METERS,
         locationName: address.trim() || '',
         status: LocationReminderStatus.Pending,
       };

@@ -13,6 +13,7 @@ import {
   UserLocation,
 } from '@maplibre/maplibre-react-native';
 import LocationService from '@Services/LocationService';
+import { fetchRoute } from '@Services/RouteService';
 import { CameraPosition, GeoLatLng, LocationMapViewProps } from '@Types/Interface';
 import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
 import { fitMapToLocations } from '@Utils/mapBoundsUtils';
@@ -39,6 +40,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import LocationDetailsCard from './LocationDetailsCard';
 import MapMarker from './LocationMapView/MapMarker';
+import { MIN_DISTANCE_METERS } from '@Utils/geoUtils';
 
 // Suppress known MapLibre warnings that are harmless
 Logger.setLogCallback((log) => {
@@ -62,7 +64,7 @@ Logger.setLogCallback((log) => {
   return false;
 });
 
-const snapPoints = [50, 325];
+const snapPoints = [40, 325];
 
 const LocationMapView: React.FC<LocationMapViewProps> = ({
   onLocationSelect,
@@ -105,20 +107,19 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
     initializeMapCache();
   }, []);
 
-  // Fallback: If tiles don't report as loaded within 2 seconds of map being ready, force show the map
+  // Fallback: If tiles don't report as loaded within 5 seconds of map being ready, force show the map
   useEffect(() => {
     if (isMapReady && !areTilesLoaded) {
       const fallbackTimer = setTimeout(() => {
         console.log('[MapView] Fallback: Forcing tiles loaded state after timeout');
         setAreTilesLoaded(true);
-      }, 2000);
+      }, 5000);
 
       return () => clearTimeout(fallbackTimer);
     }
   }, [isMapReady, areTilesLoaded]);
 
   // 100m restricted zone around user's current location
-  const MIN_DISTANCE_METERS = 100;
   const restrictedZoneCircle = useMemo(() => {
     if (!userLocationProp) return null;
     return createGeoJSONCircle(
@@ -141,6 +142,8 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
     };
   }, []);
 
+  const [routeGeoJSON, setRouteGeoJSON] = useState<any>(null);
+
   useEffect(() => {
     if (selectedLocation && isMapReady) {
       if (
@@ -157,8 +160,27 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
           animationDuration: 500,
         });
       }
+
+      if (userLocationProp) {
+        fetchRoute(
+          {
+            latitude: userLocationProp.latitude,
+            longitude: userLocationProp.longitude,
+          },
+          {
+            latitude: selectedLocation.latitude,
+            longitude: selectedLocation.longitude,
+          },
+        ).then((route) => {
+          if (route) {
+            setRouteGeoJSON(route);
+          }
+        });
+      }
+    } else {
+      setRouteGeoJSON(null);
     }
-  }, [selectedLocation]);
+  }, [selectedLocation, userLocationProp, isMapReady]);
 
   const handleContainerLayout = useCallback((event: any) => {
     const { height } = event.nativeEvent.layout;
@@ -321,6 +343,32 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
               maxZoomLevel={22}
               animationMode="linearTo"
             />
+            {/* Route Line */}
+            {routeGeoJSON && (
+              <ShapeSource id="route-source" shape={routeGeoJSON}>
+                <LineLayer
+                  id="route-line"
+                  style={{
+                    lineColor: '#405DF0',
+                    lineWidth: 4,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                    lineOpacity: 0.8,
+                  }}
+                />
+                {/* Inner brighter line for "glow" effect */}
+                <LineLayer
+                  id="route-line-inner"
+                  style={{
+                    lineColor: '#738AFE',
+                    lineWidth: 2,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                    lineOpacity: 1,
+                  }}
+                />
+              </ShapeSource>
+            )}
             {selectedLocation && (
               <PointAnnotation
                 key={`marker-${selectedLocation.longitude}-${selectedLocation.latitude}`}
@@ -355,7 +403,6 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
           </MapView>
         )}
 
-        {/* Loading overlay while tiles are loading */}
         {!areTilesLoaded && (
           <Animated.View
             entering={FadeIn.duration(200)}
@@ -377,6 +424,8 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
         </Pressable>
       </Animated.View>
 
+      {children}
+
       <BottomSheet
         handleStyle={styles.bottomSheetHandle}
         handleIndicatorStyle={[styles.bottomSheetIndicator, { backgroundColor: colors.text }]}
@@ -389,6 +438,7 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
         keyboardBehavior="interactive"
         android_keyboardInputMode="adjustPan"
         enableOverDrag={false}
+        enableDynamicSizing
       >
         <BottomSheetView style={[styles.contentContainer, { backgroundColor: colors.background }]}>
           <LocationDetailsCard
@@ -401,10 +451,17 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
             isUpdate={!!id}
             address={address}
             setAddress={setAddress}
+            routeStats={
+              routeGeoJSON?.properties
+                ? {
+                    distance: (routeGeoJSON.properties.distance || 0) / 1000,
+                    duration: (routeGeoJSON.properties.duration || 0) / 60,
+                  }
+                : null
+            }
           />
         </BottomSheetView>
       </BottomSheet>
-      {children}
     </View>
   );
 };
@@ -450,7 +507,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   bottomSheetStyle: {
-    zIndex: 999,
+    zIndex: 999999,
     elevation: 0,
     shadowOpacity: 0,
   },
@@ -475,7 +532,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
-    zIndex: 1000,
+    zIndex: 10,
   },
   buttonTouchable: {
     flex: 1,
