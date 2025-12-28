@@ -5,7 +5,11 @@
   "sources": {
     "maptiler_attribution": {
       "attribution": "<a href=\"https://www.maptiler.com/copyright/\" target=\"_blank\">&copy; MapTiler</a> <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>",
-      "type": "vector"
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
     },
     "maptiler_planet": {
       "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=ii6cxU3JU2Ouyr3MIrcL",

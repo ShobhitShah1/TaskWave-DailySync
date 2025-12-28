@@ -59,7 +59,7 @@ export const ColorGroups = {
     location: {
       primary: 'rgba(59, 94, 131, 1)',
       background: 'rgba(82, 114, 150, 0.1)',
-      dark: 'rgba(59, 94, 131, 1)',
+      dark: 'rgba(107, 164, 227, 1)',
       text: 'rgba(59, 94, 131, 1)',
     },
   },
@@ -166,6 +166,7 @@ export const DarkThemeColors = {
   lightBlue: ColorGroups.accent.lightBlue,
   previewBackground: 'rgba(63, 65, 69, 1)',
   ...CommunicationPlatformColors,
+  location: 'rgba(107, 164, 227, 1)',
 };
 
 export const FONTS = {

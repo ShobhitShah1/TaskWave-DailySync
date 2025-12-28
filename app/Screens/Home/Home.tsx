@@ -33,6 +33,7 @@ import RenderEmptyView from './Components/RenderEmptyView';
 import RenderHeaderView from './Components/RenderHeaderView';
 import styles from './styles';
 import { useContacts } from '@Contexts/ContactProvider';
+import { useLocation } from '@Contexts/LocationProvider';
 import { useAppContext } from '@Contexts/ThemeProvider';
 
 const Home = () => {
@@ -97,6 +98,12 @@ const Home = () => {
     permissionStatus: contactPermissionStatus,
   } = useContacts();
 
+  const {
+    requestPermission: requestLocationPermission,
+    refreshLocation,
+    permissionStatus: locationPermissionStatus,
+  } = useLocation();
+
   useEffect(() => {
     if (isFocus) {
       setIsLoading(notificationsState?.allByDate?.length === 0);
@@ -106,14 +113,29 @@ const Home = () => {
         requestPermission();
       }
 
-      // Contact permission logic requested by user
+      // Contact permission logic
       if (contactPermissionStatus === 'unavailable' || contactPermissionStatus === 'denied') {
         requestContactPermission();
       } else if (contactPermissionStatus === 'granted') {
         syncContacts();
       }
+
+      // Location permission logic - cache location early
+      if (locationPermissionStatus === 'unavailable' || locationPermissionStatus === 'denied') {
+        requestLocationPermission();
+      } else if (locationPermissionStatus === 'granted') {
+        // Silently refresh location in background
+        refreshLocation(true);
+      }
     }
-  }, [isFocus, selectedDate, selectedFilter, permissionStatus, contactPermissionStatus]);
+  }, [
+    isFocus,
+    selectedDate,
+    selectedFilter,
+    permissionStatus,
+    contactPermissionStatus,
+    locationPermissionStatus,
+  ]);
 
   const onRefresh = useCallback(async () => {
     try {

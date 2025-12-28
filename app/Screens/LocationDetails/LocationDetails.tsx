@@ -1,5 +1,6 @@
 import LocationSearchBottomSheet from '@Components/LocationSearchBottomSheet';
 import { FONTS } from '@Constants/Theme';
+import { useLocation } from '@Contexts/LocationProvider';
 import BottomSheet from '@gorhom/bottom-sheet';
 import useLocationNotification from '@Hooks/useLocationNotification';
 import useDatabase from '@Hooks/useReminder';
@@ -33,7 +34,17 @@ const LocationDetails = () => {
   const notificationType = params?.notificationType as NotificationType;
 
   const { getNotificationById, updateNotification } = useDatabase();
-  const { scheduleLocationNotification, getCurrentLocation } = useLocationNotification();
+  const { scheduleLocationNotification } = useLocationNotification();
+
+  // Use cached location from provider
+  const {
+    userLocation: cachedLocation,
+    isLoading: isLocationProviderLoading,
+    hasCachedLocation,
+    refreshLocation,
+    permissionStatus,
+    requestPermission,
+  } = useLocation();
 
   const bottomSheetRef = useRef<BottomSheet | null>(null);
 
@@ -44,8 +55,10 @@ const LocationDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<GeoLatLng | null>(null);
   const [userLocation, setUserLocation] = useState<GeoLatLng | null>(null);
-  const [isLocationLoading, setIsLocationLoading] = useState(true);
   const [isSearchPress, setIsSearchPress] = useState(false);
+
+  // Determine if we should show loader - only if no cached location and still loading
+  const isLocationLoading = !hasCachedLocation && isLocationProviderLoading;
 
   useEffect(() => {
     if (id) {
@@ -74,23 +87,41 @@ const LocationDetails = () => {
     }
   };
 
+  // Initialize location only once when component mounts
   useEffect(() => {
-    fetchUserLocation();
-  }, [getCurrentLocation]);
+    const initializeLocation = async () => {
+      // If we already have a local userLocation, don't update it
+      if (userLocation) {
+        return;
+      }
 
-  const fetchUserLocation = async () => {
-    setIsLocationLoading(true);
+      // Use cached location if available
+      if (cachedLocation) {
+        setUserLocation(cachedLocation);
+        return;
+      }
 
-    const location = await getCurrentLocation();
+      // Check permission and fetch location if granted
+      if (permissionStatus === 'granted') {
+        const freshLocation = await refreshLocation(false);
+        if (freshLocation) {
+          setUserLocation(freshLocation);
+        }
+      } else if (permissionStatus === 'denied' || permissionStatus === 'unavailable') {
+        // Request permission if not granted
+        const status = await requestPermission();
+        if (status === 'granted') {
+          const freshLocation = await refreshLocation(false);
+          if (freshLocation) {
+            setUserLocation(freshLocation);
+          }
+        }
+      }
+    };
 
-    if (location && location.coords) {
-      setUserLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
-    }
-    setIsLocationLoading(false);
-  };
+    initializeLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   const handleLocationSelect = (coordinate: GeoLatLng) => {
     setSelectedLocation(coordinate);
@@ -192,8 +223,11 @@ const LocationDetails = () => {
     }
   };
 
-  const handleTryAgain = () => {
-    fetchUserLocation();
+  const handleTryAgain = async () => {
+    const location = await refreshLocation(false);
+    if (location) {
+      setUserLocation(location);
+    }
   };
 
   return (

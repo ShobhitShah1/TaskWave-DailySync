@@ -83,12 +83,7 @@ const RenderSheetView = ({
             <Pressable
               key={item.id}
               onPress={() => handleTopCategoryClick(item)}
-              style={[
-                styles.sheetSuggestionImageView,
-                {
-                  opacity: (theme === 'dark' && isSelected) || theme === 'light' ? 1 : 0.5,
-                },
-              ]}
+              style={[styles.sheetSuggestionImageView, { opacity: isSelected ? 1 : 0.4 }]}
               disabled={isAnimating}
             >
               <Image
@@ -132,7 +127,7 @@ const styles = StyleSheet.create({
   },
   contentContainerStyle: {
     flexGrow: 1,
-    columnGap: 8,
+    columnGap: 7,
     paddingTop: 5,
     paddingBottom: 15,
     alignItems: 'center',

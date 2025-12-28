@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import { BottomSheetProvider } from './app/Contexts/BottomSheetProvider';
 import { ContactProvider } from './app/Contexts/ContactProvider';
+import { LocationProvider } from './app/Contexts/LocationProvider';
 import { AppProvider, useAppContext } from './app/Contexts/ThemeProvider';
 import { handleNotificationPress } from './app/Hooks/handleNotificationPress';
 import { updateNotification } from './app/Hooks/updateNotification';
@@ -290,7 +291,9 @@ export default function App() {
   return (
     <AppProvider>
       <ContactProvider>
-        <AppContent />
+        <LocationProvider>
+          <AppContent />
+        </LocationProvider>
       </ContactProvider>
     </AppProvider>
   );

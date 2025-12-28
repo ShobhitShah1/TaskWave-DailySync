@@ -23,16 +23,29 @@ import Animated, {
 import LocationDetailsCard from './LocationDetailsCard';
 import MapMarker from './LocationMapView/MapMarker';
 
+// Suppress known MapLibre warnings that are harmless
 Logger.setLogCallback((log) => {
   const { message } = log;
 
-  if (message.match('Request failed due to a permanent error: Canceled')) {
+  // Suppress stream reset/cancel errors (network transient issues)
+  if (message.match(/Request failed due to a permanent error.*Canceled/i)) {
     return true;
   }
+
+  // Suppress stream reset errors
+  if (message.match(/stream was reset.*CANCEL/i)) {
+    return true;
+  }
+
+  // Suppress source must have tiles warning (for attribution-only sources)
+  if (message.match(/source must have tiles/i)) {
+    return true;
+  }
+
   return false;
 });
 
-const snapPoints = [40, 325];
+const snapPoints = [50, 325];
 
 const LocationMapView: React.FC<LocationMapViewProps> = ({
   onLocationSelect,
@@ -89,36 +102,17 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
         typeof cameraRef.current.flyTo === 'function' &&
         typeof cameraRef.current.setZoom === 'function'
       ) {
-        cameraRef.current.flyTo([selectedLocation.longitude, selectedLocation.latitude], 800);
+        cameraRef.current.flyTo([selectedLocation.longitude, selectedLocation.latitude], 500);
         cameraRef.current.setZoom(17);
       } else {
         setCameraPosition({
           centerCoordinate: [selectedLocation.longitude, selectedLocation.latitude],
           zoomLevel: 17,
-          animationDuration: 800,
+          animationDuration: 500,
         });
       }
     }
-  }, [selectedLocation, isMapReady]);
-
-  useEffect(() => {
-    if (isMapReady && selectedLocation) {
-      if (
-        cameraRef.current &&
-        typeof cameraRef.current.flyTo === 'function' &&
-        typeof cameraRef.current.setZoom === 'function'
-      ) {
-        cameraRef.current.flyTo([selectedLocation.longitude, selectedLocation.latitude], 800);
-        cameraRef.current.setZoom(17);
-      } else {
-        setCameraPosition({
-          centerCoordinate: [selectedLocation.longitude, selectedLocation.latitude],
-          zoomLevel: 17,
-          animationDuration: 800,
-        });
-      }
-    }
-  }, [isMapReady, selectedLocation]);
+  }, [selectedLocation]);
 
   const handleContainerLayout = useCallback((event: any) => {
     const { height } = event.nativeEvent.layout;
@@ -207,8 +201,8 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
     // Calculate bottom sheet height from animated position
     const currentSheetHeight = containerLayout.height - animatedPosition.value;
 
-    // Position button 60px above the bottom sheet (increased for better spacing)
-    const buttonBottom = currentSheetHeight + 10; // 15px from bottom sheet top
+    // Position button 16px above the bottom sheet
+    const buttonBottom = currentSheetHeight + 16;
 
     // Hide button when keyboard is visible
     const opacity = interpolate(keyboardVisible.value, [0, 1], [1, 0], 'clamp');
@@ -217,55 +211,55 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
     return {
       bottom: buttonBottom,
       opacity,
-      transform: [
-        { translateY },
-        // {
-        //   scale: interpolate(currentSheetHeight, [snapPoints[0], snapPoints[1]], [0.9, 1], 'clamp'),
-        // },
-      ],
+      transform: [{ translateY }],
     };
   }, [containerLayout.height]);
 
   return (
     <View ref={containerRef} style={styles.mapContainer} onLayout={handleContainerLayout}>
-      {userLocationProp && (
-        <MapView
-          style={styles.map}
-          mapStyle={streetsStyle}
-          compassEnabled
-          onPress={handleMapPress}
-          onDidFinishLoadingMap={handleMapReady}
-          zoomEnabled
-          scrollEnabled
-          pitchEnabled
-          rotateEnabled
-          attributionEnabled
-          attributionPosition={{ bottom: 8, left: 8 }}
-          preferredFramesPerSecond={60}
-          localizeLabels
-        >
-          <MapCamera
-            ref={cameraRef}
-            centerCoordinate={cameraPosition.centerCoordinate}
-            zoomLevel={cameraPosition.zoomLevel}
-            animationDuration={cameraPosition.animationDuration}
-            pitch={45}
-            heading={0}
-            minZoomLevel={2}
-            maxZoomLevel={22}
-            animationMode="linearTo"
-          />
-          {selectedLocation && (
-            <PointAnnotation
-              id={`selected-location-${selectedLocation.longitude}-${selectedLocation.latitude}`}
-              coordinate={[selectedLocation.longitude, selectedLocation.latitude]}
-            >
-              <MapMarker />
-            </PointAnnotation>
-          )}
-          <UserLocation visible={true} onUpdate={() => {}} />
-        </MapView>
-      )}
+      <View style={styles.mapWrapper}>
+        {userLocationProp && (
+          <MapView
+            style={styles.map}
+            mapStyle={streetsStyle}
+            compassEnabled
+            onPress={handleMapPress}
+            onDidFinishLoadingMap={handleMapReady}
+            zoomEnabled
+            scrollEnabled
+            pitchEnabled
+            rotateEnabled
+            attributionEnabled
+            attributionPosition={{ bottom: 8, left: 8 }}
+            preferredFramesPerSecond={60}
+            localizeLabels
+          >
+            <MapCamera
+              ref={cameraRef}
+              centerCoordinate={cameraPosition.centerCoordinate}
+              zoomLevel={cameraPosition.zoomLevel}
+              {...(cameraPosition.animationDuration !== undefined && {
+                animationDuration: cameraPosition.animationDuration,
+              })}
+              pitch={45}
+              heading={0}
+              minZoomLevel={2}
+              maxZoomLevel={22}
+              animationMode="linearTo"
+            />
+            {selectedLocation && (
+              <PointAnnotation
+                key={`marker-${selectedLocation.longitude}-${selectedLocation.latitude}`}
+                id={`selected-location-${selectedLocation.longitude}-${selectedLocation.latitude}`}
+                coordinate={[selectedLocation.longitude, selectedLocation.latitude]}
+              >
+                <MapMarker />
+              </PointAnnotation>
+            )}
+            <UserLocation visible={true} onUpdate={() => {}} />
+          </MapView>
+        )}
+      </View>
 
       <Animated.View style={[styles.floatingButton, floatingButtonStyle]}>
         <Pressable
@@ -278,26 +272,17 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
       </Animated.View>
 
       <BottomSheet
-        handleStyle={{
-          borderBottomWidth: 0.5,
-          borderColor: colors.background,
-          backgroundColor: colors.background,
-        }}
-        handleIndicatorStyle={{ backgroundColor: colors.text }}
-        style={{
-          borderBottomWidth: 0,
-          zIndex: 999999999,
-          backgroundColor: colors.background,
-        }}
-        backgroundStyle={{
-          backgroundColor: colors.background,
-        }}
+        handleStyle={styles.bottomSheetHandle}
+        handleIndicatorStyle={[styles.bottomSheetIndicator, { backgroundColor: colors.text }]}
+        style={styles.bottomSheetStyle}
+        backgroundStyle={[styles.bottomSheetBackground, { backgroundColor: colors.background }]}
         animatedPosition={animatedPosition}
         snapPoints={snapPoints}
         ref={bottomSheetRef}
         keyboardBlurBehavior="restore"
         keyboardBehavior="interactive"
         android_keyboardInputMode="adjustPan"
+        enableOverDrag={false}
       >
         <BottomSheetView style={[styles.contentContainer, { backgroundColor: colors.background }]}>
           <LocationDetailsCard
@@ -324,11 +309,14 @@ const styles = StyleSheet.create({
   mapContainer: {
     flex: 1,
     position: 'relative',
+    overflow: 'hidden',
+    zIndex: 1,
+  },
+  mapWrapper: {
+    flex: 1,
     borderRadius: 18,
     overflow: 'hidden',
     marginHorizontal: 10,
-    marginBottom: 0,
-    zIndex: 1,
   },
   map: {
     flex: 1,
@@ -337,22 +325,51 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
+    paddingBottom: 20,
+  },
+  bottomSheetHandle: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingVertical: 12,
+  },
+  bottomSheetIndicator: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+  },
+  bottomSheetStyle: {
+    zIndex: 999,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  bottomSheetBackground: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    // Remove any shadow/border artifacts
+    shadowOpacity: 0,
+    elevation: 0,
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
   floatingButton: {
     position: 'absolute',
-    right: 8,
+    right: 18,
     width: 50,
     height: 50,
-    borderRadius: 26,
+    borderRadius: 25,
     backgroundColor: '#405DF0',
-    boxShadow: '0px 6px 12px rgba(0, 0, 0, 0.25)',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
     zIndex: 1000,
   },
   buttonTouchable: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 26,
+    borderRadius: 25,
     overflow: 'hidden',
   },
   buttonIcon: {

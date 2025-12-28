@@ -14,7 +14,6 @@ interface LocationSearchBottomSheetProps {
   onLocationSelect: (location: NominatimResult) => void;
 }
 
-// Get location type icon
 const getLocationIcon = (displayName: string) => {
   const lower = displayName.toLowerCase();
   if (

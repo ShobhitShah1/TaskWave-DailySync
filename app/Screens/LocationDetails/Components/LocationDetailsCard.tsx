@@ -33,10 +33,7 @@ const LocationDetailsCard: React.FC<LocationDetailsCardProps> = ({
   const { theme } = useAppContext();
 
   return (
-    <View
-      style={[styles.card, { backgroundColor: colors.background, shadowColor: colors.black }]}
-      pointerEvents="box-none"
-    >
+    <View style={[styles.card, { backgroundColor: colors.background }]} pointerEvents="box-none">
       <BottomSheetTextInput
         style={[
           styles.titleInput,
@@ -108,11 +105,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 15,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 6,
-    zIndex: 9999,
   },
   titleInput: {
     borderRadius: 8,
