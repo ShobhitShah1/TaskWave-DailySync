@@ -1,5 +1,4 @@
 import AssetsPath from '@Constants/AssetsPath';
-import streetsStyle from '@Constants/streets-v2-style.json';
 import { FONTS } from '@Constants/Theme';
 import { useAppContext } from '@Contexts/ThemeProvider';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -19,6 +18,8 @@ import { navigationRef } from '@Routes/RootNavigation';
 import { Notification } from '@Types/Interface';
 import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
 import { linkifyText } from '@Utils/linkify';
+import { fitMapToLocations } from '@Utils/mapBoundsUtils';
+import { getMapStyleUrl } from '@Utils/mapStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Image, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -159,6 +160,7 @@ const ActionButton = memo(
 const LocationPreview = () => {
   const { theme } = useAppContext();
   const colors = useThemeColors();
+  const mapStyleUrl = useMemo(() => getMapStyleUrl(theme), [theme]);
   const { top, bottom } = useSafeAreaInsets();
   const { params } = useRoute<LocationPreviewRoute>();
   const notification = params.notificationData;
@@ -203,6 +205,18 @@ const LocationPreview = () => {
 
   const snapPoints = useMemo(() => ['9%', '80%'], []);
 
+  const handleMarkedLocationClick = useCallback(() => {
+    scaleValue.value = withSpring(1, { damping: 15, stiffness: 200 });
+
+    if (cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: [notification.longitude, notification.latitude],
+        animationDuration: 800,
+        zoomLevel: 16,
+      });
+    }
+  }, [notification.latitude, notification.longitude, scaleValue]);
+
   const zoomToFitAll = useCallback(async () => {
     try {
       if (
@@ -211,13 +225,25 @@ const LocationPreview = () => {
         notification.longitude &&
         notification.latitude
       ) {
-        cameraRef.current?.fitBounds(
-          [notification.longitude, notification.latitude],
-          [currentLocation.coords.longitude, currentLocation.coords.latitude],
-          [100, 100, 100, 100],
-          800,
+        fitMapToLocations(
+          cameraRef,
+          {
+            latitude: currentLocation.coords.latitude,
+            longitude: currentLocation.coords.longitude,
+          },
+          {
+            latitude: Number(notification.latitude),
+            longitude: Number(notification.longitude),
+          },
+          {
+            paddingTop: 150,
+            paddingRight: 60,
+            paddingBottom: 200,
+            paddingLeft: 60,
+            animationDuration: 800,
+          },
         );
-      } else if (notification) {
+      } else if (notification.latitude && notification.longitude) {
         handleMarkedLocationClick();
       } else {
         Alert.alert(
@@ -228,19 +254,7 @@ const LocationPreview = () => {
     } catch (error) {
       console.error('Error zooming to fit all:', error);
     }
-  }, [currentLocation, notification]);
-
-  const handleMarkedLocationClick = () => {
-    scaleValue.value = withSpring(1, { damping: 15, stiffness: 200 });
-
-    if (cameraRef.current) {
-      cameraRef.current.setCamera({
-        centerCoordinate: [notification.longitude, notification.latitude],
-        animationDuration: 800,
-        zoomLevel: 16,
-      });
-    }
-  };
+  }, [currentLocation, notification, handleMarkedLocationClick]);
 
   const coords = useMemo(
     () => ({
@@ -349,7 +363,7 @@ const LocationPreview = () => {
       <View style={styles.mapContainer}>
         <MapView
           style={styles.fullMap}
-          mapStyle={streetsStyle}
+          mapStyle={mapStyleUrl}
           zoomEnabled
           scrollEnabled
           pitchEnabled
@@ -357,44 +371,41 @@ const LocationPreview = () => {
         >
           <Camera
             ref={cameraRef}
-            centerCoordinate={[
-              (notification?.longitude ??
-                currentLocation?.coords.longitude ??
-                coords.longitude) as number,
-              (notification?.latitude ??
-                currentLocation?.coords.latitude ??
-                coords.latitude) as number,
-            ]}
-            zoomLevel={15}
-            animationDuration={0}
-            pitch={0}
-            heading={0}
+            defaultSettings={{
+              centerCoordinate: [
+                (notification?.longitude ?? coords.longitude) as number,
+                (notification?.latitude ?? coords.latitude) as number,
+              ],
+              zoomLevel: 15,
+              pitch: 0,
+              heading: 0,
+            }}
             minZoomLevel={2}
             maxZoomLevel={20}
+            animationDuration={0}
           />
-
-          {/* Radius circle with border */}
+          {/* Radius circle overlay */}
           {circleGeoJSON && (
-            <ShapeSource id="radius-shape" shape={circleGeoJSON}>
+            <ShapeSource id="radius-circle-source" shape={circleGeoJSON}>
               <FillLayer
-                id="radius-fill"
+                id="radius-circle-fill"
+                aboveLayerID="background"
                 style={{
-                  fillColor: colors.primary,
+                  fillColor: colors.text,
                   fillOpacity: 0.12,
                 }}
               />
               <LineLayer
-                id="radius-border"
+                id="radius-circle-border"
+                aboveLayerID="radius-circle-fill"
                 style={{
-                  lineColor: colors.primary,
+                  lineColor: colors.text,
                   lineWidth: 2,
                   lineOpacity: 0.6,
-                  lineDasharray: [2, 2],
                 }}
               />
             </ShapeSource>
           )}
-
           {/* Destination marker */}
           <PointAnnotation
             id={`notification-location-${notification.id}`}
@@ -407,7 +418,6 @@ const LocationPreview = () => {
               <View style={[styles.markerShadow, { backgroundColor: colors.primary }]} />
             </View>
           </PointAnnotation>
-
           {/* Current location marker with pulse */}
           {permissionStatus === 'granted' && currentLocation && (
             <PointAnnotation
@@ -763,29 +773,34 @@ const styles = StyleSheet.create({
   currentLocationMarker: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 40,
-    height: 40,
+    width: 50,
+    height: 50,
   },
   currentLocationPulse: {
     position: 'absolute',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   currentLocationRing: {
     position: 'absolute',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    backgroundColor: 'transparent',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   currentLocationDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     borderWidth: 3,
     borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
   },
 
   // Bottom Sheet

@@ -1,5 +1,5 @@
 import AssetsPath from '@Constants/AssetsPath';
-import streetsStyle from '@Constants/streets-v2-style.json';
+import { useAppContext } from '@Contexts/ThemeProvider';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import useThemeColors from '@Hooks/useThemeMode';
 import {
@@ -11,8 +11,10 @@ import {
 } from '@maplibre/maplibre-react-native';
 import LocationService from '@Services/LocationService';
 import { CameraPosition, GeoLatLng, LocationMapViewProps } from '@Types/Interface';
+import { fitMapToLocations } from '@Utils/mapBoundsUtils';
+import { getMapStyleUrl } from '@Utils/mapStyles';
 import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Image, Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   interpolate,
@@ -63,7 +65,9 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
   address,
   setAddress,
 }) => {
+  const { theme } = useAppContext();
   const colors = useThemeColors();
+  const mapStyleUrl = useMemo(() => getMapStyleUrl(theme), [theme]);
   const cameraRef = useRef<any>(null);
   const containerRef = useRef<View>(null);
 
@@ -170,17 +174,16 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
   const zoomToFitAll = useCallback(async () => {
     try {
       if (userLocationProp && selectedLocation) {
-        cameraRef.current?.fitBounds(
-          [userLocationProp.longitude, userLocationProp.latitude],
-          [selectedLocation.longitude, selectedLocation.latitude],
-          [100, 100, 100, 100],
-          1000,
-        );
-      }
-      // else if (location) {
-      //   centerOnUser();
-      // }
-      else {
+        fitMapToLocations(cameraRef, userLocationProp, selectedLocation, {
+          paddingTop: 100,
+          paddingRight: 50,
+          paddingBottom: 380,
+          paddingLeft: 50,
+          animationDuration: 800,
+        });
+      } else if (userLocationProp) {
+        centerOnUser();
+      } else {
         Alert.alert(
           'Location Error',
           'Unable to get current location. Please check location permissions.',
@@ -189,7 +192,7 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
     } catch (error) {
       console.error('Error zooming to fit all:', error);
     }
-  }, [selectedLocation, centerOnUser]);
+  }, [selectedLocation, userLocationProp, centerOnUser]);
 
   const floatingButtonStyle = useAnimatedStyle(() => {
     'worklet';
@@ -221,7 +224,7 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
         {userLocationProp && (
           <MapView
             style={styles.map}
-            mapStyle={streetsStyle}
+            mapStyle={mapStyleUrl}
             compassEnabled
             onPress={handleMapPress}
             onDidFinishLoadingMap={handleMapReady}

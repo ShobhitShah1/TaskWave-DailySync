@@ -2,6 +2,7 @@ import LocationSearchBottomSheet from '@Components/LocationSearchBottomSheet';
 import { FONTS } from '@Constants/Theme';
 import { useLocation } from '@Contexts/LocationProvider';
 import BottomSheet from '@gorhom/bottom-sheet';
+import { useAddressFromCoords } from '@Hooks/useAddressFromCoords';
 import useLocationNotification from '@Hooks/useLocationNotification';
 import useDatabase from '@Hooks/useReminder';
 import useThemeColors from '@Hooks/useThemeMode';
@@ -118,8 +119,18 @@ const LocationDetails = () => {
     setIsFetchingLocation(false);
   };
 
+  const { address: fetchedAddress, loading: addressLoading } =
+    useAddressFromCoords(selectedLocation);
+
+  useEffect(() => {
+    if (fetchedAddress && selectedLocation && !address) {
+      setAddress(fetchedAddress);
+    }
+  }, [fetchedAddress, selectedLocation]);
+
   const handleLocationSelect = useCallback((coordinate: GeoLatLng) => {
     setSelectedLocation(coordinate);
+    setAddress('');
     bottomSheetRef?.current?.snapToIndex(1);
   }, []);
 
