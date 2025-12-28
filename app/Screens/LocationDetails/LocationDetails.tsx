@@ -15,7 +15,7 @@ import {
   NotificationType,
   LocationReminderStatus,
 } from '@Types/Interface';
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import LocationMapView from './Components/LocationMapView';
@@ -35,51 +35,51 @@ const LocationDetails = () => {
 
   const { getNotificationById, updateNotification } = useDatabase();
   const { scheduleLocationNotification } = useLocationNotification();
-
-  // Use cached location from provider
   const {
     userLocation: cachedLocation,
     isLoading: isLocationProviderLoading,
-    hasCachedLocation,
     refreshLocation,
     permissionStatus,
     requestPermission,
+    hasCheckedPermission,
   } = useLocation();
 
   const bottomSheetRef = useRef<BottomSheet | null>(null);
+  const isInitializingRef = useRef(false);
 
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [address, setAddress] = useState('');
-
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingLocation, setIsFetchingLocation] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<GeoLatLng | null>(null);
   const [userLocation, setUserLocation] = useState<GeoLatLng | null>(null);
   const [isSearchPress, setIsSearchPress] = useState(false);
 
-  // Determine if we should show loader - only if no cached location and still loading
-  const isLocationLoading = !hasCachedLocation && isLocationProviderLoading;
-
   useEffect(() => {
     if (id) {
-      getExistingNotificationData();
+      loadExistingNotification();
     }
   }, [id, notificationType]);
 
-  const getExistingNotificationData = async () => {
+  useEffect(() => {
+    if (!hasCheckedPermission || isInitializingRef.current || userLocation) return;
+
+    isInitializingRef.current = true;
+    initializeLocation();
+  }, [hasCheckedPermission, permissionStatus, cachedLocation]);
+
+  const loadExistingNotification = async () => {
     try {
       const response = await getNotificationById(id);
-
       if (response) {
         setTitle(response?.subject || '');
         setMessage(response?.message || '');
         setAddress(response?.locationName || '');
-
         setSelectedLocation({
           latitude: Number(response?.latitude),
           longitude: Number(response?.longitude),
         });
-
         bottomSheetRef?.current?.expand();
       }
     } catch (error) {
@@ -87,53 +87,57 @@ const LocationDetails = () => {
     }
   };
 
-  // Initialize location only once when component mounts
-  useEffect(() => {
-    const initializeLocation = async () => {
-      // If we already have a local userLocation, don't update it
-      if (userLocation) {
-        return;
-      }
+  const initializeLocation = async () => {
+    setIsFetchingLocation(true);
 
-      // Use cached location if available
-      if (cachedLocation) {
-        setUserLocation(cachedLocation);
-        return;
-      }
+    if (cachedLocation) {
+      setUserLocation(cachedLocation);
+      setIsFetchingLocation(false);
+      return;
+    }
 
-      // Check permission and fetch location if granted
-      if (permissionStatus === 'granted') {
-        const freshLocation = await refreshLocation(false);
-        if (freshLocation) {
-          setUserLocation(freshLocation);
-        }
-      } else if (permissionStatus === 'denied' || permissionStatus === 'unavailable') {
-        // Request permission if not granted
-        const status = await requestPermission();
-        if (status === 'granted') {
-          const freshLocation = await refreshLocation(false);
-          if (freshLocation) {
-            setUserLocation(freshLocation);
-          }
+    if (permissionStatus === 'granted') {
+      const location = await refreshLocation(false);
+      if (location) {
+        setUserLocation(location);
+      }
+      setIsFetchingLocation(false);
+      return;
+    }
+
+    if (permissionStatus === 'denied' || permissionStatus === null) {
+      const status = await requestPermission();
+      if (status === 'granted') {
+        const location = await refreshLocation(false);
+        if (location) {
+          setUserLocation(location);
         }
       }
-    };
+    }
 
-    initializeLocation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount
-
-  const handleLocationSelect = (coordinate: GeoLatLng) => {
-    setSelectedLocation(coordinate);
-    bottomSheetRef?.current?.snapToIndex(1);
+    setIsFetchingLocation(false);
   };
 
-  const handleSearchResultSelect = (result: NominatimResult) => {
+  const handleLocationSelect = useCallback((coordinate: GeoLatLng) => {
+    setSelectedLocation(coordinate);
+    bottomSheetRef?.current?.snapToIndex(1);
+  }, []);
+
+  const handleSearchResultSelect = useCallback((result: NominatimResult) => {
     setSelectedLocation({ latitude: parseFloat(result.lat), longitude: parseFloat(result.lon) });
     setAddress(result.display_name || '');
     setTimeout(() => {
       bottomSheetRef?.current?.snapToIndex(1);
     }, 500);
+  }, []);
+
+  const handleTryAgain = async () => {
+    setIsFetchingLocation(true);
+    const location = await refreshLocation(false);
+    if (location) {
+      setUserLocation(location);
+    }
+    setIsFetchingLocation(false);
   };
 
   const validateAndSubmit = async () => {
@@ -170,18 +174,15 @@ const LocationDetails = () => {
         telegramUsername: '',
         latitude: selectedLocation.latitude,
         longitude: selectedLocation.longitude,
-        radius: 100, // 100 meters default
+        radius: 100,
         locationName: address.trim() || '',
-        status: LocationReminderStatus.Pending, // Location reminders start as pending until user arrives
+        status: LocationReminderStatus.Pending,
       };
 
       if (id) {
-        // 1. Update the notification in the database
         const success = await updateNotification(notificationData);
         if (success) {
-          // 2. Remove the old reminder from LocationService
           LocationService.removeLocationReminder(id);
-          // 3. Add the updated reminder to LocationService
           LocationService.addLocationReminder({
             id,
             latitude: Number(notificationData.latitude),
@@ -196,7 +197,6 @@ const LocationDetails = () => {
             message: 'Success',
             description: 'Location-based reminder updated successfully!',
           });
-          // Reset form and go back
           setTitle('');
           setMessage('');
           setSelectedLocation(null);
@@ -223,12 +223,9 @@ const LocationDetails = () => {
     }
   };
 
-  const handleTryAgain = async () => {
-    const location = await refreshLocation(false);
-    if (location) {
-      setUserLocation(location);
-    }
-  };
+  const showLoader = !hasCheckedPermission || isFetchingLocation || isLocationProviderLoading;
+  const showMap = !showLoader && userLocation;
+  const showError = !showLoader && !userLocation;
 
   return (
     <>
@@ -240,14 +237,16 @@ const LocationDetails = () => {
           showThemeSwitch={false}
         />
 
-        {isLocationLoading ? (
+        {showLoader && (
           <View style={styles.loaderContainer}>
             <ActivityIndicator size="large" color={colors.text} />
             <Text style={[styles.loaderText, { color: colors.text }]}>
               Getting your location...
             </Text>
           </View>
-        ) : userLocation ? (
+        )}
+
+        {showMap && (
           <LocationMapView
             onLocationSelect={handleLocationSelect}
             selectedLocation={selectedLocation}
@@ -265,7 +264,9 @@ const LocationDetails = () => {
           >
             <LocationSearchBar onSearchPress={() => setIsSearchPress(true)} />
           </LocationMapView>
-        ) : (
+        )}
+
+        {showError && (
           <View style={styles.loaderContainer}>
             <Text style={[styles.loaderText, { color: colors.text }]}>
               Unable to get your location.
@@ -285,9 +286,7 @@ const LocationDetails = () => {
 
       <LocationSearchBottomSheet
         isVisible={isSearchPress}
-        onClose={() => {
-          setIsSearchPress(false);
-        }}
+        onClose={() => setIsSearchPress(false)}
         onLocationSelect={(location: NominatimResult) => {
           handleSearchResultSelect(location);
           setIsSearchPress(false);
@@ -299,7 +298,6 @@ const LocationDetails = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  contentContainer: { flex: 1 },
   loaderContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -325,37 +323,6 @@ const styles = StyleSheet.create({
   tryAgainText: {
     fontFamily: FONTS.SemiBold,
     fontSize: 14,
-  },
-  floatingButton: {
-    position: 'absolute',
-    right: 5,
-    width: 50,
-    height: 50,
-    borderRadius: 28,
-    backgroundColor: 'rgba(64, 93, 240, 1)', // Google Maps blue
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    zIndex: 1000,
-  },
-  buttonTouchable: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 28,
-  },
-  buttonIcon: {
-    width: 24,
-    height: 24,
-    backgroundColor: 'white',
-    borderRadius: 2,
-    // Replace this with your actual icon component
-    // Example: <Icon name="my-location" size={24} color="white" />
   },
 });
 

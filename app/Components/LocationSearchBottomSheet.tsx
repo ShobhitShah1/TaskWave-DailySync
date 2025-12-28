@@ -2,11 +2,23 @@ import { FONTS } from '@Constants/Theme';
 import { useAppContext } from '@Contexts/ThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetFlatList, BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { useLocationSearch } from '@Hooks/useLocationSearch';
 import useThemeColors from '@Hooks/useThemeMode';
-import { useLocationSearch } from '@Screens/LocationDetails/Components/hooks/useLocationSearch';
 import { NominatimResult } from '@Types/Interface';
+import {
+  getLocationIconName,
+  formatCoordinates,
+  getLocationName,
+} from '@Utils/locationSearchUtils';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 interface LocationSearchBottomSheetProps {
   isVisible: boolean;
@@ -14,60 +26,7 @@ interface LocationSearchBottomSheetProps {
   onLocationSelect: (location: NominatimResult) => void;
 }
 
-const getLocationIcon = (displayName: string) => {
-  const lower = displayName.toLowerCase();
-  if (
-    lower.includes('restaurant') ||
-    lower.includes('cafe') ||
-    lower.includes('food') ||
-    lower.includes('dining')
-  ) {
-    return 'restaurant-outline';
-  }
-  if (lower.includes('hospital') || lower.includes('clinic') || lower.includes('medical')) {
-    return 'medical-outline';
-  }
-  if (
-    lower.includes('school') ||
-    lower.includes('university') ||
-    lower.includes('college') ||
-    lower.includes('education')
-  ) {
-    return 'school-outline';
-  }
-  if (lower.includes('park') || lower.includes('garden') || lower.includes('nature')) {
-    return 'leaf-outline';
-  }
-  if (
-    lower.includes('mall') ||
-    lower.includes('shopping') ||
-    lower.includes('store') ||
-    lower.includes('market')
-  ) {
-    return 'storefront-outline';
-  }
-  if (lower.includes('airport') || lower.includes('airpot') || lower.includes('terminal')) {
-    return 'airplane-outline';
-  }
-  if (
-    lower.includes('station') ||
-    lower.includes('metro') ||
-    lower.includes('bus') ||
-    lower.includes('transport')
-  ) {
-    return 'train-outline';
-  }
-  if (lower.includes('hotel') || lower.includes('resort') || lower.includes('accommodation')) {
-    return 'bed-outline';
-  }
-  if (lower.includes('bank') || lower.includes('atm') || lower.includes('financial')) {
-    return 'card-outline';
-  }
-  if (lower.includes('gas') || lower.includes('fuel') || lower.includes('petrol')) {
-    return 'car-outline';
-  }
-  return 'location-outline';
-};
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const LocationSearchBottomSheet: React.FC<LocationSearchBottomSheetProps> = ({
   isVisible,
@@ -77,26 +36,30 @@ const LocationSearchBottomSheet: React.FC<LocationSearchBottomSheetProps> = ({
   const { theme } = useAppContext();
   const colors = useThemeColors();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const opacity = useSharedValue(0);
 
   const [searchQuery, setSearchQuery] = useState('');
   const { results, loading } = useLocationSearch({ value: searchQuery });
 
   const snapPoints = useMemo(() => ['20%', '100%'], []);
+  const isDark = theme === 'dark';
+
+  const containerBg = isDark ? colors.darkPrimaryBackground : colors.scheduleReminderCardBackground;
+  const borderColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
   useEffect(() => {
     if (isVisible) {
-      bottomSheetRef?.current?.present();
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
+      bottomSheetRef.current?.present();
+      opacity.value = withTiming(1, { duration: 300 });
     } else {
-      fadeAnim.setValue(0);
-      bottomSheetRef?.current?.dismiss();
+      opacity.value = 0;
+      bottomSheetRef.current?.dismiss();
     }
-  }, [isVisible, fadeAnim]);
+  }, [isVisible, opacity]);
+
+  const animatedContainerStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
 
   const handleLocationSelect = useCallback(
     (location: NominatimResult) => {
@@ -109,140 +72,84 @@ const LocationSearchBottomSheet: React.FC<LocationSearchBottomSheetProps> = ({
 
   const handleSheetChanges = useCallback(
     (index: number) => {
-      if (index === -1) {
-        onClose();
-      }
+      if (index === -1) onClose();
     },
     [onClose],
   );
 
-  const clearSearch = useCallback(() => {
-    setSearchQuery('');
-  }, []);
+  const clearSearch = useCallback(() => setSearchQuery(''), []);
+
+  const handleDismiss = useCallback(() => {
+    onClose();
+    clearSearch();
+  }, [onClose, clearSearch]);
 
   const renderResultItem = useCallback(
     ({ item, index }: { item: NominatimResult; index: number }) => (
-      <Pressable
+      <AnimatedPressable
         key={`${item.lat}-${item.lon}-${index}`}
         onPress={() => handleLocationSelect(item)}
-        style={() => [
-          styles.resultItem,
-          {
-            borderBottomColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-          },
-        ]}
+        entering={FadeIn.delay(index * 50).duration(200)}
+        style={[styles.resultItem, { borderBottomColor: borderColor }]}
       >
         <View style={styles.resultContent}>
-          <View
-            style={[
-              styles.iconContainer,
-              {
-                backgroundColor:
-                  theme === 'dark'
-                    ? colors.darkPrimaryBackground
-                    : colors.scheduleReminderCardBackground,
-              },
-            ]}
-          >
-            <Ionicons name={getLocationIcon(item.display_name)} size={18} color={colors.text} />
+          <View style={[styles.iconContainer, { backgroundColor: containerBg }]}>
+            <Ionicons
+              name={getLocationIconName(item.display_name) as any}
+              size={18}
+              color={colors.text}
+            />
           </View>
 
           <View style={styles.textContainer}>
-            <Text
-              style={[styles.locationText, { color: colors.text, fontFamily: FONTS.Medium }]}
-              numberOfLines={1}
-            >
-              {item.display_name.split(',')[0]}
+            <Text style={[styles.locationText, { color: colors.text }]} numberOfLines={1}>
+              {getLocationName(item.display_name)}
             </Text>
-            <Text
-              style={[
-                styles.addressText,
-                { color: colors.placeholderText, fontFamily: FONTS.Regular },
-              ]}
-              numberOfLines={2}
-            >
+            <Text style={[styles.addressText, { color: colors.placeholderText }]} numberOfLines={2}>
               {item.display_name}
             </Text>
           </View>
 
           <View style={styles.coordinatesContainer}>
-            <Text
-              style={[
-                styles.coordinatesText,
-                { color: colors.grayTitle, fontFamily: FONTS.Regular },
-              ]}
-            >
-              {parseFloat(item.lat).toFixed(3)}, {parseFloat(item.lon).toFixed(3)}
+            <Text style={[styles.coordinatesText, { color: colors.grayTitle }]}>
+              {formatCoordinates(item.lat, item.lon)}
             </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={16}
-              color={colors.grayTitle}
-              style={styles.chevronIcon}
-            />
+            <Ionicons name="chevron-forward" size={16} color={colors.grayTitle} />
           </View>
         </View>
-      </Pressable>
+      </AnimatedPressable>
     ),
-    [colors, theme, handleLocationSelect],
+    [colors, containerBg, borderColor, handleLocationSelect],
   );
 
   const renderEmptyState = useCallback(
     () => (
       <View style={styles.emptyState}>
-        <View
-          style={[
-            styles.emptyIconContainer,
-            {
-              backgroundColor:
-                theme === 'dark'
-                  ? colors.darkPrimaryBackground
-                  : colors.scheduleReminderCardBackground,
-            },
-          ]}
-        >
+        <View style={[styles.emptyIconContainer, { backgroundColor: containerBg }]}>
           <Ionicons
             name={searchQuery ? 'location-outline' : 'search-outline'}
             size={32}
             color={colors.grayTitle}
           />
         </View>
-        <Text
-          style={[
-            styles.emptyTitle,
-            {
-              color: colors.text,
-              fontFamily: FONTS.Medium,
-            },
-          ]}
-        >
+        <Text style={[styles.emptyTitle, { color: colors.text }]}>
           {searchQuery ? 'No locations found' : 'Search for places'}
         </Text>
-        <Text
-          style={[
-            styles.emptySubtitle,
-            {
-              color: colors.placeholderText,
-              fontFamily: FONTS.Regular,
-            },
-          ]}
-        >
+        <Text style={[styles.emptySubtitle, { color: colors.placeholderText }]}>
           {searchQuery
             ? 'Try adjusting your search terms'
             : 'Find restaurants, landmarks, addresses, and more'}
         </Text>
       </View>
     ),
-    [colors, searchQuery, theme],
+    [colors, searchQuery, containerBg],
   );
 
   const renderLoadingState = useCallback(
     () => (
       <View style={styles.loadingState}>
         <ActivityIndicator size="large" color={colors.text} />
-        <Text
-          style={[styles.loadingText, { color: colors.placeholderText, fontFamily: FONTS.Medium }]}
-        >
+        <Text style={[styles.loadingText, { color: colors.placeholderText }]}>
           Searching locations...
         </Text>
       </View>
@@ -250,56 +157,36 @@ const LocationSearchBottomSheet: React.FC<LocationSearchBottomSheetProps> = ({
     [colors],
   );
 
+  const showClearButton = searchQuery.length > 0 && !loading;
+  const showInlineLoader = results.length > 0 && loading;
+  const showFullLoader = loading && results.length === 0;
+
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
-      onDismiss={() => {
-        onClose();
-        clearSearch();
-      }}
+      onDismiss={handleDismiss}
       index={1}
       onChange={handleSheetChanges}
       backgroundStyle={[styles.bottomSheetBackground, { backgroundColor: colors.background }]}
-      handleIndicatorStyle={[styles.handleIndicator, { backgroundColor: colors.grayTitle }]}
+      handleIndicatorStyle={styles.handleIndicator}
     >
-      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+      <Animated.View style={[styles.container, animatedContainerStyle]}>
         <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: colors.text, fontFamily: FONTS.SemiBold }]}>
-            Search Location
-          </Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Search Location</Text>
           <Pressable
             onPress={onClose}
-            style={[
-              styles.closeButton,
-              {
-                backgroundColor:
-                  theme === 'dark'
-                    ? colors.darkPrimaryBackground
-                    : colors.scheduleReminderCardBackground,
-              },
-            ]}
+            style={[styles.closeButton, { backgroundColor: containerBg }]}
           >
             <Ionicons name="close" size={20} color={colors.text} />
           </Pressable>
         </View>
 
-        <View
-          style={[
-            styles.searchContainer,
-            {
-              backgroundColor:
-                theme === 'dark'
-                  ? colors.darkPrimaryBackground
-                  : colors.scheduleReminderCardBackground,
-              borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-            },
-          ]}
-        >
+        <View style={[styles.searchContainer, { backgroundColor: containerBg, borderColor }]}>
           <Ionicons name="search" size={20} color={colors.grayTitle} style={styles.searchIcon} />
           <BottomSheetTextInput
-            style={[styles.searchInput, { color: colors.text, fontFamily: FONTS.Regular }]}
+            style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search for a location..."
             placeholderTextColor={colors.placeholderText}
             value={searchQuery}
@@ -307,19 +194,21 @@ const LocationSearchBottomSheet: React.FC<LocationSearchBottomSheetProps> = ({
             autoFocus
             returnKeyType="search"
           />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={clearSearch} style={styles.clearButton}>
+          {showInlineLoader && <ActivityIndicator color={colors.text} />}
+          {showClearButton && (
+            <Pressable onPress={clearSearch}>
               <Ionicons name="close-circle" size={20} color={colors.grayTitle} />
             </Pressable>
           )}
         </View>
 
         <View style={styles.resultsContainer}>
-          {loading ? (
+          {showFullLoader ? (
             renderLoadingState()
           ) : (
             <BottomSheetFlatList
               data={results}
+              enableFooterMarginAdjustment
               renderItem={renderResultItem}
               keyExtractor={(item: NominatimResult, index: number) =>
                 `${item.lat}-${item.lon}-${index}`
@@ -329,7 +218,6 @@ const LocationSearchBottomSheet: React.FC<LocationSearchBottomSheetProps> = ({
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={renderEmptyState}
               keyboardShouldPersistTaps="handled"
-              ItemSeparatorComponent={() => <View style={styles.separator} />}
             />
           )}
         </View>
@@ -343,23 +231,16 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -4,
-    },
+    shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.15,
     shadowRadius: 16,
     elevation: 20,
   },
   handleIndicator: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    marginTop: 8,
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,
-    paddingBottom: 16,
     paddingHorizontal: 16,
   },
   header: {
@@ -371,6 +252,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: '600',
+    fontFamily: FONTS.SemiBold,
   },
   closeButton: {
     width: 36,
@@ -397,11 +279,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 12,
     paddingRight: 8,
+    fontFamily: FONTS.Medium,
   },
-  clearButton: {},
   resultsContainer: {
     flex: 1,
-    marginBottom: 20,
   },
   resultsList: {
     flex: 1,
@@ -435,10 +316,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     marginBottom: 2,
+    fontFamily: FONTS.Medium,
   },
   addressText: {
     fontSize: 14,
     lineHeight: 18,
+    fontFamily: FONTS.Medium,
   },
   coordinatesContainer: {
     alignItems: 'flex-end',
@@ -448,12 +331,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
     marginBottom: 2,
-  },
-  chevronIcon: {
-    marginTop: 2,
-  },
-  separator: {
-    height: 0,
+    fontFamily: FONTS.Medium,
   },
   emptyState: {
     alignItems: 'center',
@@ -472,11 +350,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     marginBottom: 8,
+    fontFamily: FONTS.Medium,
   },
   emptySubtitle: {
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 22,
+    fontFamily: FONTS.Regular,
   },
   loadingState: {
     alignItems: 'center',
@@ -486,6 +366,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     marginTop: 5,
+    fontFamily: FONTS.Medium,
   },
 });
 

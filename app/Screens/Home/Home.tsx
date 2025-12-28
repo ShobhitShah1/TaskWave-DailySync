@@ -96,45 +96,63 @@ const Home = () => {
     requestPermission: requestContactPermission,
     syncContacts,
     permissionStatus: contactPermissionStatus,
+    hasCheckedPermission: hasCheckedContactPermission,
   } = useContacts();
 
   const {
     requestPermission: requestLocationPermission,
     refreshLocation,
     permissionStatus: locationPermissionStatus,
+    hasCheckedPermission: hasCheckedLocationPermission,
   } = useLocation();
 
+  const hasRequestedPermissionsRef = React.useRef(false);
+
   useEffect(() => {
-    if (isFocus) {
-      setIsLoading(notificationsState?.allByDate?.length === 0);
-      loadNotifications();
+    if (!isFocus) return;
 
-      if (permissionStatus !== 'granted') {
-        requestPermission();
-      }
+    setIsLoading(notificationsState?.allByDate?.length === 0);
+    loadNotifications();
 
-      // Contact permission logic
-      if (contactPermissionStatus === 'unavailable' || contactPermissionStatus === 'denied') {
-        requestContactPermission();
-      } else if (contactPermissionStatus === 'granted') {
-        syncContacts();
-      }
-
-      // Location permission logic - cache location early
-      if (locationPermissionStatus === 'unavailable' || locationPermissionStatus === 'denied') {
-        requestLocationPermission();
-      } else if (locationPermissionStatus === 'granted') {
-        // Silently refresh location in background
-        refreshLocation(true);
-      }
+    if (permissionStatus !== 'granted') {
+      requestPermission();
     }
+  }, [isFocus, selectedDate, selectedFilter, permissionStatus]);
+
+  useEffect(() => {
+    if (!isFocus) return;
+    if (!hasCheckedLocationPermission || !hasCheckedContactPermission) return;
+    if (hasRequestedPermissionsRef.current) return;
+
+    const requestAllPermissions = async () => {
+      hasRequestedPermissionsRef.current = true;
+
+      if (locationPermissionStatus === 'granted') {
+        refreshLocation(true);
+      } else if (locationPermissionStatus !== 'blocked') {
+        const locationStatus = await requestLocationPermission();
+        if (locationStatus === 'granted') {
+          refreshLocation(true);
+        }
+      }
+
+      if (contactPermissionStatus === 'granted') {
+        syncContacts();
+      } else if (contactPermissionStatus !== 'blocked') {
+        const contactStatus = await requestContactPermission();
+        if (contactStatus === 'granted') {
+          syncContacts();
+        }
+      }
+    };
+
+    requestAllPermissions();
   }, [
     isFocus,
-    selectedDate,
-    selectedFilter,
-    permissionStatus,
-    contactPermissionStatus,
+    hasCheckedLocationPermission,
+    hasCheckedContactPermission,
     locationPermissionStatus,
+    contactPermissionStatus,
   ]);
 
   const onRefresh = useCallback(async () => {

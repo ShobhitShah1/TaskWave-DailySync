@@ -11,7 +11,9 @@ interface LocationContextType {
   /** Whether location is being fetched */
   isLoading: boolean;
   /** Current permission status */
-  permissionStatus: PermissionStatus;
+  permissionStatus: PermissionStatus | null;
+  /** Whether the initial permission check has completed */
+  hasCheckedPermission: boolean;
   /** Refresh the cached location */
   refreshLocation: (silent?: boolean) => Promise<GeoLatLng | null>;
   /** Request location permission */
@@ -25,7 +27,8 @@ interface LocationContextType {
 const LocationContext = createContext<LocationContextType>({
   userLocation: null,
   isLoading: false,
-  permissionStatus: 'unavailable',
+  permissionStatus: null,
+  hasCheckedPermission: false,
   refreshLocation: async () => null,
   requestPermission: async () => 'unavailable',
   checkPermission: async () => 'unavailable',
@@ -41,7 +44,8 @@ const getPlatformLocationPermission = () => {
 export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userLocation, setUserLocation] = useState<GeoLatLng | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>('unavailable');
+  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus | null>(null);
+  const [hasCheckedPermission, setHasCheckedPermission] = useState(false);
 
   /**
    * Check current location permission status
@@ -51,9 +55,11 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const permission = getPlatformLocationPermission();
       const status = await check(permission);
       setPermissionStatus(status);
+      setHasCheckedPermission(true);
       return status;
     } catch (error) {
       console.error('Error checking location permission:', error);
+      setHasCheckedPermission(true);
       return 'unavailable';
     }
   }, []);
@@ -66,11 +72,9 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const permission = getPlatformLocationPermission();
       const status = await request(permission);
       setPermissionStatus(status);
+      setHasCheckedPermission(true);
 
-      if (status === RESULTS.GRANTED) {
-        // Permission granted, fetch location immediately
-        refreshLocation(true);
-      } else if (status === RESULTS.BLOCKED) {
+      if (status === RESULTS.BLOCKED) {
         showMessage({
           message: 'Location permission is required for location-based reminders.',
           description: 'Tap here to open settings.',
@@ -83,6 +87,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return status;
     } catch (error) {
       console.error('Error requesting location permission:', error);
+      setHasCheckedPermission(true);
       return 'unavailable';
     }
   }, []);
@@ -162,6 +167,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         userLocation,
         isLoading,
         permissionStatus,
+        hasCheckedPermission,
         refreshLocation,
         requestPermission,
         checkPermission,
