@@ -5,7 +5,6 @@ import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
 import useThemeColors from '@Hooks/useThemeMode';
 import { CategoryItemType } from '@Types/Interface';
-import { useAppContext } from '@Contexts/ThemeProvider';
 
 const RenderCategoryItem = ({
   item,
@@ -14,7 +13,6 @@ const RenderCategoryItem = ({
   setSelectedCategory,
   onCategoryClick,
 }: CategoryItemType) => {
-  const { theme } = useAppContext();
   const colors = useThemeColors();
 
   const isSelected = useMemo(
@@ -22,25 +20,21 @@ const RenderCategoryItem = ({
     [selectedCategory],
   );
 
+  const borderColor = isSelected
+    ? item?.type === 'gmail'
+      ? item?.color?.dark
+      : item?.color?.primary
+    : colors.borderColor;
+
+  const borderShadow = isSelected
+    ? item?.type === 'gmail'
+      ? item?.color?.dark
+      : item?.color?.primary
+    : 'transparent';
+
   return (
     <View
-      style={[
-        styles.pressableContainer,
-        {
-          borderColor: isSelected
-            ? item?.type === 'gmail'
-              ? item?.color?.dark
-              : item?.color?.primary
-            : colors.borderColor,
-          boxShadow: `0px 0px 6px ${
-            isSelected
-              ? item?.type === 'gmail'
-                ? item?.color?.dark
-                : item?.color?.primary
-              : 'transparent'
-          }`,
-        },
-      ]}
+      style={[styles.pressableContainer, { borderColor, boxShadow: `0px 0px 6px ${borderShadow}` }]}
     >
       <Pressable
         style={{ flex: 1 }}

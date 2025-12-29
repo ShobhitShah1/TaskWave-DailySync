@@ -1,8 +1,7 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Keyboard, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Pressable, ScrollView, Text, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import useNotificationIconColors from '@Hooks/useNotificationIconColors';
@@ -248,10 +247,13 @@ const AddReminder = () => {
             style={style}
           />
 
-          <Animated.ScrollView
+          <ScrollView
             style={style.itemsContainer}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            automaticallyAdjustKeyboardInsets
+            automaticallyAdjustContentInsets
+            automaticallyAdjustsScrollIndicatorInsets
           >
             {notificationType === 'gmail' && (
               <AddMailTo to={to} setTo={setTo} themeColor={createViewColor} />
@@ -331,7 +333,7 @@ const AddReminder = () => {
               themeColor={createViewColor}
               colors={colors}
             />
-          </Animated.ScrollView>
+          </ScrollView>
 
           <Pressable
             disabled={isLoading}

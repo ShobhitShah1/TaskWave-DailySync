@@ -16,11 +16,12 @@ import LocationService from '@Services/LocationService';
 import { fetchRoute } from '@Services/RouteService';
 import { CameraPosition, GeoLatLng, LocationMapViewProps } from '@Types/Interface';
 import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
+import { MIN_DISTANCE_METERS } from '@Utils/geoUtils';
 import { fitMapToLocations } from '@Utils/mapBoundsUtils';
 import { initializeMapCache } from '@Utils/mapCacheManager';
 import { getMapStyleUrl } from '@Utils/mapStyles';
 import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -40,7 +41,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import LocationDetailsCard from './LocationDetailsCard';
 import MapMarker from './LocationMapView/MapMarker';
-import { MIN_DISTANCE_METERS } from '@Utils/geoUtils';
 
 // Suppress known MapLibre warnings that are harmless
 Logger.setLogCallback((log) => {
@@ -206,25 +206,14 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
   );
 
   const handleMapReady = useCallback(() => {
-    console.log('[MapView] Map style loaded');
     setIsMapReady(true);
   }, []);
 
-  // Called when map has finished loading all visible tiles
   const handleMapFullyRendered = useCallback(() => {
-    console.log('[MapView] All tiles rendered');
     setAreTilesLoaded(true);
   }, []);
 
-  // Track when tiles start loading (for logging purposes only, not for showing loader)
-  const handleRegionWillChange = useCallback(() => {
-    console.log('[MapView] Region changing - tiles may be loading');
-  }, []);
-
   const handleRegionDidChange = useCallback(() => {
-    console.log('[MapView] Region change complete');
-    // Just ensure tiles are marked as loaded after region change
-    // Don't toggle the loading state - this prevents the loop
     if (!areTilesLoaded) {
       setAreTilesLoaded(true);
     }
@@ -314,7 +303,6 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
             onPress={handleMapPress}
             onDidFinishLoadingMap={handleMapReady}
             onDidFinishRenderingMapFully={handleMapFullyRendered}
-            onRegionWillChange={handleRegionWillChange}
             onRegionDidChange={handleRegionDidChange}
             zoomEnabled
             scrollEnabled
@@ -343,7 +331,6 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
               maxZoomLevel={22}
               animationMode="linearTo"
             />
-            {/* Route Line */}
             {routeGeoJSON && (
               <ShapeSource id="route-source" shape={routeGeoJSON}>
                 <LineLayer
@@ -356,7 +343,6 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
                     lineOpacity: 0.8,
                   }}
                 />
-                {/* Inner brighter line for "glow" effect */}
                 <LineLayer
                   id="route-line-inner"
                   style={{
@@ -371,8 +357,8 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
             )}
             {selectedLocation && (
               <PointAnnotation
-                key={`marker-${selectedLocation.longitude}-${selectedLocation.latitude}`}
-                id={`selected-location-${selectedLocation.longitude}-${selectedLocation.latitude}`}
+                key={`marker-${selectedLocation.longitude}-${selectedLocation.latitude}-${address?.toString()}`}
+                id={`selected-location-${selectedLocation.longitude}-${selectedLocation.latitude}-${address?.toString()}`}
                 coordinate={[selectedLocation.longitude, selectedLocation.latitude]}
               >
                 <MapMarker />
@@ -466,7 +452,7 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
   );
 };
 
-export default LocationMapView;
+export default memo(LocationMapView);
 
 const styles = StyleSheet.create({
   mapContainer: {

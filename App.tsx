@@ -7,10 +7,12 @@ import { LogBox, StatusBar, StyleSheet, Text, View } from 'react-native';
 import FlashMessage, { showMessage } from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+import { BatteryOptimizationProvider } from './app/Contexts/BatteryOptimizationProvider';
 import { BottomSheetProvider } from './app/Contexts/BottomSheetProvider';
 import { ContactProvider } from './app/Contexts/ContactProvider';
 import { LocationProvider } from './app/Contexts/LocationProvider';
 import { AppProvider, useAppContext } from './app/Contexts/ThemeProvider';
+import BatteryOptimizationModal from './app/Components/BatteryOptimizationModal';
 import { handleNotificationPress } from './app/Hooks/handleNotificationPress';
 import { updateNotification } from './app/Hooks/updateNotification';
 import updateToNextDate from './app/Hooks/updateToNextDate';
@@ -94,6 +96,8 @@ const AppContent = () => {
       <BottomSheetProvider>
         <View style={[styles.container, { backgroundColor }]}>
           <Routes />
+
+          <BatteryOptimizationModal />
 
           <FlashMessage
             animated
@@ -290,11 +294,13 @@ export default function App() {
 
   return (
     <AppProvider>
-      <ContactProvider>
-        <LocationProvider>
-          <AppContent />
-        </LocationProvider>
-      </ContactProvider>
+      <BatteryOptimizationProvider>
+        <ContactProvider>
+          <LocationProvider>
+            <AppContent />
+          </LocationProvider>
+        </ContactProvider>
+      </BatteryOptimizationProvider>
     </AppProvider>
   );
 }

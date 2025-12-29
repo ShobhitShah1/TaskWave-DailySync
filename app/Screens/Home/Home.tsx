@@ -4,6 +4,10 @@ import RenderCalenderView from '@Components/RenderCalenderView';
 import ServiceManager from '@Components/ServiceManager';
 import YearMonthPicker from '@Components/YearMonthPicker';
 import TextString from '@Constants/TextString';
+import { useBatteryOptimization } from '@Contexts/BatteryOptimizationProvider';
+import { useContacts } from '@Contexts/ContactProvider';
+import { useLocation } from '@Contexts/LocationProvider';
+import { useAppContext } from '@Contexts/ThemeProvider';
 import isGridView from '@Hooks/isGridView';
 import useCalendar from '@Hooks/useCalendar';
 import useNotificationPermission from '@Hooks/useNotificationPermission';
@@ -23,18 +27,14 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { AnimatedRollingNumber } from 'react-native-animated-rolling-numbers';
 import { showMessage } from 'react-native-flash-message';
-import Animated, { Easing, FadeIn, LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { formatDate } from '../AddReminder/ReminderScheduled';
 import HomeHeader from './Components/HomeHeader';
 import RenderEmptyView from './Components/RenderEmptyView';
 import RenderHeaderView from './Components/RenderHeaderView';
 import styles from './styles';
-import { useContacts } from '@Contexts/ContactProvider';
-import { useLocation } from '@Contexts/LocationProvider';
-import { useAppContext } from '@Contexts/ThemeProvider';
 
 const Home = () => {
   // ...
@@ -108,6 +108,9 @@ const Home = () => {
 
   const hasRequestedPermissionsRef = React.useRef(false);
 
+  // Battery optimization check
+  const { checkAndPrompt: checkBatteryOptimization } = useBatteryOptimization();
+
   useEffect(() => {
     if (!isFocus) return;
 
@@ -144,6 +147,12 @@ const Home = () => {
           syncContacts();
         }
       }
+
+      // Check battery optimization after permissions are handled
+      // Wait 2-3 seconds before showing the modal to avoid overwhelming the user
+      setTimeout(() => {
+        checkBatteryOptimization();
+      }, 2500);
     };
 
     requestAllPermissions();
@@ -297,26 +306,11 @@ const Home = () => {
           <View style={style.statusContainer}>
             <View style={style.statusItem}>
               <View style={[style.statusDot, { backgroundColor: colors.green }]} />
-              <AnimatedRollingNumber
-                value={notificationsState?.active.length}
-                enableCompactNotation
-                compactToFixed={2}
-                key={notificationsState?.active.length + theme?.toString()}
-                textStyle={style.statusText}
-                numberStyle={style.statusText}
-                spinningAnimationConfig={{ duration: 500, easing: Easing.bounce }}
-              />
+              <Text style={style.statusText}>{notificationsState?.active.length}</Text>
             </View>
             <View style={style.statusItem}>
               <View style={[style.statusDot, { backgroundColor: 'gray' }]} />
-              <AnimatedRollingNumber
-                value={notificationsState?.inactive.length}
-                enableCompactNotation
-                compactToFixed={2}
-                key={notificationsState?.inactive.length + theme?.toString()}
-                textStyle={style.statusText}
-                spinningAnimationConfig={{ duration: 500, easing: Easing.bounce }}
-              />
+              <Text style={style.statusText}>{notificationsState?.inactive.length}</Text>
             </View>
           </View>
         </Animated.View>
@@ -415,12 +409,6 @@ const Home = () => {
           onConfirm={handleDateChange}
           onCancel={() => setShowDateAndYearModal(false)}
         />
-
-        {/* <BatteryOptimizationModal
-          visible={showBatteryModal}
-          onConfirm={batteryModalConfirmRef.current}
-          onCancel={() => setShowBatteryModal(false)}
-        /> */}
 
         <ServiceManager
           isVisible={showServiceManager}
