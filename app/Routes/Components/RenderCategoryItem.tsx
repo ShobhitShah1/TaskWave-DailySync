@@ -63,11 +63,7 @@ const RenderCategoryItem = ({
         >
           <View style={styles.innerContainer}>
             <View style={styles.iconContainer}>
-              <Image
-                source={theme === 'dark' ? item.normalIcon : item.glowIcon}
-                style={styles.icon}
-                resizeMode="contain"
-              />
+              <Image source={item.normalIcon} style={styles.icon} resizeMode="contain" />
             </View>
 
             <View style={styles.textContainer}>
