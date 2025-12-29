@@ -45,7 +45,13 @@ jobs:
         run: yarn install --no-immutable
 
       - name: Build workspace packages
-        run: yarn workspace send-message run build
+        run: |
+          if [ ! -f "send-message/build/index.js" ]; then
+            echo "Building send-message package..."
+            yarn workspace send-message run build
+          else
+            echo "send-message build folder exists, skipping build"
+          fi
 
       - name: Expo prebuild
         env:

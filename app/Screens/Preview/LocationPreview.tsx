@@ -1,5 +1,4 @@
 import AssetsPath from '@Constants/AssetsPath';
-import streetsStyle from '@Constants/streets-v2-style.json';
 import { FONTS } from '@Constants/Theme';
 import { useAppContext } from '@Contexts/ThemeProvider';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -16,9 +15,12 @@ import {
 } from '@maplibre/maplibre-react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { navigationRef } from '@Routes/RootNavigation';
+import { fetchRoute } from '@Services/RouteService';
 import { Notification } from '@Types/Interface';
 import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
 import { linkifyText } from '@Utils/linkify';
+import { fitMapToLocations } from '@Utils/mapBoundsUtils';
+import { getMapStyleUrl } from '@Utils/mapStyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Image, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -91,7 +93,7 @@ const StatCard = memo(
     colors,
     theme,
   }: {
-    icon: string;
+    icon: any;
     value: string;
     label: string;
     colors: any;
@@ -112,7 +114,11 @@ const StatCard = memo(
           { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' },
         ]}
       >
-        <Text style={styles.statIcon}>{icon}</Text>
+        <Image
+          source={icon}
+          style={[styles.statIcon, { tintColor: colors.text }]}
+          resizeMode="contain"
+        />
       </View>
       <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
       <Text style={[styles.statLabel, { color: colors.grayTitle }]}>{label}</Text>
@@ -159,6 +165,7 @@ const ActionButton = memo(
 const LocationPreview = () => {
   const { theme } = useAppContext();
   const colors = useThemeColors();
+  const mapStyleUrl = useMemo(() => getMapStyleUrl(theme), [theme]);
   const { top, bottom } = useSafeAreaInsets();
   const { params } = useRoute<LocationPreviewRoute>();
   const notification = params.notificationData;
@@ -177,9 +184,21 @@ const LocationPreview = () => {
     walking: number;
     driving: number;
   } | null>(null);
+  const [routeGeoJSON, setRouteGeoJSON] = useState<any>(null);
   const cameraRef = useRef<any>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const scaleValue = useSharedValue(1);
+  const hasFittedRef = useRef(false);
+
+  useEffect(() => {
+    if (routeGeoJSON && currentLocation && !hasFittedRef.current) {
+      // Small delay to ensure map is ready
+      setTimeout(() => {
+        zoomToFitAll();
+        hasFittedRef.current = true;
+      }, 500);
+    }
+  }, [routeGeoJSON, currentLocation]);
 
   useEffect(() => {
     if (currentLocation && notification?.latitude && notification?.longitude) {
@@ -198,10 +217,48 @@ const LocationPreview = () => {
         walking: walkingTime,
         driving: drivingTime,
       });
+
+      fetchRoute(
+        {
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+        },
+        {
+          latitude: Number(notification.latitude),
+          longitude: Number(notification.longitude),
+        },
+      ).then((route) => {
+        if (route) {
+          setRouteGeoJSON(route);
+          if (route.properties) {
+            const routeDistanceKm = (route.properties.distance || 0) / 1000;
+            const durationSeconds = route.properties.duration || 0;
+            setEstimatedTime({
+              distance: routeDistanceKm,
+              // Naive walking: ~5km/h => 1km ~ 12min.
+              // But OSRM 'driving' duration is usually accurate for driving.
+              driving: durationSeconds / 60, // minutes
+              walking: (routeDistanceKm / 5) * 60, // minutes (approx)
+            });
+          }
+        }
+      });
     }
   }, [currentLocation, notification.latitude, notification.longitude]);
 
   const snapPoints = useMemo(() => ['9%', '80%'], []);
+
+  const handleMarkedLocationClick = useCallback(() => {
+    scaleValue.value = withSpring(1, { damping: 15, stiffness: 200 });
+
+    if (cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: [notification.longitude, notification.latitude],
+        animationDuration: 800,
+        zoomLevel: 16,
+      });
+    }
+  }, [notification.latitude, notification.longitude, scaleValue]);
 
   const zoomToFitAll = useCallback(async () => {
     try {
@@ -211,13 +268,25 @@ const LocationPreview = () => {
         notification.longitude &&
         notification.latitude
       ) {
-        cameraRef.current?.fitBounds(
-          [notification.longitude, notification.latitude],
-          [currentLocation.coords.longitude, currentLocation.coords.latitude],
-          [100, 100, 100, 100],
-          800,
+        fitMapToLocations(
+          cameraRef,
+          {
+            latitude: currentLocation.coords.latitude,
+            longitude: currentLocation.coords.longitude,
+          },
+          {
+            latitude: Number(notification.latitude),
+            longitude: Number(notification.longitude),
+          },
+          {
+            paddingTop: 150,
+            paddingRight: 60,
+            paddingBottom: 200,
+            paddingLeft: 60,
+            animationDuration: 800,
+          },
         );
-      } else if (notification) {
+      } else if (notification.latitude && notification.longitude) {
         handleMarkedLocationClick();
       } else {
         Alert.alert(
@@ -228,19 +297,7 @@ const LocationPreview = () => {
     } catch (error) {
       console.error('Error zooming to fit all:', error);
     }
-  }, [currentLocation, notification]);
-
-  const handleMarkedLocationClick = () => {
-    scaleValue.value = withSpring(1, { damping: 15, stiffness: 200 });
-
-    if (cameraRef.current) {
-      cameraRef.current.setCamera({
-        centerCoordinate: [notification.longitude, notification.latitude],
-        animationDuration: 800,
-        zoomLevel: 16,
-      });
-    }
-  };
+  }, [currentLocation, notification, handleMarkedLocationClick]);
 
   const coords = useMemo(
     () => ({
@@ -349,7 +406,7 @@ const LocationPreview = () => {
       <View style={styles.mapContainer}>
         <MapView
           style={styles.fullMap}
-          mapStyle={streetsStyle}
+          mapStyle={mapStyleUrl}
           zoomEnabled
           scrollEnabled
           pitchEnabled
@@ -357,39 +414,63 @@ const LocationPreview = () => {
         >
           <Camera
             ref={cameraRef}
-            centerCoordinate={[
-              (notification?.longitude ??
-                currentLocation?.coords.longitude ??
-                coords.longitude) as number,
-              (notification?.latitude ??
-                currentLocation?.coords.latitude ??
-                coords.latitude) as number,
-            ]}
-            zoomLevel={15}
-            animationDuration={0}
-            pitch={0}
-            heading={0}
+            defaultSettings={{
+              centerCoordinate: [
+                (notification?.longitude ?? coords.longitude) as number,
+                (notification?.latitude ?? coords.latitude) as number,
+              ],
+              zoomLevel: 15,
+              pitch: 0,
+              heading: 0,
+            }}
             minZoomLevel={2}
             maxZoomLevel={20}
+            animationDuration={0}
           />
-
-          {/* Radius circle with border */}
+          {/* Radius circle overlay */}
           {circleGeoJSON && (
-            <ShapeSource id="radius-shape" shape={circleGeoJSON}>
+            <ShapeSource id="radius-circle-source" shape={circleGeoJSON}>
               <FillLayer
-                id="radius-fill"
+                id="radius-circle-fill"
+                aboveLayerID="background"
                 style={{
-                  fillColor: colors.primary,
+                  fillColor: colors.text,
                   fillOpacity: 0.12,
                 }}
               />
               <LineLayer
-                id="radius-border"
+                id="radius-circle-border"
+                aboveLayerID="radius-circle-fill"
                 style={{
-                  lineColor: colors.primary,
+                  lineColor: colors.text,
                   lineWidth: 2,
                   lineOpacity: 0.6,
-                  lineDasharray: [2, 2],
+                }}
+              />
+            </ShapeSource>
+          )}
+          {/* Route Line */}
+          {routeGeoJSON && (
+            <ShapeSource id="route-source" shape={routeGeoJSON}>
+              <LineLayer
+                id="route-line"
+                style={{
+                  lineColor: '#405DF0',
+                  lineWidth: 4,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                  lineOpacity: 0.8,
+                }}
+              />
+              {/* Inner brighter line for "glow" effect */}
+              <LineLayer
+                id="route-line-inner"
+                style={{
+                  lineColor: '#738AFE',
+                  lineWidth: 2,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                  lineOpacity: 1,
                 }}
               />
             </ShapeSource>
@@ -407,7 +488,6 @@ const LocationPreview = () => {
               <View style={[styles.markerShadow, { backgroundColor: colors.primary }]} />
             </View>
           </PointAnnotation>
-
           {/* Current location marker with pulse */}
           {permissionStatus === 'granted' && currentLocation && (
             <PointAnnotation
@@ -543,21 +623,21 @@ const LocationPreview = () => {
               <Text style={[styles.sectionTitle, { color: colors.text }]}>Distance & Time</Text>
               <View style={styles.statsGrid}>
                 <StatCard
-                  icon="📏"
+                  icon={AssetsPath.ic_location}
                   value={formatDistance(estimatedTime.distance)}
                   label="Distance"
                   colors={colors}
                   theme={theme}
                 />
                 <StatCard
-                  icon="🚗"
+                  icon={AssetsPath.ic_time}
                   value={formatTime(estimatedTime.driving)}
                   label="Driving"
                   colors={colors}
                   theme={theme}
                 />
                 <StatCard
-                  icon="🚶"
+                  icon={AssetsPath.ic_location_list_icon}
                   value={formatTime(estimatedTime.walking)}
                   label="Walking"
                   colors={colors}
@@ -620,7 +700,11 @@ const LocationPreview = () => {
                 <View
                   style={[styles.addressIconContainer, { backgroundColor: colors.primary + '15' }]}
                 >
-                  <Text style={styles.addressIcon}>📍</Text>
+                  <Image
+                    source={AssetsPath.ic_location}
+                    style={[styles.addressIcon, { tintColor: colors.primary }]}
+                    resizeMode="contain"
+                  />
                 </View>
                 <View style={styles.addressTextContainer}>
                   <Text style={[styles.addressLabel, { color: colors.grayTitle }]}>Address</Text>
@@ -763,29 +847,34 @@ const styles = StyleSheet.create({
   currentLocationMarker: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 40,
-    height: 40,
+    width: 50,
+    height: 50,
   },
   currentLocationPulse: {
     position: 'absolute',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   currentLocationRing: {
     position: 'absolute',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    backgroundColor: 'transparent',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   currentLocationDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     borderWidth: 3,
     borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
   },
 
   // Bottom Sheet
@@ -883,7 +972,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   statIcon: {
-    fontSize: 22,
+    width: 22,
+    height: 22,
   },
   statValue: {
     fontSize: 16,
@@ -938,7 +1028,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addressIcon: {
-    fontSize: 20,
+    width: 20,
+    height: 20,
   },
   addressTextContainer: {
     flex: 1,

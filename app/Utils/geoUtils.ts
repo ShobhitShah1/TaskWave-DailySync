@@ -1,6 +1,8 @@
 import { GetCenterBetweenPoints, GetZoomLevelForPoints } from '@Types/Interface';
 import * as Location from 'expo-location';
 
+export const MIN_DISTANCE_METERS = 100;
+
 /**
  * Calculate the center point between two GeoLatLng coordinates.
  */

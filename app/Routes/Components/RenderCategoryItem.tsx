@@ -20,25 +20,21 @@ const RenderCategoryItem = ({
     [selectedCategory],
   );
 
+  const borderColor = isSelected
+    ? item?.type === 'gmail'
+      ? item?.color?.dark
+      : item?.color?.primary
+    : colors.borderColor;
+
+  const borderShadow = isSelected
+    ? item?.type === 'gmail'
+      ? item?.color?.dark
+      : item?.color?.primary
+    : 'transparent';
+
   return (
     <View
-      style={[
-        styles.pressableContainer,
-        {
-          borderColor: isSelected
-            ? item?.type === 'gmail'
-              ? item?.color?.dark
-              : item?.color?.primary
-            : colors.borderColor,
-          boxShadow: `0px 0px 6px ${
-            isSelected
-              ? item?.type === 'gmail'
-                ? item?.color?.dark
-                : item?.color?.primary
-              : 'transparent'
-          }`,
-        },
-      ]}
+      style={[styles.pressableContainer, { borderColor, boxShadow: `0px 0px 6px ${borderShadow}` }]}
     >
       <Pressable
         style={{ flex: 1 }}
@@ -61,7 +57,7 @@ const RenderCategoryItem = ({
         >
           <View style={styles.innerContainer}>
             <View style={styles.iconContainer}>
-              <Image source={item.glowIcon} style={styles.icon} resizeMode="contain" />
+              <Image source={item.normalIcon} style={styles.icon} resizeMode="contain" />
             </View>
 
             <View style={styles.textContainer}>

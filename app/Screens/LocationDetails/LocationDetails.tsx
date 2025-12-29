@@ -1,19 +1,28 @@
 import LocationSearchBottomSheet from '@Components/LocationSearchBottomSheet';
 import { FONTS } from '@Constants/Theme';
+import { useLocation } from '@Contexts/LocationProvider';
 import BottomSheet from '@gorhom/bottom-sheet';
+import { useAddressFromCoords } from '@Hooks/useAddressFromCoords';
 import useLocationNotification from '@Hooks/useLocationNotification';
 import useDatabase from '@Hooks/useReminder';
 import useThemeColors from '@Hooks/useThemeMode';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import HomeHeader from '@Screens/Home/Components/HomeHeader';
 import LocationService from '@Services/LocationService';
-import { GeoLatLng, NominatimResult, Notification, NotificationType } from '@Types/Interface';
-import React, { memo, useEffect, useRef, useState } from 'react';
+import {
+  GeoLatLng,
+  NominatimResult,
+  Notification,
+  NotificationType,
+  LocationReminderStatus,
+} from '@Types/Interface';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import LocationMapView from './Components/LocationMapView';
 import LocationSearchBar from './Components/LocationSearchBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MIN_DISTANCE_METERS } from '@Utils/geoUtils';
 
 type ReminderScheduledProps = {
   params: { notificationType: NotificationType; id?: string };
@@ -27,39 +36,52 @@ const LocationDetails = () => {
   const notificationType = params?.notificationType as NotificationType;
 
   const { getNotificationById, updateNotification } = useDatabase();
-  const { scheduleLocationNotification, getCurrentLocation } = useLocationNotification();
+  const { scheduleLocationNotification } = useLocationNotification();
+  const {
+    userLocation: cachedLocation,
+    isLoading: isLocationProviderLoading,
+    refreshLocation,
+    permissionStatus,
+    requestPermission,
+    hasCheckedPermission,
+  } = useLocation();
 
   const bottomSheetRef = useRef<BottomSheet | null>(null);
+  const isInitializingRef = useRef(false);
 
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [address, setAddress] = useState('');
-
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingLocation, setIsFetchingLocation] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<GeoLatLng | null>(null);
   const [userLocation, setUserLocation] = useState<GeoLatLng | null>(null);
-  const [isLocationLoading, setIsLocationLoading] = useState(true);
   const [isSearchPress, setIsSearchPress] = useState(false);
 
   useEffect(() => {
     if (id) {
-      getExistingNotificationData();
+      loadExistingNotification();
     }
   }, [id, notificationType]);
 
-  const getExistingNotificationData = async () => {
+  useEffect(() => {
+    if (!hasCheckedPermission || isInitializingRef.current || userLocation) return;
+
+    isInitializingRef.current = true;
+    initializeLocation();
+  }, [hasCheckedPermission, permissionStatus, cachedLocation]);
+
+  const loadExistingNotification = async () => {
     try {
       const response = await getNotificationById(id);
-
       if (response) {
         setTitle(response?.subject || '');
         setMessage(response?.message || '');
-
+        setAddress(response?.locationName || '');
         setSelectedLocation({
           latitude: Number(response?.latitude),
           longitude: Number(response?.longitude),
         });
-
         bottomSheetRef?.current?.expand();
       }
     } catch (error) {
@@ -67,35 +89,118 @@ const LocationDetails = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUserLocation();
-  }, [getCurrentLocation]);
+  const initializeLocation = async () => {
+    setIsFetchingLocation(true);
 
-  const fetchUserLocation = async () => {
-    setIsLocationLoading(true);
-
-    const location = await getCurrentLocation();
-
-    if (location && location.coords) {
-      setUserLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
+    if (cachedLocation) {
+      setUserLocation(cachedLocation);
+      setIsFetchingLocation(false);
+      return;
     }
-    setIsLocationLoading(false);
+
+    if (permissionStatus === 'granted') {
+      const location = await refreshLocation(false);
+      if (location) {
+        setUserLocation(location);
+      }
+      setIsFetchingLocation(false);
+      return;
+    }
+
+    if (permissionStatus === 'denied' || permissionStatus === null) {
+      const status = await requestPermission();
+      if (status === 'granted') {
+        const location = await refreshLocation(false);
+        if (location) {
+          setUserLocation(location);
+        }
+      }
+    }
+
+    setIsFetchingLocation(false);
   };
 
-  const handleLocationSelect = (coordinate: GeoLatLng) => {
-    setSelectedLocation(coordinate);
-    bottomSheetRef?.current?.snapToIndex(1);
+  const { address: fetchedAddress, loading: addressLoading } =
+    useAddressFromCoords(selectedLocation);
+
+  useEffect(() => {
+    if (fetchedAddress && selectedLocation && !address) {
+      setAddress(fetchedAddress);
+    }
+  }, [fetchedAddress, selectedLocation]);
+
+  // Calculate distance between two points in meters
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371e3; // Earth's radius in meters
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   };
 
-  const handleSearchResultSelect = (result: NominatimResult) => {
-    setSelectedLocation({ latitude: parseFloat(result.lat), longitude: parseFloat(result.lon) });
-    setAddress(result.display_name || '');
-    setTimeout(() => {
-      bottomSheetRef?.current?.snapToIndex(1);
-    }, 500);
+  const handleLocationSelect = useCallback(
+    (coordinate: GeoLatLng) => {
+      if (userLocation) {
+        const distance = calculateDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          coordinate.latitude,
+          coordinate.longitude,
+        );
+        if (distance < MIN_DISTANCE_METERS) {
+          showMessage({
+            message: 'Too Close',
+            description: `Select a location at least ${MIN_DISTANCE_METERS}m away from your current position.`,
+            type: 'warning',
+          });
+          return;
+        }
+      }
+      setSelectedLocation(coordinate);
+      setAddress('');
+      bottomSheetRef?.current?.snapToIndex(0);
+    },
+    [userLocation],
+  );
+
+  const handleSearchResultSelect = useCallback(
+    (result: NominatimResult) => {
+      const lat = parseFloat(result.lat);
+      const lon = parseFloat(result.lon);
+
+      if (userLocation) {
+        const distance = calculateDistance(userLocation.latitude, userLocation.longitude, lat, lon);
+        if (distance < MIN_DISTANCE_METERS) {
+          showMessage({
+            message: 'Too Close',
+            description: `Select a location at least ${MIN_DISTANCE_METERS}m away from your current position.`,
+            type: 'warning',
+          });
+          return;
+        }
+      }
+
+      setSelectedLocation({ latitude: lat, longitude: lon });
+      setAddress(result.display_name || '');
+      setTimeout(() => {
+        bottomSheetRef?.current?.snapToIndex(0);
+      }, 500);
+    },
+    [userLocation],
+  );
+
+  const handleTryAgain = async () => {
+    setIsFetchingLocation(true);
+    const location = await refreshLocation(false);
+    if (location) {
+      setUserLocation(location);
+    }
+    setIsFetchingLocation(false);
   };
 
   const validateAndSubmit = async () => {
@@ -132,17 +237,15 @@ const LocationDetails = () => {
         telegramUsername: '',
         latitude: selectedLocation.latitude,
         longitude: selectedLocation.longitude,
-        radius: 100, // 100 meters default
+        radius: MIN_DISTANCE_METERS,
         locationName: address.trim() || '',
+        status: LocationReminderStatus.Pending,
       };
 
       if (id) {
-        // 1. Update the notification in the database
         const success = await updateNotification(notificationData);
         if (success) {
-          // 2. Remove the old reminder from LocationService
           LocationService.removeLocationReminder(id);
-          // 3. Add the updated reminder to LocationService
           LocationService.addLocationReminder({
             id,
             latitude: Number(notificationData.latitude),
@@ -157,7 +260,6 @@ const LocationDetails = () => {
             message: 'Success',
             description: 'Location-based reminder updated successfully!',
           });
-          // Reset form and go back
           setTitle('');
           setMessage('');
           setSelectedLocation(null);
@@ -184,9 +286,9 @@ const LocationDetails = () => {
     }
   };
 
-  const handleTryAgain = () => {
-    fetchUserLocation();
-  };
+  const showLoader = !hasCheckedPermission || isFetchingLocation || isLocationProviderLoading;
+  const showMap = !showLoader && userLocation;
+  const showError = !showLoader && !userLocation;
 
   return (
     <>
@@ -198,14 +300,16 @@ const LocationDetails = () => {
           showThemeSwitch={false}
         />
 
-        {isLocationLoading ? (
+        {showLoader && (
           <View style={styles.loaderContainer}>
             <ActivityIndicator size="large" color={colors.text} />
             <Text style={[styles.loaderText, { color: colors.text }]}>
               Getting your location...
             </Text>
           </View>
-        ) : userLocation ? (
+        )}
+
+        {showMap && (
           <LocationMapView
             onLocationSelect={handleLocationSelect}
             selectedLocation={selectedLocation}
@@ -223,7 +327,9 @@ const LocationDetails = () => {
           >
             <LocationSearchBar onSearchPress={() => setIsSearchPress(true)} />
           </LocationMapView>
-        ) : (
+        )}
+
+        {showError && (
           <View style={styles.loaderContainer}>
             <Text style={[styles.loaderText, { color: colors.text }]}>
               Unable to get your location.
@@ -243,9 +349,7 @@ const LocationDetails = () => {
 
       <LocationSearchBottomSheet
         isVisible={isSearchPress}
-        onClose={() => {
-          setIsSearchPress(false);
-        }}
+        onClose={() => setIsSearchPress(false)}
         onLocationSelect={(location: NominatimResult) => {
           handleSearchResultSelect(location);
           setIsSearchPress(false);
@@ -257,7 +361,6 @@ const LocationDetails = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  contentContainer: { flex: 1 },
   loaderContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -283,37 +386,6 @@ const styles = StyleSheet.create({
   tryAgainText: {
     fontFamily: FONTS.SemiBold,
     fontSize: 14,
-  },
-  floatingButton: {
-    position: 'absolute',
-    right: 5,
-    width: 50,
-    height: 50,
-    borderRadius: 28,
-    backgroundColor: 'rgba(64, 93, 240, 1)', // Google Maps blue
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    zIndex: 1000,
-  },
-  buttonTouchable: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 28,
-  },
-  buttonIcon: {
-    width: 24,
-    height: 24,
-    backgroundColor: 'white',
-    borderRadius: 2,
-    // Replace this with your actual icon component
-    // Example: <Icon name="my-location" size={24} color="white" />
   },
 });
 

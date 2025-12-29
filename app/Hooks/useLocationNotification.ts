@@ -4,6 +4,7 @@ import LocationService from '@Services/LocationService';
 import { Notification } from '@Types/Interface';
 import useLocationPermission from './useLocationPermission';
 import useDatabase from './useReminder';
+import { MIN_DISTANCE_METERS } from '@Utils/geoUtils';
 
 const generateNotificationId = (): string => {
   return `location_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -35,7 +36,7 @@ const useLocationNotification = () => {
         }
 
         if (!notification.radius) {
-          notification.radius = 100; // Default 100 meters
+          notification.radius = MIN_DISTANCE_METERS; // Default 100 meters
         }
 
         // Generate a unique ID for the location notification
@@ -68,8 +69,7 @@ const useLocationNotification = () => {
 
         showMessage({
           message: 'Location-based reminder created successfully!',
-          description:
-            'You will be notified when you are within 100 meters of the selected location.',
+          description: `You will be notified when you are within ${MIN_DISTANCE_METERS} meters of the selected location.`,
           type: 'success',
         });
 

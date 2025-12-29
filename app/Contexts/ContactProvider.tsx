@@ -7,7 +7,8 @@ import { Contact } from '@Types/Interface';
 interface ContactContextType {
   contacts: Contact[];
   isSyncing: boolean;
-  permissionStatus: PermissionStatus;
+  permissionStatus: PermissionStatus | null;
+  hasCheckedPermission: boolean;
   syncContacts: (force?: boolean) => Promise<void>;
   requestPermission: () => Promise<PermissionStatus>;
   checkPermission: () => Promise<PermissionStatus>;
@@ -16,7 +17,8 @@ interface ContactContextType {
 const ContactContext = createContext<ContactContextType>({
   contacts: [],
   isSyncing: false,
-  permissionStatus: 'unavailable',
+  permissionStatus: null,
+  hasCheckedPermission: false,
   syncContacts: async () => {},
   requestPermission: async () => 'unavailable',
   checkPermission: async () => 'unavailable',
@@ -25,7 +27,8 @@ const ContactContext = createContext<ContactContextType>({
 export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>('unavailable');
+  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus | null>(null);
+  const [hasCheckedPermission, setHasCheckedPermission] = useState(false);
 
   const checkPermission = useCallback(async () => {
     let status: PermissionStatus = 'unavailable';
@@ -44,6 +47,7 @@ export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     setPermissionStatus(status);
+    setHasCheckedPermission(true);
     return status;
   }, []);
 
@@ -67,6 +71,7 @@ export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     setPermissionStatus(status);
+    setHasCheckedPermission(true);
     if (status === 'granted') {
       syncContacts(true);
     }
@@ -145,6 +150,7 @@ export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ child
         contacts,
         isSyncing,
         permissionStatus,
+        hasCheckedPermission,
         syncContacts,
         requestPermission,
         checkPermission,

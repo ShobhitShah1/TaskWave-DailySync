@@ -4,6 +4,10 @@ import RenderCalenderView from '@Components/RenderCalenderView';
 import ServiceManager from '@Components/ServiceManager';
 import YearMonthPicker from '@Components/YearMonthPicker';
 import TextString from '@Constants/TextString';
+import { useBatteryOptimization } from '@Contexts/BatteryOptimizationProvider';
+import { useContacts } from '@Contexts/ContactProvider';
+import { useLocation } from '@Contexts/LocationProvider';
+import { useAppContext } from '@Contexts/ThemeProvider';
 import isGridView from '@Hooks/isGridView';
 import useCalendar from '@Hooks/useCalendar';
 import useNotificationPermission from '@Hooks/useNotificationPermission';
@@ -23,17 +27,14 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { AnimatedRollingNumber } from 'react-native-animated-rolling-numbers';
 import { showMessage } from 'react-native-flash-message';
-import Animated, { Easing, FadeIn, LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { formatDate } from '../AddReminder/ReminderScheduled';
 import HomeHeader from './Components/HomeHeader';
 import RenderEmptyView from './Components/RenderEmptyView';
 import RenderHeaderView from './Components/RenderHeaderView';
 import styles from './styles';
-import { useContacts } from '@Contexts/ContactProvider';
-import { useAppContext } from '@Contexts/ThemeProvider';
 
 const Home = () => {
   // ...
@@ -95,25 +96,73 @@ const Home = () => {
     requestPermission: requestContactPermission,
     syncContacts,
     permissionStatus: contactPermissionStatus,
+    hasCheckedPermission: hasCheckedContactPermission,
   } = useContacts();
 
+  const {
+    requestPermission: requestLocationPermission,
+    refreshLocation,
+    permissionStatus: locationPermissionStatus,
+    hasCheckedPermission: hasCheckedLocationPermission,
+  } = useLocation();
+
+  const hasRequestedPermissionsRef = React.useRef(false);
+
+  // Battery optimization check
+  const { checkAndPrompt: checkBatteryOptimization } = useBatteryOptimization();
+
   useEffect(() => {
-    if (isFocus) {
-      setIsLoading(notificationsState?.allByDate?.length === 0);
-      loadNotifications();
+    if (!isFocus) return;
 
-      if (permissionStatus !== 'granted') {
-        requestPermission();
-      }
+    setIsLoading(notificationsState?.allByDate?.length === 0);
+    loadNotifications();
 
-      // Contact permission logic requested by user
-      if (contactPermissionStatus === 'unavailable' || contactPermissionStatus === 'denied') {
-        requestContactPermission();
-      } else if (contactPermissionStatus === 'granted') {
-        syncContacts();
-      }
+    if (permissionStatus !== 'granted') {
+      requestPermission();
     }
-  }, [isFocus, selectedDate, selectedFilter, permissionStatus, contactPermissionStatus]);
+  }, [isFocus, selectedDate, selectedFilter, permissionStatus]);
+
+  useEffect(() => {
+    if (!isFocus) return;
+    if (!hasCheckedLocationPermission || !hasCheckedContactPermission) return;
+    if (hasRequestedPermissionsRef.current) return;
+
+    const requestAllPermissions = async () => {
+      hasRequestedPermissionsRef.current = true;
+
+      if (locationPermissionStatus === 'granted') {
+        refreshLocation(true);
+      } else if (locationPermissionStatus !== 'blocked') {
+        const locationStatus = await requestLocationPermission();
+        if (locationStatus === 'granted') {
+          refreshLocation(true);
+        }
+      }
+
+      if (contactPermissionStatus === 'granted') {
+        syncContacts();
+      } else if (contactPermissionStatus !== 'blocked') {
+        const contactStatus = await requestContactPermission();
+        if (contactStatus === 'granted') {
+          syncContacts();
+        }
+      }
+
+      // Check battery optimization after permissions are handled
+      // Wait 2-3 seconds before showing the modal to avoid overwhelming the user
+      setTimeout(() => {
+        checkBatteryOptimization();
+      }, 2500);
+    };
+
+    requestAllPermissions();
+  }, [
+    isFocus,
+    hasCheckedLocationPermission,
+    hasCheckedContactPermission,
+    locationPermissionStatus,
+    contactPermissionStatus,
+  ]);
 
   const onRefresh = useCallback(async () => {
     try {
@@ -131,12 +180,28 @@ const Home = () => {
 
       const now = new Date();
 
+      // For location-based reminders, they are "active" unless status is 'sent'
+      // For time-based reminders, they are "active" if date is in future
       const active = allNotifications
-        .filter((notification) => new Date(notification.date).getTime() >= now.getTime())
+        .filter((notification) => {
+          if (notification.type === 'location') {
+            // Location reminders are active unless status is 'sent'
+            return notification.status !== 'sent';
+          }
+          // Time-based reminders are active if date is in the future
+          return new Date(notification.date).getTime() >= now.getTime();
+        })
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       const inactive = allNotifications
-        .filter((notification) => new Date(notification.date).getTime() < now.getTime())
+        .filter((notification) => {
+          if (notification.type === 'location') {
+            // Location reminders are inactive only when status is 'sent'
+            return notification.status === 'sent';
+          }
+          // Time-based reminders are inactive if date is in the past
+          return new Date(notification.date).getTime() < now.getTime();
+        })
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
       const [day, month, year] = selectedDate.split('-');
@@ -241,26 +306,11 @@ const Home = () => {
           <View style={style.statusContainer}>
             <View style={style.statusItem}>
               <View style={[style.statusDot, { backgroundColor: colors.green }]} />
-              <AnimatedRollingNumber
-                value={notificationsState?.active.length}
-                enableCompactNotation
-                compactToFixed={2}
-                key={notificationsState?.active.length + theme?.toString()}
-                textStyle={style.statusText}
-                numberStyle={style.statusText}
-                spinningAnimationConfig={{ duration: 500, easing: Easing.bounce }}
-              />
+              <Text style={style.statusText}>{notificationsState?.active.length}</Text>
             </View>
             <View style={style.statusItem}>
               <View style={[style.statusDot, { backgroundColor: 'gray' }]} />
-              <AnimatedRollingNumber
-                value={notificationsState?.inactive.length}
-                enableCompactNotation
-                compactToFixed={2}
-                key={notificationsState?.inactive.length + theme?.toString()}
-                textStyle={style.statusText}
-                spinningAnimationConfig={{ duration: 500, easing: Easing.bounce }}
-              />
+              <Text style={style.statusText}>{notificationsState?.inactive.length}</Text>
             </View>
           </View>
         </Animated.View>
@@ -359,12 +409,6 @@ const Home = () => {
           onConfirm={handleDateChange}
           onCancel={() => setShowDateAndYearModal(false)}
         />
-
-        {/* <BatteryOptimizationModal
-          visible={showBatteryModal}
-          onConfirm={batteryModalConfirmRef.current}
-          onCancel={() => setShowBatteryModal(false)}
-        /> */}
 
         <ServiceManager
           isVisible={showServiceManager}

@@ -40,6 +40,16 @@ const ic_telegramGlow = require('../../assets/Icons/ic_telegramGlow.png');
 const ic_notesGlow = require('../../assets/Icons/ic_notesGlow.png');
 const ic_locationGlow = require('../../assets/Icons/ic_locationGlow.png');
 
+// Normal
+const ic_gmail_normal = require('../../assets/Icons/ic_gmail_normal.png');
+const ic_sms_normal = require('../../assets/Icons/ic_sms_normal.png');
+const ic_whatsapp_normal = require('../../assets/Icons/ic_whatsapp_normal.png');
+const ic_whatsappBusiness_normal = require('../../assets/Icons/ic_whatsappBusiness_normal.png');
+const ic_phone_normal = require('../../assets/Icons/ic_phone_normal.png');
+const ic_telegram_normal = require('../../assets/Icons/ic_telegram_normal.png');
+const ic_notes_normal = require('../../assets/Icons/ic_notes_normal.png');
+const ic_location_normal = require('../../assets/Icons/ic_location_normal.png');
+
 const ic_edit = require('../../assets/Icons/ic_edit.png');
 const ic_view = require('../../assets/Icons/ic_view.png');
 const ic_duplicate = require('../../assets/Icons/ic_duplicate.png');
@@ -140,6 +150,15 @@ export default {
   ic_notesGlow,
   ic_locationGlow,
   ic_location,
+
+  ic_gmail_normal,
+  ic_sms_normal,
+  ic_whatsapp_normal,
+  ic_whatsappBusiness_normal,
+  ic_phone_normal,
+  ic_telegram_normal,
+  ic_notes_normal,
+  ic_location_normal,
 
   ic_edit,
   ic_view,

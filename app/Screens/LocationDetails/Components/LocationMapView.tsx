@@ -1,20 +1,39 @@
 import AssetsPath from '@Constants/AssetsPath';
-import streetsStyle from '@Constants/streets-v2-style.json';
+import { useAppContext } from '@Contexts/ThemeProvider';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import useThemeColors from '@Hooks/useThemeMode';
 import {
+  FillLayer,
+  LineLayer,
   Logger,
   Camera as MapCamera,
   MapView,
   PointAnnotation,
+  ShapeSource,
   UserLocation,
 } from '@maplibre/maplibre-react-native';
 import LocationService from '@Services/LocationService';
+import { fetchRoute } from '@Services/RouteService';
 import { CameraPosition, GeoLatLng, LocationMapViewProps } from '@Types/Interface';
+import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
+import { MIN_DISTANCE_METERS } from '@Utils/geoUtils';
+import { fitMapToLocations } from '@Utils/mapBoundsUtils';
+import { initializeMapCache } from '@Utils/mapCacheManager';
+import { getMapStyleUrl } from '@Utils/mapStyles';
 import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Image, Keyboard, Pressable, StyleSheet, View } from 'react-native';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import Animated, {
+  FadeIn,
+  FadeOut,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
@@ -23,12 +42,25 @@ import Animated, {
 import LocationDetailsCard from './LocationDetailsCard';
 import MapMarker from './LocationMapView/MapMarker';
 
+// Suppress known MapLibre warnings that are harmless
 Logger.setLogCallback((log) => {
   const { message } = log;
 
-  if (message.match('Request failed due to a permanent error: Canceled')) {
+  // Suppress stream reset/cancel errors (network transient issues)
+  if (message.match(/Request failed due to a permanent error.*Canceled/i)) {
     return true;
   }
+
+  // Suppress stream reset errors
+  if (message.match(/stream was reset.*CANCEL/i)) {
+    return true;
+  }
+
+  // Suppress source must have tiles warning (for attribution-only sources)
+  if (message.match(/source must have tiles/i)) {
+    return true;
+  }
+
   return false;
 });
 
@@ -50,7 +82,9 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
   address,
   setAddress,
 }) => {
+  const { theme } = useAppContext();
   const colors = useThemeColors();
+  const mapStyleUrl = useMemo(() => getMapStyleUrl(theme), [theme]);
   const cameraRef = useRef<any>(null);
   const containerRef = useRef<View>(null);
 
@@ -59,6 +93,7 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
   const [containerLayout, setContainerLayout] = useState({ height: 0 });
 
   const [isMapReady, setIsMapReady] = useState<boolean>(false);
+  const [areTilesLoaded, setAreTilesLoaded] = useState<boolean>(false);
   const [cameraPosition, setCameraPosition] = useState<CameraPosition>(
     userLocationProp
       ? {
@@ -67,6 +102,31 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
         }
       : (undefined as any),
   );
+
+  useEffect(() => {
+    initializeMapCache();
+  }, []);
+
+  // Fallback: If tiles don't report as loaded within 5 seconds of map being ready, force show the map
+  useEffect(() => {
+    if (isMapReady && !areTilesLoaded) {
+      const fallbackTimer = setTimeout(() => {
+        console.log('[MapView] Fallback: Forcing tiles loaded state after timeout');
+        setAreTilesLoaded(true);
+      }, 5000);
+
+      return () => clearTimeout(fallbackTimer);
+    }
+  }, [isMapReady, areTilesLoaded]);
+
+  // 100m restricted zone around user's current location
+  const restrictedZoneCircle = useMemo(() => {
+    if (!userLocationProp) return null;
+    return createGeoJSONCircle(
+      { latitude: userLocationProp.latitude, longitude: userLocationProp.longitude },
+      MIN_DISTANCE_METERS,
+    );
+  }, [userLocationProp]);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
@@ -82,6 +142,8 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
     };
   }, []);
 
+  const [routeGeoJSON, setRouteGeoJSON] = useState<any>(null);
+
   useEffect(() => {
     if (selectedLocation && isMapReady) {
       if (
@@ -89,36 +151,36 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
         typeof cameraRef.current.flyTo === 'function' &&
         typeof cameraRef.current.setZoom === 'function'
       ) {
-        cameraRef.current.flyTo([selectedLocation.longitude, selectedLocation.latitude], 800);
+        cameraRef.current.flyTo([selectedLocation.longitude, selectedLocation.latitude], 500);
         cameraRef.current.setZoom(17);
       } else {
         setCameraPosition({
           centerCoordinate: [selectedLocation.longitude, selectedLocation.latitude],
           zoomLevel: 17,
-          animationDuration: 800,
+          animationDuration: 500,
         });
       }
-    }
-  }, [selectedLocation, isMapReady]);
 
-  useEffect(() => {
-    if (isMapReady && selectedLocation) {
-      if (
-        cameraRef.current &&
-        typeof cameraRef.current.flyTo === 'function' &&
-        typeof cameraRef.current.setZoom === 'function'
-      ) {
-        cameraRef.current.flyTo([selectedLocation.longitude, selectedLocation.latitude], 800);
-        cameraRef.current.setZoom(17);
-      } else {
-        setCameraPosition({
-          centerCoordinate: [selectedLocation.longitude, selectedLocation.latitude],
-          zoomLevel: 17,
-          animationDuration: 800,
+      if (userLocationProp) {
+        fetchRoute(
+          {
+            latitude: userLocationProp.latitude,
+            longitude: userLocationProp.longitude,
+          },
+          {
+            latitude: selectedLocation.latitude,
+            longitude: selectedLocation.longitude,
+          },
+        ).then((route) => {
+          if (route) {
+            setRouteGeoJSON(route);
+          }
         });
       }
+    } else {
+      setRouteGeoJSON(null);
     }
-  }, [isMapReady, selectedLocation]);
+  }, [selectedLocation, userLocationProp, isMapReady]);
 
   const handleContainerLayout = useCallback((event: any) => {
     const { height } = event.nativeEvent.layout;
@@ -146,6 +208,16 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
   const handleMapReady = useCallback(() => {
     setIsMapReady(true);
   }, []);
+
+  const handleMapFullyRendered = useCallback(() => {
+    setAreTilesLoaded(true);
+  }, []);
+
+  const handleRegionDidChange = useCallback(() => {
+    if (!areTilesLoaded) {
+      setAreTilesLoaded(true);
+    }
+  }, [areTilesLoaded]);
 
   const centerOnUser = useCallback(async () => {
     try {
@@ -176,17 +248,16 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
   const zoomToFitAll = useCallback(async () => {
     try {
       if (userLocationProp && selectedLocation) {
-        cameraRef.current?.fitBounds(
-          [userLocationProp.longitude, userLocationProp.latitude],
-          [selectedLocation.longitude, selectedLocation.latitude],
-          [100, 100, 100, 100],
-          1000,
-        );
-      }
-      // else if (location) {
-      //   centerOnUser();
-      // }
-      else {
+        fitMapToLocations(cameraRef, userLocationProp, selectedLocation, {
+          paddingTop: 100,
+          paddingRight: 50,
+          paddingBottom: 380,
+          paddingLeft: 50,
+          animationDuration: 800,
+        });
+      } else if (userLocationProp) {
+        centerOnUser();
+      } else {
         Alert.alert(
           'Location Error',
           'Unable to get current location. Please check location permissions.',
@@ -195,7 +266,7 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
     } catch (error) {
       console.error('Error zooming to fit all:', error);
     }
-  }, [selectedLocation, centerOnUser]);
+  }, [selectedLocation, userLocationProp, centerOnUser]);
 
   const floatingButtonStyle = useAnimatedStyle(() => {
     'worklet';
@@ -207,8 +278,8 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
     // Calculate bottom sheet height from animated position
     const currentSheetHeight = containerLayout.height - animatedPosition.value;
 
-    // Position button 60px above the bottom sheet (increased for better spacing)
-    const buttonBottom = currentSheetHeight + 10; // 15px from bottom sheet top
+    // Position button 16px above the bottom sheet
+    const buttonBottom = currentSheetHeight + 16;
 
     // Hide button when keyboard is visible
     const opacity = interpolate(keyboardVisible.value, [0, 1], [1, 0], 'clamp');
@@ -217,55 +288,117 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
     return {
       bottom: buttonBottom,
       opacity,
-      transform: [
-        { translateY },
-        // {
-        //   scale: interpolate(currentSheetHeight, [snapPoints[0], snapPoints[1]], [0.9, 1], 'clamp'),
-        // },
-      ],
+      transform: [{ translateY }],
     };
   }, [containerLayout.height]);
 
   return (
     <View ref={containerRef} style={styles.mapContainer} onLayout={handleContainerLayout}>
-      {userLocationProp && (
-        <MapView
-          style={styles.map}
-          mapStyle={streetsStyle}
-          compassEnabled
-          onPress={handleMapPress}
-          onDidFinishLoadingMap={handleMapReady}
-          zoomEnabled
-          scrollEnabled
-          pitchEnabled
-          rotateEnabled
-          attributionEnabled
-          attributionPosition={{ bottom: 8, left: 8 }}
-          preferredFramesPerSecond={60}
-          localizeLabels
-        >
-          <MapCamera
-            ref={cameraRef}
-            centerCoordinate={cameraPosition.centerCoordinate}
-            zoomLevel={cameraPosition.zoomLevel}
-            animationDuration={cameraPosition.animationDuration}
-            pitch={45}
-            heading={0}
-            minZoomLevel={2}
-            maxZoomLevel={22}
-            animationMode="linearTo"
-          />
-          {selectedLocation && (
-            <PointAnnotation
-              id={`selected-location-${selectedLocation.longitude}-${selectedLocation.latitude}`}
-              coordinate={[selectedLocation.longitude, selectedLocation.latitude]}
-            >
-              <MapMarker />
-            </PointAnnotation>
-          )}
-          <UserLocation visible={true} onUpdate={() => {}} />
-        </MapView>
-      )}
+      <View style={styles.mapWrapper}>
+        {userLocationProp && (
+          <MapView
+            style={styles.map}
+            mapStyle={mapStyleUrl}
+            compassEnabled
+            onPress={handleMapPress}
+            onDidFinishLoadingMap={handleMapReady}
+            onDidFinishRenderingMapFully={handleMapFullyRendered}
+            onRegionDidChange={handleRegionDidChange}
+            zoomEnabled
+            scrollEnabled
+            pitchEnabled
+            rotateEnabled
+            attributionEnabled
+            attributionPosition={{ bottom: 8, left: 8 }}
+            // Performance optimizations
+            surfaceView={true} // Use SurfaceView for better Android GPU rendering
+            preferredFramesPerSecond={60} // Smooth rendering
+            logoEnabled={false} // Disable logo for less rendering overhead
+            regionWillChangeDebounceTime={50} // Reduce callback frequency during pan (default: 10)
+            regionDidChangeDebounceTime={300} // Faster response after pan stops (default: 500)
+            localizeLabels
+          >
+            <MapCamera
+              ref={cameraRef}
+              centerCoordinate={cameraPosition.centerCoordinate}
+              zoomLevel={cameraPosition.zoomLevel}
+              {...(cameraPosition.animationDuration !== undefined && {
+                animationDuration: cameraPosition.animationDuration,
+              })}
+              pitch={45}
+              heading={0}
+              minZoomLevel={2}
+              maxZoomLevel={22}
+              animationMode="linearTo"
+            />
+            {routeGeoJSON && (
+              <ShapeSource id="route-source" shape={routeGeoJSON}>
+                <LineLayer
+                  id="route-line"
+                  style={{
+                    lineColor: '#405DF0',
+                    lineWidth: 4,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                    lineOpacity: 0.8,
+                  }}
+                />
+                <LineLayer
+                  id="route-line-inner"
+                  style={{
+                    lineColor: '#738AFE',
+                    lineWidth: 2,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                    lineOpacity: 1,
+                  }}
+                />
+              </ShapeSource>
+            )}
+            {selectedLocation && (
+              <PointAnnotation
+                key={`marker-${selectedLocation.longitude}-${selectedLocation.latitude}-${address?.toString()}`}
+                id={`selected-location-${selectedLocation.longitude}-${selectedLocation.latitude}-${address?.toString()}`}
+                coordinate={[selectedLocation.longitude, selectedLocation.latitude]}
+              >
+                <MapMarker />
+              </PointAnnotation>
+            )}
+            <UserLocation visible={true} onUpdate={() => {}} />
+            {/* 100m Restricted Zone - Cannot select within this area */}
+            {restrictedZoneCircle && (
+              <ShapeSource id="restricted-zone-source" shape={restrictedZoneCircle}>
+                <FillLayer
+                  id="restricted-zone-fill"
+                  style={{
+                    fillColor: '#FF6B6B',
+                    fillOpacity: 0.15,
+                  }}
+                />
+                <LineLayer
+                  id="restricted-zone-border"
+                  style={{
+                    lineColor: '#FF6B6B',
+                    lineWidth: 2,
+                    lineOpacity: 0.6,
+                    lineDasharray: [2, 2],
+                  }}
+                />
+              </ShapeSource>
+            )}
+          </MapView>
+        )}
+
+        {!areTilesLoaded && (
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            exiting={FadeOut.duration(300)}
+            style={[styles.mapLoadingOverlay, { backgroundColor: colors.background }]}
+          >
+            <ActivityIndicator size="large" color={colors.text} />
+          </Animated.View>
+        )}
+      </View>
 
       <Animated.View style={[styles.floatingButton, floatingButtonStyle]}>
         <Pressable
@@ -277,27 +410,21 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
         </Pressable>
       </Animated.View>
 
+      {children}
+
       <BottomSheet
-        handleStyle={{
-          borderBottomWidth: 0.5,
-          borderColor: colors.background,
-          backgroundColor: colors.background,
-        }}
-        handleIndicatorStyle={{ backgroundColor: colors.text }}
-        style={{
-          borderBottomWidth: 0,
-          zIndex: 999999999,
-          backgroundColor: colors.background,
-        }}
-        backgroundStyle={{
-          backgroundColor: colors.background,
-        }}
+        handleStyle={styles.bottomSheetHandle}
+        handleIndicatorStyle={[styles.bottomSheetIndicator, { backgroundColor: colors.text }]}
+        style={styles.bottomSheetStyle}
+        backgroundStyle={[styles.bottomSheetBackground, { backgroundColor: colors.background }]}
         animatedPosition={animatedPosition}
         snapPoints={snapPoints}
         ref={bottomSheetRef}
         keyboardBlurBehavior="restore"
         keyboardBehavior="interactive"
         android_keyboardInputMode="adjustPan"
+        enableOverDrag={false}
+        enableDynamicSizing
       >
         <BottomSheetView style={[styles.contentContainer, { backgroundColor: colors.background }]}>
           <LocationDetailsCard
@@ -310,49 +437,94 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
             isUpdate={!!id}
             address={address}
             setAddress={setAddress}
+            routeStats={
+              routeGeoJSON?.properties
+                ? {
+                    distance: (routeGeoJSON.properties.distance || 0) / 1000,
+                    duration: (routeGeoJSON.properties.duration || 0) / 60,
+                  }
+                : null
+            }
           />
         </BottomSheetView>
       </BottomSheet>
-      {children}
     </View>
   );
 };
 
-export default LocationMapView;
+export default memo(LocationMapView);
 
 const styles = StyleSheet.create({
   mapContainer: {
     flex: 1,
     position: 'relative',
+    overflow: 'hidden',
+    zIndex: 1,
+  },
+  mapWrapper: {
+    flex: 1,
     borderRadius: 18,
     overflow: 'hidden',
     marginHorizontal: 10,
-    marginBottom: 0,
-    zIndex: 1,
   },
   map: {
     flex: 1,
     width: '100%',
     height: '100%',
   },
+  mapLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 18,
+  },
   contentContainer: {
     flex: 1,
+    paddingBottom: 20,
+  },
+  bottomSheetHandle: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingVertical: 12,
+  },
+  bottomSheetIndicator: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+  },
+  bottomSheetStyle: {
+    zIndex: 999999,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  bottomSheetBackground: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    // Remove any shadow/border artifacts
+    shadowOpacity: 0,
+    elevation: 0,
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
   floatingButton: {
     position: 'absolute',
-    right: 8,
+    right: 18,
     width: 50,
     height: 50,
-    borderRadius: 26,
+    borderRadius: 25,
     backgroundColor: '#405DF0',
-    boxShadow: '0px 6px 12px rgba(0, 0, 0, 0.25)',
-    zIndex: 1000,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    zIndex: 10,
   },
   buttonTouchable: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 26,
+    borderRadius: 25,
     overflow: 'hidden',
   },
   buttonIcon: {

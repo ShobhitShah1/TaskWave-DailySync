@@ -7,9 +7,12 @@ import { LogBox, StatusBar, StyleSheet, Text, View } from 'react-native';
 import FlashMessage, { showMessage } from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+import { BatteryOptimizationProvider } from './app/Contexts/BatteryOptimizationProvider';
 import { BottomSheetProvider } from './app/Contexts/BottomSheetProvider';
 import { ContactProvider } from './app/Contexts/ContactProvider';
+import { LocationProvider } from './app/Contexts/LocationProvider';
 import { AppProvider, useAppContext } from './app/Contexts/ThemeProvider';
+import BatteryOptimizationModal from './app/Components/BatteryOptimizationModal';
 import { handleNotificationPress } from './app/Hooks/handleNotificationPress';
 import { updateNotification } from './app/Hooks/updateNotification';
 import updateToNextDate from './app/Hooks/updateToNextDate';
@@ -19,7 +22,7 @@ import useReminder, {
 } from './app/Hooks/useReminder';
 import Routes from './app/Routes/Routes';
 import LocationService from './app/Services/LocationService';
-import { Notification } from './app/Types/Interface';
+import { LocationReminderStatus, Notification } from './app/Types/Interface';
 import { getDatabase } from './app/Utils/databaseUtils';
 
 // This is the default configuration
@@ -86,23 +89,23 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
 
 const AppContent = () => {
   const { theme } = useAppContext();
+  const backgroundColor = theme === 'dark' ? '#303334' : '#ffffff';
 
   return (
-    <GestureHandlerRootView
-      style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
-    >
+    <GestureHandlerRootView style={[styles.container, { backgroundColor }]}>
       <BottomSheetProvider>
-        <View
-          style={[styles.container, { backgroundColor: theme === 'dark' ? '#303334' : '#ffffff' }]}
-        >
+        <View style={[styles.container, { backgroundColor }]}>
           <Routes />
+
+          <BatteryOptimizationModal />
+
           <FlashMessage
             animated
             hideOnPress
             position="top"
             statusBarHeight={StatusBar.currentHeight || 10}
-            titleStyle={{ fontFamily: FONTS.SemiBold, fontSize: 18 }}
             textStyle={{ fontFamily: FONTS.Medium, fontSize: 15 }}
+            titleStyle={{ fontFamily: FONTS.SemiBold, fontSize: 18 }}
           />
         </View>
       </BottomSheetProvider>
@@ -251,16 +254,23 @@ export default function App() {
       const notifications = await database.getAllAsync<any>(
         'SELECT * FROM notifications WHERE type = "location"',
       );
-      const locationNotifications = notifications.filter((n: any) => n.latitude && n.longitude);
 
-      locationNotifications.forEach((notification: Notification) => {
-        LocationService.addLocationReminder({
+      const locationNotifications = notifications.filter(
+        (n: any) => n.latitude && n.longitude && (n.status === 'pending' || !n.status),
+      );
+
+      LocationService.startRestoringReminders();
+
+      locationNotifications.forEach((notification: any) => {
+        LocationService.restoreLocationReminder({
           id: notification.id,
           latitude: Number(notification.latitude),
           longitude: Number(notification.longitude),
           radius: notification.radius || 100,
           title: notification.subject || 'Location Reminder',
           message: notification.message || '',
+          createdAt: notification.createdAt ? new Date(notification.createdAt) : new Date(),
+          status: notification.status || LocationReminderStatus.Pending,
           notification: {
             ...notification,
             date: new Date(notification.date),
@@ -272,12 +282,7 @@ export default function App() {
         });
       });
 
-      // Ensure tracking starts if reminders exist ---
-      if (locationNotifications.length > 0) {
-        // Start location tracking if not already started
-        await LocationService.startLocationTracking();
-      }
-      // -----------------------------------------------------
+      LocationService.finishRestoringReminders();
     } catch (error) {
       console.error('Error initializing location service:', error);
     }
@@ -289,9 +294,13 @@ export default function App() {
 
   return (
     <AppProvider>
-      <ContactProvider>
-        <AppContent />
-      </ContactProvider>
+      <BatteryOptimizationProvider>
+        <ContactProvider>
+          <LocationProvider>
+            <AppContent />
+          </LocationProvider>
+        </ContactProvider>
+      </BatteryOptimizationProvider>
     </AppProvider>
   );
 }

@@ -1,24 +1,43 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { memo, useState } from 'react';
-import { Linking, StyleSheet, View } from 'react-native';
+import { Linking, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Share from 'react-native-share';
 
+import RateUsModal from '@Components/RateUsModal';
 import { APP_CONFIG } from '@Constants/AppConfig';
 import AssetsPath from '@Constants/AssetsPath';
 import { SIZE } from '@Constants/Theme';
-import RateUsModal from '@Components/RateUsModal';
+import { useBatteryOptimization } from '@Contexts/BatteryOptimizationProvider';
 import useThemeColors from '@Hooks/useThemeMode';
 import HomeHeader from '../Home/Components/HomeHeader';
 import SettingItem from './Components/SettingItem';
 
 const Settings = () => {
   const style = styles();
+  const colors = useThemeColors();
   const navigation = useNavigation();
+  const { showModal: showBatteryModal, isBatteryOptimized } = useBatteryOptimization();
 
   const [modalStatus, setModalStatus] = useState({ rateUs: false });
 
   const settingsData = [
+    ...(Platform.OS === 'android' && isBatteryOptimized
+      ? [
+          {
+            title: 'Battery Optimization',
+            ionicon: 'battery-half-outline' as const,
+            ioniconColor: '#FFB340',
+            onPress: () => {
+              showBatteryModal();
+            },
+            subtitle: isBatteryOptimized
+              ? 'Tap to fix notification issues'
+              : 'Optimized for notifications',
+            showAlert: isBatteryOptimized,
+          },
+        ]
+      : []),
     {
       title: 'Notification',
       icon: AssetsPath.ic_notification,
@@ -92,7 +111,16 @@ const Settings = () => {
 
       <View style={style.wrapper}>
         {settingsData.map((item, index) => (
-          <SettingItem key={index} title={item.title} icon={item.icon} onPress={item.onPress} />
+          <SettingItem
+            key={index}
+            title={item.title}
+            icon={item.icon}
+            ionicon={item.ionicon}
+            ioniconColor={item.ioniconColor}
+            subtitle={item.subtitle}
+            showAlert={item.showAlert}
+            onPress={item.onPress}
+          />
         ))}
       </View>
 

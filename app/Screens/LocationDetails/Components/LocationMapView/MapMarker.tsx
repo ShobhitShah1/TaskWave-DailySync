@@ -4,7 +4,7 @@ import { Image, StyleSheet, View } from 'react-native';
 
 const MapMarker = () => {
   return (
-    <View key={Math.random() * 5} style={styles.markerContainer}>
+    <View style={styles.markerContainer}>
       <Image
         source={AssetsPath.ic_history_location_icon}
         style={styles.icon}

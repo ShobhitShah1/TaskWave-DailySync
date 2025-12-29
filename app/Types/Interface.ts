@@ -242,6 +242,7 @@ export type remindersCategoriesType = {
   description: string;
   icon: ImageSourcePropType;
   glowIcon: number;
+  normalIcon: number;
   history_icon: number;
   color: {
     background: string;
@@ -314,6 +315,7 @@ export interface LocationMapViewProps {
   bottomSheetRef?: React.RefObject<BottomSheet | null>;
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
+  routeStats?: { distance: number; duration: number } | null;
 }
 
 /**

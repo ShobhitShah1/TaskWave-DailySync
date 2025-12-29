@@ -1,236 +1,337 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as React from 'react';
-import { Dimensions, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
-import Modal from 'react-native-modal';
+import React, { FC, memo, useCallback } from 'react';
+import { Dimensions, Platform, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
+import ReactNativeModal from 'react-native-modal';
+import Animated, { Easing, FadeIn, FadeInUp } from 'react-native-reanimated';
 
 import { FONTS } from '@Constants/Theme';
-import { useAppContext } from '@Contexts/ThemeProvider';
+import { useBatteryOptimization } from '@Contexts/BatteryOptimizationProvider';
 import useThemeColors from '@Hooks/useThemeMode';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const { width, height } = Dimensions.get('window');
 
 interface BatteryOptimizationModalProps {
-  visible: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
+  /** Override visibility (optional - defaults to context state) */
+  visible?: boolean;
+  /** Override close handler (optional - defaults to context state) */
+  onClose?: () => void;
+  /** Called when user opens settings */
+  onOpenSettings?: () => void;
 }
 
-const { height: screenHeight } = Dimensions.get('window');
-
-const BatteryOptimizationModal = ({
+const BatteryOptimizationModal: FC<BatteryOptimizationModalProps> = ({
   visible,
-  onConfirm,
-  onCancel,
-}: BatteryOptimizationModalProps) => {
+  onClose,
+  onOpenSettings,
+}) => {
   const colors = useThemeColors();
-  const { theme } = useAppContext();
-  const isDark = theme === 'dark';
+  const {
+    isModalVisible,
+    hideModal,
+    openBatterySettings,
+    openPowerManagerSettings,
+    powerManagerInfo,
+    remindLater,
+  } = useBatteryOptimization();
 
-  const handleConfirmPress = () => {
-    onConfirm();
-  };
+  const isVisible = visible !== undefined ? visible : isModalVisible;
+  const handleClose = onClose || hideModal;
 
-  const handleCancelPress = () => {
-    onCancel();
-  };
+  const handleOpenBatterySettings = useCallback(async () => {
+    await openBatterySettings();
+    onOpenSettings?.();
+    handleClose();
+  }, [openBatterySettings, onOpenSettings, handleClose]);
+
+  const handleOpenPowerManagerSettings = useCallback(async () => {
+    await openPowerManagerSettings();
+    onOpenSettings?.();
+    handleClose();
+  }, [openPowerManagerSettings, onOpenSettings, handleClose]);
+
+  const handleDismiss = useCallback(() => {
+    remindLater();
+  }, [remindLater]);
+
+  if (Platform.OS !== 'android') {
+    return null;
+  }
+
+  const manufacturerName = powerManagerInfo?.manufacturer || 'your device';
+  const hasPowerManagerActivity = !!powerManagerInfo?.activity;
+  const capitalizedManufacturer =
+    manufacturerName.charAt(0).toUpperCase() + manufacturerName.slice(1);
 
   return (
-    <Modal
-      hasBackdrop
-      useNativeDriver
-      isVisible={visible}
-      style={{ margin: 0 }}
-      backdropOpacity={1}
-      statusBarTranslucent
+    <ReactNativeModal
+      isVisible={isVisible}
       animationIn="slideInUp"
       animationOut="slideOutDown"
-      useNativeDriverForBackdrop
-      onBackdropPress={onCancel}
-      hideModalContentWhileAnimating
-      backdropColor="rgba(0,0,0,0.7)"
-      deviceHeight={screenHeight + (StatusBar.currentHeight || 15)}
+      animationInTiming={300}
+      animationOutTiming={250}
+      statusBarTranslucent
+      deviceHeight={Dimensions.get('screen').height}
+      useNativeDriver={true}
+      onBackButtonPress={handleClose}
+      style={styles.modalContainer}
+      backdropOpacity={0}
     >
-      <View
-        style={[
-          styles.modalContainer,
-          {
-            backgroundColor: isDark ? 'rgba(63, 65, 69, 1)' : 'rgba(255, 255, 255, 1)',
-            borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
-            shadowColor: isDark ? colors.instagram : colors.darkBlue,
-          },
-        ]}
-      >
-        <View
-          style={[
-            styles.iconContainer,
-            {
-              backgroundColor: isDark ? 'rgba(225, 48, 108, 0.2)' : 'rgba(64, 93, 240, 0.15)',
-              borderColor: isDark ? 'rgba(225, 48, 108, 0.4)' : 'rgba(10, 10, 10, 0.3)',
-              shadowColor: isDark ? colors.instagram : colors.darkBlue,
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.3,
-              shadowRadius: 16,
-              elevation: 8,
-            },
-          ]}
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <StatusBar
+          barStyle={colors.background === '#ffffff' ? 'dark-content' : 'light-content'}
+          backgroundColor={colors.background}
+        />
+        {/* Header */}
+        <Animated.View
+          entering={FadeIn.delay(200).duration(400).easing(Easing.out(Easing.quad))}
+          style={styles.header}
         >
-          <View style={{}}>
-            <Ionicons
-              name="battery-charging"
-              size={42}
-              color={isDark ? colors.instagram : colors.darkBlue}
-            />
-          </View>
+          <Pressable
+            onPress={handleClose}
+            style={[styles.closeButton, { backgroundColor: colors.scheduleReminderCardBackground }]}
+            android_ripple={{ color: colors.grayTitle, borderless: true }}
+          >
+            <Ionicons name="close" size={24} color={colors.text} />
+          </Pressable>
+        </Animated.View>
+
+        {/* Content */}
+        <View style={styles.content}>
+          {/* Icon */}
+          <Animated.View
+            entering={FadeInUp.delay(300)
+              .duration(500)
+              .easing(Easing.out(Easing.back(1.5)))}
+            style={[styles.iconContainer, { backgroundColor: 'rgba(255, 179, 64, 0.15)' }]}
+          >
+            <Ionicons name="battery-half-outline" size={48} color="#FFB340" />
+          </Animated.View>
+
+          {/* Title & Description */}
+          <Animated.View
+            entering={FadeInUp.delay(400).duration(500).easing(Easing.out(Easing.quad))}
+            style={styles.textContainer}
+          >
+            <Text style={[styles.title, { color: colors.text }]}>Enable Unrestricted Mode</Text>
+            <Text style={[styles.description, { color: colors.grayTitle }]}>
+              Your device's battery optimization may delay or block notifications. To ensure
+              reminders arrive on time, please set DailySync to "Unrestricted" or "Don't optimize".
+            </Text>
+          </Animated.View>
+
+          {/* Steps Card */}
+          <Animated.View
+            entering={FadeInUp.delay(500).duration(500).easing(Easing.out(Easing.quad))}
+            style={[styles.stepsCard, { backgroundColor: colors.scheduleReminderCardBackground }]}
+          >
+            <View style={styles.stepRow}>
+              <View style={[styles.stepBadge, { backgroundColor: colors.darkBlue }]}>
+                <Text style={styles.stepBadgeText}>1</Text>
+              </View>
+              <Text style={[styles.stepText, { color: colors.text }]}>
+                Tap <Text style={styles.stepHighlight}>"Open Settings"</Text> below
+              </Text>
+            </View>
+
+            <View style={[styles.stepDivider, { backgroundColor: colors.borderColor }]} />
+
+            <View style={styles.stepRow}>
+              <View style={[styles.stepBadge, { backgroundColor: colors.darkBlue }]}>
+                <Text style={styles.stepBadgeText}>2</Text>
+              </View>
+              <Text style={[styles.stepText, { color: colors.text }]}>
+                Find <Text style={styles.stepHighlight}>"DailySync"</Text> in the list
+              </Text>
+            </View>
+
+            <View style={[styles.stepDivider, { backgroundColor: colors.borderColor }]} />
+
+            <View style={styles.stepRow}>
+              <View style={[styles.stepBadge, { backgroundColor: colors.darkBlue }]}>
+                <Text style={styles.stepBadgeText}>3</Text>
+              </View>
+              <Text style={[styles.stepText, { color: colors.text }]}>
+                Select <Text style={styles.stepHighlight}>"Unrestricted"</Text> or{' '}
+                <Text style={styles.stepHighlight}>"Don't optimize"</Text>
+              </Text>
+            </View>
+          </Animated.View>
         </View>
 
-        <Text style={[styles.title, { color: colors.text, fontFamily: FONTS.Bold }]}>
-          Battery Optimization Detected
-        </Text>
+        <Animated.View entering={FadeInUp.delay(400).duration(400)} style={styles.actionsContainer}>
+          <Pressable
+            onPress={handleOpenBatterySettings}
+            style={[styles.primaryButton, { backgroundColor: colors.darkBlue }]}
+            android_ripple={{ color: 'rgba(255, 255, 255, 0.2)' }}
+          >
+            <Ionicons name="settings-outline" size={20} color="#fff" />
+            <Text style={styles.primaryButtonText}>Open Settings</Text>
+          </Pressable>
 
-        <Text
-          style={[
-            styles.message,
-            {
-              color: isDark ? colors.grayTitle : 'rgba(0,0,0,0.75)',
-              fontFamily: FONTS.Medium,
-            },
-          ]}
-        >
-          To ensure you receive all notifications on time, please disable battery optimization for
-          this app. This will allow the app to run reliably in the background.
-        </Text>
-
-        <View style={styles.buttonContainer}>
-          <View style={styles.buttonWrapper}>
+          {hasPowerManagerActivity && (
             <Pressable
+              onPress={handleOpenPowerManagerSettings}
               style={[
-                styles.button,
-                styles.cancelButton,
+                styles.secondaryButton,
                 {
-                  borderColor: isDark ? colors.instagram : colors.darkBlue,
-                  backgroundColor: isDark ? 'rgba(225, 48, 108, 0.1)' : 'rgba(64, 93, 240, 0.08)',
+                  backgroundColor: colors.scheduleReminderCardBackground,
+                  borderColor: colors.borderColor,
                 },
               ]}
-              onPress={handleCancelPress}
+              android_ripple={{ color: colors.grayTitle }}
             >
-              <Text
-                style={[
-                  styles.cancelText,
-                  {
-                    color: isDark ? colors.instagram : colors.darkBlue,
-                    fontFamily: FONTS.SemiBold,
-                  },
-                ]}
-              >
-                Skip
+              <Ionicons name="phone-portrait-outline" size={18} color={colors.text} />
+              <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
+                {capitalizedManufacturer} Power Settings
               </Text>
             </Pressable>
-          </View>
+          )}
 
-          <View style={styles.buttonWrapper}>
-            <Pressable
-              style={[
-                styles.button,
-                styles.confirmButton,
-                {
-                  backgroundColor: isDark ? colors.instagram : colors.darkBlue,
-                  shadowColor: isDark ? colors.instagram : colors.darkBlue,
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.4,
-                  shadowRadius: 16,
-                  elevation: 12,
-                },
-              ]}
-              onPress={handleConfirmPress}
-            >
-              <Text style={[styles.confirmText, { color: colors.white, fontFamily: FONTS.Bold }]}>
-                Continue
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    </Modal>
+          <Pressable
+            onPress={handleDismiss}
+            style={styles.skipButton}
+            android_ripple={{ color: colors.grayTitle, borderless: false }}
+          >
+            <Text style={[styles.skipButtonText, { color: colors.grayTitle }]}>
+              Remind me after 24 hours
+            </Text>
+          </Pressable>
+        </Animated.View>
+      </SafeAreaView>
+    </ReactNativeModal>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
+  modalContainer: {
+    margin: 0,
+    padding: 0,
+  },
+  safeArea: {
     flex: 1,
-    width: '100%',
-    height: '100%',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
+  closeButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: StatusBar.currentHeight || 0,
-    paddingBottom: 40,
-  },
-
-  modalContainer: {
-    width: 360,
-    alignSelf: 'center',
-    borderRadius: 32,
-    paddingHorizontal: 28,
-    paddingVertical: 20,
-    alignItems: 'center',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.35,
-    shadowRadius: 40,
-    elevation: 25,
-    borderWidth: 1.5,
   },
   iconContainer: {
-    width: 85,
-    height: 85,
-    borderRadius: 42.5,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 28,
-    borderWidth: 2,
+    marginBottom: 32,
+  },
+  textContainer: {
+    alignItems: 'center',
+    marginBottom: 32,
   },
   title: {
+    fontFamily: FONTS.SemiBold,
     fontSize: 26,
-    fontWeight: '900',
-    marginBottom: 18,
     textAlign: 'center',
-    letterSpacing: 0.5,
+    marginBottom: 16,
   },
-  message: {
-    fontSize: 16.5,
+  description: {
+    fontFamily: FONTS.Regular,
+    fontSize: 15,
     textAlign: 'center',
-    marginBottom: 36,
     lineHeight: 24,
-    letterSpacing: 0.2,
     paddingHorizontal: 8,
-    width: '100%',
   },
-  buttonContainer: {
+  stepsCard: {
+    width: '100%',
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+  },
+  stepRow: {
     flexDirection: 'row',
-    width: '100%',
-    gap: 14,
+    alignItems: 'center',
+    paddingVertical: 12,
   },
-  buttonWrapper: {
-    flex: 1,
-  },
-  button: {
-    borderRadius: 18,
+  stepBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 56,
-    paddingHorizontal: 18,
+    marginRight: 16,
   },
-  cancelButton: {
-    borderWidth: 2,
+  stepBadgeText: {
+    fontFamily: FONTS.SemiBold,
+    fontSize: 14,
+    color: '#fff',
   },
-  confirmButton: {},
-  cancelText: {
-    fontSize: 15.5,
-    fontWeight: '600',
-    letterSpacing: 0.3,
+  stepText: {
+    fontFamily: FONTS.Regular,
+    fontSize: 15,
+    flex: 1,
+    lineHeight: 22,
   },
-  confirmText: {
-    fontSize: 15.5,
-    fontWeight: '800',
-    letterSpacing: 0.4,
+  stepHighlight: {
+    fontFamily: FONTS.Medium,
+  },
+  stepDivider: {
+    height: 1,
+    marginLeft: 44,
+  },
+  actionsContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    gap: 12,
+  },
+  primaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 14,
+    gap: 10,
+  },
+  primaryButtonText: {
+    fontFamily: FONTS.SemiBold,
+    fontSize: 17,
+    color: '#fff',
+  },
+  secondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 10,
+  },
+  secondaryButtonText: {
+    fontFamily: FONTS.Medium,
+    fontSize: 15,
+  },
+  skipButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+  },
+  skipButtonText: {
+    fontFamily: FONTS.Regular,
+    fontSize: 15,
   },
 });
 
-export default React.memo(BatteryOptimizationModal);
+export default memo(BatteryOptimizationModal);
