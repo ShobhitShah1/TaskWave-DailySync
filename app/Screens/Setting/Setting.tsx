@@ -9,17 +9,27 @@ import { APP_CONFIG } from '@Constants/AppConfig';
 import AssetsPath from '@Constants/AssetsPath';
 import { SIZE } from '@Constants/Theme';
 import { useBatteryOptimization } from '@Contexts/BatteryOptimizationProvider';
+import { useSettings } from '@Contexts/SettingsProvider';
 import useThemeColors from '@Hooks/useThemeMode';
 import HomeHeader from '../Home/Components/HomeHeader';
 import SettingItem from './Components/SettingItem';
+import LocationRadiusModal from './Components/LocationRadiusModal';
 
 const Settings = () => {
   const style = styles();
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { showModal: showBatteryModal, isBatteryOptimized } = useBatteryOptimization();
+  const { locationRadius, setLocationRadius } = useSettings();
 
-  const [modalStatus, setModalStatus] = useState({ rateUs: false });
+  const [modalStatus, setModalStatus] = useState({ rateUs: false, locationRadius: false });
+
+  const formatRadius = (meters: number): string => {
+    if (meters >= 1000) {
+      return `${(meters / 1000).toFixed(meters % 1000 === 0 ? 0 : 1)} km`;
+    }
+    return `${meters}m`;
+  };
 
   const settingsData = [
     ...(Platform.OS === 'android' && isBatteryOptimized
@@ -38,6 +48,12 @@ const Settings = () => {
           },
         ]
       : []),
+    {
+      title: 'Location Radius',
+      icon: AssetsPath.ic_location_history,
+      onPress: () => setModalStatus({ ...modalStatus, locationRadius: true }),
+      subtitle: `Notify within ${formatRadius(locationRadius)}`,
+    },
     {
       title: 'Notification',
       icon: AssetsPath.ic_notification,
@@ -127,6 +143,13 @@ const Settings = () => {
       <RateUsModal
         isVisible={modalStatus.rateUs}
         onClose={() => setModalStatus({ ...modalStatus, rateUs: false })}
+      />
+
+      <LocationRadiusModal
+        isVisible={modalStatus.locationRadius}
+        onClose={() => setModalStatus({ ...modalStatus, locationRadius: false })}
+        currentRadius={locationRadius}
+        onSelectRadius={setLocationRadius}
       />
     </SafeAreaView>
   );

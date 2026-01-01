@@ -12,6 +12,7 @@ import {
   MapView,
   PointAnnotation,
   ShapeSource,
+  UserLocation,
 } from '@maplibre/maplibre-react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { navigationRef } from '@Routes/RootNavigation';
@@ -108,7 +109,7 @@ const StatCard = memo(
         },
       ]}
     >
-      <View
+      {/* <View
         style={[
           styles.statIconContainer,
           { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' },
@@ -119,7 +120,7 @@ const StatCard = memo(
           style={[styles.statIcon, { tintColor: colors.text }]}
           resizeMode="contain"
         />
-      </View>
+      </View> */}
       <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
       <Text style={[styles.statLabel, { color: colors.grayTitle }]}>{label}</Text>
     </View>
@@ -189,10 +190,12 @@ const LocationPreview = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const scaleValue = useSharedValue(1);
   const hasFittedRef = useRef(false);
+  const hasRouteFetchedRef = useRef(false);
+  const userMovedCameraRef = useRef(false);
 
+  // Initial camera fit - only once when route is ready
   useEffect(() => {
-    if (routeGeoJSON && currentLocation && !hasFittedRef.current) {
-      // Small delay to ensure map is ready
+    if (routeGeoJSON && currentLocation && !hasFittedRef.current && !userMovedCameraRef.current) {
       setTimeout(() => {
         zoomToFitAll();
         hasFittedRef.current = true;
@@ -200,8 +203,16 @@ const LocationPreview = () => {
     }
   }, [routeGeoJSON, currentLocation]);
 
+  // Fetch route only once when we first get location
   useEffect(() => {
-    if (currentLocation && notification?.latitude && notification?.longitude) {
+    if (
+      currentLocation &&
+      notification?.latitude &&
+      notification?.longitude &&
+      !hasRouteFetchedRef.current
+    ) {
+      hasRouteFetchedRef.current = true;
+
       const distance = calculateDistance(
         currentLocation.coords.latitude,
         currentLocation.coords.longitude,
@@ -235,16 +246,41 @@ const LocationPreview = () => {
             const durationSeconds = route.properties.duration || 0;
             setEstimatedTime({
               distance: routeDistanceKm,
-              // Naive walking: ~5km/h => 1km ~ 12min.
-              // But OSRM 'driving' duration is usually accurate for driving.
-              driving: durationSeconds / 60, // minutes
-              walking: (routeDistanceKm / 5) * 60, // minutes (approx)
+              driving: durationSeconds / 60,
+              walking: (routeDistanceKm / 5) * 60,
             });
           }
         }
       });
     }
   }, [currentLocation, notification.latitude, notification.longitude]);
+
+  // Update estimated time on location changes (without re-fetching route)
+  useEffect(() => {
+    if (
+      currentLocation &&
+      notification?.latitude &&
+      notification?.longitude &&
+      hasRouteFetchedRef.current
+    ) {
+      const distance = calculateDistance(
+        currentLocation.coords.latitude,
+        currentLocation.coords.longitude,
+        Number(notification?.latitude),
+        Number(notification?.longitude),
+      );
+
+      setEstimatedTime((prev) =>
+        prev
+          ? {
+              ...prev,
+              distance: distance,
+              walking: Math.round((distance / 5) * 60),
+            }
+          : null,
+      );
+    }
+  }, [currentLocation]);
 
   const snapPoints = useMemo(() => ['9%', '80%'], []);
 
@@ -262,6 +298,9 @@ const LocationPreview = () => {
 
   const zoomToFitAll = useCallback(async () => {
     try {
+      // Reset user moved flag when user manually clicks fit button
+      userMovedCameraRef.current = false;
+
       if (
         currentLocation?.coords?.longitude &&
         currentLocation?.coords.latitude &&
@@ -279,10 +318,10 @@ const LocationPreview = () => {
             longitude: Number(notification.longitude),
           },
           {
-            paddingTop: 150,
-            paddingRight: 60,
-            paddingBottom: 200,
-            paddingLeft: 60,
+            paddingTop: 100,
+            paddingRight: 40,
+            paddingBottom: 120,
+            paddingLeft: 40,
             animationDuration: 800,
           },
         );
@@ -367,11 +406,12 @@ const LocationPreview = () => {
   };
 
   const formatTime = (minutes: number) => {
-    if (minutes < 60) {
-      return `${minutes} min`;
+    const roundedMinutes = Math.round(minutes);
+    if (roundedMinutes < 60) {
+      return `${roundedMinutes} min`;
     }
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
+    const hours = Math.floor(roundedMinutes / 60);
+    const mins = Math.round(roundedMinutes % 60);
     return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
   };
 
@@ -411,6 +451,10 @@ const LocationPreview = () => {
           scrollEnabled
           pitchEnabled
           rotateEnabled
+          onRegionIsChanging={() => {
+            // User is manually moving the camera
+            userMovedCameraRef.current = true;
+          }}
         >
           <Camera
             ref={cameraRef}
@@ -488,14 +532,14 @@ const LocationPreview = () => {
               <View style={[styles.markerShadow, { backgroundColor: colors.primary }]} />
             </View>
           </PointAnnotation>
-          {/* Current location marker with pulse */}
-          {permissionStatus === 'granted' && currentLocation && (
-            <PointAnnotation
-              id="current-location"
-              coordinate={[currentLocation.coords.longitude, currentLocation.coords.latitude]}
-            >
-              <PulseMarker color={colors.blue} />
-            </PointAnnotation>
+          {/* Current location marker - use UserLocation for stable updates */}
+          {permissionStatus === 'granted' && (
+            <UserLocation
+              visible={true}
+              animated={true}
+              showsUserHeadingIndicator={false}
+              renderMode="normal"
+            />
           )}
         </MapView>
 
@@ -583,21 +627,38 @@ const LocationPreview = () => {
             <Text style={[styles.reminderTitle, { color: colors.text }]} numberOfLines={2}>
               {notification.subject || 'Location Reminder'}
             </Text>
-            {notification.radius && (
-              <View
-                style={[
-                  styles.radiusBadge,
-                  {
-                    backgroundColor:
-                      theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                  },
-                ]}
-              >
-                <Text style={[styles.radiusText, { color: colors.text }]}>
-                  {notification.radius}m radius
-                </Text>
-              </View>
-            )}
+            <View style={styles.badgeRow}>
+              {notification.status === 'sent' && (
+                <View
+                  style={[
+                    styles.statusBadge,
+                    {
+                      backgroundColor: '#22C55E20',
+                    },
+                  ]}
+                >
+                  <Text style={[styles.statusText, { color: '#22C55E' }]}>✓ Delivered</Text>
+                </View>
+              )}
+              {notification.radius && (
+                <View
+                  style={[
+                    styles.radiusBadge,
+                    {
+                      backgroundColor:
+                        theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    },
+                  ]}
+                >
+                  <Text style={[styles.radiusText, { color: colors.text }]}>
+                    {notification.radius >= 1000
+                      ? `${(notification.radius / 1000).toFixed(1)} km`
+                      : `${notification.radius}m`}{' '}
+                    radius
+                  </Text>
+                </View>
+              )}
+            </View>
           </Animated.View>
 
           {/* Action Buttons */}
@@ -623,7 +684,7 @@ const LocationPreview = () => {
               <Text style={[styles.sectionTitle, { color: colors.text }]}>Distance & Time</Text>
               <View style={styles.statsGrid}>
                 <StatCard
-                  icon={AssetsPath.ic_location}
+                  icon={AssetsPath.ic_history_location_icon}
                   value={formatDistance(estimatedTime.distance)}
                   label="Distance"
                   colors={colors}
@@ -637,7 +698,7 @@ const LocationPreview = () => {
                   theme={theme}
                 />
                 <StatCard
-                  icon={AssetsPath.ic_location_list_icon}
+                  icon={AssetsPath.ic_history_location_icon}
                   value={formatTime(estimatedTime.walking)}
                   label="Walking"
                   colors={colors}
@@ -697,17 +758,17 @@ const LocationPreview = () => {
               ]}
             >
               <View style={styles.addressRow}>
-                <View
+                {/* <View
                   style={[styles.addressIconContainer, { backgroundColor: colors.primary + '15' }]}
                 >
                   <Image
-                    source={AssetsPath.ic_location}
-                    style={[styles.addressIcon, { tintColor: colors.primary }]}
+                    source={AssetsPath.ic_location_history}
+                    style={[styles.addressIcon, { tintColor: colors.text }]}
                     resizeMode="contain"
                   />
-                </View>
+                </View> */}
                 <View style={styles.addressTextContainer}>
-                  <Text style={[styles.addressLabel, { color: colors.grayTitle }]}>Address</Text>
+                  <Text style={[styles.addressLabel, { color: colors.text }]}>Address</Text>
                   <Text style={[styles.addressText, { color: colors.text }]}>
                     {loading
                       ? 'Fetching address...'
@@ -913,6 +974,21 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.Bold,
     lineHeight: 30,
   },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 50,
+    alignSelf: 'flex-start',
+  },
+  statusText: {
+    fontSize: 13,
+    fontFamily: FONTS.SemiBold,
+  },
   radiusBadge: {
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -961,7 +1037,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 16,
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
     borderWidth: 1,
   },
   statIconContainer: {
@@ -976,7 +1052,7 @@ const styles = StyleSheet.create({
     height: 22,
   },
   statValue: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: FONTS.Bold,
   },
   statLabel: {
@@ -1036,8 +1112,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   addressLabel: {
-    fontSize: 12,
-    fontFamily: FONTS.Medium,
+    fontSize: 15,
+    fontFamily: FONTS.SemiBold,
   },
   addressText: {
     fontSize: 14,

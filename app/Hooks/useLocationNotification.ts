@@ -4,7 +4,7 @@ import LocationService from '@Services/LocationService';
 import { Notification } from '@Types/Interface';
 import useLocationPermission from './useLocationPermission';
 import useDatabase from './useReminder';
-import { MIN_DISTANCE_METERS } from '@Utils/geoUtils';
+import { getStoredLocationRadius, DEFAULT_LOCATION_RADIUS } from '@Contexts/SettingsProvider';
 
 const generateNotificationId = (): string => {
   return `location_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -35,9 +35,10 @@ const useLocationNotification = () => {
           throw new Error('Location coordinates are required for location-based reminders.');
         }
 
-        if (!notification.radius) {
-          notification.radius = MIN_DISTANCE_METERS; // Default 100 meters
-        }
+        // Get dynamic radius from settings if not provided
+        const effectiveRadius =
+          notification.radius || getStoredLocationRadius() || DEFAULT_LOCATION_RADIUS;
+        notification.radius = effectiveRadius;
 
         // Generate a unique ID for the location notification
         const notificationId = generateNotificationId();
@@ -46,6 +47,7 @@ const useLocationNotification = () => {
         const notificationData = {
           ...notification,
           id: notificationId,
+          radius: effectiveRadius,
         };
 
         // For location-based notifications, we don't need to schedule with Notifee
@@ -57,19 +59,24 @@ const useLocationNotification = () => {
         }
 
         // Add to location service for tracking
-        LocationService.addLocationReminder({
+        await LocationService.addLocationReminder({
           id: createdId,
           latitude: Number(notification.latitude),
           longitude: Number(notification.longitude),
-          radius: notification.radius,
+          radius: effectiveRadius,
           title: notification.subject || 'Location Reminder',
           message: notification.message || '',
           notification: { ...notificationData, id: createdId },
         });
 
+        const radiusDisplay =
+          effectiveRadius >= 1000
+            ? `${(effectiveRadius / 1000).toFixed(1)} km`
+            : `${effectiveRadius} meters`;
+
         showMessage({
           message: 'Location-based reminder created successfully!',
-          description: `You will be notified when you are within ${MIN_DISTANCE_METERS} meters of the selected location.`,
+          description: `You will be notified when you are within ${radiusDisplay} of the selected location.`,
           type: 'success',
         });
 

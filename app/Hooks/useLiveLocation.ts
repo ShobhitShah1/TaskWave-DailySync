@@ -63,6 +63,9 @@ export function useLiveLocation(options?: Location.LocationOptions) {
       });
 
       if (isMounted) {
+        console.log(
+          `[LiveLocation] Initial location: [${initial.coords.latitude.toFixed(6)}, ${initial.coords.longitude.toFixed(6)}]`,
+        );
         setLocation(initial);
       }
 
@@ -77,6 +80,9 @@ export function useLiveLocation(options?: Location.LocationOptions) {
         finalOptions,
         (newLocation) => {
           if (isMounted) {
+            console.log(
+              `[LiveLocation] Update: [${newLocation.coords.latitude.toFixed(6)}, ${newLocation.coords.longitude.toFixed(6)}] accuracy=${newLocation.coords.accuracy?.toFixed(0)}m`,
+            );
             setLocation(newLocation);
           }
         },
@@ -98,6 +104,7 @@ export function useLiveLocation(options?: Location.LocationOptions) {
           typeof err === 'object' && err !== null && 'message' in err
             ? (err as any).message
             : String(err);
+        console.error('[LiveLocation] Error:', errorMessage);
         setError(errorMessage);
       }
     }
@@ -133,6 +140,9 @@ export function useLiveLocation(options?: Location.LocationOptions) {
         accuracy: Location.Accuracy.High,
         mayShowUserSettingsDialog: true,
       });
+      console.log(
+        `[LiveLocation] Manual refresh: [${current.coords.latitude.toFixed(6)}, ${current.coords.longitude.toFixed(6)}]`,
+      );
       setLocation(current);
       setError(null);
     } catch (err: any) {

@@ -26,7 +26,7 @@ export const calculateDistance = (point1: GeoLatLng, point2: GeoLatLng): number 
 
 /**
  * Calculate appropriate zoom level based on distance between two points
- * This mimics Google Maps behavior
+ * This mimics Google Maps behavior - optimized for closer distances
  */
 export const calculateZoomForDistance = (distanceKm: number): number => {
   // Approximate zoom levels based on distance
@@ -43,9 +43,10 @@ export const calculateZoomForDistance = (distanceKm: number): number => {
   if (distanceKm > 2) return 12;
   if (distanceKm > 1) return 13;
   if (distanceKm > 0.5) return 14;
-  if (distanceKm > 0.2) return 15;
-  if (distanceKm > 0.1) return 16;
-  return 17;
+  if (distanceKm > 0.25) return 14.5;
+  if (distanceKm > 0.1) return 15;
+  if (distanceKm > 0.05) return 15.5;
+  return 16;
 };
 
 /**

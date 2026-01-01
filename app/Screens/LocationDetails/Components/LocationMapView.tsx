@@ -16,10 +16,10 @@ import LocationService from '@Services/LocationService';
 import { fetchRoute } from '@Services/RouteService';
 import { CameraPosition, GeoLatLng, LocationMapViewProps } from '@Types/Interface';
 import { createGeoJSONCircle } from '@Utils/createGeoJSONCircle';
-import { MIN_DISTANCE_METERS } from '@Utils/geoUtils';
 import { fitMapToLocations } from '@Utils/mapBoundsUtils';
 import { initializeMapCache } from '@Utils/mapCacheManager';
 import { getMapStyleUrl } from '@Utils/mapStyles';
+import { getStoredLocationRadius, DEFAULT_LOCATION_RADIUS } from '@Contexts/SettingsProvider';
 import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -119,12 +119,13 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
     }
   }, [isMapReady, areTilesLoaded]);
 
-  // 100m restricted zone around user's current location
-  const restrictedZoneCircle = useMemo(() => {
+  // Notification radius circle around user's current location
+  const notificationRadiusCircle = useMemo(() => {
     if (!userLocationProp) return null;
+    const radius = getStoredLocationRadius() || DEFAULT_LOCATION_RADIUS;
     return createGeoJSONCircle(
       { latitude: userLocationProp.latitude, longitude: userLocationProp.longitude },
-      MIN_DISTANCE_METERS,
+      radius,
     );
   }, [userLocationProp]);
 
@@ -365,23 +366,22 @@ const LocationMapView: React.FC<LocationMapViewProps> = ({
               </PointAnnotation>
             )}
             <UserLocation visible={true} onUpdate={() => {}} />
-            {/* 100m Restricted Zone - Cannot select within this area */}
-            {restrictedZoneCircle && (
-              <ShapeSource id="restricted-zone-source" shape={restrictedZoneCircle}>
+            {/* Notification Radius Circle - Trigger area for location notifications */}
+            {notificationRadiusCircle && (
+              <ShapeSource id="notification-radius-source" shape={notificationRadiusCircle}>
                 <FillLayer
-                  id="restricted-zone-fill"
+                  id="notification-radius-fill"
                   style={{
-                    fillColor: '#FF6B6B',
-                    fillOpacity: 0.15,
+                    fillColor: '#405DF0',
+                    fillOpacity: 0.12,
                   }}
                 />
                 <LineLayer
-                  id="restricted-zone-border"
+                  id="notification-radius-border"
                   style={{
-                    lineColor: '#FF6B6B',
-                    lineWidth: 2,
-                    lineOpacity: 0.6,
-                    lineDasharray: [2, 2],
+                    lineColor: '#405DF0',
+                    lineWidth: 2.5,
+                    lineOpacity: 0.7,
                   }}
                 />
               </ShapeSource>

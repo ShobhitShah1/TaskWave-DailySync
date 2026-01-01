@@ -37,7 +37,6 @@ const SettingItem: FC<SettingProps> = ({
         style={[
           style.iconContainer,
           ionicon && {
-            // Use light yellow background if icon is yellow, otherwise light blue
             backgroundColor: ioniconColor === '#FFB340' ? 'rgba(255, 179, 64, 0.15)' : '#E6E9FC',
             borderRadius: 8,
           },
@@ -50,8 +49,8 @@ const SettingItem: FC<SettingProps> = ({
             source={icon}
             tintColor={theme === 'dark' ? colors.white : colors.black}
             style={{
-              width: isLastItems ? 20 : 22,
-              height: isLastItems ? 20 : 22,
+              width: title === 'Location Radius' ? 26 : isLastItems ? 20 : 22,
+              height: title === 'Location Radius' ? 26 : isLastItems ? 20 : 22,
             }}
             resizeMode="contain"
           />

@@ -22,7 +22,7 @@ import { showMessage } from 'react-native-flash-message';
 import LocationMapView from './Components/LocationMapView';
 import LocationSearchBar from './Components/LocationSearchBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MIN_DISTANCE_METERS } from '@Utils/geoUtils';
+import { getStoredLocationRadius, DEFAULT_LOCATION_RADIUS } from '@Contexts/SettingsProvider';
 
 type ReminderScheduledProps = {
   params: { notificationType: NotificationType; id?: string };
@@ -145,6 +145,7 @@ const LocationDetails = () => {
 
   const handleLocationSelect = useCallback(
     (coordinate: GeoLatLng) => {
+      const currentRadius = getStoredLocationRadius() || DEFAULT_LOCATION_RADIUS;
       if (userLocation) {
         const distance = calculateDistance(
           userLocation.latitude,
@@ -152,10 +153,12 @@ const LocationDetails = () => {
           coordinate.latitude,
           coordinate.longitude,
         );
-        if (distance < MIN_DISTANCE_METERS) {
+        if (distance < currentRadius) {
+          const radiusDisplay =
+            currentRadius >= 1000 ? `${(currentRadius / 1000).toFixed(1)}km` : `${currentRadius}m`;
           showMessage({
             message: 'Too Close',
-            description: `Select a location at least ${MIN_DISTANCE_METERS}m away from your current position.`,
+            description: `Select a location at least ${radiusDisplay} away from your current position.`,
             type: 'warning',
           });
           return;
@@ -172,13 +175,16 @@ const LocationDetails = () => {
     (result: NominatimResult) => {
       const lat = parseFloat(result.lat);
       const lon = parseFloat(result.lon);
+      const currentRadius = getStoredLocationRadius() || DEFAULT_LOCATION_RADIUS;
 
       if (userLocation) {
         const distance = calculateDistance(userLocation.latitude, userLocation.longitude, lat, lon);
-        if (distance < MIN_DISTANCE_METERS) {
+        if (distance < currentRadius) {
+          const radiusDisplay =
+            currentRadius >= 1000 ? `${(currentRadius / 1000).toFixed(1)}km` : `${currentRadius}m`;
           showMessage({
             message: 'Too Close',
-            description: `Select a location at least ${MIN_DISTANCE_METERS}m away from your current position.`,
+            description: `Select a location at least ${radiusDisplay} away from your current position.`,
             type: 'warning',
           });
           return;
@@ -222,6 +228,8 @@ const LocationDetails = () => {
     setIsLoading(true);
 
     try {
+      const effectiveRadius = getStoredLocationRadius() || DEFAULT_LOCATION_RADIUS;
+
       const notificationData: Notification = {
         id: id || '',
         type: 'location',
@@ -237,7 +245,7 @@ const LocationDetails = () => {
         telegramUsername: '',
         latitude: selectedLocation.latitude,
         longitude: selectedLocation.longitude,
-        radius: MIN_DISTANCE_METERS,
+        radius: effectiveRadius,
         locationName: address.trim() || '',
         status: LocationReminderStatus.Pending,
       };

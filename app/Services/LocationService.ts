@@ -5,12 +5,13 @@ import { showMessage } from 'react-native-flash-message';
 
 import { Notification, LocationReminderStatus, LocationReminder } from '@Types/Interface';
 import { updateLocationNotificationStatus } from '@Utils/updateLocationNotificationStatus';
+import { getStoredLocationRadius, DEFAULT_LOCATION_RADIUS } from '@Contexts/SettingsProvider';
 
 // ============================================================================
 // Constants
 // ============================================================================
 const LOCATION_TASK_NAME = 'background-location-task';
-const DEFAULT_RADIUS = 100;
+const DEFAULT_RADIUS = DEFAULT_LOCATION_RADIUS;
 
 // ============================================================================
 // Module State
@@ -20,24 +21,41 @@ let isTracking = false;
 let isStarting = false;
 let isRestoring = false;
 let lastLocation: Location.LocationObject | null = null;
+let locationSubscription: Location.LocationSubscription | null = null;
 
 // ============================================================================
-// Task Manager Setup (must be at module level for background execution)
+// TaskManager - Kept for potential future background use but not currently used
 // ============================================================================
 TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
   if (error) {
-    console.error('[LocationService] Task error:', error);
+    console.error('[LocationService] Background task error:', error);
     return;
   }
 
   if (data) {
     const { locations } = data as { locations: Location.LocationObject[] };
     if (locations?.length > 0) {
-      lastLocation = locations[0];
-      await checkProximityAndNotify(locations[0]);
+      const loc = locations[0];
+      console.log(
+        `[LocationService] Background location update: [${loc.coords.latitude.toFixed(6)}, ${loc.coords.longitude.toFixed(6)}] accuracy=${loc.coords.accuracy?.toFixed(0)}m`,
+      );
+      lastLocation = loc;
+      await checkProximityAndNotify(loc);
     }
   }
 });
+
+/**
+ * Handle location update from watcher
+ */
+async function handleLocationUpdate(location: Location.LocationObject): Promise<void> {
+  lastLocation = location;
+  const { latitude, longitude } = location.coords;
+  console.log(
+    `[LocationService] Location update: [${latitude.toFixed(6)}, ${longitude.toFixed(6)}] accuracy=${location.coords.accuracy?.toFixed(0)}m`,
+  );
+  await checkProximityAndNotify(location);
+}
 
 // ============================================================================
 // Helper Functions
@@ -76,12 +94,26 @@ async function ensureNotificationChannel(): Promise<void> {
 async function checkProximityAndNotify(currentLocation: Location.LocationObject): Promise<void> {
   const { latitude, longitude } = currentLocation.coords;
 
+  const activeReminders = Array.from(reminders.values()).filter((r) => r.isActive);
+  if (activeReminders.length > 0) {
+    console.log(
+      `[LocationService] Checking proximity for ${activeReminders.length} active reminder(s) at [${latitude.toFixed(5)}, ${longitude.toFixed(5)}]`,
+    );
+  }
+
   for (const [id, reminder] of reminders) {
     if (!reminder.isActive) continue;
 
     const distance = calculateDistance(latitude, longitude, reminder.latitude, reminder.longitude);
 
+    console.log(
+      `[LocationService] Reminder "${reminder.title}": distance=${distance.toFixed(0)}m, radius=${reminder.radius}m, willTrigger=${distance <= reminder.radius}`,
+    );
+
     if (distance <= reminder.radius) {
+      console.log(
+        `[LocationService] ✓ Inside radius! Triggering notification for: ${reminder.title}`,
+      );
       await triggerNotification(reminder);
       deactivateReminder(id);
     }
@@ -140,12 +172,44 @@ function getActiveCount(): number {
   return Array.from(reminders.values()).filter((r) => r.isActive).length;
 }
 
+/**
+ * Immediately check proximity for a single reminder
+ * This is called when a new reminder is added to check if user is already inside radius
+ */
+async function checkImmediateProximity(reminder: LocationReminder): Promise<void> {
+  try {
+    // Get current location
+    const currentLocation = await getCurrentLocation();
+    if (!currentLocation) {
+      console.log('[LocationService] Could not get current location for immediate check');
+      return;
+    }
+
+    const { latitude, longitude } = currentLocation.coords;
+    const distance = calculateDistance(latitude, longitude, reminder.latitude, reminder.longitude);
+
+    console.log(
+      `[LocationService] Immediate proximity check: distance=${distance.toFixed(0)}m, radius=${reminder.radius}m`,
+    );
+
+    if (distance <= reminder.radius) {
+      console.log(
+        `[LocationService] User already inside radius! Triggering notification immediately.`,
+      );
+      await triggerNotification(reminder);
+      deactivateReminder(reminder.id);
+    }
+  } catch (error) {
+    console.error('[LocationService] Immediate proximity check failed:', error);
+  }
+}
+
 // ============================================================================
 // Public API
 // ============================================================================
-
 /**
  * Start location tracking if not already started
+ * Tries background tracking first, falls back to foreground if unavailable
  */
 export async function startTracking(): Promise<boolean> {
   if (isTracking) return true;
@@ -154,27 +218,59 @@ export async function startTracking(): Promise<boolean> {
   try {
     isStarting = true;
 
+    // Request foreground permission first
     const { status: fgStatus } = await Location.requestForegroundPermissionsAsync();
     if (fgStatus !== 'granted') {
       showMessage({ message: 'Location permission required', type: 'danger' });
       return false;
     }
 
+    // Try to get background permission for when app is closed
     const { status: bgStatus } = await Location.requestBackgroundPermissionsAsync();
-    if (bgStatus !== 'granted') {
-      showMessage({ message: 'Background location permission required', type: 'danger' });
-      return false;
+
+    if (bgStatus === 'granted') {
+      // Try background tracking first (works when app is closed)
+      try {
+        // Check if already running
+        const isTaskRunning = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+        if (!isTaskRunning) {
+          await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 10000, // 10 seconds
+            distanceInterval: 30, // 30 meters
+            showsBackgroundLocationIndicator: true,
+            foregroundService: {
+              notificationTitle: 'DailySync Location',
+              notificationBody: 'Tracking your location for reminders',
+              notificationColor: '#405DF0',
+            },
+          });
+        }
+        isTracking = true;
+        console.log('[LocationService] Background location tracking started');
+        return true;
+      } catch (bgError) {
+        console.warn('[LocationService] Background tracking failed, using foreground:', bgError);
+      }
     }
 
-    await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-      accuracy: Location.Accuracy.High,
-      timeInterval: 10000,
-      distanceInterval: 50,
-      showsBackgroundLocationIndicator: true,
-    });
+    // Fallback to foreground tracking (only works when app is open)
+    if (locationSubscription) {
+      locationSubscription.remove();
+      locationSubscription = null;
+    }
+
+    locationSubscription = await Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.High,
+        timeInterval: 5000,
+        distanceInterval: 20,
+      },
+      handleLocationUpdate,
+    );
 
     isTracking = true;
-    console.log('[LocationService] Tracking started');
+    console.log('[LocationService] Foreground location tracking started');
     return true;
   } catch (error) {
     console.error('[LocationService] Failed to start tracking:', error);
@@ -189,7 +285,23 @@ export async function startTracking(): Promise<boolean> {
  */
 export async function stopTracking(): Promise<void> {
   try {
-    await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
+    // Stop background tracking
+    try {
+      const isTaskRunning = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+      if (isTaskRunning) {
+        await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
+        console.log('[LocationService] Background tracking stopped');
+      }
+    } catch (e) {
+      // Task may not exist
+    }
+
+    // Stop foreground tracking
+    if (locationSubscription) {
+      locationSubscription.remove();
+      locationSubscription = null;
+    }
+
     isTracking = false;
     console.log('[LocationService] Tracking stopped');
   } catch (error) {
@@ -200,7 +312,7 @@ export async function stopTracking(): Promise<void> {
 /**
  * Add a new location reminder (for newly created reminders)
  */
-export function addReminder(data: {
+export async function addReminder(data: {
   id: string;
   latitude: number;
   longitude: number;
@@ -208,12 +320,15 @@ export function addReminder(data: {
   title: string;
   message: string;
   notification: Notification;
-}): void {
+}): Promise<void> {
+  // Get the dynamic radius from settings if not provided
+  const effectiveRadius = data.radius || getStoredLocationRadius() || DEFAULT_RADIUS;
+
   const reminder: LocationReminder = {
     id: data.id,
     latitude: data.latitude,
     longitude: data.longitude,
-    radius: data.radius || DEFAULT_RADIUS,
+    radius: effectiveRadius,
     title: data.title,
     message: data.message,
     notification: data.notification,
@@ -223,11 +338,16 @@ export function addReminder(data: {
   };
 
   reminders.set(data.id, reminder);
-  console.log(`[LocationService] Added: ${data.title} (${reminders.size} total)`);
+  console.log(
+    `[LocationService] Added: ${data.title} (radius: ${effectiveRadius}m, ${reminders.size} total)`,
+  );
 
   if (!isTracking && !isRestoring) {
-    startTracking();
+    await startTracking();
   }
+
+  // Immediately check if user is already inside the radius
+  await checkImmediateProximity(reminder);
 }
 
 /**
@@ -269,11 +389,14 @@ export function restoreReminder(data: {
   // Only restore pending reminders
   const shouldBeActive = isPending(data.status);
 
+  // Use stored radius from data, fallback to settings, then default
+  const effectiveRadius = data.radius || getStoredLocationRadius() || DEFAULT_RADIUS;
+
   const reminder: LocationReminder = {
     id: data.id,
     latitude: data.latitude,
     longitude: data.longitude,
-    radius: data.radius || DEFAULT_RADIUS,
+    radius: effectiveRadius,
     title: data.title,
     message: data.message,
     notification: data.notification,
@@ -283,16 +406,40 @@ export function restoreReminder(data: {
   };
 
   reminders.set(data.id, reminder);
-  console.log(`[LocationService] Restored: ${data.title} [active=${shouldBeActive}]`);
+  console.log(
+    `[LocationService] Restored: ${data.title} [active=${shouldBeActive}, radius=${effectiveRadius}m]`,
+  );
 }
 
-export function finishRestore(): void {
+export async function finishRestore(): Promise<void> {
   isRestoring = false;
   const activeCount = getActiveCount();
   console.log(`[LocationService] Restore complete. Active: ${activeCount}`);
 
   if (activeCount > 0 && !isTracking) {
-    startTracking();
+    await startTracking();
+  }
+
+  // Check proximity for all restored active reminders
+  await checkAllActiveRemindersProximity();
+}
+
+/**
+ * Check proximity for all active reminders
+ * Called after restore to catch any reminders that user is already inside
+ */
+async function checkAllActiveRemindersProximity(): Promise<void> {
+  try {
+    const currentLocation = await getCurrentLocation();
+    if (!currentLocation) {
+      console.log('[LocationService] Could not get current location for bulk proximity check');
+      return;
+    }
+
+    console.log('[LocationService] Checking proximity for all active reminders...');
+    await checkProximityAndNotify(currentLocation);
+  } catch (error) {
+    console.error('[LocationService] Bulk proximity check failed:', error);
   }
 }
 
