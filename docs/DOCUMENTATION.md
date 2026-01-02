@@ -76,6 +76,12 @@ Keep this doc as the single handoff file. Export to PDF/Word as needed.
 
 - Hooks: `useLiveLocation`, `useAddressFromCoords`, `useLocationService`, `useLocationNotification`.
 - Styles: `app/Constants/satellite-style.json`, `streets-v2-style.json`.
+- **LocationService** (`app/Services/LocationService.ts`):
+  - **Dynamic radius**: Uses `getStoredLocationRadius()` from `SettingsProvider` for user-configurable geofence radius (default: 100m).
+  - **Tracking modes**: Attempts background tracking (works when app is closed) first, falls back to foreground tracking (app must be open) if background permissions unavailable.
+  - **Immediate proximity check**: When a reminder is added, immediately checks if user is already inside the radius and triggers notification if so.
+  - **Restore flow**: On app launch, calls `startRestore()` → `restoreReminder()` for each persisted reminder → `finishRestore()` which checks proximity for all active reminders.
+  - **Key functions**: `addReminder()`, `removeReminder()`, `startTracking()`, `stopTracking()`, `getCurrentLocation()`, `getActiveRemindersCount()`.
 
 ### 12) Notifications
 
