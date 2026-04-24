@@ -34,6 +34,7 @@
         "POST_NOTIFICATIONS",
         "SCHEDULE_EXACT_ALARM"
       ],
+      "blockedPermissions": ["com.google.android.gms.permission.AD_ID"],
       "package": "com.taskwave.dailysync",
       "intentFilters": [
         {

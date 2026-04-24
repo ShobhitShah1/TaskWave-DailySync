@@ -12777,17 +12777,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-animated-rolling-numbers@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "react-native-animated-rolling-numbers@npm:2.0.0"
-  peerDependencies:
-    react: ">=18.0.0"
-    react-native: ">=0.70.0"
-    react-native-reanimated: ">=2.0.0"
-  checksum: 10c0/2066207e287b516acf3fb6abeec66f16657e5f46def18f5fb1b37141a58ca5080126cbf8be5bd34de5fc3a5de3b985917250eaa4ff3f26e36a2ab5349794037b
-  languageName: node
-  linkType: hard
-
 "react-native-blob-util@npm:^0.22.2":
   version: 0.22.2
   resolution: "react-native-blob-util@npm:0.22.2"
@@ -13658,12 +13647,12 @@ __metadata:
 
 "send-message@file:./send-message::locator=taskwave-dailysync%40workspace%3A.":
   version: 0.1.0
-  resolution: "send-message@file:./send-message#./send-message::hash=865e16&locator=taskwave-dailysync%40workspace%3A."
+  resolution: "send-message@file:./send-message#./send-message::hash=f1543f&locator=taskwave-dailysync%40workspace%3A."
   peerDependencies:
     expo: "*"
     react: "*"
     react-native: "*"
-  checksum: 10c0/9ed6414239aeed560b6365f8e6d9aae7942acdca557583ff9ce05fc6d3b6bf121779dcf01125a02e0cdf893fcc86b46afd41603833da25102023280c79bf267a
+  checksum: 10c0/8db493df711d3801735411810ecbf19d5d5effc99ce1b641b25a981b7c6fbb26bca3f8ef1c642274996e7343c60d164ab2ce278d25b07b43150f46ef6fd441d5
   languageName: node
   linkType: hard
 
@@ -14595,7 +14584,6 @@ __metadata:
     prettier: "npm:^3.6.2"
     react: "npm:19.1.0"
     react-native: "npm:0.81.5"
-    react-native-animated-rolling-numbers: "npm:^2.0.0"
     react-native-blob-util: "npm:^0.22.2"
     react-native-bootsplash: "npm:^6.3.10"
     react-native-contacts: "npm:7.0.4"
