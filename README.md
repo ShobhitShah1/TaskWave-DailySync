@@ -105,5 +105,3 @@ If notifications are not working:
 1. Check notification permissions in device settings
 2. Verify notification channels are created
 3. Check that the app is not in battery optimization mode
-
-
