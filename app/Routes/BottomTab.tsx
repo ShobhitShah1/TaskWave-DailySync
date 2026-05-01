@@ -13,7 +13,6 @@ import { useNavigation } from '@react-navigation/native';
 import AddReminder from '@Screens/AddReminder/AddReminder';
 import History from '@Screens/History/History';
 import Home from '@Screens/Home/Home';
-import Notification from '@Screens/Notification/Notification';
 import Setting from '@Screens/Setting/Setting';
 import { NotificationCategory, NotificationType, RenderTabBarProps } from '@Types/Interface';
 import { getCategories } from '@Utils/getCategories';
@@ -24,6 +23,7 @@ import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-nati
 import { CurvedBottomBar } from 'react-native-curved-bottom-bar';
 import { showMessage } from 'react-native-flash-message';
 import RenderSheetView from './Components/RenderSheetView';
+import Alarm from '@Screens/Alarm/Alarm';
 
 const { width } = Dimensions.get('window');
 
@@ -34,6 +34,7 @@ const BottomTab = () => {
   const { handleSheetPositionChange } = useBottomSheetBackHandler(bottomSheetModalRef);
 
   const [hideBottomTab, setHideBottomTab] = useState(false);
+  const [currentTabRoute, setCurrentTabRoute] = useState('Home');
   const [selectedCategory, setSelectedCategory] = useState<NotificationType | null>(null);
   const initialCategories = getCategories(colors);
 
@@ -51,8 +52,15 @@ const BottomTab = () => {
   );
 
   const handlePresentModalPress = useCallback(() => {
+    if (currentTabRoute === 'Alarm') {
+      navigation.navigate('CreateAlarm', {
+        mode: 'solo',
+      });
+      return;
+    }
+
     bottomSheetModalRef.current?.present();
-  }, []);
+  }, [bottomSheetModalRef, currentTabRoute, navigation]);
 
   const renderTabBar = useCallback(
     ({ routeName, selectedTab, navigate }: RenderTabBarProps) => (
@@ -212,11 +220,14 @@ const BottomTab = () => {
             const hideTab = currentRouteName === 'History' || currentRouteName === 'Setting';
 
             setHideBottomTab(hideTab);
+            if (currentRouteName) {
+              setCurrentTabRoute(currentRouteName);
+            }
           },
         }}
       >
         <CurvedBottomBar.Screen name="Home" component={Home} position="LEFT" />
-        <CurvedBottomBar.Screen name="Coming Soon" component={Notification} position="LEFT" />
+        <CurvedBottomBar.Screen name="Alarm" component={Alarm} position="LEFT" />
         <CurvedBottomBar.Screen name="AddReminder" component={AddReminder} position="CIRCLE" />
         <CurvedBottomBar.Screen name="History" component={History} position="RIGHT" />
         <CurvedBottomBar.Screen name="Setting" component={Setting} position="RIGHT" />

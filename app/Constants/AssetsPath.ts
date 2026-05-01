@@ -4,6 +4,8 @@ const ic_unFillHistory = require('../../assets/Icons/ic_unFillHistory.png');
 const ic_unFillNotification = require('../../assets/Icons/ic_unFillNotification.png');
 const ic_unFillSetting = require('../../assets/Icons/ic_unFillSetting.png');
 const ic_unFillComingSoon = require('../../assets/Icons/ic_comingSoon.png');
+const ic_fillAlarm = require('../../assets/Icons/ic_fillAlarm.png');
+const ic_unFillAlarm = require('../../assets/Icons/ic_alarm.png');
 const ic_menu = require('../../assets/Icons/ic_menu.png');
 const ic_dotMenu = require('../../assets/Icons/ic_dotMenu.png');
 const ic_darkTheme = require('../../assets/Icons/ic_darkTheme.png');
@@ -82,6 +84,11 @@ const ic_pause = require('../../assets/Icons/ic_pause.png');
 const ic_delete = require('../../assets/Icons/ic_delete.png');
 const ic_bottomShape = require('../../assets/Icons/ic_bottomShape.png');
 const ic_wave = require('../../assets/Icons/ic_wave.png');
+const ic_soloAlarm = require('../../assets/Icons/ic_soloAlarm.png');
+const ic_groupAlarm = require('../../assets/Icons/ic_groupAlarm.png');
+const ic_custom_audio = require('../../assets/Icons/ic_custom_audio.png');
+const ic_alertNotification = require('../../assets/Icons/ic_alertNotification.png');
+const ic_vibration = require('../../assets/Icons/ic_vibration.png');
 
 // Images
 const ob_Email = require('../../assets/Images/ob_Email.png');
@@ -108,6 +115,8 @@ export default {
   ic_unFillNotification,
   ic_unFillSetting,
   ic_unFillComingSoon,
+  ic_fillAlarm,
+  ic_unFillAlarm,
   ic_menu,
   ic_dotMenu,
   ic_darkTheme,
@@ -187,6 +196,11 @@ export default {
   ic_pause,
   ic_bottomShape,
   ic_wave,
+  ic_soloAlarm,
+  ic_groupAlarm,
+  ic_custom_audio,
+  ic_alertNotification,
+  ic_vibration,
 
   // Images
   ob_Email,

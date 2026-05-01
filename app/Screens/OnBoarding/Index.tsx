@@ -1,26 +1,31 @@
-import { useIsFocused, useNavigation } from '@react-navigation/native';
 import React, { memo, useRef, useState } from 'react';
-import { Animated, FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
+import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 
 import { OnBoardingData } from '@Constants/Data';
-import { storage, useAppContext } from '@Contexts/ThemeProvider';
+import { storage } from '@Contexts/ThemeProvider';
 import useThemeColors from '@Hooks/useThemeMode';
 
 import NextButton from './Components/NextButton';
 import OnBoardingListView from './Components/OnBoardingListView';
 import Paginator from './Components/Paginator';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@Types/Interface';
 
 const OnBoarding = () => {
-  const navigation = useNavigation<any>();
   const [CurrentIndex, setCurrentIndex] = useState<number>(0);
-  const scrollX = useRef(new Animated.Value(0)).current;
+  const scrollX = useSharedValue(0);
   const sliderRef = useRef<FlatList>(null);
   const colors = useThemeColors();
-  const { theme } = useAppContext();
-  const isFocus = useIsFocused();
 
-  const isDark = theme === 'dark';
-  const barColor = isDark ? '#303334' : '#ffffff';
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'OnBoarding'>>();
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollX.value = event.contentOffset.x;
+    },
+  });
 
   const viewableItemsChanged = useRef(({ viewableItems }: any) => {
     setCurrentIndex(viewableItems?.[0]?.index);
@@ -33,17 +38,17 @@ const OnBoarding = () => {
       sliderRef.current?.scrollToIndex({ index: CurrentIndex + 1 });
     } else {
       storage.set('onboardingShown', 'no');
-      navigation.replace('BottomTab');
+      navigation.replace('SignIn');
     }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.white }]}>
       <View style={{ flex: 2 }}>
-        <FlatList
+        <Animated.FlatList
           horizontal
           pagingEnabled
-          ref={sliderRef}
+          ref={sliderRef as any}
           bounces={false}
           data={OnBoardingData}
           showsHorizontalScrollIndicator={false}
@@ -51,10 +56,8 @@ const OnBoarding = () => {
           renderItem={({ item }: any) => {
             return <OnBoardingListView item={item} />;
           }}
-          onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
-            useNativeDriver: false,
-          })}
-          scrollEventThrottle={32}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
           onViewableItemsChanged={viewableItemsChanged}
           viewabilityConfig={viewConfig}
         />

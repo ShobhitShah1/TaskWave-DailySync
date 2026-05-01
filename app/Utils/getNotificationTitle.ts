@@ -14,12 +14,12 @@ export const getNotificationTitle = (notification: Notification): string => {
       return notification.toMail?.[0] || '';
 
     default:
-      if (notification.telegramUsername) {
-        return notification.telegramUsername.toString();
+      if (notification?.telegramUsername) {
+        return notification?.telegramUsername?.toString();
       }
 
-      if (notification.toContact?.length) {
-        return notification.toContact.map((contact) => contact.name).join(', ');
+      if (notification?.toContact?.length) {
+        return notification?.toContact?.map?.((contact) => contact?.name)?.join(', ');
       }
 
       return '';

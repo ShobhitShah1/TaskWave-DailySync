@@ -137,6 +137,11 @@ export const LightThemeColors = {
   darkBlue: ColorGroups.accent.darkBlue,
   lightBlue: ColorGroups.accent.lightBlue,
   previewBackground: 'rgba(236, 236, 236, 1)',
+  alarmFocus: 'rgba(180, 194, 255, 1)',
+  alarmUnfocus: 'rgba(237, 237, 237, 1)',
+  alarmWheelBg: 'rgba(246, 246, 246, 1)',
+  alarmDaySelectedBg: 'rgba(48, 51, 52, 1)',
+  alarmDayUnselectedBg: 'rgba(237, 237, 237, 1)',
   ...CommunicationPlatformColors,
 };
 
@@ -165,6 +170,11 @@ export const DarkThemeColors = {
   darkBlue: ColorGroups.accent.darkBlue,
   lightBlue: ColorGroups.accent.lightBlue,
   previewBackground: 'rgba(63, 65, 69, 1)',
+  alarmFocus: 'rgba(180, 194, 255, 1)',
+  alarmUnfocus: 'rgba(77, 78, 81, 1)',
+  alarmWheelBg: 'rgba(77, 78, 81, 1)',
+  alarmDaySelectedBg: 'rgba(255, 255, 255, 1)',
+  alarmDayUnselectedBg: 'rgba(77, 78, 81, 1)',
   ...CommunicationPlatformColors,
   location: 'rgba(107, 164, 227, 1)',
 };

@@ -1,4 +1,6 @@
+import { AuthProvider } from '@Contexts/AuthProvider';
 import { FONTS } from '@Constants/Theme';
+import { QueryClientProvider } from '@tanstack/react-query';
 import notifee, { EventType } from '@notifee/react-native';
 import { useFonts } from 'expo-font';
 import * as QuickActions from 'expo-quick-actions';
@@ -21,8 +23,17 @@ import useReminder, {
   createNotificationChannel,
   scheduleNotification,
 } from './app/Hooks/useReminder';
+import { handleAlarmEvent } from './app/Services/AlarmProcessor';
+import { AlarmProvider, useAlarmContext } from './app/Contexts/AlarmProvider';
+import LiveAlarmOverlay from './app/Screens/Alarm/Components/LiveAlarmOverlay';
 import Routes from './app/Routes/Routes';
+import { navigateTo } from './app/Routes/RootNavigation';
 import LocationService from './app/Services/LocationService';
+import { appQueryClient } from './app/Services/QueryClient';
+import {
+  ensureRemoteNotificationChannel,
+  subscribeToForegroundRemoteMessages,
+} from './app/Services/RemoteNotificationService';
 import { LocationReminderStatus, Notification } from './app/Types/Interface';
 import { getDatabase } from './app/Utils/databaseUtils';
 
@@ -47,6 +58,22 @@ interface TextWithDefaultProps extends Text {
 
 notifee.onBackgroundEvent(async ({ type, detail }) => {
   try {
+    if (
+      detail.notification?.data?.kind === 'alarm' ||
+      detail.notification?.data?.kind === 'alarm-invitation'
+    ) {
+      await handleAlarmEvent(type, detail);
+
+      if (type === EventType.PRESS && detail.notification?.data?.kind === 'alarm-invitation') {
+        navigateTo('BottomTab', {
+          screen: 'Alarm',
+        });
+      }
+      if (type !== EventType.DELIVERED && type !== EventType.ACTION_PRESS) {
+        return;
+      }
+    }
+
     const notification: Notification = detail.notification?.data as any;
 
     switch (type) {
@@ -92,6 +119,8 @@ const AppContent = () => {
   const { theme } = useAppContext();
   const backgroundColor = theme === 'dark' ? '#303334' : '#ffffff';
 
+  const { activeAlarm, setActiveAlarm } = useAlarmContext();
+
   return (
     <GestureHandlerRootView style={[styles.container, { backgroundColor }]}>
       <BottomSheetProvider>
@@ -99,6 +128,8 @@ const AppContent = () => {
           <Routes />
 
           <BatteryOptimizationModal />
+
+          <LiveAlarmOverlay alarm={activeAlarm} onClose={() => setActiveAlarm(null)} />
 
           <FlashMessage
             animated
@@ -131,64 +162,47 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    ensureRemoteNotificationChannel().catch(() => undefined);
+    const unsubscribe = subscribeToForegroundRemoteMessages();
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
     const unsubscribe = notifee.onForegroundEvent(async ({ type, detail }) => {
       try {
+        if (detail.notification?.data?.kind === 'alarm' || detail.notification?.data?.kind === 'alarm-invitation') {
+           // Alarm events are now handled by AlarmProvider
+           return;
+        }
+
         const notification: Notification = detail.notification?.data as any;
 
         switch (type) {
           case EventType.DISMISSED:
-            // Handle dismissed notifications
+            console.log('User dismissed notification', detail.notification);
             break;
           case EventType.PRESS:
-            handleNotificationPress(notification);
-            break;
-          case EventType.DELIVERED:
-            if (notification && notification?.scheduleFrequency?.length !== 0) {
-              try {
-                const { updatedNotification } = await updateToNextDate(notification);
-
-                if (!updatedNotification) {
-                  return;
-                }
-
-                const id = updatedNotification.id;
-
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
-
-                const notificationDate = new Date(updatedNotification.date);
-                notificationDate.setHours(0, 0, 0, 0);
-
-                if (notificationDate >= now && updatedNotification && updatedNotification.date) {
-                  let notificationScheduleId;
-
-                  await createNotificationChannel();
-
-                  if (id) {
-                    await updateNotification({
-                      ...updatedNotification,
-                      id,
-                    });
-                  } else {
-                    notificationScheduleId = await scheduleNotification(updatedNotification);
-
-                    if (notificationScheduleId?.trim()) {
-                      const data = {
-                        ...updatedNotification,
-                        id: notificationScheduleId,
-                      };
-                      await createNotification(data);
-                    }
-                  }
-                }
-              } catch (error: any) {
-                if (!error.message?.includes('invalid notification ID')) {
-                  showMessage({
-                    message: String(error?.message || error),
-                    type: 'danger',
-                  });
-                }
+            if (notification.type === 'location') {
+              navigateTo('LocationPreview', {
+                notificationData: notification,
+              });
+            } else if (notification.type === 'note') {
+              navigateTo('ReminderPreview', {
+                notificationData: notification,
+              });
+            } else {
+              // Update status to 'sent' when notification is clicked
+              if (notification.id) {
+                updateNotification({
+                  ...notification,
+                  status: LocationReminderStatus.Sent,
+                });
               }
+
+              navigateTo('ReminderScheduled', {
+                themeColor: '#FF6F61',
+                notification: notification,
+              });
             }
             break;
         }
@@ -203,18 +217,11 @@ export default function App() {
     });
 
     return unsubscribe;
-  }, []);
+  }, [updateNotification]);
 
   const initializeApp = async () => {
     try {
       await createNotificationChannel();
-
-      const initialNotification = await notifee.getInitialNotification();
-
-      if (initialNotification?.notification?.data) {
-        await handleNotificationPress(initialNotification.notification.data as any);
-        await notifee.cancelNotification(initialNotification.notification.id as string);
-      }
     } catch (error: any) {
       if (!error.message?.includes('invalid notification ID')) {
         console.error('App initialization error:', error);
@@ -294,17 +301,25 @@ export default function App() {
   }
 
   return (
-    <AppProvider>
-      <SettingsProvider>
-        <BatteryOptimizationProvider>
-          <ContactProvider>
-            <LocationProvider>
-              <AppContent />
-            </LocationProvider>
-          </ContactProvider>
-        </BatteryOptimizationProvider>
-      </SettingsProvider>
-    </AppProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={appQueryClient}>
+        <AppProvider>
+          <AlarmProvider>
+            <AuthProvider>
+              <SettingsProvider>
+                <BatteryOptimizationProvider>
+                  <ContactProvider>
+                    <LocationProvider>
+                      <AppContent />
+                    </LocationProvider>
+                  </ContactProvider>
+                </BatteryOptimizationProvider>
+              </SettingsProvider>
+            </AuthProvider>
+          </AlarmProvider>
+        </AppProvider>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }
 

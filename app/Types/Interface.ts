@@ -13,9 +13,12 @@ declare global {
 
 export type RootStackParamList = {
   OnBoarding: undefined;
+  SignIn: undefined;
+  SignUp: undefined;
+  CompleteProfile: undefined;
   BottomTab:
     | {
-        screen?: 'Home' | 'Notification' | 'AddReminder' | 'History' | 'Setting';
+        screen?: 'Home' | 'Notification' | 'AddReminder' | 'Alarm' | 'History' | 'Setting';
       }
     | undefined;
   Home: undefined;
@@ -43,6 +46,14 @@ export type RootStackParamList = {
   LocationDetails: {
     notificationType: NotificationType;
     id?: string;
+  };
+  CreateAlarm: {
+    mode?: 'solo' | 'group';
+    id?: string;
+  };
+  AlarmDetails: {
+    alarmId: string;
+    mode: 'solo' | 'group';
   };
 };
 

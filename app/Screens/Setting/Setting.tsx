@@ -1,3 +1,4 @@
+import { useAuth } from '@Hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
 import React, { memo, useState } from 'react';
 import { Linking, Platform, StyleSheet, View } from 'react-native';
@@ -21,6 +22,7 @@ const Settings = () => {
   const navigation = useNavigation();
   const { showModal: showBatteryModal, isBatteryOptimized } = useBatteryOptimization();
   const { locationRadius, setLocationRadius } = useSettings();
+  const { auth, signOut } = useAuth();
 
   const [modalStatus, setModalStatus] = useState({ rateUs: false, locationRadius: false });
 
@@ -31,7 +33,17 @@ const Settings = () => {
     return `${meters}m`;
   };
 
-  const settingsData = [
+  interface SettingItemData {
+    title: string;
+    icon?: number;
+    ionicon?: any;
+    ioniconColor?: string;
+    onPress: () => void;
+    subtitle?: string;
+    showAlert?: boolean;
+  }
+
+  const settingsData: SettingItemData[] = [
     ...(Platform.OS === 'android' && isBatteryOptimized
       ? [
           {
@@ -114,6 +126,19 @@ const Settings = () => {
         } catch (error) {}
       },
     },
+    ...(auth
+      ? [
+          {
+            title: 'Logout',
+            ionicon: 'log-out-outline' as const,
+            ioniconColor: colors.darkBlue,
+            subtitle: auth.user.email,
+            onPress: () => {
+              signOut();
+            },
+          },
+        ]
+      : []),
   ];
 
   return (

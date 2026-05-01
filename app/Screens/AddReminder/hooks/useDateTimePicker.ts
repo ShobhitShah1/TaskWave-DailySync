@@ -23,11 +23,33 @@ const useDateTimePicker = () => {
   };
 
   const handlePickerChange = (event: any, selectedDate: Date | undefined) => {
+    const activePickerType = pickerVisibleType;
     setPickerVisibleType(null);
-    if (event.type === 'set' && selectedDate) {
-      const updatedDateTime =
-        pickerVisibleType === 'date' ? { date: selectedDate } : { time: selectedDate };
-      setSelectedDateAndTime((prev) => ({ ...prev, ...updatedDateTime }));
+
+    if (event.type === 'set' && selectedDate && activePickerType) {
+      setSelectedDateAndTime((prev) => {
+        if (activePickerType === 'date') {
+          const nextDate = new Date(selectedDate);
+          const currentTime = prev.time || new Date();
+
+          const nextTime = new Date(nextDate);
+          nextTime.setHours(currentTime.getHours(), currentTime.getMinutes(), 0, 0);
+
+          return {
+            date: nextDate,
+            time: prev.time ? nextTime : prev.time,
+          };
+        }
+
+        const baseDate = prev.date || new Date();
+        const nextTime = new Date(baseDate);
+        nextTime.setHours(selectedDate.getHours(), selectedDate.getMinutes(), 0, 0);
+
+        return {
+          ...prev,
+          time: nextTime,
+        };
+      });
     }
   };
 

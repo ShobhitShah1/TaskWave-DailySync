@@ -15,5 +15,6 @@
       "@Types/*": ["Types/*"],
       "@Utils/*": ["Utils/*"]
     }
-  }
+  },
+  "include": ["App.tsx", "app/**/*.ts", "app/**/*.tsx"]
 }

@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "965182017324",
+    "project_id": "dailysync-9a3bd",
+    "storage_bucket": "dailysync-9a3bd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:965182017324:android:50530f6d40dd656c8ae689",
+        "android_client_info": {
+          "package_name": "com.gigglam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "965182017324-vev3u58ltef1rre6hrpp4j0ri7d8b2fh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gigglam",
+            "certificate_hash": "d065d88c3aeec4410eec67bb0a9921d92ccd354b"
+          }
+        },
+        {
+          "client_id": "965182017324-b98namhrmi7sa4ise5t89bk00lhssvej.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKiCVsXWSGRi1XFoRc2O7WedJ7yRr1iKw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "965182017324-b98namhrmi7sa4ise5t89bk00lhssvej.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "965182017324-aenokllgdigiiods490ston5s8dc10ak.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.taskwave.dailysync"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:965182017324:android:4c790f9ac2b7ce398ae689",
+        "android_client_info": {
+          "package_name": "com.taskwave.dailysync"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "965182017324-2p19c4l0duvclk0m9qp48ldsc53a6a8c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.taskwave.dailysync",
+            "certificate_hash": "12e56e83593138aa7c46c7c009a3997a7fe6ee3a"
+          }
+        },
+        {
+          "client_id": "965182017324-b98namhrmi7sa4ise5t89bk00lhssvej.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKiCVsXWSGRi1XFoRc2O7WedJ7yRr1iKw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "965182017324-b98namhrmi7sa4ise5t89bk00lhssvej.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "965182017324-aenokllgdigiiods490ston5s8dc10ak.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.taskwave.dailysync"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
