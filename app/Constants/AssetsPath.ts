@@ -100,6 +100,7 @@ const HIW_home_dark = require('../../assets/Images/HIW_home_dark.png');
 const HIW_create_dark = require('../../assets/Images/HIW_create_dark.png');
 const HIW_Notification = require('../../assets/Images/HIW_Notification.png');
 const HIW_whatsapp_dark = require('../../assets/Images/HIW_whatsapp_dark.png');
+const login = require('../../assets/Images/login.png');
 
 // Animation
 const success_animation = require('../../assets/Animations/success_animation.json');
@@ -207,6 +208,7 @@ export default {
   ob_TextMessage,
   ob_Whatsapp,
   ob_WhatsappBusiness,
+  login,
 
   appLogoAndroid,
 

@@ -30,9 +30,9 @@ const mapSoloAlarmRecord = (record: any): SoloAlarmRecord => ({
   createdAt: record.created_at,
   updatedAt: record.updated_at,
   status: record.status,
+  snoozedUntil: record.snoozed_until || null,
   vibrate: Boolean(record.vibrate),
   memoUri: null,
-  snoozeDuration: Number(record.snooze_duration || 5),
   localNotificationId: record.local_notification_id,
 });
 
@@ -60,10 +60,22 @@ export const getAlarmDatabase = async () => {
     snooze_duration INTEGER NOT NULL DEFAULT 5,
     next_trigger_at TEXT NOT NULL,
     local_notification_id TEXT,
+    snoozed_until TEXT,
     status TEXT NOT NULL DEFAULT 'scheduled',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
   );`);
+
+  // Migration: add snoozed_until column if missing
+  const cols = await alarmDatabaseInstance.getAllAsync<{ name: string }>(
+    `PRAGMA table_info(${PERSONAL_ALERTS_TABLE})`,
+  );
+  const colNames = new Set(cols.map((c) => c.name));
+  if (!colNames.has('snoozed_until')) {
+    await alarmDatabaseInstance.execAsync(
+      `ALTER TABLE ${PERSONAL_ALERTS_TABLE} ADD COLUMN snoozed_until TEXT`,
+    );
+  }
 
   await alarmDatabaseInstance.execAsync('PRAGMA journal_mode = WAL;');
 
@@ -134,9 +146,9 @@ export const getAlarmDatabase = async () => {
         await alarmDatabaseInstance.runAsync(
           `INSERT OR IGNORE INTO ${PERSONAL_ALERTS_TABLE} (
             id, title, note, hour, minute, meridiem, tone, vibrate,
-            buffer_minutes, repeat_type, repeat_days, snooze_duration,
+            buffer_minutes, repeat_type, repeat_days,
             next_trigger_at, local_notification_id, status, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             row.id,
             row.title,
@@ -149,7 +161,6 @@ export const getAlarmDatabase = async () => {
             row.buffer_minutes,
             row.repeat_type,
             row.repeat_days,
-            row.snooze_duration || 5,
             row.next_trigger_at,
             row.local_notification_id,
             row.status,
@@ -188,7 +199,7 @@ export const createSoloAlarm = async (input: CreateSoloAlarmInput) => {
       input.bufferMinutes,
       input.repeat,
       JSON.stringify(input.repeatDays),
-      input.snoozeDuration || 5,
+      input.bufferMinutes || 5,
       nextTriggerAt,
       notificationId,
       'scheduled',
@@ -267,7 +278,7 @@ export const updateSoloAlarm = async (alarmId: string, input: CreateSoloAlarmInp
       input.bufferMinutes,
       input.repeat,
       JSON.stringify(input.repeatDays),
-      input.snoozeDuration || 5,
+      input.bufferMinutes || 5,
       nextTriggerAt,
       notificationId,
       'scheduled',
@@ -285,19 +296,27 @@ export const updateSoloAlarm = async (alarmId: string, input: CreateSoloAlarmInp
 export const updateSoloAlarmStatus = async (
   alarmId: string,
   status: 'scheduled' | 'snoozed' | 'completed',
+  snoozedUntil?: string,
   nextTriggerAt?: string,
 ) => {
   const database = await getAlarmDatabase();
   const timestamp = new Date().toISOString();
 
-  if (nextTriggerAt) {
+  if (status === 'snoozed' && snoozedUntil) {
     await database.runAsync(
-      `UPDATE ${PERSONAL_ALERTS_TABLE} SET status = ?, next_trigger_at = ?, updated_at = ? WHERE id = ?`,
+      `UPDATE ${PERSONAL_ALERTS_TABLE} SET status = ?, snoozed_until = ?, next_trigger_at = ?, updated_at = ? WHERE id = ?`,
+      [status, snoozedUntil, snoozedUntil, timestamp, alarmId],
+    );
+  } else if (nextTriggerAt) {
+    // Dismiss with a recalculated next trigger time
+    await database.runAsync(
+      `UPDATE ${PERSONAL_ALERTS_TABLE} SET status = ?, snoozed_until = NULL, next_trigger_at = ?, updated_at = ? WHERE id = ?`,
       [status, nextTriggerAt, timestamp, alarmId],
     );
   } else {
+    // Clear snoozed_until only
     await database.runAsync(
-      `UPDATE ${PERSONAL_ALERTS_TABLE} SET status = ?, updated_at = ? WHERE id = ?`,
+      `UPDATE ${PERSONAL_ALERTS_TABLE} SET status = ?, snoozed_until = NULL, updated_at = ? WHERE id = ?`,
       [status, timestamp, alarmId],
     );
   }

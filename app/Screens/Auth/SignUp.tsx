@@ -78,6 +78,7 @@ const SignUpScreen = () => {
       iconName="person-add-outline"
       subtitle="Join Sync Alarm today"
       title="Create account"
+      type="signUp"
       footer={
         <View style={styles.footerRow}>
           <Text style={[styles.footerText, { color: colors.grayTitle }]}>

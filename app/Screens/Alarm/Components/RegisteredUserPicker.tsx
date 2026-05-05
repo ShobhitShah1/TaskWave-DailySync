@@ -155,9 +155,7 @@ const RegisteredUserPicker: React.FC<RegisteredUserPickerProps> = ({
         {isLoading ? (
           <View style={styles.centerState}>
             <ActivityIndicator color={colors.darkBlue || '#B4C2FF'} size="large" />
-            <Text style={[styles.loadingText, { color: colors.text }]}>
-              Loading contacts...
-            </Text>
+            <Text style={[styles.loadingText, { color: colors.text }]}>Loading contacts...</Text>
           </View>
         ) : (
           <FlatList
@@ -215,9 +213,7 @@ const RegisteredUserPicker: React.FC<RegisteredUserPickerProps> = ({
                   source={AssetsPath.ic_contact}
                   resizeMode="contain"
                 />
-                <Text style={[styles.emptyText, { color: colors.text }]}>
-                  No contacts found.
-                </Text>
+                <Text style={[styles.emptyText, { color: colors.text }]}>No contacts found.</Text>
               </View>
             }
           />

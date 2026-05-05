@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { NativeModules, AppState } from 'react-native';
 import notifee, { EventType } from '@notifee/react-native';
 import { handleAlarmEvent } from '@Services/AlarmProcessor';
 
@@ -13,35 +14,68 @@ export const AlarmProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [activeAlarm, setActiveAlarm] = useState<any | null>(null);
 
   useEffect(() => {
-    // Background events are handled in App.tsx but we can also listen here
+    // Listen for foreground alarm events and delegate to AlarmProcessor
     const unsubscribe = notifee.onForegroundEvent(async ({ type, detail }) => {
-      if (detail.notification?.data?.kind === 'alarm') {
+      if (
+        detail.notification?.data?.kind === 'alarm' ||
+        detail.notification?.data?.kind === 'alarm-invitation'
+      ) {
+        // AlarmProcessor handles DELIVERED (launches native), DISMISSED (cleanup), ACTION_PRESS
         await handleAlarmEvent(type, detail);
-        
-        if (type === EventType.PRESS || type === EventType.DELIVERED) {
-          setActiveAlarm({
-            ...detail.notification.data,
-            localNotificationId: detail.notification.id,
-            title: detail.notification.title,
-            body: detail.notification.body,
-          });
+        // Do NOT show LiveAlarmOverlay — native AlarmActivity handles the UI
+      }
+    });
+
+    // Check for native alarm actions (from AlarmActivity dismiss/snooze)
+    const checkNativeAction = async () => {
+      if (NativeModules.AlarmLauncher?.getInitialAction) {
+        const result = await NativeModules.AlarmLauncher.getInitialAction();
+        if (result && result.action) {
+          console.log(
+            `[AlarmProvider] Native action received: ${result.action} for ${result.alarmId}`,
+          );
+
+          // Skip show-alarm — native AlarmActivity is already handling the UI
+          if (result.action === 'show-alarm') {
+            return;
+          }
+
+          // Construct a fake Notifee detail object to reuse handleAlarmEvent
+          const detail = {
+            notification: {
+              id: result.alarmId,
+              title: result.title,
+              body: result.body,
+              data: {
+                kind: 'alarm',
+                alarmId: result.alarmId,
+                mode: result.mode || 'solo',
+                title: result.title || 'Alarm',
+                body: result.body || 'Wake up!',
+                tone: result.tone || 'default',
+                bufferMinutes: result.bufferMinutes || '5',
+              },
+            } as any,
+            pressAction: { id: result.action },
+          };
+
+          await handleAlarmEvent(EventType.ACTION_PRESS, detail);
         }
       }
-    });
+    };
 
-    // Check initial notification (cold start)
-    notifee.getInitialNotification().then((initial) => {
-      if (initial?.notification?.data?.kind === 'alarm') {
-        setActiveAlarm({
-          ...initial.notification.data,
-          localNotificationId: initial.notification.id,
-          title: initial.notification.title,
-          body: initial.notification.body,
-        });
+    checkNativeAction();
+
+    const appStateListener = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        checkNativeAction();
       }
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      appStateListener.remove();
+    };
   }, []);
 
   return (

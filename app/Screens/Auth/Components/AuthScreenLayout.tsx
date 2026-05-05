@@ -13,6 +13,7 @@ interface AuthScreenLayoutProps {
   subtitle: string;
   footer?: React.ReactNode;
   centerContent?: boolean;
+  type: 'signIn' | 'signUp' | 'onBoarding';
 }
 
 const AuthScreenLayout: React.FC<React.PropsWithChildren<AuthScreenLayoutProps>> = ({
@@ -22,6 +23,7 @@ const AuthScreenLayout: React.FC<React.PropsWithChildren<AuthScreenLayoutProps>>
   iconName,
   subtitle,
   title,
+  type,
 }) => {
   const colors = useThemeColors();
   const { top } = useSafeAreaInsets();
@@ -36,11 +38,21 @@ const AuthScreenLayout: React.FC<React.PropsWithChildren<AuthScreenLayoutProps>>
         enableOnAndroid={true}
         extraScrollHeight={20}
       >
-        <View style={styles.hero}>
-          <Image source={AssetsPath.appLogoAndroid} style={{ width: 60, height: 60 }} />
-          <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
-          <Text style={[styles.subtitle, { color: colors.grayTitle }]}>{subtitle}</Text>
-        </View>
+        {type === 'signIn' ? (
+          <View style={{ marginVertical: 10 }}>
+            <Image
+              source={AssetsPath.login}
+              style={{ width: '100%', height: 280 }}
+              resizeMode="contain"
+            />
+          </View>
+        ) : (
+          <View style={styles.hero}>
+            <Image source={AssetsPath.appLogoAndroid} style={{ width: 60, height: 60 }} />
+            <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+            <Text style={[styles.subtitle, { color: colors.grayTitle }]}>{subtitle}</Text>
+          </View>
+        )}
 
         {children}
 

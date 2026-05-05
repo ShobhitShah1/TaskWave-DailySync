@@ -66,7 +66,8 @@ const SignInScreen = () => {
 
   return (
     <AuthScreenLayout
-      centerContent
+      // centerContent
+      type="signIn"
       iconName="notifications-outline"
       subtitle="Sign in to Sync Alarm"
       title="Welcome back"

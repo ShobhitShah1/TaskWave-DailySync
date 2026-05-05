@@ -27,15 +27,21 @@ const LiveAlarmOverlay: React.FC<LiveAlarmOverlayProps> = ({ alarm, onClose }) =
       await notifee.cancelNotification(alarm.localNotificationId);
     }
     await handleAlarmEvent(EventType.ACTION_PRESS, {
-      notification: { 
-        id: alarm.localNotificationId, 
-        data: { 
-          kind: 'alarm', 
-          alarmId: alarm.alarmId || alarm.id, 
-          mode: alarm.mode || 'solo' 
-        } 
+      notification: {
+        id: alarm.localNotificationId || alarm.alarmId || alarm.id,
+        title: alarm.title || 'Alarm',
+        body: alarm.body || alarm.note || 'Wake up!',
+        data: {
+          kind: 'alarm',
+          alarmId: alarm.alarmId || alarm.id,
+          mode: alarm.mode || 'solo',
+          title: alarm.title || 'Alarm',
+          body: alarm.body || alarm.note || 'Wake up!',
+          tone: alarm.tone || 'default',
+          bufferMinutes: (alarm.bufferMinutes || 5).toString(),
+        },
       } as any,
-      pressAction: { id: 'dismiss-alarm' }
+      pressAction: { id: 'dismiss-alarm' },
     });
     onClose();
   };
@@ -47,16 +53,21 @@ const LiveAlarmOverlay: React.FC<LiveAlarmOverlayProps> = ({ alarm, onClose }) =
       await notifee.cancelNotification(alarm.localNotificationId);
     }
     await handleAlarmEvent(EventType.ACTION_PRESS, {
-      notification: { 
-        id: alarm.localNotificationId, 
-        data: { 
-          kind: 'alarm', 
-          alarmId: alarm.alarmId || alarm.id, 
+      notification: {
+        id: alarm.localNotificationId || alarm.alarmId || alarm.id,
+        title: alarm.title || 'Alarm',
+        body: alarm.body || alarm.note || 'Wake up!',
+        data: {
+          kind: 'alarm',
+          alarmId: alarm.alarmId || alarm.id,
           mode: alarm.mode || 'solo',
-          snoozeDuration: (alarm.snoozeDuration || 5).toString()
-        } 
+          title: alarm.title || 'Alarm',
+          body: alarm.body || alarm.note || 'Wake up!',
+          tone: alarm.tone || 'default',
+          bufferMinutes: (alarm.bufferMinutes || 5).toString(),
+        },
       } as any,
-      pressAction: { id: 'snooze-alarm' }
+      pressAction: { id: 'snooze-alarm' },
     });
     onClose();
   };
@@ -74,14 +85,18 @@ const LiveAlarmOverlay: React.FC<LiveAlarmOverlayProps> = ({ alarm, onClose }) =
       <SafeAreaView style={[styles.activeContainer, { backgroundColor: colors.alarmFocus }]}>
         <View style={styles.activeInner}>
           <View style={styles.activeHeader}>
-            <Image source={AssetsPath.ic_fillAlarm} style={styles.activeLargeIcon} tintColor={colors.white} />
+            <Image
+              source={AssetsPath.ic_fillAlarm}
+              style={styles.activeLargeIcon}
+              tintColor={colors.white}
+            />
             <Text style={styles.activeTitle}>{title}</Text>
             <Text style={styles.activeTime}>
               {hour}:{minute}
               <Text style={styles.activeMeridiem}>{meridiem}</Text>
             </Text>
           </View>
-          
+
           <View style={styles.activeNoteBox}>
             <Text style={styles.activeNoteText}>{note}</Text>
           </View>
@@ -89,9 +104,9 @@ const LiveAlarmOverlay: React.FC<LiveAlarmOverlayProps> = ({ alarm, onClose }) =
           <View style={styles.activeActions}>
             <Pressable onPress={handleSnooze} style={[styles.activeBtn, styles.snoozeBtn]}>
               <Text style={styles.activeBtnText}>SNOOZE</Text>
-              <Text style={styles.snoozeSubtext}>{alarm.snoozeDuration || 5} minutes</Text>
+              <Text style={styles.snoozeSubtext}>{alarm.bufferMinutes || 5} minutes</Text>
             </Pressable>
-            
+
             <Pressable onPress={handleDismiss} style={[styles.activeBtn, styles.dismissBtn]}>
               <Text style={[styles.activeBtnText, { color: colors.alarmFocus }]}>DISMISS</Text>
             </Pressable>

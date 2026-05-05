@@ -15,7 +15,7 @@ import {
   pruneExpiredGroupAlarmSnoozes,
 } from '@Utils/groupAlarmSnoozeStorage';
 
-const ALARM_QUERY_KEYS = {
+export const ALARM_QUERY_KEYS = {
   solo: ['alarms', 'solo'] as const,
   groupFeed: ['alarms', 'group-feed'] as const,
 };
@@ -34,6 +34,8 @@ export const useAlarmFeed = () => {
     refetchOnReconnect: true,
   });
 
+  // Force re-computation of snooze overlay when queries are refetched
+  // groupQuery.dataUpdatedAt changes on every refetch even if data is identical
   const groupData = useMemo(() => {
     const feed = groupQuery.data;
     if (!feed) {
@@ -71,7 +73,7 @@ export const useAlarmFeed = () => {
         };
       }),
     };
-  }, [groupQuery.data]);
+  }, [groupQuery.data, groupQuery.dataUpdatedAt]);
 
   return {
     soloQuery,

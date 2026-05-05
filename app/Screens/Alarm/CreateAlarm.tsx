@@ -7,7 +7,6 @@ import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FONTS } from '@Constants/Theme';
-import { useAuth } from '@Hooks/useAuth';
 import {
   getLocalAlarmDetails,
   useAlarmFeed,
@@ -16,6 +15,7 @@ import {
   useUpdateGroupAlarm,
   useUpdateSoloAlarm,
 } from '@Hooks/useAlarm';
+import { useAuth } from '@Hooks/useAuth';
 import useThemeColors from '@Hooks/useThemeMode';
 import AddMessage from '@Screens/AddReminder/Components/AddMessage';
 import AddScheduleFrequency, {
@@ -35,12 +35,14 @@ import {
 } from '@Types/Alarm';
 import { RootStackParamList } from '@Types/Interface';
 
+import { sounds } from '@Constants/Data';
 import AlarmHeader from './Components/AlarmHeader';
 import AlarmInviteField from './Components/AlarmInviteField';
 import AlarmModeToggle from './Components/AlarmModeToggle';
 import AlarmScheduleRow from './Components/AlarmScheduleRow';
 import RegisteredUserPicker from './Components/RegisteredUserPicker';
 import SoloAlarmEditor from './Components/SoloAlarmEditor';
+import TonePickerModal from './Components/TonePickerModal';
 
 type CreateAlarmRoute = RouteProp<RootStackParamList, 'CreateAlarm'>;
 
@@ -101,15 +103,15 @@ const CreateAlarmScreen = () => {
   const { auth } = useAuth();
 
   const [mode, setMode] = useState<AlarmMode>(route.params?.mode || 'solo');
-  const [tone, setTone] = useState('Default');
+  const [tone, setTone] = useState('default');
   const [vibrate, setVibrate] = useState(true);
   const [bufferMinutes, setBufferMinutes] = useState(0);
   const [message, setMessage] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<AlarmRegisteredUser[]>([]);
   const [showUserPicker, setShowUserPicker] = useState(false);
-  const [snoozeDuration, setSnoozeDuration] = useState(5);
   const [activeTimeUnit, setActiveTimeUnit] = useState<'hour' | 'minute'>('hour');
   const [didHydrateExistingAlarm, setDidHydrateExistingAlarm] = useState(false);
+  const [showTonePicker, setShowTonePicker] = useState(false);
 
   const createSoloAlarmMutation = useCreateSoloAlarm();
   const createGroupAlarmMutation = useCreateGroupAlarm();
@@ -148,13 +150,12 @@ const CreateAlarmScreen = () => {
     }
 
     setSelectedDateAndTime((current) => {
-      if (current.time) {
-        return current;
-      }
+      const nextMin = new Date();
+      nextMin.setMinutes(nextMin.getMinutes() + 1, 0, 0);
 
       return {
         ...current,
-        time: new Date(),
+        time: nextMin,
       };
     });
   }, [didHydrateExistingAlarm, isEditing, setSelectedDateAndTime]);
@@ -175,7 +176,6 @@ const CreateAlarmScreen = () => {
         setTone(alarm.tone);
         setVibrate(alarm.vibrate);
         setBufferMinutes(alarm.bufferMinutes);
-        setSnoozeDuration(alarm.snoozeDuration);
         setSelectedDays(alarm.repeatDays || []);
         setScheduleFrequency(toFrequencyType(alarm.repeat));
         // setMemos(alarm.memoUri ? [{ uri: alarm.memoUri, metering: [] }] : []);
@@ -193,7 +193,6 @@ const CreateAlarmScreen = () => {
       setTone(alarm.tone);
       setVibrate(Boolean(alarm.vibrate));
       setBufferMinutes(alarm.bufferMinutes);
-      setSnoozeDuration(alarm.snoozeDuration);
       setSelectedDays(alarm.repeatDays || []);
       setScheduleFrequency(toFrequencyType(alarm.repeat));
       setMemos(alarm.memoUri ? [{ uri: alarm.memoUri, metering: [] }] : []);
@@ -289,14 +288,14 @@ const CreateAlarmScreen = () => {
       alarmTime.setHours(hour, minute, 0, 0);
 
       const isToday = alarmTime.toDateString() === now.toDateString();
-      const diffMins = (alarmTime.getTime() - now.getTime()) / 60000;
+      const diffSecs = (alarmTime.getTime() - now.getTime()) / 1000;
 
       const repeat = scheduleFrequency ? (scheduleFrequency.toLowerCase() as AlarmRepeat) : 'none';
       const isRecurring = repeat !== 'none' || selectedDays.length > 0;
 
-      if (!isRecurring && isToday && diffMins < 5) {
+      if (!isRecurring && isToday && diffSecs < 20) {
         showMessage({
-          message: 'One-off alarms must be at least 5 minutes in the future.',
+          message: 'One-off alarms must be at least 20 seconds in the future.',
           type: 'warning',
         });
         return;
@@ -324,7 +323,6 @@ const CreateAlarmScreen = () => {
           bufferMinutes,
           repeat,
           repeatDays: selectedDays,
-          snoozeDuration,
         };
 
         if (editingAlarmId) {
@@ -355,7 +353,6 @@ const CreateAlarmScreen = () => {
           repeatDays: selectedDays,
           members: selectedUsers,
           memoUri: memos.length > 0 ? memos[0].uri : null,
-          snoozeDuration,
         };
 
         if (editingAlarmId) {
@@ -430,7 +427,14 @@ const CreateAlarmScreen = () => {
                   onToggleVibrate={() => setVibrate((current) => !current)}
                   tone={tone}
                   bufferMinutes={bufferMinutes}
-                  onBufferPress={() => setBufferMinutes((prev) => (prev + 5) % 30)}
+                  onBufferPress={() => {
+                    setBufferMinutes((prev) => {
+                      if (prev === 0) return 1;
+                      if (prev === 1) return 5;
+                      return (prev + 5) % 35;
+                    });
+                  }}
+                  onTonePress={() => setShowTonePicker(true)}
                   themeColor={colors.alarmFocus}
                 />
               </>
@@ -451,14 +455,17 @@ const CreateAlarmScreen = () => {
                 />
 
                 <Text style={[localStyles.sectionTitle, { color: colors.text }]}>Tone</Text>
-                <View
+                <Pressable
+                  onPress={() => setShowTonePicker(true)}
                   style={[
                     localStyles.toneField,
                     { backgroundColor: colors.scheduleReminderCardBackground },
                   ]}
                 >
-                  <Text style={[localStyles.toneFieldText, { color: colors.text }]}>{tone}</Text>
-                </View>
+                  <Text style={[localStyles.toneFieldText, { color: colors.text }]}>
+                    {sounds.find((s) => s.soundKeyName === tone)?.name || 'Default'}
+                  </Text>
+                </Pressable>
 
                 <Text style={[localStyles.sectionTitle, { color: colors.text }]}>Voice Note</Text>
                 <AudioRecorder
@@ -470,12 +477,19 @@ const CreateAlarmScreen = () => {
                   themeColor={colors.alarmFocus}
                   iconColor={colors.alarmFocus}
                   style={style}
+                  // memoContainerStyle={{ height: 50 }}
                 />
 
                 <AlarmScheduleRow
                   themeColor={colors.alarmFocus}
                   bufferMinutes={bufferMinutes}
-                  onBufferPress={() => setBufferMinutes((prev) => (prev + 5) % 30)}
+                  onBufferPress={() => {
+                    setBufferMinutes((prev) => {
+                      if (prev === 0) return 1;
+                      if (prev === 1) return 5;
+                      return (prev + 5) % 35;
+                    });
+                  }}
                   onDatePress={handleDatePress}
                   onTimePress={handleTimePress}
                   selectedDateAndTime={selectedDateAndTime}
@@ -489,34 +503,6 @@ const CreateAlarmScreen = () => {
                     scheduleFrequency={scheduleFrequency}
                     setScheduleFrequency={setScheduleFrequency}
                   />
-                </View>
-
-                <Text style={[localStyles.sectionTitle, { color: colors.text }]}>
-                  Snooze Duration
-                </Text>
-                <View style={localStyles.snoozeRow}>
-                  {[5, 10, 15].map((mins) => (
-                    <Pressable
-                      key={mins}
-                      onPress={() => setSnoozeDuration(mins)}
-                      style={[
-                        localStyles.snoozeChip,
-                        {
-                          backgroundColor:
-                            snoozeDuration === mins ? colors.alarmFocus : colors.previewBackground,
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          localStyles.snoozeText,
-                          { color: snoozeDuration === mins ? colors.white : colors.text },
-                        ]}
-                      >
-                        {mins}m
-                      </Text>
-                    </Pressable>
-                  ))}
                 </View>
               </>
             )}
@@ -558,6 +544,14 @@ const CreateAlarmScreen = () => {
         onClose={() => setShowUserPicker(false)}
         selectedUsers={selectedUsers}
         onChange={setSelectedUsers}
+      />
+
+      <TonePickerModal
+        visible={showTonePicker}
+        onClose={() => setShowTonePicker(false)}
+        selectedTone={tone}
+        onSelect={setTone}
+        themeColor={colors.alarmFocus}
       />
     </>
   );

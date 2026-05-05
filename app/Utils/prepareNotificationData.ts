@@ -39,7 +39,22 @@ export function prepareNotificationData(notification: Notification) {
   const daysString = JSON.stringify(days || []);
 
   // Always use ISO string for date
-  const isoDate = new Date(date).toISOString();
+  let isoDate: string;
+  try {
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      console.warn(
+        '[prepareNotificationData] Invalid date provided, falling back to current date:',
+        date,
+      );
+      isoDate = new Date().toISOString();
+    } else {
+      isoDate = parsedDate.toISOString();
+    }
+  } catch (e) {
+    console.error('[prepareNotificationData] Error parsing date:', e);
+    isoDate = new Date().toISOString();
+  }
 
   // Normalize toMail as array of trimmed strings
   let toMailArray: string[] = [];

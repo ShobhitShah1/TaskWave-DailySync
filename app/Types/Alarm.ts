@@ -50,7 +50,6 @@ export interface BaseAlarmRecord {
   updatedAt: string;
   status: AlarmDeliveryStatus;
   memoUri: string | null;
-  snoozeDuration: number;
   vibrate?: boolean;
   timezone?: string;
   startAt?: string;
@@ -123,7 +122,6 @@ export interface CreateSoloAlarmInput {
   bufferMinutes: number;
   repeat: AlarmRepeat;
   repeatDays: string[];
-  snoozeDuration: number;
 }
 
 export interface CreateGroupAlarmInput {
@@ -139,7 +137,6 @@ export interface CreateGroupAlarmInput {
   repeatDays: string[];
   members: AlarmRegisteredUser[];
   memoUri: string | null;
-  snoozeDuration: number;
   vibrate?: boolean;
 }
 

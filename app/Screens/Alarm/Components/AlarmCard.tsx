@@ -42,14 +42,15 @@ const AlarmCard: React.FC<AlarmCardProps> = ({
   }, [alarm]);
 
   const subtitle = useMemo(() => {
-    const snoozedUntil = alarm.snoozedUntil || alarm.nextTriggerAt;
-    if (alarm.status === 'snoozed' && snoozedUntil) {
-      const snoozeDate = new Date(snoozedUntil);
-      return `Snoozed until ${formatAlarmTime(
-        snoozeDate.getHours() % 12 || 12,
-        snoozeDate.getMinutes(),
-        snoozeDate.getHours() >= 12 ? 'PM' : 'AM',
-      )}`;
+    if (alarm.status === 'snoozed' && alarm.snoozedUntil) {
+      const snoozeDate = new Date(alarm.snoozedUntil);
+      if (!isNaN(snoozeDate.getTime()) && snoozeDate.getTime() > Date.now()) {
+        return `Snoozed until ${formatAlarmTime(
+          snoozeDate.getHours() % 12 || 12,
+          snoozeDate.getMinutes(),
+          snoozeDate.getHours() >= 12 ? 'PM' : 'AM',
+        )}`;
+      }
     }
     const note = alarm.note?.trim();
     if (note) return note;

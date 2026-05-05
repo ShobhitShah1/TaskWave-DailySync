@@ -120,6 +120,11 @@ export interface Notification {
     retryCount?: number;
   };
   status?: LocationReminderStatus;
+  kind?: string;
+  alarmId?: string;
+  mode?: string;
+  tone?: string;
+  bufferMinutes?: string;
 }
 
 export interface SimplifiedContact {

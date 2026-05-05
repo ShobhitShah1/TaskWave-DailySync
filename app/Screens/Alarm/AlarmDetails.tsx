@@ -7,7 +7,8 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@Types/Interface';
 import { formatAlarmDate, formatAlarmTime } from '@Utils/alarmDisplay';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { showMessage } from 'react-native-flash-message';
@@ -35,6 +36,15 @@ const AlarmDetailsScreen = () => {
     }
   }, [route.params.alarmId, route.params.mode]);
 
+  // Re-fetch solo alarm data when screen is focused (e.g., after snooze state changes)
+  useFocusEffect(
+    useCallback(() => {
+      if (route.params.mode === 'solo') {
+        getLocalAlarmDetails(route.params.alarmId).then(setLocalAlarm);
+      }
+    }, [route.params.alarmId, route.params.mode]),
+  );
+
   const alarm = useMemo(() => {
     if (route.params.mode === 'solo') {
       return localAlarm;
@@ -61,6 +71,15 @@ const AlarmDetailsScreen = () => {
   const note = alarm.note?.trim() || 'No note added.';
   const isSolo = route.params.mode === 'solo';
   const canEdit = isSolo || ('ownerUserId' in alarm && alarm.ownerUserId === auth?.user?.id);
+  const isSnoozed = alarm.status === 'snoozed' && alarm.snoozedUntil;
+  const snoozeTimeLabel = isSnoozed
+    ? (() => {
+        const d = new Date(alarm.snoozedUntil!);
+        return isNaN(d.getTime())
+          ? null
+          : formatAlarmTime(d.getHours() % 12 || 12, d.getMinutes(), d.getHours() >= 12 ? 'PM' : 'AM');
+      })()
+    : null;
 
   const handleDeleteAlarm = () => {
     const isOwner = isSolo || (alarm.mode === 'group' && alarm.ownerUserId === auth?.user?.id);
@@ -152,6 +171,15 @@ const AlarmDetailsScreen = () => {
 
           {/* Screen Title */}
           <Text style={[styles.screenTitle, { color: colors.text }]}>Alarm</Text>
+
+          {/* Snooze Banner */}
+          {isSnoozed && snoozeTimeLabel && (
+            <View style={[styles.snoozeBanner, { backgroundColor: colors.alarmFocus }]}>
+              <Text style={styles.snoozeBannerText}>
+                ⏸ Snoozed until {snoozeTimeLabel}
+              </Text>
+            </View>
+          )}
 
           {/* Countdown Timer */}
           <View style={styles.timerRow}>
@@ -390,6 +418,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 20,
     fontFamily: FONTS.Medium,
+  },
+  snoozeBanner: {
+    marginTop: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  snoozeBannerText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontFamily: FONTS.SemiBold,
   },
   timerRow: {
     marginTop: 16,

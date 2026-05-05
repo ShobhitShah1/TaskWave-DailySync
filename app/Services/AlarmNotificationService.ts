@@ -1,6 +1,8 @@
 import notifee, {
+  AlarmType,
   AndroidCategory,
   AndroidImportance,
+  AndroidLaunchActivityFlag,
   TimestampTrigger,
   TriggerType,
 } from '@notifee/react-native';
@@ -23,11 +25,11 @@ export const ensureAlarmChannels = async () => {
         importance: AndroidImportance.HIGH,
         vibration: true,
         vibrationPattern: [1200, 800, 1200, 800],
-        sound: sound.soundKeyName,
+        sound: undefined, // Handled by native AlarmService
         visibility: 1,
         bypassDnd: true,
       });
-    })
+    }),
   );
 
   // Legacy default channel
@@ -37,7 +39,7 @@ export const ensureAlarmChannels = async () => {
     importance: AndroidImportance.HIGH,
     vibration: true,
     vibrationPattern: [1200, 800, 1200, 800],
-    sound: 'default',
+    sound: undefined, // Handled by native AlarmService
     visibility: 1,
     bypassDnd: true,
   });
@@ -54,7 +56,9 @@ export const scheduleSoloAlarmNotification = async (
   const trigger: TimestampTrigger = {
     type: TriggerType.TIMESTAMP,
     timestamp: scheduledFor.getTime(),
-    alarmManager: true, // Required for exact alarms on some devices
+    alarmManager: {
+      type: AlarmType.SET_ALARM_CLOCK,
+    },
   };
 
   const notificationId = await notifee.createTriggerNotification(
@@ -69,12 +73,22 @@ export const scheduleSoloAlarmNotification = async (
         autoCancel: false,
         ongoing: true,
         loopSound: true,
+        asForegroundService: true,
         fullScreenAction: {
           id: 'default',
+          launchActivity: 'com.taskwave.dailysync.AlarmActivity',
+          launchActivityFlags: [
+            AndroidLaunchActivityFlag.NEW_TASK,
+            AndroidLaunchActivityFlag.CLEAR_TOP,
+          ],
         },
         pressAction: {
           id: 'default',
-          launchActivity: 'default',
+          launchActivity: 'com.taskwave.dailysync.AlarmActivity',
+          launchActivityFlags: [
+            AndroidLaunchActivityFlag.NEW_TASK,
+            AndroidLaunchActivityFlag.CLEAR_TOP,
+          ],
         },
         actions: [
           {
@@ -97,7 +111,8 @@ export const scheduleSoloAlarmNotification = async (
         hour: String(input.hour),
         minute: String(input.minute),
         meridiem: input.meridiem,
-        snoozeDuration: (input.snoozeDuration || 5).toString(),
+        tone: input.tone,
+        bufferMinutes: (input.bufferMinutes || 5).toString(),
       },
     },
     trigger,

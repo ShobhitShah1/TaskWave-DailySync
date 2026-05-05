@@ -1,7 +1,7 @@
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Sound } from 'expo-av/build/Audio';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -21,12 +21,14 @@ const AudioMemoItem = ({
   renderRightIcon,
   gradientStart = '#FF6B6B',
   gradientEnd = '#4ECDC4',
+  memoContainerStyle,
 }: {
   memo: Memo;
   themeColor: string;
   renderRightIcon: React.ReactNode;
   gradientStart?: string;
   gradientEnd?: string;
+  memoContainerStyle?: StyleProp<ViewStyle>;
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
@@ -107,7 +109,13 @@ const AudioMemoItem = ({
 
   return (
     <>
-      <View style={[styles.container, { backgroundColor: colors.scheduleReminderCardBackground }]}>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: colors.scheduleReminderCardBackground },
+          memoContainerStyle,
+        ]}
+      >
         {memo.uri && (
           <Pressable onPress={playSound}>
             <Image

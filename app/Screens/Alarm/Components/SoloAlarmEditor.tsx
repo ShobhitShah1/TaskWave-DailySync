@@ -1,5 +1,6 @@
 import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
+import { sounds } from '@Constants/Data';
 import { useAppContext } from '@Contexts/ThemeProvider';
 import useThemeColors from '@Hooks/useThemeMode';
 import { WeekDayType } from '@Screens/AddReminder/Components/AddScheduleFrequency';
@@ -29,6 +30,7 @@ interface SoloAlarmEditorProps {
   tone: string;
   bufferMinutes: number;
   onBufferPress: () => void;
+  onTonePress: () => void;
   themeColor: string;
 }
 
@@ -66,6 +68,7 @@ const SoloAlarmEditor: React.FC<SoloAlarmEditorProps> = ({
   tone,
   bufferMinutes,
   onBufferPress,
+  onTonePress,
   themeColor,
 }) => {
   const colors = useThemeColors();
@@ -299,14 +302,16 @@ const SoloAlarmEditor: React.FC<SoloAlarmEditorProps> = ({
       </View>
 
       <View style={styles.metaRow}>
-        <View style={styles.metaCol}>
+        <Pressable onPress={onTonePress} style={styles.metaCol}>
           <Text style={[styles.metaLabel, { color: colors.text }]}>Tone:</Text>
           <View
             style={[styles.metaField, { backgroundColor: colors.scheduleReminderCardBackground }]}
           >
-            <Text style={[styles.metaValue, { color: colors.placeholderText }]}>{tone}</Text>
+            <Text style={[styles.metaValue, { color: colors.placeholderText }]}>
+              {sounds.find((s) => s.soundKeyName === tone)?.name || 'Default'}
+            </Text>
           </View>
-        </View>
+        </Pressable>
 
         <View style={styles.metaCol}>
           <Text style={[styles.metaLabel, { color: colors.text }]}>Vibrate:</Text>

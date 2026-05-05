@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleProp, Text, View, ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import AssetsPath from '@Constants/AssetsPath';
@@ -16,6 +16,7 @@ interface AudioRecorderProps {
   themeColor: string;
   iconColor: string;
   style: any;
+  memoContainerStyle?: StyleProp<ViewStyle>;
 }
 
 const AudioRecorder: React.FC<AudioRecorderProps> = ({
@@ -27,6 +28,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   themeColor,
   iconColor,
   style,
+  memoContainerStyle,
 }) => {
   const { theme } = useAppContext();
   const isDark = theme === 'dark';
@@ -47,6 +49,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
         themeColor={themeColor}
         gradientEnd={themeColor}
         gradientStart={iconColor}
+        memoContainerStyle={memoContainerStyle}
         renderRightIcon={
           <View>
             {recording && <Animated.View style={[style.recorderRecordWave, animatedRecordWave]} />}

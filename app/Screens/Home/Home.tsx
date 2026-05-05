@@ -16,6 +16,7 @@ import useThemeColors from '@Hooks/useThemeMode';
 import { useIsFocused } from '@react-navigation/native';
 import { Notification, NotificationStatus, NotificationType } from '@Types/Interface';
 import { fromNowText } from '@Utils/isSameDat';
+import notifee, { AndroidNotificationSetting } from '@notifee/react-native';
 import React, { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -148,10 +149,31 @@ const Home = () => {
         }
       }
 
-      // Check battery optimization after permissions are handled
-      // Wait 2-3 seconds before showing the modal to avoid overwhelming the user
-      setTimeout(() => {
-        checkBatteryOptimization();
+      // Check exact alarm permission and battery optimization after standard permissions
+      // Wait a few seconds to avoid overwhelming the user
+      setTimeout(async () => {
+        const settings = await notifee.getNotificationSettings();
+        if (settings.android.alarm === AndroidNotificationSetting.DISABLED) {
+          Alert.alert(
+            'Alarms & Reminders Permission',
+            'To ensure your alarms ring perfectly on time, please allow DailySync to schedule exact alarms and reminders.',
+            [
+              { text: 'Later', style: 'cancel', onPress: () => checkBatteryOptimization() },
+              { 
+                text: 'Open Settings', 
+                onPress: async () => {
+                  await notifee.openAlarmPermissionSettings();
+                  // Still check battery optimization 
+                  setTimeout(() => {
+                    checkBatteryOptimization();
+                  }, 1000);
+                }
+              }
+            ]
+          );
+        } else {
+          checkBatteryOptimization();
+        }
       }, 2500);
     };
 

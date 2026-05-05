@@ -33,7 +33,11 @@
         "READ_CONTACTS",
         "WRITE_CONTACTS",
         "POST_NOTIFICATIONS",
-        "SCHEDULE_EXACT_ALARM"
+        "SCHEDULE_EXACT_ALARM",
+        "USE_FULL_SCREEN_INTENT",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "FOREGROUND_SERVICE_SPECIAL_USE"
       ],
       "googleServicesFile": "./google-services.json",
       "blockedPermissions": ["com.google.android.gms.permission.AD_ID"],
@@ -91,8 +95,8 @@
         {
           "android": {
             "extraMavenRepos": ["../../node_modules/@notifee/react-native/android/libs"],
-            "compileSdkVersion": 36,
-            "targetSdkVersion": 36,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
             "minSdkVersion": 24,
             "usesCleartextTraffic": true,
             "enableProguardInReleaseBuilds": true,

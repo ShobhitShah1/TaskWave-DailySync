@@ -4,7 +4,6 @@ import {
   useDeleteAlarm,
   useLeaveAlarm,
   useRespondToAlarmInvitation,
-  useTestAlarmNotification,
 } from '@Hooks/useAlarm';
 import { useAuth } from '@Hooks/useAuth';
 import useThemeColors from '@Hooks/useThemeMode';
@@ -31,6 +30,7 @@ import TextString from '@Constants/TextString';
 import HomeHeader from '@Screens/Home/Components/HomeHeader';
 import AlarmCard from './Components/AlarmCard';
 import AlarmInvitationCard from './Components/AlarmInvitationCard';
+import { testFullScreenAlarm } from '@Services/RemoteNotificationService';
 
 const FILTERS: { key: AlarmFilter; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -50,7 +50,6 @@ const Alarm = () => {
   const deleteMutation = useDeleteAlarm();
   const leaveMutation = useLeaveAlarm();
   const { auth } = useAuth();
-  const testNotificationMutation = useTestAlarmNotification();
 
   const handleRefresh = useCallback(() => {
     try {
@@ -143,22 +142,6 @@ const Alarm = () => {
     } catch (error) {
       showMessage({
         message: error instanceof Error ? error.message : 'Unable to update invitation.',
-        type: 'danger',
-      });
-    }
-  };
-
-  const handleTestNotification = async () => {
-    try {
-      await testNotificationMutation.mutateAsync();
-      showMessage({
-        message: 'Test push sent.',
-        description: 'Check this device notification tray.',
-        type: 'success',
-      });
-    } catch (error) {
-      showMessage({
-        message: error instanceof Error ? error.message : 'Unable to send test push.',
         type: 'danger',
       });
     }
@@ -298,8 +281,9 @@ const Alarm = () => {
 
       <FlatList
         data={listData}
+        extraData={groupQuery?.data}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item?.id + index?.toString()}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.content,
@@ -316,7 +300,7 @@ const Alarm = () => {
         ListHeaderComponent={
           isLoading && !soloQuery.isRefetching && !groupQuery.isRefetching ? (
             <View style={styles.loadingWrap}>
-              <ActivityIndicator color={colors.darkBlue} />
+              <ActivityIndicator color={colors.darkBlue} size="large" />
             </View>
           ) : null
         }
