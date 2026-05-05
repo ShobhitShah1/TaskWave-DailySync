@@ -126,9 +126,20 @@ const withAndroidAssets = (config) => {
       }
 
       // Copy drawable XMLs
-      const drawableTemplateDir = path.join(config.modRequest.projectRoot, 'native-templates', 'drawable');
-      const destDrawableDir = path.join(config.modRequest.platformProjectRoot, 'app', 'src', 'main', 'res', 'drawable');
-      
+      const drawableTemplateDir = path.join(
+        config.modRequest.projectRoot,
+        'native-templates',
+        'drawable',
+      );
+      const destDrawableDir = path.join(
+        config.modRequest.platformProjectRoot,
+        'app',
+        'src',
+        'main',
+        'res',
+        'drawable',
+      );
+
       if (fs.existsSync(drawableTemplateDir)) {
         if (!fs.existsSync(destDrawableDir)) {
           fs.mkdirSync(destDrawableDir, { recursive: true });
@@ -165,7 +176,15 @@ const withAndroidAssets = (config) => {
       }
 
       // Update MainActivity.kt to handle onNewIntent
-      const mainActivityPath = path.join(config.modRequest.platformProjectRoot, 'app', 'src', 'main', 'java', packagePath, 'MainActivity.kt');
+      const mainActivityPath = path.join(
+        config.modRequest.platformProjectRoot,
+        'app',
+        'src',
+        'main',
+        'java',
+        packagePath,
+        'MainActivity.kt',
+      );
       if (fs.existsSync(mainActivityPath)) {
         let mainActivityContent = fs.readFileSync(mainActivityPath, 'utf8');
         if (!mainActivityContent.includes('override fun onNewIntent')) {
@@ -180,17 +199,17 @@ const withAndroidAssets = (config) => {
           if (mainActivityContent.includes(insertionPoint)) {
             mainActivityContent = mainActivityContent.replace(
               insertionPoint,
-              insertionPoint + '\n' + onNewIntentMethod
+              insertionPoint + '\n' + onNewIntentMethod,
             );
-            
+
             // Also ensure Intent is imported
             if (!mainActivityContent.includes('import android.content.Intent')) {
               mainActivityContent = mainActivityContent.replace(
-                  'package ' + packageName,
-                  'package ' + packageName + '\nimport android.content.Intent'
+                'package ' + packageName,
+                'package ' + packageName + '\nimport android.content.Intent',
               );
             }
-            
+
             fs.writeFileSync(mainActivityPath, mainActivityContent);
           }
         }

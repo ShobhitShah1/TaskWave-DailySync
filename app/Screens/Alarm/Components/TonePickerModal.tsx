@@ -1,13 +1,5 @@
 import React, { FC, useState, useEffect } from 'react';
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  Image,
-} from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View, FlatList, Image } from 'react-native';
 import { Audio } from 'expo-av';
 import useThemeColors from '@Hooks/useThemeMode';
 import { FONTS } from '@Constants/Theme';
@@ -69,59 +61,45 @@ const TonePickerModal: FC<TonePickerModalProps> = ({
     onClose();
   };
 
-  const renderItem = ({ item }: { item: typeof sounds[0] }) => {
+  const renderItem = ({ item }: { item: (typeof sounds)[0] }) => {
     const isSelected = currentTone === item.soundKeyName;
 
     return (
       <Pressable
         onPress={() => setCurrentTone(item.soundKeyName)}
-        style={[
-          styles.itemCard,
-          { backgroundColor: colors.alarmCardBackground },
-        ]}
+        style={[styles.itemCard, { backgroundColor: colors.alarmCardBackground }]}
       >
         <Text style={[styles.itemName, { color: colors.text }]}>
           {item.name === 'System default' ? 'Default(Alarm note)' : item.name}
         </Text>
         <View style={{ flex: 1 }} />
 
-
         {item.canPlay && (
           <Pressable onPress={() => playPreview(item.soundKeyName)} style={styles.playBtn}>
-             <Image 
-               source={AssetsPath.ic_play} 
-               style={styles.playIcon} 
-               tintColor="#FFFFFF" 
-             />
+            <Image source={AssetsPath.ic_play} style={styles.playIcon} tintColor="#FFFFFF" />
           </Pressable>
         )}
 
         <View
           style={[
             styles.radioOuter,
-            isSelected ? { backgroundColor: '#4C66FF', borderColor: '#4C66FF' } : { borderColor: '#707070' }
+            isSelected
+              ? { backgroundColor: '#4C66FF', borderColor: '#4C66FF' }
+              : { borderColor: '#707070' },
           ]}
         >
-          {isSelected && (
-            <Text style={styles.checkMark}>✓</Text>
-          )}
+          {isSelected && <Text style={styles.checkMark}>✓</Text>}
         </View>
       </Pressable>
     );
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <Pressable style={styles.dismissArea} onPress={onClose} />
         <View style={[styles.modalCard, { backgroundColor: colors.background }]}>
           <FlatList
-
             data={sounds}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
@@ -129,10 +107,7 @@ const TonePickerModal: FC<TonePickerModalProps> = ({
             showsVerticalScrollIndicator={false}
           />
 
-          <Pressable
-            onPress={handleDone}
-            style={[styles.doneBtn, { backgroundColor: '#4C66FF' }]}
-          >
+          <Pressable onPress={handleDone} style={[styles.doneBtn, { backgroundColor: '#4C66FF' }]}>
             <Text style={styles.doneBtnText}>Done</Text>
           </Pressable>
         </View>

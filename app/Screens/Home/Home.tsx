@@ -159,17 +159,17 @@ const Home = () => {
             'To ensure your alarms ring perfectly on time, please allow DailySync to schedule exact alarms and reminders.',
             [
               { text: 'Later', style: 'cancel', onPress: () => checkBatteryOptimization() },
-              { 
-                text: 'Open Settings', 
+              {
+                text: 'Open Settings',
                 onPress: async () => {
                   await notifee.openAlarmPermissionSettings();
-                  // Still check battery optimization 
+                  // Still check battery optimization
                   setTimeout(() => {
                     checkBatteryOptimization();
                   }, 1000);
-                }
-              }
-            ]
+                },
+              },
+            ],
           );
         } else {
           checkBatteryOptimization();

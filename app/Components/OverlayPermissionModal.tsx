@@ -1,6 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { FC, memo, useEffect, useState } from 'react';
-import { Dimensions, NativeModules, Platform, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
+import {
+  Dimensions,
+  NativeModules,
+  Platform,
+  Pressable,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import ReactNativeModal from 'react-native-modal';
 import Animated, { Easing, FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,7 +25,7 @@ const OverlayPermissionModal: FC = () => {
 
   const checkPermission = async () => {
     if (Platform.OS !== 'android') return;
-    
+
     const launcher = NativeModules.AlarmLauncher;
     if (launcher?.canDrawOverlays) {
       const hasPermission = await launcher.canDrawOverlays();
@@ -26,13 +35,16 @@ const OverlayPermissionModal: FC = () => {
 
   useEffect(() => {
     checkPermission();
-    
+
     // Re-check when app returns to foreground
-    const subscription = NativeModules.AppState?.addEventListener?.('change', (nextState: string) => {
-      if (nextState === 'active') {
-        checkPermission();
-      }
-    });
+    const subscription = NativeModules.AppState?.addEventListener?.(
+      'change',
+      (nextState: string) => {
+        if (nextState === 'active') {
+          checkPermission();
+        }
+      },
+    );
 
     return () => subscription?.remove();
   }, []);
@@ -70,10 +82,12 @@ const OverlayPermissionModal: FC = () => {
           barStyle={colors.background === '#ffffff' ? 'dark-content' : 'light-content'}
           backgroundColor={colors.background}
         />
-        
+
         <View style={styles.content}>
           <Animated.View
-            entering={FadeInUp.delay(300).duration(500).easing(Easing.out(Easing.back(1.5)))}
+            entering={FadeInUp.delay(300)
+              .duration(500)
+              .easing(Easing.out(Easing.back(1.5)))}
             style={[styles.iconContainer, { backgroundColor: 'rgba(64, 93, 240, 0.15)' }]}
           >
             <Ionicons name="copy-outline" size={48} color={colors.darkBlue} />
@@ -85,7 +99,8 @@ const OverlayPermissionModal: FC = () => {
           >
             <Text style={[styles.title, { color: colors.text }]}>Display Over Other Apps</Text>
             <Text style={[styles.description, { color: colors.grayTitle }]}>
-              To show the full-screen alarm even while you are using other apps, DailySync needs the "Display over other apps" permission.
+              To show the full-screen alarm even while you are using other apps, DailySync needs the
+              "Display over other apps" permission.
             </Text>
           </Animated.View>
 
@@ -136,13 +151,8 @@ const OverlayPermissionModal: FC = () => {
             <Text style={styles.primaryButtonText}>Enable Permission</Text>
           </Pressable>
 
-          <Pressable
-            onPress={handleClose}
-            style={styles.skipButton}
-          >
-            <Text style={[styles.skipButtonText, { color: colors.grayTitle }]}>
-              Maybe Later
-            </Text>
+          <Pressable onPress={handleClose} style={styles.skipButton}>
+            <Text style={[styles.skipButtonText, { color: colors.grayTitle }]}>Maybe Later</Text>
           </Pressable>
         </Animated.View>
       </SafeAreaView>

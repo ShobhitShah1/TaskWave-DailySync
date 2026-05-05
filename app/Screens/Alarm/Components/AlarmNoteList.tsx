@@ -14,8 +14,8 @@ const AlarmNoteList: FC<AlarmNoteListProps> = ({ notes }) => {
   return (
     <View style={styles.container}>
       {notes.map((note, index) => (
-        <View 
-          key={index} 
+        <View
+          key={index}
           style={[styles.noteCard, { backgroundColor: colors.alarmCardBackground }]}
         >
           <View style={styles.dragHandle}>
@@ -23,18 +23,11 @@ const AlarmNoteList: FC<AlarmNoteListProps> = ({ notes }) => {
             <View style={[styles.dot, { backgroundColor: colors.placeholderText }]} />
             <View style={[styles.dot, { backgroundColor: colors.placeholderText }]} />
           </View>
-          <Text 
-            numberOfLines={1} 
-            style={[styles.noteText, { color: colors.text }]}
-          >
+          <Text numberOfLines={1} style={[styles.noteText, { color: colors.text }]}>
             {note}
           </Text>
           <Pressable style={styles.playButton}>
-             <Image 
-               source={AssetsPath.ic_play} 
-               style={styles.playIcon} 
-               tintColor="#FFF" 
-             />
+            <Image source={AssetsPath.ic_play} style={styles.playIcon} tintColor="#FFF" />
           </Pressable>
         </View>
       ))}

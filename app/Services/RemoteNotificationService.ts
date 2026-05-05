@@ -25,7 +25,9 @@ const launchNativeAlarm = async ({
   const launcher = NativeModules.AlarmLauncher;
 
   if (!launcher?.launch) {
-    throw new Error('Native alarm launcher is unavailable. Rebuild the Android app after prebuild.');
+    throw new Error(
+      'Native alarm launcher is unavailable. Rebuild the Android app after prebuild.',
+    );
   }
 
   launcher.launch(title, body, alarmId, mode, tone, bufferMinutes);

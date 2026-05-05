@@ -65,7 +65,11 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
         }
         break;
       case EventType.DELIVERED:
-        if (notification && notification.kind !== 'alarm' && notification.scheduleFrequency?.length !== 0) {
+        if (
+          notification &&
+          notification.kind !== 'alarm' &&
+          notification.scheduleFrequency?.length !== 0
+        ) {
           try {
             const { updatedNotification } = await updateToNextDate(notification);
             if (updatedNotification) {

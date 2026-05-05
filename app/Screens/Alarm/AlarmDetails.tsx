@@ -77,7 +77,11 @@ const AlarmDetailsScreen = () => {
         const d = new Date(alarm.snoozedUntil!);
         return isNaN(d.getTime())
           ? null
-          : formatAlarmTime(d.getHours() % 12 || 12, d.getMinutes(), d.getHours() >= 12 ? 'PM' : 'AM');
+          : formatAlarmTime(
+              d.getHours() % 12 || 12,
+              d.getMinutes(),
+              d.getHours() >= 12 ? 'PM' : 'AM',
+            );
       })()
     : null;
 
@@ -175,9 +179,7 @@ const AlarmDetailsScreen = () => {
           {/* Snooze Banner */}
           {isSnoozed && snoozeTimeLabel && (
             <View style={[styles.snoozeBanner, { backgroundColor: colors.alarmFocus }]}>
-              <Text style={styles.snoozeBannerText}>
-                ⏸ Snoozed until {snoozeTimeLabel}
-              </Text>
+              <Text style={styles.snoozeBannerText}>⏸ Snoozed until {snoozeTimeLabel}</Text>
             </View>
           )}
 
