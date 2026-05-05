@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/alarm_bg_gradient">
@@ -7,27 +8,48 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="100dp"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="32dp">
+        android:padding="24dp">
 
         <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginBottom="32dp"
-            android:src="@android:drawable/ic_lock_idle_alarm"
-            android:tint="#FFFFFF"
-            android:alpha="0.8" />
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/ic_alarm_modern"
+            android:tint="#A0FFFFFF" />
+
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format12Hour="h:mm"
+            android:format24Hour="HH:mm"
+            android:textColor="#FFFFFF"
+            android:textSize="84sp"
+            android:fontFamily="@font/clashgrotesk_medium"
+            android:includeFontPadding="false"
+            android:layout_marginBottom="4dp" />
+            
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format12Hour="a"
+            android:textColor="#A0FFFFFF"
+            android:textSize="22sp"
+            android:fontFamily="@font/clashgrotesk_semibold"
+            android:textAllCaps="true"
+            android:layout_marginBottom="40dp" />
 
         <TextView
             android:id="@+id/alarmTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Alarm"
+            tools:text="My Alarm"
             android:textColor="#FFFFFF"
-            android:textSize="36sp"
-            android:fontFamily="sans-serif-medium"
+            android:textSize="24sp"
+            android:fontFamily="@font/clashgrotesk_semibold"
             android:layout_marginBottom="8dp"
             android:textAlignment="center" />
 
@@ -35,12 +57,11 @@
             android:id="@+id/alarmBody"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Wake up!"
+            tools:text="Note goes here..."
             android:textColor="#B3FFFFFF"
-            android:textSize="18sp"
-            android:fontFamily="sans-serif-light"
-            android:textAlignment="center"
-            android:layout_marginBottom="48dp" />
+            android:textSize="16sp"
+            android:fontFamily="@font/clashgrotesk_regular"
+            android:textAlignment="center" />
 
     </LinearLayout>
 
@@ -50,7 +71,7 @@
         android:layout_alignParentBottom="true"
         android:orientation="vertical"
         android:padding="24dp"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="32dp">
 
         <Button
             android:id="@+id/snoozeButton"
@@ -60,9 +81,10 @@
             android:text="SNOOZE"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="@font/clashgrotesk_semibold"
             android:letterSpacing="0.1"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:stateListAnimator="@null" />
 
         <Button
             android:id="@+id/dismissButton"
@@ -72,8 +94,9 @@
             android:text="DISMISS"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
-            android:fontFamily="sans-serif-black"
-            android:letterSpacing="0.1" />
+            android:fontFamily="@font/clashgrotesk_bold"
+            android:letterSpacing="0.1"
+            android:stateListAnimator="@null" />
 
     </LinearLayout>
 

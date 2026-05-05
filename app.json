@@ -42,6 +42,7 @@
       "googleServicesFile": "./google-services.json",
       "blockedPermissions": ["com.google.android.gms.permission.AD_ID"],
       "package": "com.taskwave.dailysync",
+      "allowBackup": false,
       "intentFilters": [
         {
           "action": "VIEW",

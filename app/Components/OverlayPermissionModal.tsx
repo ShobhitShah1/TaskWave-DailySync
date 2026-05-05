@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Text,
   View,
+  AppState,
 } from 'react-native';
 import ReactNativeModal from 'react-native-modal';
 import Animated, { Easing, FadeIn, FadeInUp } from 'react-native-reanimated';
@@ -37,16 +38,13 @@ const OverlayPermissionModal: FC = () => {
     checkPermission();
 
     // Re-check when app returns to foreground
-    const subscription = NativeModules.AppState?.addEventListener?.(
-      'change',
-      (nextState: string) => {
-        if (nextState === 'active') {
-          checkPermission();
-        }
-      },
-    );
+    const subscription = AppState.addEventListener('change', (nextState: string) => {
+      if (nextState === 'active') {
+        checkPermission();
+      }
+    });
 
-    return () => subscription?.remove();
+    return () => subscription.remove();
   }, []);
 
   const handleOpenSettings = () => {

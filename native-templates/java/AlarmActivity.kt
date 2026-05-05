@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
@@ -45,7 +46,7 @@ class AlarmActivity : Activity() {
         setContentView(R.layout.activity_alarm)
 
         var titleText = "Alarm"
-        var bodyText = "Wake up!"
+        var bodyText = ""
         var alarmId = ""
         var mode = "solo"
         var tone = "default"
@@ -97,7 +98,13 @@ class AlarmActivity : Activity() {
         startAlarmMedia(titleText, bodyText, alarmId, mode, tone, bufferMinutes)
 
         findViewById<TextView>(R.id.alarmTitle).text = titleText
-        findViewById<TextView>(R.id.alarmBody).text = bodyText
+        val bodyView = findViewById<TextView>(R.id.alarmBody)
+        if (bodyText.isBlank() || bodyText == "Wake up!") {
+            bodyView.visibility = View.GONE
+        } else {
+            bodyView.text = bodyText
+            bodyView.visibility = View.VISIBLE
+        }
 
         findViewById<Button>(R.id.dismissButton).setOnClickListener {
             Log.d(TAG, "🔘 Dismiss button clicked")

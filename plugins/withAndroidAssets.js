@@ -125,6 +125,30 @@ const withAndroidAssets = (config) => {
         fs.copyFileSync(layoutTemplatePath, destLayoutPath);
       }
 
+      // Copy Fonts
+      const fontsDir = path.join(config.modRequest.projectRoot, 'assets', 'Fonts');
+      const destFontDir = path.join(
+        config.modRequest.platformProjectRoot,
+        'app',
+        'src',
+        'main',
+        'res',
+        'font',
+      );
+
+      if (fs.existsSync(fontsDir)) {
+        if (!fs.existsSync(destFontDir)) {
+          fs.mkdirSync(destFontDir, { recursive: true });
+        }
+        const fonts = fs.readdirSync(fontsDir);
+        fonts.forEach((file) => {
+          if (file.endsWith('.otf') || file.endsWith('.ttf')) {
+            const safeName = file.toLowerCase().replace(/-/g, '_');
+            fs.copyFileSync(path.join(fontsDir, file), path.join(destFontDir, safeName));
+          }
+        });
+      }
+
       // Copy drawable XMLs
       const drawableTemplateDir = path.join(
         config.modRequest.projectRoot,
