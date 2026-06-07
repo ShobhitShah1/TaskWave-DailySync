@@ -7,13 +7,15 @@ const REMOTE_NOTIFICATION_CHANNEL_ID = 'daily-sync-remote';
 const PRIORITY_NOTIFICATION_CHANNEL_ID = 'daily-sync-priority';
 const ALARM_FULLSCREEN_CHANNEL_ID = 'daily-sync-alarm-fullscreen';
 
-const launchNativeAlarm = async ({
+export const launchNativeAlarm = async ({
   title,
   body,
   alarmId,
   mode,
   tone,
   bufferMinutes,
+  alarmNotes,
+  snoozeNoteIndex,
 }: {
   title: string;
   body: string;
@@ -21,6 +23,8 @@ const launchNativeAlarm = async ({
   mode: string;
   tone: string;
   bufferMinutes: string;
+  alarmNotes: string;
+  snoozeNoteIndex: string;
 }) => {
   const launcher = NativeModules.AlarmLauncher;
 
@@ -30,7 +34,14 @@ const launchNativeAlarm = async ({
     );
   }
 
-  launcher.launch(title, body, alarmId, mode, tone, bufferMinutes);
+  launcher.launch(title, body, alarmId, mode, tone, bufferMinutes, alarmNotes, snoozeNoteIndex);
+};
+
+export const stopNativeAlarm = () => {
+  const launcher = NativeModules.AlarmLauncher;
+  if (launcher?.stopService) {
+    launcher.stopService();
+  }
 };
 
 export const ensureRemoteNotificationChannel = async () => {
@@ -116,6 +127,9 @@ export const displayRemoteNotification = async (
   }
 
   const notification = buildNotificationBody(remoteMessage);
+  console.log(
+    `[RemoteNotification] 📩 Received data: ${JSON.stringify(notification.data, null, 2)}`,
+  );
   const isAlarm = notification.data.kind === 'alarm';
 
   if (isAlarm && Platform.OS === 'android') {
@@ -126,6 +140,14 @@ export const displayRemoteNotification = async (
       mode: readTextValue(notification.data.mode, 'solo'),
       tone: readTextValue(notification.data.tone, 'default'),
       bufferMinutes: readTextValue(notification.data.bufferMinutes, '5'),
+      alarmNotes: readTextValue(
+        notification.data.alarmNotes,
+        readTextValue(notification.data.alarm_notes, '[]'),
+      ),
+      snoozeNoteIndex: readTextValue(
+        notification.data.snoozeNoteIndex,
+        readTextValue(notification.data.snooze_note_index, '0'),
+      ),
     });
     return;
   }
@@ -210,6 +232,8 @@ export const testFullScreenAlarm = async () => {
       mode: 'solo',
       tone: 'ting_tong', // Test with a specific custom tone
       bufferMinutes: '5',
+      alarmNotes: '[]',
+      snoozeNoteIndex: '1',
     });
     return;
   }

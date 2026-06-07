@@ -2,6 +2,7 @@ import { APP_CONFIG } from '@Constants/AppConfig';
 import { FONTS } from '@Constants/Theme';
 import { useAuth } from '@Hooks/useAuth';
 import useThemeColors from '@Hooks/useThemeMode';
+import useNotificationPermission from '@Hooks/useNotificationPermission';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState, useRef } from 'react';
@@ -25,6 +26,7 @@ const SignUpScreen = () => {
   const colors = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { signInWithGoogle, signUp } = useAuth();
+  const { requestPermission: requestNotificationPermission } = useNotificationPermission();
 
   const [form, setForm] = useState({
     fullName: '',
@@ -51,6 +53,7 @@ const SignUpScreen = () => {
 
     try {
       setIsSubmitting(true);
+      await requestNotificationPermission();
       await signUp(form);
     } catch (error) {
       showMessage({ message: getErrorMessage(error), type: 'danger' });
@@ -62,6 +65,7 @@ const SignUpScreen = () => {
   const handleGoogleSubmit = async () => {
     try {
       setIsGoogleSubmitting(true);
+      await requestNotificationPermission();
       await signInWithGoogle();
     } catch (error) {
       showMessage({

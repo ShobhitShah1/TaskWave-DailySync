@@ -112,6 +112,8 @@ export const scheduleSoloAlarmNotification = async (
         minute: String(input.minute),
         meridiem: input.meridiem,
         tone: input.tone,
+        alarmNotes: JSON.stringify(input.alarmNotes ?? []),
+        snoozeNoteIndex: '0',
         bufferMinutes: (input.bufferMinutes || 5).toString(),
       },
     },

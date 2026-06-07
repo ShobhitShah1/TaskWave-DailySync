@@ -20,6 +20,8 @@ import ContactListModal from './Components/ContactListModal';
 import ContactSelector from './Components/ContactSelector';
 import DateTimePicker from './Components/DateTimePicker';
 import Header from './Components/Header';
+import useOverlayPermission from '@Hooks/useOverlayPermission';
+import OverlayPermissionModal from '@Components/OverlayPermissionModal';
 import useAddReminderForm from './hooks/useAddReminderForm';
 import useAudioRecorder from './hooks/useAudioRecorder';
 import useContactSelector from './hooks/useContactSelector';
@@ -62,6 +64,9 @@ const AddReminder = () => {
 
     return unsubscribe;
   }, [navigation]);
+
+  const { hasPermission, checkPermission } = useOverlayPermission();
+  const [showOverlayModal, setShowOverlayModal] = useState(false);
 
   const {
     message,
@@ -131,6 +136,13 @@ const AddReminder = () => {
 
   const handleCreateNotification = async () => {
     try {
+      // Check overlay permission first
+      const permission = await checkPermission();
+      if (permission === false) {
+        setShowOverlayModal(true);
+        return;
+      }
+
       if (validateFields({ selectedContacts, selectedDateAndTime })) {
         setIsLoading(true);
 
@@ -361,6 +373,12 @@ const AddReminder = () => {
         onClose={() => setContactModalVisible(false)}
         syncContacts={syncContacts}
         isSyncing={isContactLoading.isRefreshing}
+      />
+
+      <OverlayPermissionModal
+        isVisible={showOverlayModal}
+        onClose={() => setShowOverlayModal(false)}
+        autoCheck={false}
       />
     </>
   );

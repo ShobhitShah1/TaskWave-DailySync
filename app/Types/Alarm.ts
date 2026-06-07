@@ -33,6 +33,12 @@ export interface AlarmRegisteredUser {
   isRegistered: true;
 }
 
+export interface AlarmMemo {
+  userId: string;
+  uri: string;
+  createdAt: string;
+}
+
 export interface BaseAlarmRecord {
   id: string;
   mode: AlarmMode;
@@ -42,6 +48,8 @@ export interface BaseAlarmRecord {
   minute: number;
   meridiem: AlarmMeridiem;
   tone: string;
+  alarmNotes: string[];
+  snoozeNoteIndex: number;
   bufferMinutes: number;
   repeat: AlarmRepeat;
   repeatDays: string[];
@@ -50,6 +58,7 @@ export interface BaseAlarmRecord {
   updatedAt: string;
   status: AlarmDeliveryStatus;
   memoUri: string | null;
+  memos?: AlarmMemo[];
   vibrate?: boolean;
   timezone?: string;
   startAt?: string;
@@ -118,6 +127,8 @@ export interface CreateSoloAlarmInput {
   minute: number;
   meridiem: AlarmMeridiem;
   tone: string;
+  alarmNotes: string[];
+  snoozeNoteIndex?: number;
   vibrate: boolean;
   bufferMinutes: number;
   repeat: AlarmRepeat;
@@ -132,6 +143,8 @@ export interface CreateGroupAlarmInput {
   minute: number;
   meridiem: AlarmMeridiem;
   tone: string;
+  alarmNotes: string[];
+  snoozeNoteIndex?: number;
   bufferMinutes: number;
   repeat: AlarmRepeat;
   repeatDays: string[];

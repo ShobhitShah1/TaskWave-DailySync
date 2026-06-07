@@ -55,6 +55,7 @@ export type RootStackParamList = {
     alarmId: string;
     mode: 'solo' | 'group';
   };
+  DevDashboard: undefined;
 };
 
 export interface AppContextProps {

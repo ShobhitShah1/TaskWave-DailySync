@@ -18,43 +18,45 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FONTS } from '@Constants/Theme';
 import useThemeColors from '@Hooks/useThemeMode';
 
+import useOverlayPermission from '@Hooks/useOverlayPermission';
+
 const { width } = Dimensions.get('window');
 
-const OverlayPermissionModal: FC = () => {
+interface OverlayPermissionModalProps {
+  isVisible?: boolean;
+  onClose?: () => void;
+  autoCheck?: boolean;
+}
+
+const OverlayPermissionModal: FC<OverlayPermissionModalProps> = ({
+  isVisible: manualVisible,
+  onClose,
+  autoCheck = true,
+}) => {
   const colors = useThemeColors();
-  const [isVisible, setIsVisible] = useState(false);
-
-  const checkPermission = async () => {
-    if (Platform.OS !== 'android') return;
-
-    const launcher = NativeModules.AlarmLauncher;
-    if (launcher?.canDrawOverlays) {
-      const hasPermission = await launcher.canDrawOverlays();
-      setIsVisible(!hasPermission);
-    }
-  };
+  const { hasPermission, requestPermission } = useOverlayPermission();
+  const [internalVisible, setInternalVisible] = useState(false);
 
   useEffect(() => {
-    checkPermission();
+    if (autoCheck && hasPermission === false) {
+      setInternalVisible(true);
+    } else if (hasPermission === true) {
+      setInternalVisible(false);
+    }
+  }, [hasPermission, autoCheck]);
 
-    // Re-check when app returns to foreground
-    const subscription = AppState.addEventListener('change', (nextState: string) => {
-      if (nextState === 'active') {
-        checkPermission();
-      }
-    });
-
-    return () => subscription.remove();
-  }, []);
+  const isVisible = manualVisible !== undefined ? manualVisible : internalVisible;
 
   const handleOpenSettings = () => {
-    if (NativeModules.AlarmLauncher?.requestOverlayPermission) {
-      NativeModules.AlarmLauncher.requestOverlayPermission();
-    }
+    requestPermission();
   };
 
   const handleClose = () => {
-    setIsVisible(false);
+    if (onClose) {
+      onClose();
+    } else {
+      setInternalVisible(false);
+    }
   };
 
   if (Platform.OS !== 'android' || !isVisible) {

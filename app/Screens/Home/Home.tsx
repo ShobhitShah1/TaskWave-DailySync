@@ -2,6 +2,7 @@ import FullScreenPreviewModal from '@Components/FullScreenPreviewModal';
 import ReminderCard from '@Components/ReminderCard';
 import RenderCalenderView from '@Components/RenderCalenderView';
 import ServiceManager from '@Components/ServiceManager';
+import OverlayPermissionModal from '@Components/OverlayPermissionModal';
 import YearMonthPicker from '@Components/YearMonthPicker';
 import TextString from '@Constants/TextString';
 import { useBatteryOptimization } from '@Contexts/BatteryOptimizationProvider';
@@ -117,11 +118,7 @@ const Home = () => {
 
     setIsLoading(notificationsState?.allByDate?.length === 0);
     loadNotifications();
-
-    if (permissionStatus !== 'granted') {
-      requestPermission();
-    }
-  }, [isFocus, selectedDate, selectedFilter, permissionStatus]);
+  }, [isFocus, selectedDate, selectedFilter]);
 
   useEffect(() => {
     if (!isFocus) return;
@@ -436,6 +433,8 @@ const Home = () => {
           isVisible={showServiceManager}
           onClose={() => setShowServiceManager(false)}
         />
+
+        <OverlayPermissionModal />
       </View>
     </SafeAreaView>
   );

@@ -16,6 +16,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  NativeModules,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -30,7 +31,6 @@ import TextString from '@Constants/TextString';
 import HomeHeader from '@Screens/Home/Components/HomeHeader';
 import AlarmCard from './Components/AlarmCard';
 import AlarmInvitationCard from './Components/AlarmInvitationCard';
-import { testFullScreenAlarm } from '@Services/RemoteNotificationService';
 
 const FILTERS: { key: AlarmFilter; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -248,6 +248,29 @@ const Alarm = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <HomeHeader title={TextString.DailySync} titleAlignment="center" leftIconType="none" />
+
+      <View style={{ flexDirection: 'row', justifyContent: 'center', marginVertical: 10, gap: 10 }}>
+        {['default', 'ting_tong', 'tink_tink'].map((tone, i) => (
+          <Pressable
+            key={tone}
+            style={{ padding: 10, backgroundColor: colors.darkBlue, borderRadius: 8 }}
+            onPress={() => {
+              NativeModules.AlarmLauncher.launch(
+                'Test Alarm',
+                `Testing tone: ${tone}`,
+                `test-${Date.now()}`,
+                'solo',
+                tone,
+                '5',
+                '[]',
+                '0',
+              );
+            }}
+          >
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>Test Sound {i + 1}</Text>
+          </Pressable>
+        ))}
+      </View>
 
       <ScrollView
         horizontal

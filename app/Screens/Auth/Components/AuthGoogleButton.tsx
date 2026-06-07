@@ -1,8 +1,9 @@
+import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
 import { useAppContext } from '@Contexts/ThemeProvider';
 import useThemeColors from '@Hooks/useThemeMode';
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 interface AuthGoogleButtonProps {
   title: string;
@@ -24,7 +25,6 @@ const AuthGoogleButton = ({ title, onPress, loading }: AuthGoogleButtonProps) =>
         styles.container,
         {
           backgroundColor: surfaceColor,
-          borderColor: colors.borderColor,
           opacity: pressed || loading ? 0.9 : 1,
         },
       ]}
@@ -33,9 +33,7 @@ const AuthGoogleButton = ({ title, onPress, loading }: AuthGoogleButtonProps) =>
         <ActivityIndicator color={colors.darkBlue} />
       ) : (
         <View style={styles.content}>
-          <View style={[styles.badge, { backgroundColor: 'rgba(64, 93, 240, 0.12)' }]}>
-            <Text style={[styles.badgeText, { color: colors.darkBlue }]}>G</Text>
-          </View>
+          <Image source={AssetsPath.ic_google} style={{ width: 24, height: 24 }} />
           <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
         </View>
       )}
@@ -47,14 +45,8 @@ const styles = StyleSheet.create({
   container: {
     minHeight: 58,
     borderRadius: 20,
-    borderWidth: 1,
     justifyContent: 'center',
     paddingHorizontal: 16,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
   },
   content: {
     flexDirection: 'row',

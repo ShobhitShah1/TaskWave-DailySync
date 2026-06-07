@@ -16,6 +16,7 @@ import OnBoarding from '@Screens/OnBoarding/Index';
 import LocationPreview from '@Screens/Preview/LocationPreview';
 import ReminderPreview from '@Screens/Preview/ReminderPreview';
 import AboutApp from '@Screens/Setting/AboutApp';
+import DevDashboard from '@Screens/Setting/DevDashboard';
 import HowAppWorks from '@Screens/Setting/HowAppWorks';
 import NotificationSound from '@Screens/Setting/NotificationSound';
 import { RootStackParamList } from '@Types/Interface';
@@ -40,6 +41,7 @@ const Routes = () => {
   const MyTheme: Theme = {
     ...DefaultTheme,
     colors: { ...DefaultTheme.colors, primary: colors.background, card: colors.background },
+    dark: theme === 'dark',
   };
 
   useQuickActionCallback((action) => {
@@ -122,6 +124,7 @@ const Routes = () => {
               <Stack.Screen name="LocationPreview" component={LocationPreview} />
               <Stack.Screen name="CreateAlarm" component={CreateAlarmScreen} />
               <Stack.Screen name="AlarmDetails" component={AlarmDetailsScreen} />
+              <Stack.Screen name="DevDashboard" component={DevDashboard} />
             </>
           )}
         </Stack.Navigator>

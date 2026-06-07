@@ -40,9 +40,12 @@ import AlarmHeader from './Components/AlarmHeader';
 import AlarmInviteField from './Components/AlarmInviteField';
 import AlarmModeToggle from './Components/AlarmModeToggle';
 import AlarmScheduleRow from './Components/AlarmScheduleRow';
+import AlarmNoteSelector from './Components/AlarmNoteSelector';
 import RegisteredUserPicker from './Components/RegisteredUserPicker';
 import SoloAlarmEditor from './Components/SoloAlarmEditor';
 import TonePickerModal from './Components/TonePickerModal';
+import useOverlayPermission from '@Hooks/useOverlayPermission';
+import OverlayPermissionModal from '@Components/OverlayPermissionModal';
 
 type CreateAlarmRoute = RouteProp<RootStackParamList, 'CreateAlarm'>;
 
@@ -104,6 +107,7 @@ const CreateAlarmScreen = () => {
 
   const [mode, setMode] = useState<AlarmMode>(route.params?.mode || 'solo');
   const [tone, setTone] = useState('default');
+  const [alarmNotes, setAlarmNotes] = useState<string[]>([]);
   const [vibrate, setVibrate] = useState(true);
   const [bufferMinutes, setBufferMinutes] = useState(0);
   const [message, setMessage] = useState('');
@@ -112,6 +116,8 @@ const CreateAlarmScreen = () => {
   const [activeTimeUnit, setActiveTimeUnit] = useState<'hour' | 'minute'>('hour');
   const [didHydrateExistingAlarm, setDidHydrateExistingAlarm] = useState(false);
   const [showTonePicker, setShowTonePicker] = useState(false);
+  const { checkPermission } = useOverlayPermission();
+  const [showOverlayModal, setShowOverlayModal] = useState(false);
 
   const createSoloAlarmMutation = useCreateSoloAlarm();
   const createGroupAlarmMutation = useCreateGroupAlarm();
@@ -174,6 +180,7 @@ const CreateAlarmScreen = () => {
 
         setMessage(alarm.note);
         setTone(alarm.tone);
+        setAlarmNotes(alarm.alarmNotes || []);
         setVibrate(alarm.vibrate);
         setBufferMinutes(alarm.bufferMinutes);
         setSelectedDays(alarm.repeatDays || []);
@@ -191,6 +198,7 @@ const CreateAlarmScreen = () => {
 
       setMessage(alarm.note);
       setTone(alarm.tone);
+      setAlarmNotes(alarm.alarmNotes || []);
       setVibrate(Boolean(alarm.vibrate));
       setBufferMinutes(alarm.bufferMinutes);
       setSelectedDays(alarm.repeatDays || []);
@@ -278,6 +286,12 @@ const CreateAlarmScreen = () => {
 
   const handleSubmit = async () => {
     try {
+      const permission = await checkPermission();
+      if (permission === false) {
+        setShowOverlayModal(true);
+        return;
+      }
+
       const timeDate = selectedDateAndTime.time || mergedTime;
       let hour = timeDate.getHours();
       const minute = timeDate.getMinutes();
@@ -319,6 +333,7 @@ const CreateAlarmScreen = () => {
           minute,
           meridiem,
           tone,
+          alarmNotes,
           vibrate,
           bufferMinutes,
           repeat,
@@ -347,6 +362,7 @@ const CreateAlarmScreen = () => {
           minute,
           meridiem,
           tone,
+          alarmNotes,
           vibrate,
           bufferMinutes,
           repeat,
@@ -436,6 +452,8 @@ const CreateAlarmScreen = () => {
                   }}
                   onTonePress={() => setShowTonePicker(true)}
                   themeColor={colors.alarmFocus}
+                  alarmNotes={alarmNotes}
+                  setAlarmNotes={setAlarmNotes}
                 />
               </>
             ) : (
@@ -466,6 +484,12 @@ const CreateAlarmScreen = () => {
                     {sounds.find((s) => s.soundKeyName === tone)?.name || 'Default'}
                   </Text>
                 </Pressable>
+
+                <AlarmNoteSelector
+                  alarmNotes={alarmNotes}
+                  setAlarmNotes={setAlarmNotes}
+                  themeColor={colors.alarmFocus}
+                />
 
                 <Text style={[localStyles.sectionTitle, { color: colors.text }]}>Voice Note</Text>
                 <AudioRecorder
@@ -552,6 +576,12 @@ const CreateAlarmScreen = () => {
         selectedTone={tone}
         onSelect={setTone}
         themeColor={colors.alarmFocus}
+      />
+
+      <OverlayPermissionModal
+        isVisible={showOverlayModal}
+        onClose={() => setShowOverlayModal(false)}
+        autoCheck={false}
       />
     </>
   );

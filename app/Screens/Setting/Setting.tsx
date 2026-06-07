@@ -1,9 +1,10 @@
 import { useAuth } from '@Hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
 import React, { memo, useState } from 'react';
-import { Linking, Platform, StyleSheet, View } from 'react-native';
+import { Linking, Platform, StyleSheet, View, ScrollView, Pressable, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Share from 'react-native-share';
+import { Ionicons } from '@expo/vector-icons';
 
 import RateUsModal from '@Components/RateUsModal';
 import { APP_CONFIG } from '@Constants/AppConfig';
@@ -126,19 +127,6 @@ const Settings = () => {
         } catch (error) {}
       },
     },
-    ...(auth
-      ? [
-          {
-            title: 'Logout',
-            ionicon: 'log-out-outline' as const,
-            ioniconColor: colors.darkBlue,
-            subtitle: auth.user.email,
-            onPress: () => {
-              signOut();
-            },
-          },
-        ]
-      : []),
   ];
 
   return (
@@ -150,20 +138,44 @@ const Settings = () => {
         showThemeSwitch={false}
       />
 
-      <View style={style.wrapper}>
-        {settingsData.map((item, index) => (
-          <SettingItem
-            key={index}
-            title={item.title}
-            icon={item.icon}
-            ionicon={item.ionicon}
-            ioniconColor={item.ioniconColor}
-            subtitle={item.subtitle}
-            showAlert={item.showAlert}
-            onPress={item.onPress}
-          />
-        ))}
-      </View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        <View style={style.wrapper}>
+          {settingsData.map((item, index) => (
+            <SettingItem
+              key={index}
+              title={item.title}
+              icon={item.icon}
+              ionicon={item.ionicon}
+              ioniconColor={item.ioniconColor}
+              subtitle={item.subtitle}
+              showAlert={item.showAlert}
+              onPress={item.onPress}
+            />
+          ))}
+        </View>
+
+        <View style={style.actionButtonsContainer}>
+          {/* {__DEV__ && (
+            <Pressable
+              onPress={() => navigation.navigate('DevDashboard')}
+              style={style.actionButton}
+            >
+              <Ionicons name="construct-outline" size={20} color={colors.darkBlue} />
+              <Text style={[style.actionButtonText, { color: colors.darkBlue }]}>Dev Tools</Text>
+            </Pressable>
+          )} */}
+
+          {auth && (
+            <Pressable onPress={signOut} style={style.actionButton}>
+              <Ionicons name="log-out-outline" size={20} color={colors.red} />
+              <Text style={[style.actionButtonText, { color: colors.red }]}>Log Out</Text>
+            </Pressable>
+          )}
+        </View>
+      </ScrollView>
 
       <RateUsModal
         isVisible={modalStatus.rateUs}
@@ -195,6 +207,24 @@ const styles = () => {
       alignSelf: 'center',
       marginVertical: 15,
       gap: 10,
+    },
+    actionButtonsContainer: {
+      width: SIZE.appContainWidth,
+      alignSelf: 'center',
+      marginTop: 20,
+      gap: 5,
+      alignItems: 'center',
+    },
+    actionButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      paddingVertical: 10,
+      paddingHorizontal: 15,
+    },
+    actionButtonText: {
+      fontSize: 16,
+      fontWeight: '600',
     },
   });
 };

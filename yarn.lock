@@ -1501,7 +1501,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/preset-typescript@npm:^7.16.7, @babel/preset-typescript@npm:^7.23.0, @babel/preset-typescript@npm:^7.23.3":
+"@babel/preset-typescript@npm:^7.16.7, @babel/preset-typescript@npm:^7.17.12, @babel/preset-typescript@npm:^7.23.0, @babel/preset-typescript@npm:^7.23.3":
   version: 7.28.5
   resolution: "@babel/preset-typescript@npm:7.28.5"
   dependencies:
@@ -3087,9 +3087,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gorhom/bottom-sheet@npm:^5.2.8":
-  version: 5.2.10
-  resolution: "@gorhom/bottom-sheet@npm:5.2.10"
+"@gorhom/bottom-sheet@npm:^5.2.13":
+  version: 5.2.13
+  resolution: "@gorhom/bottom-sheet@npm:5.2.13"
   dependencies:
     "@gorhom/portal": "npm:1.0.14"
     invariant: "npm:^2.2.4"
@@ -3105,7 +3105,7 @@ __metadata:
       optional: true
     "@types/react-native":
       optional: true
-  checksum: 10c0/67693c6d162151d7a81c5b976a7e477659b4a85aa2a08fddd2318390228822ff7ba214ecf1188cc969489142c2deda0a600db0ef07c7d9d9ead4305b6b64fd67
+  checksum: 10c0/db7c7afda2d2714535cedd57a85e656fd45e8bd7b2ec4761d2ec43d0b50bd7f355181cbaa47af2367fed52e5b2d094691262d8a001737db88c732cc92a3f5602
   languageName: node
   linkType: hard
 
@@ -3552,9 +3552,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lodev09/react-native-true-sheet@npm:^3.5.5":
-  version: 3.10.0
-  resolution: "@lodev09/react-native-true-sheet@npm:3.10.0"
+"@lodev09/react-native-true-sheet@npm:^3.10.1":
+  version: 3.10.1
+  resolution: "@lodev09/react-native-true-sheet@npm:3.10.1"
   peerDependencies:
     "@gorhom/bottom-sheet": ">=5"
     "@react-navigation/native": ">=7"
@@ -3571,7 +3571,7 @@ __metadata:
       optional: true
     react-native-worklets:
       optional: true
-  checksum: 10c0/b9b35d174b66918fb18831f9fade268e0ff4b6ec646d56830f336d6c7739024f68eac1349d071a1be6c76bfaff931642af41b1465ac429c351cb1581e6100630
+  checksum: 10c0/73716d01b0b7a703f30ef2aaf751dc7fa703cf918026e814c24f85e03ea09e6fdf9eafd57f5373a322772dbb3517194eebf058ff1f8f82a5506f3d048ed4520c
   languageName: node
   linkType: hard
 
@@ -3773,9 +3773,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/datetimepicker@npm:8.4.4":
-  version: 8.4.4
-  resolution: "@react-native-community/datetimepicker@npm:8.4.4"
+"@react-native-community/datetimepicker@npm:^9.1.0":
+  version: 9.1.0
+  resolution: "@react-native-community/datetimepicker@npm:9.1.0"
   dependencies:
     invariant: "npm:^2.2.4"
   peerDependencies:
@@ -3788,7 +3788,7 @@ __metadata:
       optional: true
     react-native-windows:
       optional: true
-  checksum: 10c0/05794d2746584be85bd74f86593951714407da2bebf49e63e676d58d40a5c85923ae87342a930fde59b60bd5f18e6c878fe747a92f67271d339ed4b1fde6479e
+  checksum: 10c0/3f31baec58c1245204a9b4057809027019aa1abb4b8caea4cb4d44ab70f5a97dfe5114a8aa315299aa47ad31971059181c355aa056d9c3a14b7892582da9f4cb
   languageName: node
   linkType: hard
 
@@ -9034,15 +9034,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"husky@npm:^9.1.7":
-  version: 9.1.7
-  resolution: "husky@npm:9.1.7"
-  bin:
-    husky: bin.js
-  checksum: 10c0/35bb110a71086c48906aa7cd3ed4913fb913823715359d65e32e0b964cb1e255593b0ae8014a5005c66a68e6fa66c38dcfa8056dbbdfb8b0187c0ffe7ee3a58f
-  languageName: node
-  linkType: hard
-
 "iconv-lite@npm:0.6.3":
   version: 0.6.3
   resolution: "iconv-lite@npm:0.6.3"
@@ -13008,6 +12999,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-draggable-flatlist@npm:^4.0.3":
+  version: 4.0.3
+  resolution: "react-native-draggable-flatlist@npm:4.0.3"
+  dependencies:
+    "@babel/preset-typescript": "npm:^7.17.12"
+  peerDependencies:
+    react-native: ">=0.64.0"
+    react-native-gesture-handler: ">=2.0.0"
+    react-native-reanimated: ">=2.8.0"
+  checksum: 10c0/1b9bd3da36929dc21bbcd7eb63e37af52c87add06776c7f20215cb6a28499f4e03619e3751fc71e192d5b074fb1dc782a939186ca7ef281928b9c940f6239455
+  languageName: node
+  linkType: hard
+
 "react-native-edge-to-edge@npm:1.6.0":
   version: 1.6.0
   resolution: "react-native-edge-to-edge@npm:1.6.0"
@@ -14692,11 +14696,11 @@ __metadata:
     "@babel/core": "npm:^7.20.0"
     "@commitlint/cli": "npm:^19.8.1"
     "@commitlint/config-conventional": "npm:^19.8.1"
-    "@gorhom/bottom-sheet": "npm:^5.2.8"
-    "@lodev09/react-native-true-sheet": "npm:^3.5.5"
+    "@gorhom/bottom-sheet": "npm:^5.2.13"
+    "@lodev09/react-native-true-sheet": "npm:^3.10.1"
     "@maplibre/maplibre-react-native": "npm:^10.2.0"
     "@notifee/react-native": "npm:^9.1.8"
-    "@react-native-community/datetimepicker": "npm:8.4.4"
+    "@react-native-community/datetimepicker": "npm:^9.1.0"
     "@react-native-documents/picker": "npm:^10.1.3"
     "@react-native-firebase/app": "npm:^21.2.0"
     "@react-native-firebase/crashlytics": "npm:^21.2.0"
@@ -14736,7 +14740,6 @@ __metadata:
     expo-status-bar: "npm:~3.0.9"
     expo-system-ui: "npm:~6.0.9"
     expo-task-manager: "npm:~14.0.9"
-    husky: "npm:^9.1.7"
     jest: "npm:~29.7.0"
     lottie-react-native: "npm:~7.3.1"
     moment: "npm:^2.30.1"
@@ -14748,6 +14751,7 @@ __metadata:
     react-native-bootsplash: "npm:^6.3.10"
     react-native-contacts: "npm:7.0.4"
     react-native-curved-bottom-bar: "npm:^3.4.1"
+    react-native-draggable-flatlist: "npm:^4.0.3"
     react-native-edge-to-edge: "npm:1.6.0"
     react-native-flash-message: "npm:^0.4.2"
     react-native-gesture-handler: "npm:~2.28.0"

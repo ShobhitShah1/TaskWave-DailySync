@@ -417,7 +417,10 @@ export async function finishRestore(): Promise<void> {
   console.log(`[LocationService] Restore complete. Active: ${activeCount}`);
 
   if (activeCount > 0 && !isTracking) {
-    await startTracking();
+    const { status } = await Location.getForegroundPermissionsAsync();
+    if (status === 'granted') {
+      await startTracking();
+    }
   }
 
   // Check proximity for all restored active reminders
@@ -448,7 +451,7 @@ async function checkAllActiveRemindersProximity(): Promise<void> {
  */
 export async function getCurrentLocation(): Promise<Location.LocationObject | null> {
   try {
-    const { status } = await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.getForegroundPermissionsAsync();
     if (status !== 'granted') return null;
 
     const cached = await Location.getLastKnownPositionAsync({ maxAge: 60000 });

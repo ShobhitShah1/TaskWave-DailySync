@@ -1,6 +1,6 @@
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Sound } from 'expo-av/build/Audio';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import Animated, {
   Extrapolation,
@@ -65,6 +65,7 @@ const AudioMemoItem = ({
     async (newStatus: AVPlaybackStatus) => {
       setStatus(newStatus);
       if (newStatus.isLoaded && sound && newStatus.didJustFinish) {
+        await sound.pauseAsync();
         await sound.setPositionAsync(0);
       }
     },
@@ -85,7 +86,8 @@ const AudioMemoItem = ({
 
   const calculateWaveformData = (metering: number[]) => {
     const numLines = 50;
-    const lines = [];
+    const lines: { value: number; color: string }[] = [];
+    if (!metering || metering.length === 0) return lines;
     for (let i = 0; i < numLines; i++) {
       const meteringIndex = Math.floor((i * metering.length) / numLines);
       const nextMeteringIndex = Math.ceil(((i + 1) * metering.length) / numLines);
@@ -101,7 +103,17 @@ const AudioMemoItem = ({
   const duration = status?.isLoaded ? status.durationMillis : 1;
 
   const progress = position / (duration || 1);
-  const waveformData = memo.metering ? calculateWaveformData(memo.metering) : [];
+
+  const fallbackMetering = useMemo(() => {
+    if (memo.metering && memo.metering.length > 0) return memo.metering;
+    // Generate a pleasant looking static waveform for files without metering data
+    return Array.from({ length: 50 }, (_, i) => {
+      const val = Math.sin(i * 0.4) * 15 - 20;
+      return val - Math.random() * 8;
+    });
+  }, [memo.metering]);
+
+  const waveformData = calculateWaveformData(fallbackMetering);
 
   const animatedIndicatorStyle = useAnimatedStyle(() => ({
     left: `${progress * 100}%`,

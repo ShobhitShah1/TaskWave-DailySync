@@ -18,20 +18,12 @@ import { buildNextAlarmDate } from '@Utils/alarmSchedule';
 import { clearGroupAlarmSnooze, setGroupAlarmSnooze } from '@Utils/groupAlarmSnoozeStorage';
 import { NativeModules } from 'react-native';
 import { appQueryClient } from './QueryClient';
+import { launchNativeAlarm, stopNativeAlarm } from './RemoteNotificationService';
 import { ALARM_QUERY_KEYS } from '@Hooks/useAlarm';
 
 /**
- * Stop all native alarm media (sound, vibration, foreground service).
+ * Consolidated native alarm logic is now imported from RemoteNotificationService.
  */
-const stopNativeAlarm = () => {
-  try {
-    if (NativeModules.AlarmLauncher?.stopService) {
-      NativeModules.AlarmLauncher.stopService();
-    }
-  } catch (e) {
-    console.error('[AlarmProcessor] Error stopping native alarm:', e);
-  }
-};
 
 /**
  * Cancel all notification artifacts for an alarm.
@@ -73,10 +65,12 @@ export const handleAlarmEvent = async (
         console.log(`[AlarmProcessor] Invitation accepted: ${invitationId}`);
         await alarmApi.respondToInvitation(invitationId, 'accept').catch(console.error);
         await notifee.cancelNotification(notification.id!);
+        invalidateAlarmQueries();
       } else if (pressAction?.id === 'decline-invitation') {
         console.log(`[AlarmProcessor] Invitation declined: ${invitationId}`);
         await alarmApi.respondToInvitation(invitationId, 'decline').catch(console.error);
         await notifee.cancelNotification(notification.id!);
+        invalidateAlarmQueries();
       }
     }
     return;
@@ -92,14 +86,66 @@ export const handleAlarmEvent = async (
   if (type === EventType.DELIVERED) {
     console.log(`[AlarmProcessor] 📬 Alarm DELIVERED (trigger fired): ${alarmId}`);
 
-    // Launch native AlarmService so it shows AlarmActivity + plays sound
     const launcher = NativeModules.AlarmLauncher;
     if (launcher?.launch) {
       const title = (notification.data?.title as string) || notification.title || 'Alarm';
       const body = (notification.data?.body as string) || notification.body || 'Wake up!';
-      const tone = (notification.data?.tone as string) || 'default';
+      const baseTone = (notification.data?.tone as string) || 'default';
       const bufferMinutes = (notification.data?.bufferMinutes as string) || '5';
-      launcher.launch(title, body, alarmId, mode, tone, bufferMinutes);
+
+      // Read alarmNotes + snoozeNoteIndex from the DB (reliable source of truth)
+      // The notification data can get overwritten by the native AlarmService
+      let alarmNotes: string[] = [];
+      let snoozeNoteIndex = 0;
+
+      if (mode === 'solo') {
+        const alarm = await getSoloAlarmById(alarmId);
+
+        if (alarm) {
+          alarmNotes = alarm.alarmNotes ?? [];
+          snoozeNoteIndex = alarm.snoozeNoteIndex ?? 0;
+        }
+      } else {
+        // Group alarms: read from notification data
+        try {
+          const notesStr = (notification.data?.alarmNotes ||
+            notification.data?.alarm_notes) as string;
+          alarmNotes = JSON.parse(notesStr || '[]');
+        } catch {
+          alarmNotes = [];
+        }
+        snoozeNoteIndex = parseInt(
+          (notification.data?.snoozeNoteIndex ||
+            notification.data?.snooze_note_index ||
+            '0') as string,
+          10,
+        );
+      }
+
+      console.log(`[AlarmProcessor] 🔍 Full Data: ${JSON.stringify(notification.data, null, 2)}`);
+      console.log('notification', JSON.stringify(notification, null, 2));
+
+      // Index 0 = initial trigger → plays the main tone
+      // Index >= 1 = snooze cycle → plays alarmNotes sequentially, cycling
+      let toneToPlay = baseTone;
+      if (snoozeNoteIndex > 0 && alarmNotes.length > 0) {
+        const noteIdx = (snoozeNoteIndex - 1) % alarmNotes.length;
+        toneToPlay = alarmNotes[noteIdx];
+      }
+
+      console.log(
+        `[AlarmProcessor] 🎵 Playing tone: ${toneToPlay} (snoozeIndex=${snoozeNoteIndex}, notes=${alarmNotes.length})`,
+      );
+      await launchNativeAlarm({
+        title,
+        body,
+        alarmId,
+        mode,
+        tone: toneToPlay || baseTone,
+        bufferMinutes: (notification.data?.bufferMinutes || '5') as string,
+        alarmNotes: JSON.stringify(alarmNotes),
+        snoozeNoteIndex: String(snoozeNoteIndex),
+      });
     }
     return;
   }
@@ -188,11 +234,46 @@ export const handleAlarmEvent = async (
         const originalBody = (notification.data?.body as string) || notification.body || 'Wake up!';
         const tone = (notification.data?.tone as string) || 'default';
 
+        // Read alarmNotes + snoozeNoteIndex from DB (source of truth for solo alarms)
+        // Notification data may have been overwritten by native AlarmService
+        let alarmNotes: string[] = [];
+        let currentSnoozeIndex = 0;
+
+        if (mode === 'solo') {
+          const alarm = await getSoloAlarmById(alarmId);
+          if (alarm) {
+            alarmNotes = alarm.alarmNotes ?? [];
+            currentSnoozeIndex = alarm.snoozeNoteIndex ?? 0;
+          }
+        } else {
+          // Group alarms: read from notification data
+          try {
+            const notesStr = (notification.data?.alarmNotes ||
+              notification.data?.alarm_notes) as string;
+            alarmNotes = JSON.parse(notesStr || '[]');
+          } catch {
+            alarmNotes = [];
+          }
+          currentSnoozeIndex = parseInt(
+            (notification.data?.snoozeNoteIndex ||
+              notification.data?.snooze_note_index ||
+              '0') as string,
+            10,
+          );
+        }
+        const nextSnoozeIndex = currentSnoozeIndex + 1;
+
         // 1. Local State Management (UI updates)
         if (mode === 'group') {
           setGroupAlarmSnooze(alarmId, snoozeTime.toISOString());
         } else {
-          await updateSoloAlarmStatus(alarmId, 'snoozed', snoozeTime.toISOString());
+          await updateSoloAlarmStatus(
+            alarmId,
+            'snoozed',
+            snoozeTime.toISOString(),
+            undefined,
+            nextSnoozeIndex,
+          );
         }
 
         // 2. Tell API about the snooze
@@ -211,7 +292,7 @@ export const handleAlarmEvent = async (
           },
         };
 
-        const snoozeNotification: any = {
+        const snoozeNotification = {
           title: `[SNOOZED] ${cleanTitle}`,
           body: `Snoozed until ${snoozeTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
           data: {
@@ -220,7 +301,9 @@ export const handleAlarmEvent = async (
             mode: mode,
             title: cleanTitle,
             body: originalBody,
-            tone: tone,
+            tone: alarmNotes[nextSnoozeIndex % alarmNotes.length] || tone,
+            alarmNotes: JSON.stringify(alarmNotes),
+            snoozeNoteIndex: String(nextSnoozeIndex),
             bufferMinutes: (snoozeMinutes || 5).toString(),
             status: 'snoozed',
           },

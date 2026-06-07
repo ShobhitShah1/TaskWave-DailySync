@@ -51,15 +51,18 @@ class AlarmService : Service() {
         val mode = intent?.getStringExtra("mode") ?: "solo"
         val tone = intent?.getStringExtra("tone") ?: "default"
         val bufferMinutes = intent?.getStringExtra("bufferMinutes") ?: "5"
+        val alarmNotes = intent?.getStringExtra("alarmNotes") ?: "[]"
+        val snoozeNoteIndex = intent?.getStringExtra("snoozeNoteIndex") ?: "0"
 
+        Log.d(TAG, "📢 AlarmService extras: alarmId=$alarmId, notes=$alarmNotes, index=$snoozeNoteIndex")
         Log.d(TAG, "📢 Triggering alarm: $title, tone: $tone, buffer: $bufferMinutes")
-        showForegroundNotification(title, body, alarmId, mode, tone, bufferMinutes)
+        showForegroundNotification(title, body, alarmId, mode, tone, bufferMinutes, alarmNotes, snoozeNoteIndex)
         startAlarmMedia(tone)
 
         return START_REDELIVER_INTENT
     }
 
-    private fun showForegroundNotification(title: String, body: String, alarmId: String, mode: String, tone: String, bufferMinutes: String) {
+    private fun showForegroundNotification(title: String, body: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, alarmNotes: String, snoozeNoteIndex: String) {
         Log.d(TAG, "🛠️ Building notification for channel: $CHANNEL_ID")
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -98,6 +101,8 @@ class AlarmService : Service() {
             putExtra("mode", mode)
             putExtra("tone", tone)
             putExtra("bufferMinutes", bufferMinutes)
+            putExtra("alarmNotes", alarmNotes)
+            putExtra("snoozeNoteIndex", snoozeNoteIndex)
             putExtra("title", title)
             putExtra("body", body)
         }
@@ -110,6 +115,8 @@ class AlarmService : Service() {
             putExtra("mode", mode)
             putExtra("tone", tone)
             putExtra("bufferMinutes", bufferMinutes)
+            putExtra("alarmNotes", alarmNotes)
+            putExtra("snoozeNoteIndex", snoozeNoteIndex)
             putExtra("title", title)
             putExtra("body", body)
         }
@@ -122,6 +129,10 @@ class AlarmService : Service() {
             putExtra("mode", mode)
             putExtra("tone", tone)
             putExtra("bufferMinutes", bufferMinutes)
+            putExtra("alarmNotes", alarmNotes)
+            putExtra("snoozeNoteIndex", snoozeNoteIndex)
+            putExtra("title", title)
+            putExtra("body", body)
         }
         val snoozePendingIntent = PendingIntent.getActivity(this, 2, snoozeIntent, pendingIntentFlags)
 
@@ -168,6 +179,8 @@ class AlarmService : Service() {
                 putExtra("mode", mode)
                 putExtra("tone", tone)
                 putExtra("bufferMinutes", bufferMinutes)
+                putExtra("alarmNotes", alarmNotes)
+                putExtra("snoozeNoteIndex", snoozeNoteIndex)
             }
             startActivity(activityIntent)
         } catch (e: Exception) {
@@ -198,14 +211,15 @@ class AlarmService : Service() {
                 isLooping = true
             }
 
-            if (tone == "ting_tong" || tone == "tink_tink") {
+            if (tone != "default") {
                 val resId = resources.getIdentifier(tone, "raw", packageName)
                 if (resId != 0) {
-                    Log.d(TAG, "🎹 Playing custom raw resource: $tone")
+                    Log.d(TAG, "🎹 Playing custom raw resource: $tone (resId=$resId)")
                     val afd = resources.openRawResourceFd(resId)
                     mediaPlayer?.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
                     afd.close()
                 } else {
+                    Log.d(TAG, "⚠️ Raw resource not found for tone: $tone, falling back to default")
                     loadDefaultAlarmSound()
                 }
             } else {

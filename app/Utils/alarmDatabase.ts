@@ -23,6 +23,8 @@ const mapSoloAlarmRecord = (record: any): SoloAlarmRecord => ({
   minute: Number(record.minute),
   meridiem: record.meridiem,
   tone: record.tone,
+  alarmNotes: record.alarm_notes ? JSON.parse(record.alarm_notes) : [],
+  snoozeNoteIndex: Number(record.snooze_note_index ?? 0),
   bufferMinutes: Number(record.buffer_minutes),
   repeat: record.repeat_type,
   repeatDays: record.repeat_days ? JSON.parse(record.repeat_days) : [],
@@ -57,6 +59,8 @@ export const getAlarmDatabase = async () => {
     buffer_minutes INTEGER NOT NULL DEFAULT 0,
     repeat_type TEXT NOT NULL DEFAULT 'none',
     repeat_days TEXT NOT NULL DEFAULT '[]',
+    alarm_notes TEXT NOT NULL DEFAULT '[]',
+    snooze_note_index INTEGER NOT NULL DEFAULT 0,
     snooze_duration INTEGER NOT NULL DEFAULT 5,
     next_trigger_at TEXT NOT NULL,
     local_notification_id TEXT,
@@ -74,6 +78,16 @@ export const getAlarmDatabase = async () => {
   if (!colNames.has('snoozed_until')) {
     await alarmDatabaseInstance.execAsync(
       `ALTER TABLE ${PERSONAL_ALERTS_TABLE} ADD COLUMN snoozed_until TEXT`,
+    );
+  }
+  if (!colNames.has('alarm_notes')) {
+    await alarmDatabaseInstance.execAsync(
+      `ALTER TABLE ${PERSONAL_ALERTS_TABLE} ADD COLUMN alarm_notes TEXT NOT NULL DEFAULT '[]'`,
+    );
+  }
+  if (!colNames.has('snooze_note_index')) {
+    await alarmDatabaseInstance.execAsync(
+      `ALTER TABLE ${PERSONAL_ALERTS_TABLE} ADD COLUMN snooze_note_index INTEGER NOT NULL DEFAULT 0`,
     );
   }
 
@@ -184,9 +198,9 @@ export const createSoloAlarm = async (input: CreateSoloAlarmInput) => {
   await database.runAsync(
     `INSERT INTO ${PERSONAL_ALERTS_TABLE} (
       id, title, note, hour, minute, meridiem, tone, vibrate,
-      buffer_minutes, repeat_type, repeat_days, snooze_duration, next_trigger_at,
+      buffer_minutes, repeat_type, repeat_days, alarm_notes, snooze_note_index, snooze_duration, next_trigger_at,
       local_notification_id, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       input.title,
@@ -199,6 +213,8 @@ export const createSoloAlarm = async (input: CreateSoloAlarmInput) => {
       input.bufferMinutes,
       input.repeat,
       JSON.stringify(input.repeatDays),
+      JSON.stringify(input.alarmNotes ?? []),
+      input.snoozeNoteIndex ?? 0,
       input.bufferMinutes || 5,
       nextTriggerAt,
       notificationId,
@@ -264,7 +280,7 @@ export const updateSoloAlarm = async (alarmId: string, input: CreateSoloAlarmInp
   await database.runAsync(
     `UPDATE ${PERSONAL_ALERTS_TABLE}
      SET title = ?, note = ?, hour = ?, minute = ?, meridiem = ?, tone = ?, vibrate = ?,
-         buffer_minutes = ?, repeat_type = ?, repeat_days = ?, snooze_duration = ?,
+         buffer_minutes = ?, repeat_type = ?, repeat_days = ?, alarm_notes = ?, snooze_note_index = ?, snooze_duration = ?,
          next_trigger_at = ?, local_notification_id = ?, status = ?, updated_at = ?
      WHERE id = ?`,
     [
@@ -278,6 +294,8 @@ export const updateSoloAlarm = async (alarmId: string, input: CreateSoloAlarmInp
       input.bufferMinutes,
       input.repeat,
       JSON.stringify(input.repeatDays),
+      JSON.stringify(input.alarmNotes ?? []),
+      input.snoozeNoteIndex ?? 0,
       input.bufferMinutes || 5,
       nextTriggerAt,
       notificationId,
@@ -298,25 +316,24 @@ export const updateSoloAlarmStatus = async (
   status: 'scheduled' | 'snoozed' | 'completed',
   snoozedUntil?: string,
   nextTriggerAt?: string,
+  snoozeNoteIndex?: number,
 ) => {
   const database = await getAlarmDatabase();
   const timestamp = new Date().toISOString();
 
   if (status === 'snoozed' && snoozedUntil) {
     await database.runAsync(
-      `UPDATE ${PERSONAL_ALERTS_TABLE} SET status = ?, snoozed_until = ?, next_trigger_at = ?, updated_at = ? WHERE id = ?`,
-      [status, snoozedUntil, snoozedUntil, timestamp, alarmId],
+      `UPDATE ${PERSONAL_ALERTS_TABLE} SET status = ?, snoozed_until = ?, next_trigger_at = ?, snooze_note_index = ?, updated_at = ? WHERE id = ?`,
+      [status, snoozedUntil, snoozedUntil, snoozeNoteIndex ?? 0, timestamp, alarmId],
     );
   } else if (nextTriggerAt) {
-    // Dismiss with a recalculated next trigger time
     await database.runAsync(
-      `UPDATE ${PERSONAL_ALERTS_TABLE} SET status = ?, snoozed_until = NULL, next_trigger_at = ?, updated_at = ? WHERE id = ?`,
+      `UPDATE ${PERSONAL_ALERTS_TABLE} SET status = ?, snoozed_until = NULL, snooze_note_index = 0, next_trigger_at = ?, updated_at = ? WHERE id = ?`,
       [status, nextTriggerAt, timestamp, alarmId],
     );
   } else {
-    // Clear snoozed_until only
     await database.runAsync(
-      `UPDATE ${PERSONAL_ALERTS_TABLE} SET status = ?, snoozed_until = NULL, updated_at = ? WHERE id = ?`,
+      `UPDATE ${PERSONAL_ALERTS_TABLE} SET status = ?, snoozed_until = NULL, snooze_note_index = 0, updated_at = ? WHERE id = ?`,
       [status, timestamp, alarmId],
     );
   }

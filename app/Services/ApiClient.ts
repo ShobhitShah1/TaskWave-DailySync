@@ -32,8 +32,14 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${auth.accessToken}`;
   }
 
+  // When sending FormData (file uploads), remove Content-Type so the
+  // browser/RN networking layer auto-sets multipart/form-data with boundary
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
+
   console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
-    data: config.data,
+    data: config.data instanceof FormData ? '[FormData]' : config.data,
     params: config.params,
     headers: config.headers,
   });

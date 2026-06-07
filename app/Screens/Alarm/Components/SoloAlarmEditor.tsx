@@ -5,7 +5,7 @@ import { useAppContext } from '@Contexts/ThemeProvider';
 import useThemeColors from '@Hooks/useThemeMode';
 import { WeekDayType } from '@Screens/AddReminder/Components/AddScheduleFrequency';
 import React, { memo, useEffect, useMemo, useRef } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View, useColorScheme, Dimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -14,6 +14,9 @@ import Animated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
+import AlarmNoteSelector from './AlarmNoteSelector';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface SoloAlarmEditorProps {
   time: Date;
@@ -32,6 +35,8 @@ interface SoloAlarmEditorProps {
   onBufferPress: () => void;
   onTonePress: () => void;
   themeColor: string;
+  alarmNotes?: string[];
+  setAlarmNotes?: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const DAYS: WeekDayType[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -70,6 +75,8 @@ const SoloAlarmEditor: React.FC<SoloAlarmEditorProps> = ({
   onBufferPress,
   onTonePress,
   themeColor,
+  alarmNotes,
+  setAlarmNotes,
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
@@ -373,6 +380,14 @@ const SoloAlarmEditor: React.FC<SoloAlarmEditorProps> = ({
           );
         })}
       </View>
+
+      {alarmNotes && setAlarmNotes && (
+        <AlarmNoteSelector
+          alarmNotes={alarmNotes}
+          setAlarmNotes={setAlarmNotes}
+          themeColor={colors.alarmFocus}
+        />
+      )}
     </>
   );
 };

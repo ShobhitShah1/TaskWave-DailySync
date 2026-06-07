@@ -51,6 +51,8 @@ class AlarmActivity : Activity() {
         var mode = "solo"
         var tone = "default"
         var bufferMinutes = "5"
+        var alarmNotes = "[]"
+        var snoozeNoteIndex = "0"
         var requestedAction: String? = null
 
         try {
@@ -63,6 +65,8 @@ class AlarmActivity : Activity() {
                 mode = extras.getString("mode") ?: mode
                 tone = extras.getString("tone") ?: tone
                 bufferMinutes = extras.getString("bufferMinutes") ?: bufferMinutes
+                alarmNotes = extras.getString("alarmNotes") ?: "[]"
+                snoozeNoteIndex = extras.getString("snoozeNoteIndex") ?: "0"
                 requestedAction = extras.getString("alarm_action")
 
                 // 2. Notifee-specific extras (from Local Trigger notifications)
@@ -78,6 +82,8 @@ class AlarmActivity : Activity() {
                         mode = dataBundle.getString("mode") ?: mode
                         tone = dataBundle.getString("tone") ?: tone
                         bufferMinutes = dataBundle.getString("bufferMinutes") ?: bufferMinutes
+                        alarmNotes = dataBundle.getString("alarmNotes") ?: alarmNotes
+                        snoozeNoteIndex = dataBundle.getString("snoozeNoteIndex") ?: snoozeNoteIndex
                     }
                 }
             }
@@ -85,17 +91,17 @@ class AlarmActivity : Activity() {
             Log.e(TAG, "❌ Error parsing intent extras", e)
         }
 
-        Log.d(TAG, "🏁 AlarmActivity: title=$titleText, mode=$mode, action=$requestedAction, buffer=$bufferMinutes")
+        Log.d(TAG, "🏁 AlarmActivity: title=$titleText, mode=$mode, action=$requestedAction, buffer=$bufferMinutes, notes=$alarmNotes, index=$snoozeNoteIndex")
 
         // If the activity was started directly with a dismiss or snooze action (from notification buttons)
         if (requestedAction == "dismiss-alarm" || requestedAction == "snooze-alarm") {
             Log.d(TAG, "⚡ Notification action received: $requestedAction")
-            handleUserAction(requestedAction, alarmId, mode, tone, bufferMinutes, titleText, bodyText)
+            handleUserAction(requestedAction, alarmId, mode, tone, bufferMinutes, titleText, bodyText, alarmNotes, snoozeNoteIndex)
             return
         }
 
         // START the AlarmService to play sound/vibration if this is a fresh ringing
-        startAlarmMedia(titleText, bodyText, alarmId, mode, tone, bufferMinutes)
+        startAlarmMedia(titleText, bodyText, alarmId, mode, tone, bufferMinutes, alarmNotes, snoozeNoteIndex)
 
         findViewById<TextView>(R.id.alarmTitle).text = titleText
         val bodyView = findViewById<TextView>(R.id.alarmBody)
@@ -106,18 +112,47 @@ class AlarmActivity : Activity() {
             bodyView.visibility = View.VISIBLE
         }
 
-        findViewById<Button>(R.id.dismissButton).setOnClickListener {
+        findViewById<View>(R.id.dismissButton).setOnClickListener {
             Log.d(TAG, "🔘 Dismiss button clicked")
-            handleUserAction("dismiss-alarm", alarmId, mode, tone, bufferMinutes, titleText, bodyText)
+            handleUserAction("dismiss-alarm", alarmId, mode, tone, bufferMinutes, titleText, bodyText, alarmNotes, snoozeNoteIndex)
         }
 
-        findViewById<Button>(R.id.snoozeButton).setOnClickListener {
+        findViewById<View>(R.id.snoozeButton).setOnClickListener {
             Log.d(TAG, "🔘 Snooze button clicked")
-            handleUserAction("snooze-alarm", alarmId, mode, tone, bufferMinutes, titleText, bodyText)
+            handleUserAction("snooze-alarm", alarmId, mode, tone, bufferMinutes, titleText, bodyText, alarmNotes, snoozeNoteIndex)
         }
     }
 
-    private fun startAlarmMedia(title: String, body: String, alarmId: String, mode: String, tone: String, bufferMinutes: String) {
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        Log.d(TAG, "⏰ AlarmActivity: onNewIntent")
+        
+        try {
+            val extras = intent?.extras
+            if (extras != null) {
+                val requestedAction = extras.getString("alarm_action")
+                if (requestedAction == "dismiss-alarm" || requestedAction == "snooze-alarm") {
+                    Log.d(TAG, "⚡ Notification action received in onNewIntent: $requestedAction")
+                    
+                    val titleText = extras.getString("title") ?: "Alarm"
+                    val bodyText = extras.getString("body") ?: ""
+                    val alarmId = extras.getString("alarmId") ?: ""
+                    val mode = extras.getString("mode") ?: "solo"
+                    val tone = extras.getString("tone") ?: "default"
+                    val bufferMinutes = extras.getString("bufferMinutes") ?: "5"
+                    val alarmNotes = extras.getString("alarmNotes") ?: "[]"
+                    val snoozeNoteIndex = extras.getString("snoozeNoteIndex") ?: "0"
+                    Log.d(TAG, "⚡ Action: $requestedAction, notes: $alarmNotes, index: $snoozeNoteIndex")
+                    handleUserAction(requestedAction, alarmId, mode, tone, bufferMinutes, titleText, bodyText, alarmNotes, snoozeNoteIndex)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error parsing intent extras in onNewIntent", e)
+        }
+    }
+
+    private fun startAlarmMedia(title: String, body: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, alarmNotes: String, snoozeNoteIndex: String) {
         Log.d(TAG, "🎺 Starting AlarmService: tone=$tone")
         val serviceIntent = Intent(this, AlarmService::class.java).apply {
             putExtra("title", title)
@@ -126,6 +161,8 @@ class AlarmActivity : Activity() {
             putExtra("mode", mode)
             putExtra("tone", tone)
             putExtra("bufferMinutes", bufferMinutes)
+            putExtra("alarmNotes", alarmNotes)
+            putExtra("snoozeNoteIndex", snoozeNoteIndex)
         }
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -138,9 +175,9 @@ class AlarmActivity : Activity() {
         }
     }
 
-    private fun handleUserAction(action: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, title: String, body: String) {
+    private fun handleUserAction(action: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, title: String, body: String, alarmNotes: String, snoozeNoteIndex: String) {
         cancelNotifications()
-        launchMainApp(action, alarmId, mode, tone, bufferMinutes, title, body)
+        launchMainApp(action, alarmId, mode, tone, bufferMinutes, title, body, alarmNotes, snoozeNoteIndex)
         finish()
     }
 
@@ -166,7 +203,7 @@ class AlarmActivity : Activity() {
         }
     }
 
-    private fun launchMainApp(action: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, title: String, body: String) {
+    private fun launchMainApp(action: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, title: String, body: String, alarmNotes: String, snoozeNoteIndex: String) {
         Log.d(TAG, "🚀 Preparing app launch: action=$action, buffer=$bufferMinutes")
         
         // Save to SharedPreferences using COMMIT (synchronous) to ensure it's written before launch
@@ -177,6 +214,8 @@ class AlarmActivity : Activity() {
             .putString(AlarmLauncherModule.KEY_MODE, mode)
             .putString("tone", tone)
             .putString("bufferMinutes", bufferMinutes)
+            .putString("alarmNotes", alarmNotes)
+            .putString("snoozeNoteIndex", snoozeNoteIndex)
             .putString(AlarmLauncherModule.KEY_TITLE, title)
             .putString(AlarmLauncherModule.KEY_BODY, body)
             .commit()
@@ -191,6 +230,7 @@ class AlarmActivity : Activity() {
             launchIntent.putExtra("bufferMinutes", bufferMinutes)
             launchIntent.putExtra("title", title)
             launchIntent.putExtra("body", body)
+            launchIntent.putExtra("snoozeNoteIndex", snoozeNoteIndex)
             Log.d(TAG, "📦 Starting Main Activity")
             startActivity(launchIntent)
         } else {

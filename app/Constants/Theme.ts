@@ -143,6 +143,10 @@ export const LightThemeColors = {
   alarmDaySelectedBg: 'rgba(48, 51, 52, 1)',
   alarmDayUnselectedBg: 'rgba(237, 237, 237, 1)',
   alarmCardBackground: 'rgba(255, 255, 255, 1)',
+  alarmActiveCardBackground: 'rgba(235, 235, 235, 1)',
+  alarmDragDot: '#C0C0C0',
+  alarmNoteText: '#303334',
+  red: 'rgba(255, 0, 0, 1)',
   ...CommunicationPlatformColors,
 };
 
@@ -177,6 +181,10 @@ export const DarkThemeColors = {
   alarmDaySelectedBg: 'rgba(255, 255, 255, 1)',
   alarmDayUnselectedBg: 'rgba(77, 78, 81, 1)',
   alarmCardBackground: 'rgba(77, 78, 81, 1)',
+  alarmActiveCardBackground: 'rgba(90, 92, 95, 1)',
+  alarmDragDot: '#A0A0A0',
+  alarmNoteText: '#E0E0E0',
+  red: 'rgba(255, 0, 0, 1)',
   ...CommunicationPlatformColors,
   location: 'rgba(107, 164, 227, 1)',
 };

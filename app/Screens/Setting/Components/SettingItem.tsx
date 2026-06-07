@@ -33,15 +33,7 @@ const SettingItem: FC<SettingProps> = ({
 
   return (
     <Pressable style={style.itemContainer} onPress={onPress}>
-      <View
-        style={[
-          style.iconContainer,
-          ionicon && {
-            backgroundColor: ioniconColor === '#FFB340' ? 'rgba(255, 179, 64, 0.15)' : '#E6E9FC',
-            borderRadius: 8,
-          },
-        ]}
-      >
+      <View style={style.iconContainer}>
         {ionicon ? (
           <Ionicons name={ionicon} size={20} color={ioniconColor || colors.darkBlue} />
         ) : icon ? (

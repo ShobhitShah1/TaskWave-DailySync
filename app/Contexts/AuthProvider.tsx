@@ -108,7 +108,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
   const signUpMutation = useMutation({
     mutationKey: ['auth', 'sign-up'],
     mutationFn: async (input: SignUpInput) => {
-      const device = await getRegistrationPayload();
+      const device = await getRegistrationPayload(true);
       return authApi.signUp({ ...input, ...(device || {}) });
     },
     onSuccess: persistAuth,
@@ -127,7 +127,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
         throw new Error('No Google account is available on this device.');
       }
 
-      const device = await getRegistrationPayload();
+      const device = await getRegistrationPayload(true);
       return authApi.signInWithGoogle({
         idToken: result.data.idToken,
         accessToken: result.data.accessToken,

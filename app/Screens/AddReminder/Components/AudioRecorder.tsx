@@ -54,7 +54,13 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
           <View>
             {recording && <Animated.View style={[style.recorderRecordWave, animatedRecordWave]} />}
 
-            <Pressable style={style.recorderRecordButton} onPress={onRecordingPress}>
+            <Pressable
+              style={style.recorderRecordButton}
+              onPress={() => {
+                console.log('[AudioRecorder] Record button pressed');
+                onRecordingPress();
+              }}
+            >
               <Animated.Image
                 resizeMode="contain"
                 tintColor={recording ? (isDark ? colors.white : colors.black) : themeColor}

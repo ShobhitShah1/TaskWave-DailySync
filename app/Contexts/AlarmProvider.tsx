@@ -32,8 +32,9 @@ export const AlarmProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const result = await NativeModules.AlarmLauncher.getInitialAction();
         if (result && result.action) {
           console.log(
-            `[AlarmProvider] Native action received: ${result.action} for ${result.alarmId}`,
+            `[AlarmProvider] Native action received: ${result.action} for ${result.alarmId}, notes: ${result.alarmNotes}`,
           );
+          console.log(`[AlarmProvider] Full result: ${JSON.stringify(result, null, 2)}`);
 
           // Skip show-alarm — native AlarmActivity is already handling the UI
           if (result.action === 'show-alarm') {
@@ -54,6 +55,8 @@ export const AlarmProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 body: result.body || 'Wake up!',
                 tone: result.tone || 'default',
                 bufferMinutes: result.bufferMinutes || '5',
+                alarmNotes: result.alarmNotes || '[]',
+                snoozeNoteIndex: result.snoozeNoteIndex || '0',
               },
             } as any,
             pressAction: { id: result.action },

@@ -13,14 +13,20 @@ const getTimezone = () => {
   }
 };
 
-export const getRegistrationPayload = async (): Promise<DeviceRegistrationInput | null> => {
+export const getRegistrationPayload = async (
+  request = false,
+): Promise<DeviceRegistrationInput | null> => {
   await ensureRemoteNotificationChannel();
 
   if (Platform.OS === 'ios') {
     await getMessaging().registerDeviceForRemoteMessages();
-    await getMessaging().requestPermission();
+    if (request) {
+      await getMessaging().requestPermission();
+    }
   } else {
-    await notifee.requestPermission();
+    if (request) {
+      await notifee.requestPermission();
+    }
   }
 
   const fcmToken = await getMessaging().getToken();
@@ -37,7 +43,7 @@ export const getRegistrationPayload = async (): Promise<DeviceRegistrationInput 
 };
 
 export const syncPushToken = async (serverToken?: string | null): Promise<string | null> => {
-  const payload = await getRegistrationPayload();
+  const payload = await getRegistrationPayload(false);
 
   if (!payload) {
     return null;

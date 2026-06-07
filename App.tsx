@@ -68,7 +68,9 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
         if (
           notification &&
           notification.kind !== 'alarm' &&
-          notification.scheduleFrequency?.length !== 0
+          notification.kind !== 'alarm-invitation' &&
+          notification.scheduleFrequency &&
+          notification.scheduleFrequency.length !== 0
         ) {
           try {
             const { updatedNotification } = await updateToNextDate(notification);
@@ -115,9 +117,6 @@ const AppContent = () => {
           <Routes />
 
           <BatteryOptimizationModal />
-          <OverlayPermissionModal />
-
-          {/* Native AlarmActivity handles all alarm UI — no JS overlay needed */}
 
           <FlashMessage
             animated
@@ -160,14 +159,11 @@ export default function App() {
       try {
         const notification: Notification = detail.notification?.data as any;
 
+        if (notification?.kind === 'alarm' || notification?.kind === 'alarm-invitation') {
+          await handleAlarmEvent(type, detail).catch(console.error);
+        }
+
         switch (type) {
-          case EventType.DISMISSED:
-            console.log('User dismissed notification', detail.notification);
-            // Handle alarm notification dismissal (cleanup schedules)
-            if (notification?.kind === 'alarm') {
-              await handleAlarmEvent(type, detail).catch(console.error);
-            }
-            break;
           case EventType.PRESS:
             if (notification?.kind !== 'alarm') {
               handleNotificationPress(notification);

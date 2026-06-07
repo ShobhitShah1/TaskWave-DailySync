@@ -17,6 +17,7 @@ import { useAuth } from '@Hooks/useAuth';
 
 import AlarmActionBar from './Components/AlarmActionBar';
 import AnalogClock from './Components/AnalogClock';
+import AudioMemoItem from '@Components/MemoListItem';
 
 type AlarmDetailsRoute = RouteProp<RootStackParamList, 'AlarmDetails'>;
 
@@ -71,19 +72,6 @@ const AlarmDetailsScreen = () => {
   const note = alarm.note?.trim() || 'No note added.';
   const isSolo = route.params.mode === 'solo';
   const canEdit = isSolo || ('ownerUserId' in alarm && alarm.ownerUserId === auth?.user?.id);
-  const isSnoozed = alarm.status === 'snoozed' && alarm.snoozedUntil;
-  const snoozeTimeLabel = isSnoozed
-    ? (() => {
-        const d = new Date(alarm.snoozedUntil!);
-        return isNaN(d.getTime())
-          ? null
-          : formatAlarmTime(
-              d.getHours() % 12 || 12,
-              d.getMinutes(),
-              d.getHours() >= 12 ? 'PM' : 'AM',
-            );
-      })()
-    : null;
 
   const handleDeleteAlarm = () => {
     const isOwner = isSolo || (alarm.mode === 'group' && alarm.ownerUserId === auth?.user?.id);
@@ -175,13 +163,6 @@ const AlarmDetailsScreen = () => {
 
           {/* Screen Title */}
           <Text style={[styles.screenTitle, { color: colors.text }]}>Alarm</Text>
-
-          {/* Snooze Banner */}
-          {isSnoozed && snoozeTimeLabel && (
-            <View style={[styles.snoozeBanner, { backgroundColor: colors.alarmFocus }]}>
-              <Text style={styles.snoozeBannerText}>⏸ Snoozed until {snoozeTimeLabel}</Text>
-            </View>
-          )}
 
           {/* Countdown Timer */}
           <View style={styles.timerRow}>
@@ -281,6 +262,16 @@ const AlarmDetailsScreen = () => {
                   </View>
                 </View>
               </View>
+
+              {!!alarm.memoUri && (
+                <View style={styles.recorderContainer}>
+                  <AudioMemoItem
+                    memo={useMemo(() => ({ uri: alarm.memoUri, metering: [] }), [alarm.memoUri])}
+                    themeColor={colors.alarmFocus}
+                    renderRightIcon={<></>}
+                  />
+                </View>
+              )}
             </>
           ) : (
             /* ─── GROUP VIEW (mirrors ReminderPreview) ─── */
@@ -296,9 +287,22 @@ const AlarmDetailsScreen = () => {
               </View>
 
               {/* Note card */}
-              <View style={[styles.noteCard, { backgroundColor: colors.previewBackground }]}>
-                <Text style={[styles.noteCardText, { color: colors.text }]}>{note}</Text>
-              </View>
+              {!!note && (
+                <View style={[styles.noteCard, { backgroundColor: colors.previewBackground }]}>
+                  <Text style={[styles.noteCardText, { color: colors.text }]}>{note}</Text>
+                </View>
+              )}
+
+              {/* Voice Memo */}
+              {!!alarm.memoUri && (
+                <View style={styles.recorderContainer}>
+                  <AudioMemoItem
+                    memo={useMemo(() => ({ uri: alarm.memoUri, metering: [] }), [alarm.memoUri])}
+                    themeColor={colors.alarmFocus}
+                    renderRightIcon={<></>}
+                  />
+                </View>
+              )}
 
               {/* Tone */}
               <Text style={[styles.sectionLabel, { color: colors.text }]}>Tone</Text>
@@ -420,18 +424,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 20,
     fontFamily: FONTS.Medium,
-  },
-  snoozeBanner: {
-    marginTop: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  snoozeBannerText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontFamily: FONTS.SemiBold,
   },
   timerRow: {
     marginTop: 16,
@@ -596,6 +588,11 @@ const styles = StyleSheet.create({
     color: '#202020',
     fontSize: 12,
     fontFamily: FONTS.SemiBold,
+  },
+  recorderContainer: {
+    marginTop: 15,
+    justifyContent: 'center',
+    overflow: 'visible',
   },
 });
 

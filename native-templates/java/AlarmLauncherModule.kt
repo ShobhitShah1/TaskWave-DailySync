@@ -27,8 +27,8 @@ class AlarmLauncherModule(reactContext: ReactApplicationContext) : ReactContextB
     override fun getName(): String = "AlarmLauncher"
 
     @ReactMethod
-    fun launch(title: String, body: String, alarmId: String, mode: String, tone: String, bufferMinutes: String) {
-        Log.d("AlarmLauncher", "🚀 [NEW BUILD] launch called: title=$title, alarmId=$alarmId, tone=$tone, buffer=$bufferMinutes")
+    fun launch(title: String, body: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, alarmNotes: String, snoozeNoteIndex: String) {
+        Log.d("AlarmLauncher", "🚀 [NEW BUILD] launch called: title=$title, alarmId=$alarmId, tone=$tone, notes=$alarmNotes, index=$snoozeNoteIndex")
         
         val serviceIntent = Intent(reactApplicationContext, AlarmService::class.java).apply {
             putExtra("title", title)
@@ -37,6 +37,8 @@ class AlarmLauncherModule(reactContext: ReactApplicationContext) : ReactContextB
             putExtra("mode", mode)
             putExtra("tone", tone)
             putExtra("bufferMinutes", bufferMinutes)
+            putExtra("alarmNotes", alarmNotes)
+            putExtra("snoozeNoteIndex", snoozeNoteIndex)
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -101,7 +103,11 @@ class AlarmLauncherModule(reactContext: ReactApplicationContext) : ReactContextB
         result.putString("bufferMinutes", prefs.getString("bufferMinutes", "5"))
         result.putString("title", prefs.getString("title", "Alarm"))
         result.putString("body", prefs.getString("body", "Wake up!"))
-
+        val notes = prefs.getString("alarmNotes", "[]")
+        val snoozeNoteIndex = prefs.getString("snoozeNoteIndex", "0")
+        result.putString("alarmNotes", notes)
+        result.putString("snoozeNoteIndex", snoozeNoteIndex)
+        Log.d("AlarmLauncher", "📤 getInitialAction: action=$action, notes=$notes, index=$snoozeNoteIndex")
         prefs.edit().clear().apply()
         promise.resolve(result)
     }
