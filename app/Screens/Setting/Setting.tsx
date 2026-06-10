@@ -27,6 +27,8 @@ const Settings = () => {
 
   const [modalStatus, setModalStatus] = useState({ rateUs: false, locationRadius: false });
 
+  const accountEmail = auth?.user.email?.trim() || 'No email available';
+
   const formatRadius = (meters: number): string => {
     if (meters >= 1000) {
       return `${(meters / 1000).toFixed(meters % 1000 === 0 ? 0 : 1)} km`;
@@ -37,7 +39,7 @@ const Settings = () => {
   interface SettingItemData {
     title: string;
     icon?: number;
-    ionicon?: any;
+    ionicon?: keyof typeof Ionicons.glyphMap;
     ioniconColor?: string;
     onPress: () => void;
     subtitle?: string;
@@ -80,7 +82,7 @@ const Settings = () => {
       onPress: () => {
         try {
           Share.open({ message: APP_CONFIG.shareMessage });
-        } catch (error) {}
+        } catch {}
       },
     },
     {
@@ -89,7 +91,7 @@ const Settings = () => {
       onPress: () => {
         try {
           Linking.openURL(APP_CONFIG.privacyPolicyUrl);
-        } catch (error) {}
+        } catch {}
       },
     },
     {
@@ -103,7 +105,7 @@ const Settings = () => {
       onPress: () => {
         try {
           Linking.openURL(`mailto:${APP_CONFIG.supportEmail}`);
-        } catch (error) {}
+        } catch {}
       },
     },
     {
@@ -124,7 +126,7 @@ const Settings = () => {
       onPress: () => {
         try {
           Linking.openURL(APP_CONFIG.portfolioUrl);
-        } catch (error) {}
+        } catch {}
       },
     },
   ];
@@ -169,10 +171,13 @@ const Settings = () => {
           )} */}
 
           {auth && (
-            <Pressable onPress={signOut} style={style.actionButton}>
-              <Ionicons name="log-out-outline" size={20} color={colors.red} />
-              <Text style={[style.actionButtonText, { color: colors.red }]}>Log Out</Text>
-            </Pressable>
+            <>
+              <Pressable onPress={signOut} style={style.actionButton}>
+                <Ionicons name="log-out-outline" size={20} color={colors.red} />
+                <Text style={[style.actionButtonText, { color: colors.red }]}>Log Out</Text>
+              </Pressable>
+              <Text style={style.emailText}>{accountEmail}</Text>
+            </>
           )}
         </View>
       </ScrollView>
@@ -219,12 +224,16 @@ const styles = () => {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-      paddingVertical: 10,
+      paddingTop: 10,
       paddingHorizontal: 15,
     },
     actionButtonText: {
       fontSize: 16,
       fontWeight: '600',
+    },
+    emailText: {
+      fontSize: 14,
+      color: colors.grayTitle,
     },
   });
 };

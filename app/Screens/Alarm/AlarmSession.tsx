@@ -1,0 +1,585 @@
+import AssetsPath from '@Constants/AssetsPath';
+import TextString from '@Constants/TextString';
+import { FONTS, SIZE } from '@Constants/Theme';
+import { useAddOwnerVoiceNote, useAlarmSession, useDeleteOwnerVoiceNote } from '@Hooks/useAlarm';
+import { useAudioQueue } from '@Hooks/useAudioQueue';
+import { useCountdownTimer } from '@Hooks/useCountdownTimer';
+import useThemeColors from '@Hooks/useThemeMode';
+import { useVoiceRecorder } from '@Hooks/useVoiceRecorder';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import HomeHeader from '@Screens/Home/Components/HomeHeader';
+import { RootStackParamList } from '@Types/Interface';
+import React, { useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { showMessage } from 'react-native-flash-message';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+type AlarmSessionRoute = RouteProp<RootStackParamList, 'AlarmSession'>;
+
+interface AlarmSessionViewProps {
+  alarmId: string;
+  onBack: () => void;
+}
+
+const formatDate = (value: string) =>
+  new Date(value).toLocaleDateString([], {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+
+const formatTime = (value: string) =>
+  new Date(value)
+    .toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit',
+    })
+    .toLowerCase();
+
+export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({ alarmId, onBack }) => {
+  const colors = useThemeColors();
+  const sessionQuery = useAlarmSession(alarmId);
+  const sendNoteMutation = useAddOwnerVoiceNote(alarmId);
+  const deleteNoteMutation = useDeleteOwnerVoiceNote(alarmId);
+  const recorder = useVoiceRecorder();
+  const [recordingMemberId, setRecordingMemberId] = useState<string | null>(null);
+  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
+  const session = sessionQuery.data;
+  const responseMembers = useMemo(
+    () => session?.members.filter((member) => Boolean(member.responseMemoUri)) || [],
+    [session?.members],
+  );
+  const responseUris = useMemo(
+    () => responseMembers.map((member) => member.responseMemoUri as string),
+    [responseMembers],
+  );
+  const player = useAudioQueue(responseUris);
+  const ownerNoteUris = useMemo(
+    () => session?.ownerVoiceNotes.map((note) => note.uri) || [],
+    [session?.ownerVoiceNotes],
+  );
+  const ownerNotePlayer = useAudioQueue(ownerNoteUris);
+  const countdown = useCountdownTimer(session?.scheduledFor);
+
+  const handleMemberMicPress = async (memberId: string) => {
+    if (sendNoteMutation.isPending) {
+      return;
+    }
+
+    if (recorder.isRecording && recordingMemberId !== memberId) {
+      showMessage({
+        message: 'Finish the current recording before selecting another member.',
+        type: 'warning',
+      });
+      return;
+    }
+
+    try {
+      await Promise.all([player.stop(), ownerNotePlayer.stop()]);
+      if (!recorder.isRecording) {
+        setRecordingMemberId(memberId);
+        await recorder.startRecording();
+        return;
+      }
+
+      const uri = await recorder.stopRecording();
+      if (!uri) {
+        throw new Error('The voice note could not be saved.');
+      }
+
+      await sendNoteMutation.mutateAsync({ uri, recipientUserId: memberId });
+      recorder.resetRecording();
+      setRecordingMemberId(null);
+      showMessage({ message: 'Voice note sent.', type: 'success' });
+    } catch (error) {
+      setRecordingMemberId(null);
+      showMessage({
+        message: error instanceof Error ? error.message : 'Unable to send voice note.',
+        type: 'danger',
+      });
+    }
+  };
+
+  const handleOwnerNotePress = async (noteId: string) => {
+    const noteIndex = session?.ownerVoiceNotes.findIndex((note) => note.id === noteId) ?? -1;
+    if (noteIndex < 0) {
+      return;
+    }
+
+    await player.stop();
+    if (ownerNotePlayer.currentIndex === noteIndex) {
+      await ownerNotePlayer.toggle();
+    } else {
+      await ownerNotePlayer.playAt(noteIndex);
+    }
+  };
+
+  const handleDeleteOwnerNote = (noteId: string) => {
+    if (deleteNoteMutation.isPending) {
+      return;
+    }
+
+    Alert.alert('Delete Voice Note', 'Delete this voice note for the invited member?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await ownerNotePlayer.stop();
+            await deleteNoteMutation.mutateAsync(noteId);
+            showMessage({ message: 'Voice note deleted.', type: 'success' });
+          } catch (error) {
+            showMessage({
+              message: error instanceof Error ? error.message : 'Unable to delete voice note.',
+              type: 'danger',
+            });
+          }
+        },
+      },
+    ]);
+  };
+
+  if (sessionQuery.isLoading && !session) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <HomeHeader
+          title={TextString.DailySync}
+          titleAlignment="center"
+          leftIconType="back"
+          onBackPress={onBack}
+          showThemeSwitch={false}
+        />
+        <ActivityIndicator style={styles.loader} size="large" color={colors.alarmFocus} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!session) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <HomeHeader
+          title={TextString.DailySync}
+          titleAlignment="center"
+          leftIconType="back"
+          onBackPress={onBack}
+          showThemeSwitch={false}
+        />
+        <View style={styles.emptyState}>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>Alarm session unavailable</Text>
+          <Pressable onPress={() => sessionQuery.refetch()}>
+            <Text style={[styles.retryText, { color: colors.alarmFocus }]}>Refresh</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const activeResponseMember =
+    player.currentIndex >= 0 ? responseMembers[player.currentIndex] : undefined;
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <HomeHeader
+        title={TextString.DailySync}
+        titleAlignment="center"
+        leftIconType="back"
+        onBackPress={onBack}
+        showThemeSwitch={false}
+      />
+
+      <ScrollView
+        bounces
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={sessionQuery.isRefetching}
+            onRefresh={sessionQuery.refetch}
+            tintColor={colors.alarmFocus}
+            colors={[colors.alarmFocus]}
+          />
+        }
+      >
+        <View style={styles.countdownRow}>
+          {countdown.formattedTimeLeft.split(' : ').map((part, index) => {
+            const [value, unit] = part.match(/^(\d+)(.*)$/)?.slice(1) || [part, ''];
+            return (
+              <React.Fragment key={`${part}-${index}`}>
+                {index > 0 ? (
+                  <Text style={[styles.countdownSeparator, { color: colors.alarmFocus }]}>:</Text>
+                ) : null}
+                <Text style={[styles.countdownValue, { color: colors.alarmFocus }]}>
+                  {value}
+                  <Text style={[styles.countdownUnit, { color: colors.text }]}>{unit}</Text>
+                </Text>
+              </React.Fragment>
+            );
+          })}
+        </View>
+
+        <View style={styles.metaRow}>
+          <Text style={[styles.metaText, { color: colors.text }]}>
+            {formatDate(session.scheduledFor)}
+          </Text>
+          <Text style={[styles.metaText, { color: colors.text }]}>
+            {formatTime(session.scheduledFor)}
+          </Text>
+        </View>
+
+        <View style={[styles.memberPanel, { backgroundColor: colors.previewBackground }]}>
+          {session.members.map((member) => {
+            const isAccepted = member.inviteStatus === 'accepted';
+            const responseIndex = responseMembers.findIndex(
+              (responseMember) => responseMember.userId === member.userId,
+            );
+            const hasResponse = responseIndex >= 0;
+            const isPlaying = activeResponseMember?.userId === member.userId && player.isPlaying;
+            const sentCount = session.ownerVoiceNotes.filter(
+              (note) => note.recipientUserId === member.userId,
+            ).length;
+            const sentNotes = session.ownerVoiceNotes.filter(
+              (note) => note.recipientUserId === member.userId,
+            );
+            const isRecording = recorder.isRecording && recordingMemberId === member.userId;
+            const isExpanded = expandedMemberId === member.userId && sentNotes.length > 0;
+
+            return (
+              <View
+                key={member.userId}
+                style={[styles.memberCard, { backgroundColor: colors.alarmActiveCardBackground }]}
+              >
+                <View style={styles.memberRow}>
+                  <Pressable
+                    disabled={!sentNotes.length}
+                    onPress={() =>
+                      setExpandedMemberId((current) =>
+                        current === member.userId ? null : member.userId,
+                      )
+                    }
+                    style={styles.memberNameButton}
+                  >
+                    <Text numberOfLines={1} style={[styles.memberName, { color: colors.text }]}>
+                      {member.fullName}
+                    </Text>
+                    {sentNotes.length ? (
+                      <Text style={[styles.expandText, { color: colors.placeholderText }]}>
+                        {isExpanded ? 'Hide' : 'Notes'}
+                      </Text>
+                    ) : null}
+                  </Pressable>
+
+                  {isAccepted ? (
+                    <>
+                      <Image
+                        source={
+                          member.responseMemoUri ? AssetsPath.ic_wakeup : AssetsPath.ic_sleeping
+                        }
+                        style={styles.statusIcon}
+                        resizeMode="contain"
+                      />
+
+                      <Pressable
+                        disabled={!hasResponse}
+                        onPress={async () => {
+                          await ownerNotePlayer.stop();
+                          if (player.currentIndex === responseIndex) {
+                            await player.toggle();
+                          } else {
+                            await player.playAt(responseIndex);
+                          }
+                        }}
+                        style={[styles.actionButton, !hasResponse && styles.disabledAction]}
+                      >
+                        <Image
+                          source={isPlaying ? AssetsPath.ic_pause : AssetsPath.ic_play}
+                          style={styles.playIcon}
+                          tintColor={colors.text}
+                          resizeMode="contain"
+                        />
+                      </Pressable>
+
+                      <Pressable
+                        onPress={() => handleMemberMicPress(member.userId)}
+                        style={[styles.micButton, isRecording && styles.recordingMic]}
+                      >
+                        <Image
+                          source={AssetsPath.ic_alarm_mic}
+                          style={styles.micIcon}
+                          tintColor={isRecording ? '#FF3B30' : colors.text}
+                          resizeMode="contain"
+                        />
+                        {sentCount > 0 ? (
+                          <View style={styles.sentBadge}>
+                            <Text style={styles.sentBadgeText}>{sentCount}</Text>
+                          </View>
+                        ) : null}
+                      </Pressable>
+                    </>
+                  ) : (
+                    <View style={styles.requestStatus}>
+                      <Text style={[styles.requestStatusText, { color: colors.placeholderText }]}>
+                        {member.inviteStatus === 'pending' ? 'Requested' : 'Declined'}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                {isExpanded ? (
+                  <View style={[styles.sentNotes, { borderTopColor: colors.borderColor }]}>
+                    {sentNotes.map((note, index) => {
+                      const noteIndex = session.ownerVoiceNotes.findIndex(
+                        (ownerNote) => ownerNote.id === note.id,
+                      );
+                      const noteIsPlaying =
+                        ownerNotePlayer.currentIndex === noteIndex && ownerNotePlayer.isPlaying;
+
+                      return (
+                        <View
+                          key={note.id}
+                          style={[
+                            styles.sentNoteRow,
+                            { backgroundColor: colors.previewBackground },
+                          ]}
+                        >
+                          <Text style={[styles.sentNoteLabel, { color: colors.text }]}>
+                            Voice Note {String(index + 1).padStart(2, '0')}
+                          </Text>
+                          <Pressable
+                            onPress={() => handleOwnerNotePress(note.id)}
+                            style={styles.sentNoteAction}
+                          >
+                            <Image
+                              source={noteIsPlaying ? AssetsPath.ic_pause : AssetsPath.ic_play}
+                              style={styles.sentNoteIcon}
+                              tintColor={colors.text}
+                            />
+                          </Pressable>
+                          <Pressable
+                            disabled={deleteNoteMutation.isPending}
+                            onPress={() => handleDeleteOwnerNote(note.id)}
+                            style={styles.sentNoteAction}
+                          >
+                            <Image
+                              source={AssetsPath.ic_delete}
+                              style={styles.sentNoteIcon}
+                              tintColor="#FF3B30"
+                            />
+                          </Pressable>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ) : null}
+              </View>
+            );
+          })}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const AlarmSessionScreen = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { params } = useRoute<AlarmSessionRoute>();
+
+  return <AlarmSessionView alarmId={params.alarmId} onBack={() => navigation.goBack()} />;
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  loader: {
+    flex: 1,
+  },
+  content: {
+    width: SIZE.appContainWidth,
+    flexGrow: 1,
+    alignSelf: 'center',
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  countdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  countdownValue: {
+    fontSize: 34,
+    fontFamily: FONTS.Medium,
+  },
+  countdownUnit: {
+    fontSize: 15,
+    fontFamily: FONTS.Medium,
+  },
+  countdownSeparator: {
+    marginHorizontal: 8,
+    fontSize: 31,
+    fontFamily: FONTS.Medium,
+  },
+  metaRow: {
+    marginTop: 24,
+    marginBottom: 9,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  metaText: {
+    fontSize: 18,
+    fontFamily: FONTS.SemiBold,
+  },
+  memberPanel: {
+    flex: 1,
+    minHeight: 430,
+    borderRadius: 10,
+    padding: 12,
+    gap: 10,
+  },
+  memberCard: {
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  memberRow: {
+    minHeight: 66,
+    paddingLeft: 18,
+    paddingRight: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  memberNameButton: {
+    flex: 1,
+    minHeight: 54,
+    justifyContent: 'center',
+  },
+  memberName: {
+    fontSize: 18,
+    fontFamily: FONTS.Medium,
+  },
+  expandText: {
+    marginTop: 1,
+    fontSize: 11,
+    fontFamily: FONTS.Medium,
+  },
+  statusIcon: {
+    width: 40,
+    height: 40,
+    marginHorizontal: 10,
+  },
+  actionButton: {
+    width: 36,
+    height: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playIcon: {
+    width: 18,
+    height: 18,
+  },
+  micButton: {
+    width: 40,
+    height: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 23,
+  },
+  recordingMic: {
+    backgroundColor: 'rgba(255, 59, 48, 0.12)',
+  },
+  micIcon: {
+    width: 24,
+    height: 31,
+  },
+  sentBadge: {
+    position: 'absolute',
+    right: 0,
+    top: 1,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FF3B30',
+  },
+  sentBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontFamily: FONTS.SemiBold,
+  },
+  disabledAction: {
+    opacity: 0.3,
+  },
+  sentNotes: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    paddingBottom: 10,
+    gap: 7,
+  },
+  sentNoteRow: {
+    height: 42,
+    borderRadius: 8,
+    paddingLeft: 12,
+    paddingRight: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sentNoteLabel: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: FONTS.Medium,
+  },
+  sentNoteAction: {
+    width: 34,
+    height: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sentNoteIcon: {
+    width: 17,
+    height: 17,
+    resizeMode: 'contain',
+  },
+  requestStatus: {
+    minWidth: 86,
+    height: 30,
+    borderRadius: 15,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(180, 194, 255, 0.12)',
+  },
+  requestStatusText: {
+    fontSize: 13,
+    fontFamily: FONTS.Medium,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontFamily: FONTS.SemiBold,
+  },
+  retryText: {
+    marginTop: 12,
+    fontSize: 15,
+    fontFamily: FONTS.Medium,
+  },
+});
+
+export default AlarmSessionScreen;

@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import AssetsPath from '@Constants/AssetsPath';
-import { FONTS, SIZE } from '@Constants/Theme';
+import { FONTS } from '@Constants/Theme';
 import useThemeColors from '@Hooks/useThemeMode';
 
 interface AlarmScheduleRowProps {

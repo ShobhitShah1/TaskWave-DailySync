@@ -193,7 +193,7 @@ export const handleAlarmEvent = async (
         await notifee.cancelTriggerNotification(alarmId).catch(() => undefined);
 
         // Sync with API
-        alarmApi.recordAlarmAction(alarmId, 'dismiss').catch(() => undefined);
+        await alarmApi.recordAlarmAction(alarmId, 'dismiss').catch(() => undefined);
 
         if (mode === 'group') {
           clearGroupAlarmSnooze(alarmId);

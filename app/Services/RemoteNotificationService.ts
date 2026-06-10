@@ -1,7 +1,7 @@
 import { NativeModules, Platform } from 'react-native';
 import notifee, { AndroidCategory, AndroidImportance, AndroidStyle } from '@notifee/react-native';
 import { FirebaseMessagingTypes, getMessaging } from '@react-native-firebase/messaging';
-import { ensureAlarmChannels } from './AlarmNotificationService';
+import { appQueryClient } from './QueryClient';
 
 const REMOTE_NOTIFICATION_CHANNEL_ID = 'daily-sync-remote';
 const PRIORITY_NOTIFICATION_CHANNEL_ID = 'daily-sync-priority';
@@ -132,6 +132,17 @@ export const displayRemoteNotification = async (
   );
   const isAlarm = notification.data.kind === 'alarm';
 
+  if (notification.data.kind === 'alarm-session-update' && notification.data.alarmId) {
+    await Promise.all([
+      appQueryClient.invalidateQueries({
+        queryKey: ['alarms', 'session', notification.data.alarmId],
+      }),
+      appQueryClient.invalidateQueries({
+        queryKey: ['alarms', 'group-feed'],
+      }),
+    ]);
+  }
+
   if (isAlarm && Platform.OS === 'android') {
     await launchNativeAlarm({
       title: notification.title,
@@ -181,6 +192,23 @@ export const displayRemoteNotification = async (
             pressAction: { id: 'decline-invitation' },
           },
         ],
+      },
+    });
+  } else if (notification.data.kind === 'alarm-session-update') {
+    await notifee.displayNotification({
+      title: notification.title,
+      body: notification.body,
+      data: notification.data,
+      android: {
+        channelId: REMOTE_NOTIFICATION_CHANNEL_ID,
+        pressAction: { id: 'open-alarm-session' },
+        importance: AndroidImportance.HIGH,
+        autoCancel: true,
+        style: {
+          type: AndroidStyle.BIGTEXT,
+          text: notification.body,
+        },
+        sound: 'default',
       },
     });
   } else {

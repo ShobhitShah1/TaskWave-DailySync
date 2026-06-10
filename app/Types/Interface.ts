@@ -55,6 +55,12 @@ export type RootStackParamList = {
     alarmId: string;
     mode: 'solo' | 'group';
   };
+  AlarmSession: {
+    alarmId: string;
+  };
+  AlarmVoiceResponse: {
+    alarmId: string;
+  };
   DevDashboard: undefined;
 };
 

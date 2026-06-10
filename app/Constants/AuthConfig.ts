@@ -3,6 +3,7 @@ import { GoogleAuthScopes } from 'react-native-google-auth';
 const normalize = (value?: string) => value?.trim() ?? '';
 
 const apiBaseUrl = 'http://nirvanatechlabs.in/dailysync';
+// const apiBaseUrl = 'http://192.168.29.87:4000';
 
 export const authConfig = {
   apiBaseUrl,

@@ -9,6 +9,8 @@ import CompleteProfileScreen from '@Screens/Auth/CompleteProfile';
 import SignInScreen from '@Screens/Auth/SignIn';
 import SignUpScreen from '@Screens/Auth/SignUp';
 import AlarmDetailsScreen from '@Screens/Alarm/AlarmDetails';
+import AlarmSessionScreen from '@Screens/Alarm/AlarmSession';
+import AlarmVoiceResponseScreen from '@Screens/Alarm/AlarmVoiceResponse';
 import CreateAlarmScreen from '@Screens/Alarm/CreateAlarm';
 import ReminderScheduled from '@Screens/AddReminder/ReminderScheduled';
 import LocationDetails from '@Screens/LocationDetails/LocationDetails';
@@ -22,11 +24,10 @@ import NotificationSound from '@Screens/Setting/NotificationSound';
 import { RootStackParamList } from '@Types/Interface';
 import { useQuickActionCallback } from 'expo-quick-actions/hooks';
 import * as SystemUI from 'expo-system-ui';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StatusBar, View } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import { SystemBars } from 'react-native-edge-to-edge';
-import { useMMKVString } from 'react-native-mmkv';
 import BottomTab from './BottomTab';
 import { navigationRef } from './RootNavigation';
 
@@ -124,6 +125,8 @@ const Routes = () => {
               <Stack.Screen name="LocationPreview" component={LocationPreview} />
               <Stack.Screen name="CreateAlarm" component={CreateAlarmScreen} />
               <Stack.Screen name="AlarmDetails" component={AlarmDetailsScreen} />
+              <Stack.Screen name="AlarmSession" component={AlarmSessionScreen} />
+              <Stack.Screen name="AlarmVoiceResponse" component={AlarmVoiceResponseScreen} />
               <Stack.Screen name="DevDashboard" component={DevDashboard} />
             </>
           )}

@@ -16,7 +16,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  NativeModules,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -44,6 +43,7 @@ const Alarm = () => {
   const colors = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [selectedFilter, setSelectedFilter] = useState<AlarmFilter>('all');
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
   const { soloQuery, groupQuery } = useAlarmFeed();
   const respondMutation = useRespondToAlarmInvitation();
@@ -51,12 +51,24 @@ const Alarm = () => {
   const leaveMutation = useLeaveAlarm();
   const { auth } = useAuth();
 
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = useCallback(async () => {
+    if (isManualRefreshing) {
+      return;
+    }
+
+    setIsManualRefreshing(true);
     try {
-      soloQuery.refetch();
-      groupQuery.refetch();
-    } catch (error) {}
-  }, [soloQuery, groupQuery]);
+      await Promise.all([soloQuery.refetch(), groupQuery.refetch()]);
+    } catch (error) {
+      showMessage({
+        message:
+          error instanceof Error ? error.message : 'Failed to refresh alarms. Please try again.',
+        type: 'danger',
+      });
+    } finally {
+      setIsManualRefreshing(false);
+    }
+  }, [groupQuery, isManualRefreshing, soloQuery]);
 
   const invitations = groupQuery.data?.invitations || [];
 
@@ -167,7 +179,7 @@ const Alarm = () => {
                     type: 'success',
                   });
                 },
-                onError: (error: any) => {
+                onError: (error) => {
                   showMessage({
                     message: error?.message || 'Failed to delete alarm',
                     type: 'danger',
@@ -192,7 +204,7 @@ const Alarm = () => {
                   type: 'success',
                 });
               },
-              onError: (error: any) => {
+              onError: (error) => {
                 showMessage({
                   message: error?.message || 'Failed to leave alarm',
                   type: 'danger',
@@ -220,17 +232,29 @@ const Alarm = () => {
       );
     }
 
-    const routeParams =
-      item.source === 'group'
-        ? { alarmId: item.id, mode: 'group' as const }
-        : { alarmId: item.id, mode: 'solo' as const };
-
     const canEdit = item.mode === 'solo' || item.ownerUserId === auth?.user?.id;
+    const handleCardPress = () => {
+      if (item.source === 'group' && item.ownerUserId === auth?.user?.id) {
+        navigation.navigate('AlarmSession', { alarmId: item.id });
+        return;
+      }
+
+      navigation.navigate('AlarmDetails', {
+        alarmId: item.id,
+        mode: item.source === 'group' ? 'group' : 'solo',
+      });
+    };
 
     return (
       <AlarmCard
         alarm={item as SoloAlarmRecord | GroupAlarmRecord}
-        onPress={() => navigation.navigate('AlarmDetails', routeParams)}
+        onPress={handleCardPress}
+        onViewPress={() =>
+          navigation.navigate('AlarmDetails', {
+            alarmId: item.id,
+            mode: item.source === 'group' ? 'group' : 'solo',
+          })
+        }
         onLongPress={() => handleDeleteAlarm(item)}
         onEditPress={
           canEdit
@@ -249,7 +273,7 @@ const Alarm = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <HomeHeader title={TextString.DailySync} titleAlignment="center" leftIconType="none" />
 
-      <View style={{ flexDirection: 'row', justifyContent: 'center', marginVertical: 10, gap: 10 }}>
+      {/* <View style={{ flexDirection: 'row', justifyContent: 'center', marginVertical: 10, gap: 10 }}>
         {['default', 'ting_tong', 'tink_tink'].map((tone, i) => (
           <Pressable
             key={tone}
@@ -270,7 +294,7 @@ const Alarm = () => {
             <Text style={{ color: 'white', fontWeight: 'bold' }}>Test Sound {i + 1}</Text>
           </Pressable>
         ))}
-      </View>
+      </View> */}
 
       <ScrollView
         horizontal
@@ -314,7 +338,7 @@ const Alarm = () => {
         ]}
         refreshControl={
           <RefreshControl
-            refreshing={soloQuery.isRefetching || groupQuery.isRefetching}
+            refreshing={isManualRefreshing}
             onRefresh={handleRefresh}
             colors={[colors.darkBlue]}
             tintColor={colors.darkBlue}

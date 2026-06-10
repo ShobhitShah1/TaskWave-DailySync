@@ -92,6 +92,11 @@ const ic_vibration = require('../../assets/Icons/ic_vibration.png');
 const ic_google = require('../../assets/Icons/ic_google.png');
 const ic_dismiss = require('../../assets/Icons/ic_dismiss.png');
 const ic_snooze = require('../../assets/Icons/ic_snooze.png');
+const ic_sleeping = require('../../assets/Icons/ic_sleeping.png');
+const ic_wakeup = require('../../assets/Icons/ic_wakeup.png');
+const ic_alarm_mic = require('../../assets/Icons/ic_alarm_mic.png');
+const ic_admin = require('../../assets/Icons/ic_admin.png');
+const ic_rerecord = require('../../assets/Icons/ic_rerecord.png');
 
 // Images
 const ob_Email = require('../../assets/Images/ob_Email.png');
@@ -208,6 +213,11 @@ export default {
   ic_google,
   ic_dismiss,
   ic_snooze,
+  ic_sleeping,
+  ic_wakeup,
+  ic_alarm_mic,
+  ic_admin,
+  ic_rerecord,
 
   // Images
   ob_Email,

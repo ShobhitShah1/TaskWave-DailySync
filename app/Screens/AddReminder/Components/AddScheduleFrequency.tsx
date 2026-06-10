@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: FONTS.Medium,
     fontSize: 19,
-    marginBottom: 18,
+    marginBottom: 10,
   },
   frequencyContainer: {
     flexDirection: 'row',

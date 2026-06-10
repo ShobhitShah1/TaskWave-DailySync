@@ -3,6 +3,7 @@ import { showMessage } from 'react-native-flash-message';
 import { sendMail, sendSms, sendTelegramMessage, sendWhatsapp } from 'send-message';
 
 import { navigationRef } from '@Routes/RootNavigation';
+import { appQueryClient } from '@Services/QueryClient';
 import type { Notification } from '@Types/Interface';
 import { parseNotificationData } from '@Utils/notificationParser';
 
@@ -170,6 +171,16 @@ const notificationHandlers = {
 
 export const handleNotificationPress = async (notification: Notification) => {
   try {
+    if (notification.kind === 'alarm-session-update' && notification.alarmId) {
+      await appQueryClient.invalidateQueries({
+        queryKey: ['alarms', 'session', notification.alarmId],
+      });
+      navigationRef.navigate('AlarmSession', {
+        alarmId: notification.alarmId,
+      });
+      return;
+    }
+
     const handler = notificationHandlers[notification.type as keyof typeof notificationHandlers];
     if (handler) {
       await handler(notification as Notification);

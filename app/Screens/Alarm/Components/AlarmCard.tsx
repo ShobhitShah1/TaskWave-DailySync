@@ -14,6 +14,7 @@ type AlarmCardRecord = SoloAlarmRecord | GroupAlarmRecord;
 interface AlarmCardProps {
   alarm: AlarmCardRecord;
   onPress: () => void;
+  onViewPress?: () => void;
   onLongPress?: () => void;
   onEditPress?: () => void;
   onDuplicatePress?: () => void;
@@ -24,6 +25,7 @@ const LOGO_SIZE = 68;
 const AlarmCard: React.FC<AlarmCardProps> = ({
   alarm,
   onPress,
+  onViewPress,
   onLongPress,
   onEditPress,
   onDuplicatePress,
@@ -143,7 +145,13 @@ const AlarmCard: React.FC<AlarmCardProps> = ({
         </View>
 
         <View style={styles.actionsContainer}>
-          <Pressable hitSlop={10} onPress={onPress}>
+          <Pressable
+            hitSlop={10}
+            onPress={(event) => {
+              event.stopPropagation();
+              (onViewPress || onPress)();
+            }}
+          >
             <Image
               source={AssetsPath.ic_view}
               style={styles.actionIcon}

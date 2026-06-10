@@ -7,6 +7,7 @@ import {
   AlarmLocalTime,
   AlarmPhoneContact,
   AlarmRegisteredUser,
+  AlarmSession,
   CreateGroupAlarmInput,
   GroupAlarmApiResponse,
   GroupAlarmRecord,
@@ -50,6 +51,7 @@ type AlarmActionResponse = ApiResponse<{
   action: 'dismiss' | 'snooze';
   snoozeUntil: string | null;
 }>;
+type AlarmSessionResponse = ApiResponse<AlarmSession>;
 
 const normalizeGroupAlarm = (alarm: GroupAlarmRecordDto): GroupAlarmRecord => ({
   ...alarm,
@@ -115,6 +117,68 @@ const buildMultipartPayload = (input: CreateGroupAlarmInput) => {
   }
 
   return formData;
+};
+
+const buildAudioPayload = (uri: string, fields?: Record<string, string>) => {
+  const formData = new FormData();
+  const filename = uri.split('/').pop() || 'recording.m4a';
+  const ext = filename.split('.').pop()?.toLowerCase() || 'm4a';
+  const mimeMap: Record<string, string> = {
+    m4a: 'audio/m4a',
+    mp3: 'audio/mpeg',
+    wav: 'audio/wav',
+    aac: 'audio/aac',
+    ogg: 'audio/ogg',
+    webm: 'audio/webm',
+    '3gp': 'audio/3gpp',
+  };
+
+  formData.append('audio', {
+    uri: Platform.OS === 'android' ? uri : uri.replace('file://', ''),
+    name: filename,
+    type: mimeMap[ext] || 'audio/m4a',
+  } as any);
+  Object.entries(fields || {}).forEach(([key, value]) => formData.append(key, value));
+
+  return formData;
+};
+
+const uploadSessionAudio = async (path: string, uri: string, fields?: Record<string, string>) => {
+  const auth = authStorage.getAuth();
+  const clientRequestId = `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await fetch(`${getAuthApiBaseUrl()}${path}`, {
+        method: 'POST',
+        headers: auth?.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {},
+        body: buildAudioPayload(uri, { ...fields, clientRequestId }),
+      });
+      const responseText = await response.text();
+      const data = responseText ? (JSON.parse(responseText) as AlarmSessionResponse) : null;
+
+      if (!response.ok) {
+        throw new Error(data?.message || 'Failed to send voice note.');
+      }
+      if (!data?.data) {
+        throw new Error('The server returned an empty voice note response.');
+      }
+
+      return data.data;
+    } catch (error) {
+      lastError = error;
+      const isNetworkFailure =
+        error instanceof TypeError ||
+        (error instanceof Error && /network request failed|failed to fetch/i.test(error.message));
+      if (!isNetworkFailure || attempt === 2) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+    }
+  }
+
+  throw lastError;
 };
 
 export const alarmApi = {
@@ -233,6 +297,40 @@ export const alarmApi = {
         ...(typeof snoozeMinutes === 'number' ? { snoozeMinutes } : {}),
       });
       return response.data.data;
+    } catch (error) {
+      throw toApiError(error);
+    }
+  },
+  getAlarmSession: async (alarmId: string) => {
+    try {
+      const response = await apiClient.get<AlarmSessionResponse>(`/api/alarms/${alarmId}/session`);
+      return response.data.data;
+    } catch (error) {
+      throw toApiError(error);
+    }
+  },
+  addOwnerVoiceNote: async (alarmId: string, uri: string, recipientUserId: string) => {
+    try {
+      return await uploadSessionAudio(`/api/alarms/${alarmId}/session/owner-notes`, uri, {
+        recipientUserId,
+      });
+    } catch (error) {
+      throw toApiError(error);
+    }
+  },
+  deleteOwnerVoiceNote: async (alarmId: string, noteId: string) => {
+    try {
+      const response = await apiClient.delete<AlarmSessionResponse>(
+        `/api/alarms/${alarmId}/session/owner-notes/${noteId}`,
+      );
+      return response.data.data;
+    } catch (error) {
+      throw toApiError(error);
+    }
+  },
+  submitMemberVoiceResponse: async (alarmId: string, uri: string) => {
+    try {
+      return await uploadSessionAudio(`/api/alarms/${alarmId}/session/member-response`, uri);
     } catch (error) {
       throw toApiError(error);
     }

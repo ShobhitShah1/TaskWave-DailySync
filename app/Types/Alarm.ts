@@ -39,6 +39,37 @@ export interface AlarmMemo {
   createdAt: string;
 }
 
+export interface AlarmSessionVoiceNote {
+  id: string;
+  uri: string;
+  recipientUserId: string;
+  createdAt: string;
+}
+
+export interface AlarmSessionMember {
+  userId: string;
+  fullName: string;
+  avatar: string | null;
+  inviteStatus: AlarmInviteStatus;
+  awakeAt: string | null;
+  dismissedAt: string | null;
+  responseMemoUri: string | null;
+  respondedAt: string | null;
+}
+
+export interface AlarmSession {
+  alarmId: string;
+  deliveryId: string;
+  title: string;
+  note: string;
+  scheduledFor: string;
+  ownerUserId: string;
+  currentUserRole: 'owner' | 'member';
+  mainMemoUri: string | null;
+  ownerVoiceNotes: AlarmSessionVoiceNote[];
+  members: AlarmSessionMember[];
+}
+
 export interface BaseAlarmRecord {
   id: string;
   mode: AlarmMode;

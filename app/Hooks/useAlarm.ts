@@ -18,6 +18,7 @@ import {
 export const ALARM_QUERY_KEYS = {
   solo: ['alarms', 'solo'] as const,
   groupFeed: ['alarms', 'group-feed'] as const,
+  session: (alarmId: string) => ['alarms', 'session', alarmId] as const,
 };
 
 export const useAlarmFeed = () => {
@@ -164,6 +165,56 @@ export const useTestAlarmNotification = () => {
   return useMutation({
     mutationKey: ['alarms', 'test-notification'],
     mutationFn: () => alarmApi.sendTestNotification(),
+  });
+};
+
+export const useAlarmSession = (alarmId: string) => {
+  return useQuery({
+    queryKey: ALARM_QUERY_KEYS.session(alarmId),
+    queryFn: () => alarmApi.getAlarmSession(alarmId),
+    enabled: Boolean(alarmId),
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+  });
+};
+
+export const useAddOwnerVoiceNote = (alarmId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ['alarms', 'session', alarmId, 'owner-note'],
+    mutationFn: ({ uri, recipientUserId }: { uri: string; recipientUserId: string }) =>
+      alarmApi.addOwnerVoiceNote(alarmId, uri, recipientUserId),
+    onSuccess: (session) => {
+      queryClient.setQueryData(ALARM_QUERY_KEYS.session(alarmId), session);
+      queryClient.invalidateQueries({ queryKey: ALARM_QUERY_KEYS.groupFeed });
+    },
+  });
+};
+
+export const useDeleteOwnerVoiceNote = (alarmId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ['alarms', 'session', alarmId, 'delete-owner-note'],
+    mutationFn: (noteId: string) => alarmApi.deleteOwnerVoiceNote(alarmId, noteId),
+    onSuccess: (session) => {
+      queryClient.setQueryData(ALARM_QUERY_KEYS.session(alarmId), session);
+      queryClient.invalidateQueries({ queryKey: ALARM_QUERY_KEYS.groupFeed });
+    },
+  });
+};
+
+export const useSubmitMemberVoiceResponse = (alarmId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ['alarms', 'session', alarmId, 'member-response'],
+    mutationFn: (uri: string) => alarmApi.submitMemberVoiceResponse(alarmId, uri),
+    onSuccess: (session) => {
+      queryClient.setQueryData(ALARM_QUERY_KEYS.session(alarmId), session);
+      queryClient.invalidateQueries({ queryKey: ALARM_QUERY_KEYS.groupFeed });
+    },
   });
 };
 

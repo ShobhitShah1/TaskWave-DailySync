@@ -1,8 +1,7 @@
+import { FONTS } from '@Constants/Theme';
+import useThemeColors from '@Hooks/useThemeMode';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { FONTS } from '@Constants/Theme';
-import { useAppContext } from '@Contexts/ThemeProvider';
-import useThemeColors from '@Hooks/useThemeMode';
 
 interface AnalogClockProps {
   hour: number;
@@ -209,14 +208,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   handLine: {
-    height: 4,
-    borderRadius: 2,
-    marginTop: -2,
+    height: 2,
+    borderRadius: 1,
+    marginTop: -1,
   },
   minuteHandLine: {
-    height: 3,
-    borderRadius: 1.5,
-    marginTop: -1.5,
+    height: 2,
+    borderRadius: 1,
+    marginTop: -1,
     opacity: 0.8,
   },
   minNumberWrap: {
