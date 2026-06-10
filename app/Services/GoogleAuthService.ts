@@ -1,55 +1,99 @@
 import { authConfig } from '@Constants/AuthConfig';
-import { OneTapResponse, GoogleAuth } from 'react-native-google-auth';
-import { Platform } from 'react-native';
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  statusCodes,
+  type NativeModuleError,
+} from '@react-native-google-signin/google-signin';
 
 let googleAuthConfigured = false;
 
-export const configureGoogleAuth = async () => {
+export type GoogleSignInResult =
+  | { type: 'cancelled' }
+  | {
+      type: 'success';
+      data: {
+        idToken: string;
+        accessToken: string | null;
+        user: {
+          id: string;
+          email: string;
+          name: string | null;
+          photo: string | null;
+        };
+      };
+    };
+
+const getGoogleSignInError = (error: unknown) => {
+  if (!isErrorWithCode(error)) {
+    return error;
+  }
+
+  const messages: Partial<Record<NativeModuleError['code'], string>> = {
+    [statusCodes.IN_PROGRESS]: 'Google sign-in is already in progress.',
+    [statusCodes.PLAY_SERVICES_NOT_AVAILABLE]: 'Google Play Services is missing or out of date.',
+  };
+
+  return new Error(
+    messages[error.code] ??
+      `Google sign-in failed (${error.code}). Check the Android OAuth SHA-1 configuration.`,
+  );
+};
+
+export const configureGoogleAuth = () => {
   if (googleAuthConfigured) {
     return;
   }
 
-  const config = {
-    scopes: authConfig.google.scopes,
-    credentialManagerMode: 'auto' as const,
-    forceAccountPicker: true,
-    ...(authConfig.google.iosClientId ? { iosClientId: authConfig.google.iosClientId } : {}),
-    ...(authConfig.google.androidClientId
-      ? { androidClientId: authConfig.google.androidClientId }
-      : {}),
-    ...(authConfig.google.webClientId ? { webClientId: authConfig.google.webClientId } : {}),
-  };
+  if (!authConfig.google.webClientId) {
+    throw new Error(
+      'EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID is missing. Use the Web OAuth client ID from google-services.json.',
+    );
+  }
 
-  console.log('[GoogleAuthService] Configuring with:', config);
-  await GoogleAuth.configure(config);
+  GoogleSignin.configure({
+    scopes: [...authConfig.google.scopes],
+    webClientId: authConfig.google.webClientId,
+    offlineAccess: false,
+    ...(authConfig.google.iosClientId ? { iosClientId: authConfig.google.iosClientId } : {}),
+  });
 
   googleAuthConfigured = true;
 };
 
-export const startGoogleSignIn = async (): Promise<OneTapResponse> => {
-  console.log('[GoogleAuthService] Starting Sign-In flow...');
-  await configureGoogleAuth();
+export const startGoogleSignIn = async (): Promise<GoogleSignInResult> => {
+  configureGoogleAuth();
 
-  if (Platform.OS === 'android') {
-    console.log('[GoogleAuthService] Checking Play Services...');
-    await GoogleAuth.checkPlayServices(true);
-  }
-
-  console.log('[GoogleAuthService] Calling GoogleAuth.signIn()...');
   try {
-    const response = await GoogleAuth.signIn();
-    console.log('[GoogleAuthService] Sign-In Success:', response);
-    return response;
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    const response = await GoogleSignin.signIn();
+
+    if (response.type === 'cancelled') {
+      return { type: 'cancelled' };
+    }
+
+    if (!response.data.idToken) {
+      throw new Error(
+        'Google did not return an ID token. Verify EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID.',
+      );
+    }
+
+    const tokens = await GoogleSignin.getTokens().catch(() => null);
+
+    return {
+      type: 'success',
+      data: {
+        idToken: response.data.idToken,
+        accessToken: tokens?.accessToken ?? null,
+        user: response.data.user,
+      },
+    };
   } catch (error) {
-    console.error('[GoogleAuthService] Sign-In Error:', error);
-    throw error;
+    throw getGoogleSignInError(error);
   }
 };
 
 export const signOutFromGoogle = async () => {
-  if (!googleAuthConfigured) {
-    return;
-  }
-
-  await GoogleAuth.signOut();
+  configureGoogleAuth();
+  await GoogleSignin.signOut();
 };

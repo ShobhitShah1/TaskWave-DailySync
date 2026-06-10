@@ -57,13 +57,7 @@
     },
     "plugins": [
       "expo-font",
-      [
-        "react-native-google-auth",
-        {
-          "androidClientId": "965182017324-b98namhrmi7sa4ise5t89bk00lhssvej.apps.googleusercontent.com",
-          "webClientId": "965182017324-b98namhrmi7sa4ise5t89bk00lhssvej.apps.googleusercontent.com"
-        }
-      ],
+      "@react-native-google-signin/google-signin",
       [
         "expo-av",
         {

@@ -1,6 +1,6 @@
-import { GoogleAuthScopes } from 'react-native-google-auth';
-
 const normalize = (value?: string) => value?.trim() ?? '';
+const defaultGoogleWebClientId =
+  '965182017324-b98namhrmi7sa4ise5t89bk00lhssvej.apps.googleusercontent.com';
 
 const apiBaseUrl = 'http://nirvanatechlabs.in/dailysync';
 // const apiBaseUrl = 'http://192.168.29.87:4000';
@@ -8,10 +8,10 @@ const apiBaseUrl = 'http://nirvanatechlabs.in/dailysync';
 export const authConfig = {
   apiBaseUrl,
   google: {
-    androidClientId: normalize(process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID),
     iosClientId: normalize(process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID),
-    webClientId: normalize(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID),
-    scopes: [GoogleAuthScopes.OPENID, GoogleAuthScopes.EMAIL, GoogleAuthScopes.PROFILE] as string[],
+    webClientId:
+      normalize(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID) || defaultGoogleWebClientId,
+    scopes: ['openid', 'email', 'profile'],
   },
 } as const;
 

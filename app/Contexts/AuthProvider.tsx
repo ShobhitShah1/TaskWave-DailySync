@@ -123,10 +123,6 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
         return null;
       }
 
-      if (result.type === 'noSavedCredentialFound') {
-        throw new Error('No Google account is available on this device.');
-      }
-
       const device = await getRegistrationPayload(true);
       return authApi.signInWithGoogle({
         idToken: result.data.idToken,
