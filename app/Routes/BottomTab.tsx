@@ -192,7 +192,11 @@ const BottomTab = () => {
         ]}
         height={60}
         circleWidth={50}
-        screenOptions={{ headerShown: false, tabBarHideOnKeyboard: true }}
+        screenOptions={{
+          headerShown: false,
+          tabBarHideOnKeyboard: true,
+          sceneStyle: { backgroundColor: colors.background },
+        }}
         bgColor={colors.bottomTab}
         initialRouteName="Home"
         borderTopLeftRight

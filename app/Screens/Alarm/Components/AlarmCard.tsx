@@ -77,8 +77,8 @@ const AlarmCard: React.FC<AlarmCardProps> = ({
         <View style={styles.leftCol}>
           <View style={[styles.logoContainer, { backgroundColor: colors.alarmFocus }]}>
             <Image
-              source={AssetsPath.ic_unFillAlarm}
-              style={styles.logoIcon}
+              source={alarm.mode === 'group' ? AssetsPath.ic_group_alarm : AssetsPath.ic_solo_alarm}
+              style={alarm.mode === 'solo' ? styles.logoIcon : styles.GroupLogoIcon}
               tintColor={colors.white}
             />
           </View>
@@ -207,6 +207,11 @@ const styles = StyleSheet.create({
   logoIcon: {
     width: LOGO_SIZE / 1.8,
     height: LOGO_SIZE / 1.8,
+    resizeMode: 'contain',
+  },
+  GroupLogoIcon: {
+    width: LOGO_SIZE / 1.3,
+    height: LOGO_SIZE / 1.3,
     resizeMode: 'contain',
   },
   rightCol: {

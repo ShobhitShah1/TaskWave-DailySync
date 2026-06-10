@@ -41,7 +41,14 @@ const Routes = () => {
 
   const MyTheme: Theme = {
     ...DefaultTheme,
-    colors: { ...DefaultTheme.colors, primary: colors.background, card: colors.background },
+    colors: {
+      ...DefaultTheme.colors,
+      primary: colors.darkBlue,
+      background: colors.background,
+      card: colors.background,
+      text: colors.text,
+      border: colors.borderColor,
+    },
     dark: theme === 'dark',
   };
 
@@ -95,7 +102,11 @@ const Routes = () => {
         }}
       >
         <Stack.Navigator
-          screenOptions={{ headerShown: false, animation: 'ios_from_right' }}
+          screenOptions={{
+            headerShown: false,
+            animation: 'ios_from_right',
+            contentStyle: { backgroundColor: colors.background },
+          }}
           initialRouteName={
             !isAuthenticated
               ? initialAuthRoute

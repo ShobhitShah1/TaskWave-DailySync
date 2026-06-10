@@ -55,6 +55,10 @@ const AlarmDetailsScreen = () => {
   }, [groupQuery.data?.alarms, localAlarm, route.params.alarmId, route.params.mode]);
 
   const { formattedTimeLeft } = useCountdownTimer(alarm?.nextTriggerAt);
+  const audioMemo = useMemo(
+    () => (alarm?.memoUri ? { uri: alarm.memoUri, metering: [] } : null),
+    [alarm?.memoUri],
+  );
 
   if (!alarm) {
     return (
@@ -158,7 +162,11 @@ const AlarmDetailsScreen = () => {
         >
           {/* Icon */}
           <View style={[styles.iconWrap, { backgroundColor: colors.alarmFocus }]}>
-            <Image source={AssetsPath.ic_fillAlarm} style={styles.icon} />
+            <Image
+              source={isSolo ? AssetsPath.ic_solo_alarm : AssetsPath.ic_group_alarm}
+              style={isSolo ? styles.icon : styles.groupIcon}
+              tintColor={colors.white}
+            />
           </View>
 
           {/* Screen Title */}
@@ -263,10 +271,10 @@ const AlarmDetailsScreen = () => {
                 </View>
               </View>
 
-              {!!alarm.memoUri && (
+              {audioMemo && (
                 <View style={styles.recorderContainer}>
                   <AudioMemoItem
-                    memo={useMemo(() => ({ uri: alarm.memoUri, metering: [] }), [alarm.memoUri])}
+                    memo={audioMemo}
                     themeColor={colors.alarmFocus}
                     renderRightIcon={<></>}
                   />
@@ -294,10 +302,10 @@ const AlarmDetailsScreen = () => {
               )}
 
               {/* Voice Memo */}
-              {!!alarm.memoUri && (
+              {audioMemo && (
                 <View style={styles.recorderContainer}>
                   <AudioMemoItem
-                    memo={useMemo(() => ({ uri: alarm.memoUri, metering: [] }), [alarm.memoUri])}
+                    memo={audioMemo}
                     themeColor={colors.alarmFocus}
                     renderRightIcon={<></>}
                   />
@@ -417,6 +425,11 @@ const styles = StyleSheet.create({
   icon: {
     width: 42,
     height: 42,
+    resizeMode: 'contain',
+  },
+  groupIcon: {
+    width: 58,
+    height: 58,
     resizeMode: 'contain',
   },
   screenTitle: {

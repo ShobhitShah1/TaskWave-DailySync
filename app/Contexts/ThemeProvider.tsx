@@ -10,6 +10,11 @@ export const storage = new MMKV();
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const getStoredTheme = (): Theme => {
+  const storedTheme = storage.getString('themeMode');
+  return storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : 'dark';
+};
+
 export const updateStatusBarAndSystemUI = (currentTheme: Theme) => {
   try {
     // Set status bar style based on theme
@@ -24,7 +29,7 @@ export const updateStatusBarAndSystemUI = (currentTheme: Theme) => {
 };
 
 export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>(getStoredTheme);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const storedViewMode = storage.getString('viewMode');
     return (storedViewMode as ViewMode) || 'list';
@@ -53,8 +58,7 @@ export const AppProvider: React.FC<AppContextProps> = ({ children }) => {
 
   const storeTheme = async () => {
     try {
-      const storedTheme = storage.getString('themeMode');
-      const MyTheme: Theme = (storedTheme as Theme) || 'dark';
+      const MyTheme = getStoredTheme();
       setTheme(MyTheme);
       // Update status bar and system UI when theme is loaded
       updateStatusBarAndSystemUI(MyTheme);

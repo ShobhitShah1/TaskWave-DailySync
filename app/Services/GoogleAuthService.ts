@@ -89,6 +89,7 @@ export const startGoogleSignIn = async (): Promise<GoogleSignInResult> => {
       },
     };
   } catch (error) {
+    console.error('Google sign-in error:', error);
     throw getGoogleSignInError(error);
   }
 };

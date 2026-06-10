@@ -86,6 +86,8 @@ const ic_bottomShape = require('../../assets/Icons/ic_bottomShape.png');
 const ic_wave = require('../../assets/Icons/ic_wave.png');
 const ic_soloAlarm = require('../../assets/Icons/ic_soloAlarm.png');
 const ic_groupAlarm = require('../../assets/Icons/ic_groupAlarm.png');
+const ic_group_alarm = require('../../assets/Icons/ic_group_alarm.png');
+const ic_solo_alarm = require('../../assets/Icons/ic_solo_alarm.png');
 const ic_custom_audio = require('../../assets/Icons/ic_custom_audio.png');
 const ic_alertNotification = require('../../assets/Icons/ic_alertNotification.png');
 const ic_vibration = require('../../assets/Icons/ic_vibration.png');
@@ -207,6 +209,8 @@ export default {
   ic_wave,
   ic_soloAlarm,
   ic_groupAlarm,
+  ic_group_alarm,
+  ic_solo_alarm,
   ic_custom_audio,
   ic_alertNotification,
   ic_vibration,
