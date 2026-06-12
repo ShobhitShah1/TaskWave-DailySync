@@ -85,6 +85,7 @@ const withAndroidAssets = (config) => {
         'AlarmLauncherModule.kt',
         'AlarmLauncherPackage.kt',
         'AlarmMessagingService.kt',
+        'AlarmReceiver.kt',
         'AlarmService.kt',
       ];
       const javaTemplateDir = path.join(config.modRequest.projectRoot, 'native-templates', 'java');
@@ -425,6 +426,13 @@ const withAndroidAssets = (config) => {
       ],
     };
 
+    const alarmReceiver = {
+      $: {
+        'android:name': `${packageName}.AlarmReceiver`,
+        'android:exported': 'false',
+      },
+    };
+
     // Check if activity already exists
     const activityExists = mainApplication.activity?.some(
       (activity) => activity.$ && activity.$['android:name'] === `${packageName}.AlarmActivity`,
@@ -454,6 +462,17 @@ const withAndroidAssets = (config) => {
     );
     if (!foregroundServiceExists) {
       mainApplication.service.push(alarmService);
+    }
+
+    if (!mainApplication.receiver) {
+      mainApplication.receiver = [];
+    }
+
+    const alarmReceiverExists = mainApplication.receiver.some(
+      (receiver) => receiver.$ && receiver.$['android:name'] === `${packageName}.AlarmReceiver`,
+    );
+    if (!alarmReceiverExists) {
+      mainApplication.receiver.push(alarmReceiver);
     }
 
     return config;

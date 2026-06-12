@@ -575,7 +575,6 @@ const CreateAlarmScreen = () => {
         onClose={() => setShowTonePicker(false)}
         selectedTone={tone}
         onSelect={setTone}
-        themeColor={colors.alarmFocus}
       />
 
       <OverlayPermissionModal

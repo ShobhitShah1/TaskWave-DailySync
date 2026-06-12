@@ -2,6 +2,7 @@ export const APP_CONFIG = {
   androidPackageName: 'com.taskwave.dailysync',
   iosAppId: '', // Add iOS App ID if available
   playStoreUrl: 'https://play.google.com/store/apps/details?id=com.taskwave.dailysync',
+  moreAppsUrl: 'https://play.google.com/store/apps/dev?id=7204952578446002969',
   appStoreUrl: '', // Add App Store URL if available
   privacyPolicyUrl: 'https://www.termsfeed.com/live/81b88b8e-c6ab-4149-9efa-1373c47f4268',
   supportEmail: 'nirvanatechlabs@gmail.com',

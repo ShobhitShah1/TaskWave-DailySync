@@ -5,13 +5,13 @@ import useThemeColors from '@Hooks/useThemeMode';
 import { FONTS } from '@Constants/Theme';
 import { sounds } from '@Constants/Data';
 import AssetsPath from '@Constants/AssetsPath';
+import { useAppContext } from '@Contexts/ThemeProvider';
 
 interface TonePickerModalProps {
   visible: boolean;
   onClose: () => void;
   selectedTone: string;
   onSelect: (tone: string) => void;
-  themeColor: string;
 }
 
 const TonePickerModal: FC<TonePickerModalProps> = ({
@@ -19,8 +19,8 @@ const TonePickerModal: FC<TonePickerModalProps> = ({
   onClose,
   selectedTone,
   onSelect,
-  themeColor,
 }) => {
+  const { theme } = useAppContext();
   const colors = useThemeColors();
   const [currentTone, setCurrentTone] = useState(selectedTone);
   const [playingSound, setPlayingSound] = useState<Audio.Sound | null>(null);
@@ -67,7 +67,10 @@ const TonePickerModal: FC<TonePickerModalProps> = ({
     return (
       <Pressable
         onPress={() => setCurrentTone(item.soundKeyName)}
-        style={[styles.itemCard, { backgroundColor: colors.alarmCardBackground }]}
+        style={[
+          styles.itemCard,
+          { backgroundColor: theme === 'dark' ? colors.alarmCardBackground : '#F0F0F0' },
+        ]}
       >
         <Text style={[styles.itemName, { color: colors.text }]}>
           {item.name === 'System default' ? 'Default(Alarm note)' : item.name}
@@ -76,7 +79,7 @@ const TonePickerModal: FC<TonePickerModalProps> = ({
 
         {item.canPlay && (
           <Pressable onPress={() => playPreview(item.soundKeyName)} style={styles.playBtn}>
-            <Image source={AssetsPath.ic_play} style={styles.playIcon} tintColor="#FFFFFF" />
+            <Image source={AssetsPath.ic_play} style={styles.playIcon} tintColor={colors?.text} />
           </Pressable>
         )}
 

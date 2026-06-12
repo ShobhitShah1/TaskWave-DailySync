@@ -1,5 +1,7 @@
 package {{PACKAGE_NAME}}
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Intent
 import android.os.Build
 import android.util.Log
@@ -25,6 +27,71 @@ class AlarmLauncherModule(reactContext: ReactApplicationContext) : ReactContextB
     }
 
     override fun getName(): String = "AlarmLauncher"
+
+    private fun getSoloAlarmPendingIntent(alarmId: String, extras: Intent? = null): PendingIntent {
+        val intent = extras ?: Intent(reactApplicationContext, AlarmReceiver::class.java)
+        return PendingIntent.getBroadcast(
+            reactApplicationContext,
+            alarmId.hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    @ReactMethod
+    fun scheduleSoloAlarm(
+        alarmId: String,
+        timestamp: Double,
+        title: String,
+        body: String,
+        tone: String,
+        bufferMinutes: String,
+        alarmNotes: String,
+        snoozeNoteIndex: String,
+        promise: Promise
+    ) {
+        try {
+            val alarmManager =
+                reactApplicationContext.getSystemService(AlarmManager::class.java)
+            val triggerIntent = Intent(reactApplicationContext, AlarmReceiver::class.java).apply {
+                putExtra("title", title)
+                putExtra("body", body)
+                putExtra("alarmId", alarmId)
+                putExtra("mode", "solo")
+                putExtra("tone", tone)
+                putExtra("bufferMinutes", bufferMinutes)
+                putExtra("alarmNotes", alarmNotes)
+                putExtra("snoozeNoteIndex", snoozeNoteIndex)
+            }
+            val pendingIntent = getSoloAlarmPendingIntent(alarmId, triggerIntent)
+            val showIntent = Intent(reactApplicationContext, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val showPendingIntent = PendingIntent.getActivity(
+                reactApplicationContext,
+                alarmId.hashCode(),
+                showIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            alarmManager.setAlarmClock(
+                AlarmManager.AlarmClockInfo(timestamp.toLong(), showPendingIntent),
+                pendingIntent
+            )
+            Log.d("AlarmLauncher", "Scheduled native solo alarm: $alarmId at ${timestamp.toLong()}")
+            promise.resolve(alarmId)
+        } catch (error: Exception) {
+            Log.e("AlarmLauncher", "Failed to schedule native solo alarm", error)
+            promise.reject("SOLO_ALARM_SCHEDULE_FAILED", error)
+        }
+    }
+
+    @ReactMethod
+    fun cancelSoloAlarm(alarmId: String) {
+        val alarmManager = reactApplicationContext.getSystemService(AlarmManager::class.java)
+        alarmManager.cancel(getSoloAlarmPendingIntent(alarmId))
+        Log.d("AlarmLauncher", "Cancelled native solo alarm: $alarmId")
+    }
 
     @ReactMethod
     fun launch(title: String, body: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, alarmNotes: String, snoozeNoteIndex: String) {

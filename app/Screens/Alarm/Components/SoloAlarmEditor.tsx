@@ -1,22 +1,20 @@
 import AssetsPath from '@Constants/AssetsPath';
-import { FONTS } from '@Constants/Theme';
 import { sounds } from '@Constants/Data';
+import { FONTS } from '@Constants/Theme';
 import { useAppContext } from '@Contexts/ThemeProvider';
 import useThemeColors from '@Hooks/useThemeMode';
 import { WeekDayType } from '@Screens/AddReminder/Components/AddScheduleFrequency';
 import React, { memo, useEffect, useMemo, useRef } from 'react';
-import { Image, Pressable, StyleSheet, Text, View, useColorScheme, Dimensions } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-  runOnJS,
 } from 'react-native-reanimated';
 import AlarmNoteSelector from './AlarmNoteSelector';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface SoloAlarmEditorProps {
   time: Date;

@@ -111,6 +111,9 @@ const HIW_create_dark = require('../../assets/Images/HIW_create_dark.png');
 const HIW_Notification = require('../../assets/Images/HIW_Notification.png');
 const HIW_whatsapp_dark = require('../../assets/Images/HIW_whatsapp_dark.png');
 const login = require('../../assets/Images/login.png');
+const more_app_popup = require('../../assets/Images/more_app_popup.png');
+const exit_button = require('../../assets/Images/exit_button.png');
+const more_app_button = require('../../assets/Images/more_app_button.png');
 
 // Animation
 const success_animation = require('../../assets/Animations/success_animation.json');
@@ -236,6 +239,9 @@ export default {
   HIW_create_dark,
   HIW_Notification,
   HIW_whatsapp_dark,
+  more_app_popup,
+  exit_button,
+  more_app_button,
 
   // Animation
   success_animation,

@@ -5,6 +5,7 @@ import useThemeColors from '@Hooks/useThemeMode';
 import { FONTS } from '@Constants/Theme';
 import { sounds } from '@Constants/Data';
 import AssetsPath from '@Constants/AssetsPath';
+import { useAppContext } from '@Contexts/ThemeProvider';
 
 interface AlarmNotePickerModalProps {
   visible: boolean;
@@ -21,6 +22,7 @@ const AlarmNotePickerModal: FC<AlarmNotePickerModalProps> = ({
   onSelect,
   themeColor,
 }) => {
+  const { theme } = useAppContext();
   const colors = useThemeColors();
   const [currentNotes, setCurrentNotes] = useState<string[]>(selectedNotes);
   const [playingSound, setPlayingSound] = useState<Audio.Sound | null>(null);
@@ -83,7 +85,10 @@ const AlarmNotePickerModal: FC<AlarmNotePickerModalProps> = ({
     return (
       <Pressable
         onPress={() => toggleNote(item.soundKeyName)}
-        style={[styles.itemCard, { backgroundColor: colors.alarmCardBackground }]}
+        style={[
+          styles.itemCard,
+          { backgroundColor: theme === 'dark' ? colors.alarmCardBackground : '#F0F0F0' },
+        ]}
       >
         <Text style={[styles.itemName, { color: colors.text }]}>
           {item.name === 'System default' ? 'Default(Alarm note)' : item.name}
@@ -95,7 +100,7 @@ const AlarmNotePickerModal: FC<AlarmNotePickerModalProps> = ({
             <Image
               source={isPlaying ? AssetsPath.ic_pause : AssetsPath.ic_play}
               style={styles.playIcon}
-              tintColor="#FFFFFF"
+              tintColor={colors.text}
             />
           </Pressable>
         )}

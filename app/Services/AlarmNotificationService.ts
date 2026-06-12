@@ -8,6 +8,7 @@ import notifee, {
 } from '@notifee/react-native';
 import { CreateSoloAlarmInput } from '@Types/Alarm';
 import { buildNextAlarmDate } from '@Utils/alarmSchedule';
+import { NativeModules, Platform } from 'react-native';
 
 import { sounds } from '@Constants/Data';
 
@@ -49,10 +50,28 @@ export const scheduleSoloAlarmNotification = async (
   alarmId: string,
   input: CreateSoloAlarmInput,
 ) => {
-  await ensureAlarmChannels();
-  const channelId = getChannelIdForTone(input.tone);
   const scheduledFor = buildNextAlarmDate(input);
 
+  if (Platform.OS === 'android' && NativeModules.AlarmLauncher?.scheduleSoloAlarm) {
+    await NativeModules.AlarmLauncher.scheduleSoloAlarm(
+      alarmId,
+      scheduledFor.getTime(),
+      input.title || 'Alarm',
+      input.note || 'It is time.',
+      input.tone,
+      (input.bufferMinutes || 5).toString(),
+      JSON.stringify(input.alarmNotes ?? []),
+      String(input.snoozeNoteIndex ?? 0),
+    );
+
+    return {
+      notificationId: alarmId,
+      nextTriggerAt: scheduledFor.toISOString(),
+    };
+  }
+
+  await ensureAlarmChannels();
+  const channelId = getChannelIdForTone(input.tone);
   const trigger: TimestampTrigger = {
     type: TriggerType.TIMESTAMP,
     timestamp: scheduledFor.getTime(),
@@ -131,5 +150,12 @@ export const cancelSoloAlarmNotification = async (notificationId: string | null)
     return;
   }
 
-  await notifee.cancelNotification(notificationId).catch(() => undefined);
+  if (Platform.OS === 'android' && NativeModules.AlarmLauncher?.cancelSoloAlarm) {
+    NativeModules.AlarmLauncher.cancelSoloAlarm(notificationId);
+  }
+
+  await Promise.all([
+    notifee.cancelNotification(notificationId).catch(() => undefined),
+    notifee.cancelTriggerNotification(notificationId).catch(() => undefined),
+  ]);
 };

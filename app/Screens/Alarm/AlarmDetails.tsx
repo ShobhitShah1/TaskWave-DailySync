@@ -1,4 +1,5 @@
 import AssetsPath from '@Constants/AssetsPath';
+import { sounds } from '@Constants/Data';
 import { FONTS, SIZE } from '@Constants/Theme';
 import { useCountdownTimer } from '@Hooks/useCountdownTimer';
 import { getLocalAlarmDetails, useAlarmFeed } from '@Hooks/useAlarm';
@@ -249,8 +250,9 @@ const AlarmDetailsScreen = () => {
                       { backgroundColor: colors.scheduleReminderCardBackground },
                     ]}
                   >
-                    <Text style={[styles.soloMetaValue, { color: colors.white }]}>
-                      {alarm.tone}
+                    <Text style={[styles.soloMetaValue, { color: colors.placeholderText }]}>
+                      {sounds.find((sound) => sound.soundKeyName === alarm.tone)?.name ||
+                        'System default'}
                     </Text>
                   </View>
                 </View>
@@ -265,7 +267,7 @@ const AlarmDetailsScreen = () => {
                     <Image
                       source={AssetsPath.ic_vibration}
                       style={styles.soloMetaIcon}
-                      tintColor={colors.white}
+                      tintColor={alarm.vibrate ? colors.text : colors.placeholderText}
                     />
                   </View>
                 </View>
@@ -495,7 +497,7 @@ const styles = StyleSheet.create({
   },
   soloMetaRow: {
     flexDirection: 'row',
-    columnGap: 10,
+    columnGap: 12,
     marginTop: 24,
   },
   soloMetaCol: {
@@ -503,24 +505,24 @@ const styles = StyleSheet.create({
   },
   soloMetaLabel: {
     fontSize: 15,
-    fontFamily: FONTS.Regular,
-    marginBottom: 8,
+    fontFamily: FONTS.Medium,
+    paddingBottom: 10,
   },
   soloMetaField: {
-    height: 52,
-    borderRadius: 15,
+    height: 50,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
     columnGap: 8,
   },
   soloMetaValue: {
-    fontSize: 16,
-    fontFamily: FONTS.Medium,
+    fontSize: 13,
+    fontFamily: FONTS.SemiBold,
   },
   soloMetaIcon: {
-    width: 24,
-    height: 24,
+    width: 25,
+    height: 25,
     resizeMode: 'contain',
   },
 

@@ -1,7 +1,12 @@
 import AssetsPath from '@Constants/AssetsPath';
 import TextString from '@Constants/TextString';
 import { FONTS, SIZE } from '@Constants/Theme';
-import { useAddOwnerVoiceNote, useAlarmSession, useDeleteOwnerVoiceNote } from '@Hooks/useAlarm';
+import {
+  useAddOwnerVoiceNote,
+  useAlarmFeed,
+  useAlarmSession,
+  useDeleteOwnerVoiceNote,
+} from '@Hooks/useAlarm';
 import { useAudioQueue } from '@Hooks/useAudioQueue';
 import { useCountdownTimer } from '@Hooks/useCountdownTimer';
 import useThemeColors from '@Hooks/useThemeMode';
@@ -50,6 +55,7 @@ const formatTime = (value: string) =>
 export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({ alarmId, onBack }) => {
   const colors = useThemeColors();
   const sessionQuery = useAlarmSession(alarmId);
+  const { groupQuery } = useAlarmFeed();
   const sendNoteMutation = useAddOwnerVoiceNote(alarmId);
   const deleteNoteMutation = useDeleteOwnerVoiceNote(alarmId);
   const recorder = useVoiceRecorder();
@@ -70,7 +76,10 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({ alarmId, onB
     [session?.ownerVoiceNotes],
   );
   const ownerNotePlayer = useAudioQueue(ownerNoteUris);
-  const countdown = useCountdownTimer(session?.scheduledFor);
+  const scheduledFor =
+    groupQuery.data?.alarms.find((alarm) => alarm.id === alarmId)?.nextTriggerAt ||
+    session?.scheduledFor;
+  const countdown = useCountdownTimer(scheduledFor);
 
   const handleMemberMicPress = async (memberId: string) => {
     if (sendNoteMutation.isPending) {
@@ -231,10 +240,10 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({ alarmId, onB
 
         <View style={styles.metaRow}>
           <Text style={[styles.metaText, { color: colors.text }]}>
-            {formatDate(session.scheduledFor)}
+            {formatDate(scheduledFor || session.scheduledFor)}
           </Text>
           <Text style={[styles.metaText, { color: colors.text }]}>
-            {formatTime(session.scheduledFor)}
+            {formatTime(scheduledFor || session.scheduledFor)}
           </Text>
         </View>
 

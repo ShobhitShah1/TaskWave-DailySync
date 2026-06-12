@@ -1,9 +1,11 @@
+import ExitAppModal from '@Components/ExitAppModal';
 import FullScreenPreviewModal from '@Components/FullScreenPreviewModal';
 import ReminderCard from '@Components/ReminderCard';
 import RenderCalenderView from '@Components/RenderCalenderView';
 import ServiceManager from '@Components/ServiceManager';
 import OverlayPermissionModal from '@Components/OverlayPermissionModal';
 import YearMonthPicker from '@Components/YearMonthPicker';
+import { APP_CONFIG } from '@Constants/AppConfig';
 import TextString from '@Constants/TextString';
 import { useBatteryOptimization } from '@Contexts/BatteryOptimizationProvider';
 import { useContacts } from '@Contexts/ContactProvider';
@@ -14,7 +16,7 @@ import useCalendar from '@Hooks/useCalendar';
 import useNotificationPermission from '@Hooks/useNotificationPermission';
 import { default as useDatabase } from '@Hooks/useReminder';
 import useThemeColors from '@Hooks/useThemeMode';
-import { useIsFocused } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { Notification, NotificationStatus, NotificationType } from '@Types/Interface';
 import { fromNowText } from '@Utils/isSameDat';
 import notifee, { AndroidNotificationSetting } from '@notifee/react-native';
@@ -22,7 +24,10 @@ import React, { memo, useCallback, useEffect, useLayoutEffect, useRef, useState 
 import {
   ActivityIndicator,
   Alert,
+  BackHandler,
   FlatList,
+  Linking,
+  Platform,
   Pressable,
   RefreshControl,
   Text,
@@ -66,6 +71,7 @@ const Home = () => {
   const [showDateAndYearModal, setShowDateAndYearModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showServiceManager, setShowServiceManager] = useState(false);
+  const [showExitAppModal, setShowExitAppModal] = useState(false);
 
   const [notificationsState, setNotificationsState] = useState<NotificationStatus>({
     all: [] as Notification[],
@@ -75,6 +81,21 @@ const Home = () => {
   });
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<NotificationType | 'all'>('all');
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== 'android') {
+        return undefined;
+      }
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        setShowExitAppModal(true);
+        return true;
+      });
+
+      return () => subscription.remove();
+    }, []),
+  );
 
   const scrollToIndex = async () => {
     const index = daysArray.findIndex((item) => item.formattedDate === selectedDate);
@@ -435,6 +456,16 @@ const Home = () => {
         />
 
         <OverlayPermissionModal />
+
+        <ExitAppModal
+          isVisible={showExitAppModal}
+          onClose={() => setShowExitAppModal(false)}
+          onExit={BackHandler.exitApp}
+          onMoreApps={() => {
+            setShowExitAppModal(false);
+            Linking.openURL(APP_CONFIG.moreAppsUrl);
+          }}
+        />
       </View>
     </SafeAreaView>
   );

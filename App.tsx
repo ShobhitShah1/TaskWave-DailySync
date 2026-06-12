@@ -2,14 +2,16 @@ import { FONTS } from '@Constants/Theme';
 import { AuthProvider } from '@Contexts/AuthProvider';
 import notifee, { EventType } from '@notifee/react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { Asset } from 'expo-asset';
 import { useFonts } from 'expo-font';
 import React, { useEffect } from 'react';
-import { StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Image, StatusBar, StyleSheet, Text, View } from 'react-native';
 import FlashMessage, { showMessage } from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import BatteryOptimizationModal from './app/Components/BatteryOptimizationModal';
 import OverlayPermissionModal from './app/Components/OverlayPermissionModal';
+import AssetsPath from './app/Constants/AssetsPath';
 import { AlarmProvider, useAlarmContext } from './app/Contexts/AlarmProvider';
 import { BatteryOptimizationProvider } from './app/Contexts/BatteryOptimizationProvider';
 import { BottomSheetProvider } from './app/Contexts/BottomSheetProvider';
@@ -37,6 +39,12 @@ configureReanimatedLogger({
   level: ReanimatedLogLevel.error,
   strict: false,
 });
+
+void Asset.loadAsync([
+  AssetsPath.more_app_popup,
+  AssetsPath.exit_button,
+  AssetsPath.more_app_button,
+]).catch(() => undefined);
 
 interface TextWithDefaultProps extends Text {
   defaultProps?: { allowFontScaling?: boolean };
@@ -115,6 +123,20 @@ const AppContent = () => {
       <BottomSheetProvider>
         <View style={[styles.container, { backgroundColor }]}>
           <Routes />
+
+          <View pointerEvents="none" style={styles.assetPreloader}>
+            <Image
+              fadeDuration={0}
+              source={AssetsPath.more_app_popup}
+              style={styles.preloadImage}
+            />
+            <Image fadeDuration={0} source={AssetsPath.exit_button} style={styles.preloadImage} />
+            <Image
+              fadeDuration={0}
+              source={AssetsPath.more_app_button}
+              style={styles.preloadImage}
+            />
+          </View>
 
           <BatteryOptimizationModal />
 
@@ -265,5 +287,15 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  assetPreloader: {
+    height: 1,
+    opacity: 0,
+    position: 'absolute',
+    width: 1,
+  },
+  preloadImage: {
+    height: 1,
+    width: 1,
   },
 });
