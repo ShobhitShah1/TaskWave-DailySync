@@ -58,12 +58,15 @@ const AlarmNotePickerModal: FC<AlarmNotePickerModalProps> = ({
         await sound.playAsync();
         sound.setOnPlaybackStatusUpdate((status) => {
           if ('didJustFinish' in status && status.didJustFinish) {
+            setPlayingSound(null);
             setPlayingKey(null);
+            sound.unloadAsync().catch(() => undefined);
           }
         });
       }
-    } catch (error) {
-      console.log('Error playing preview:', error);
+    } catch {
+      setPlayingSound(null);
+      setPlayingKey(null);
     }
   };
 
@@ -100,7 +103,7 @@ const AlarmNotePickerModal: FC<AlarmNotePickerModalProps> = ({
             <Image
               source={isPlaying ? AssetsPath.ic_pause : AssetsPath.ic_play}
               style={styles.playIcon}
-              tintColor={colors.text}
+              tintColor={isPlaying ? themeColor : colors.text}
             />
           </Pressable>
         )}

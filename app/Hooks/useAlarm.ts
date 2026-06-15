@@ -31,6 +31,8 @@ export const useAlarmFeed = () => {
     queryKey: ALARM_QUERY_KEYS.groupFeed,
     queryFn: alarmApi.getAlarmFeed,
     staleTime: 5 * 60 * 1000, // 5 minutes stale
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
     refetchOnMount: true,
     refetchOnReconnect: true,
   });

@@ -169,7 +169,10 @@ const notificationHandlers = {
   },
 };
 
-export const handleNotificationPress = async (notification: Notification) => {
+export const handleNotificationPress = async (
+  notification: Notification,
+  notificationId?: string,
+) => {
   try {
     if (notification.kind === 'alarm-session-update' && notification.alarmId) {
       await appQueryClient.invalidateQueries({
@@ -177,6 +180,7 @@ export const handleNotificationPress = async (notification: Notification) => {
       });
       navigationRef.navigate('AlarmSession', {
         alarmId: notification.alarmId,
+        notificationId,
       });
       return;
     }

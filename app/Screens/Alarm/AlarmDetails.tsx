@@ -7,7 +7,7 @@ import useThemeColors from '@Hooks/useThemeMode';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@Types/Interface';
-import { formatAlarmDate, formatAlarmTime } from '@Utils/alarmDisplay';
+import { formatAlarmDate, formatAlarmInstantTime, formatAlarmTime } from '@Utils/alarmDisplay';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View, Alert } from 'react-native';
@@ -72,10 +72,12 @@ const AlarmDetailsScreen = () => {
   }
 
   const [hours, minutes, seconds] = formattedTimeLeft.split(' : ');
-  const timeLabel = formatAlarmTime(alarm.hour, alarm.minute, alarm.meridiem);
+  const isSolo = route.params.mode === 'solo';
+  const timeLabel = isSolo
+    ? formatAlarmTime(alarm.hour, alarm.minute, alarm.meridiem)
+    : formatAlarmInstantTime(alarm.nextTriggerAt);
   const dateLabel = formatAlarmDate(alarm.nextTriggerAt);
   const note = alarm.note?.trim() || 'No note added.';
-  const isSolo = route.params.mode === 'solo';
   const canEdit = isSolo || ('ownerUserId' in alarm && alarm.ownerUserId === auth?.user?.id);
 
   const handleDeleteAlarm = () => {

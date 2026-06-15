@@ -14,7 +14,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import AlarmNoteSelector from './AlarmNoteSelector';
 
 interface SoloAlarmEditorProps {
   time: Date;
@@ -32,9 +31,6 @@ interface SoloAlarmEditorProps {
   bufferMinutes: number;
   onBufferPress: () => void;
   onTonePress: () => void;
-  themeColor: string;
-  alarmNotes?: string[];
-  setAlarmNotes?: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const DAYS: WeekDayType[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -72,9 +68,6 @@ const SoloAlarmEditor: React.FC<SoloAlarmEditorProps> = ({
   bufferMinutes,
   onBufferPress,
   onTonePress,
-  themeColor,
-  alarmNotes,
-  setAlarmNotes,
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
@@ -378,14 +371,6 @@ const SoloAlarmEditor: React.FC<SoloAlarmEditorProps> = ({
           );
         })}
       </View>
-
-      {alarmNotes && setAlarmNotes && (
-        <AlarmNoteSelector
-          alarmNotes={alarmNotes}
-          setAlarmNotes={setAlarmNotes}
-          themeColor={colors.alarmFocus}
-        />
-      )}
     </>
   );
 };

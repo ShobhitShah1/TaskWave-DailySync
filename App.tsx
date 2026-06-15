@@ -69,7 +69,7 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
         break;
       case EventType.PRESS:
         if (notification?.kind !== 'alarm') {
-          handleNotificationPress(notification);
+          handleNotificationPress(notification, detail.notification?.id);
         }
         break;
       case EventType.DELIVERED:
@@ -96,7 +96,7 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
         }
 
         if (notification?.kind !== 'alarm') {
-          handleNotificationPress(notification);
+          handleNotificationPress(notification, detail.notification?.id);
         }
         break;
       default:
@@ -188,7 +188,7 @@ export default function App() {
         switch (type) {
           case EventType.PRESS:
             if (notification?.kind !== 'alarm') {
-              handleNotificationPress(notification);
+              handleNotificationPress(notification, detail.notification?.id);
             }
             break;
         }

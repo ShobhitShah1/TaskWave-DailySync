@@ -1,3 +1,5 @@
+import { authStorage } from '@Utils/authStorage';
+import { resolveAlarmAudioUrl } from '@Utils/alarmAudio';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
@@ -6,10 +8,13 @@ export const useAudioQueue = (uris: string[], autoPlay = false) => {
   const soundRef = useRef<Audio.Sound | null>(null);
   const hasAutoPlayedRef = useRef(false);
   const playbackGenerationRef = useRef(0);
+  const durationsMillisRef = useRef<number[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [positionMillis, setPositionMillis] = useState(0);
   const [durationMillis, setDurationMillis] = useState(0);
+  const [durationsMillis, setDurationsMillis] = useState<number[]>([]);
+  const [durationLoading, setDurationLoading] = useState<boolean[]>([]);
 
   const unload = useCallback(async () => {
     const sound = soundRef.current;
@@ -40,37 +45,59 @@ export const useAudioQueue = (uris: string[], autoPlay = false) => {
       if (!uris[index]) {
         return;
       }
+      const resolvedUri = resolveAlarmAudioUrl(uris[index]);
+      const auth = authStorage.getAuth();
+      const headers = auth?.accessToken
+        ? { Authorization: `Bearer ${auth.accessToken}` }
+        : undefined;
       const generation = playbackGenerationRef.current + 1;
       playbackGenerationRef.current = generation;
       await unload();
       setCurrentIndex(index);
       setPositionMillis(0);
+      setDurationMillis(durationsMillisRef.current[index] || 0);
 
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: uris[index] },
-        { shouldPlay: true, progressUpdateIntervalMillis: 200 },
-      );
-      if (playbackGenerationRef.current !== generation) {
-        await sound.unloadAsync().catch(() => undefined);
-        return;
-      }
-      soundRef.current = sound;
-      sound.setOnPlaybackStatusUpdate((status: AVPlaybackStatus) => {
-        if (!status.isLoaded) {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          playsInSilentModeIOS: true,
+          playThroughEarpieceAndroid: false,
+          shouldDuckAndroid: true,
+          staysActiveInBackground: false,
+        });
+
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: resolvedUri, headers },
+          { shouldPlay: true, progressUpdateIntervalMillis: 200 },
+        );
+        if (playbackGenerationRef.current !== generation) {
+          await sound.unloadAsync().catch(() => undefined);
           return;
         }
-        setIsPlaying(status.isPlaying);
-        setPositionMillis(status.positionMillis);
-        setDurationMillis(status.durationMillis || 0);
-        if (status.didJustFinish) {
-          const nextIndex = index + 1;
-          if (uris[nextIndex]) {
-            playAt(nextIndex).catch(() => undefined);
-          } else {
-            setIsPlaying(false);
+        soundRef.current = sound;
+        sound.setOnPlaybackStatusUpdate((status: AVPlaybackStatus) => {
+          if (!status.isLoaded) {
+            if (status.error) {
+              setIsPlaying(false);
+            }
+            return;
           }
-        }
-      });
+          setIsPlaying(status.isPlaying);
+          setPositionMillis(status.positionMillis);
+          setDurationMillis(status.durationMillis || 0);
+          if (status.didJustFinish) {
+            const nextIndex = index + 1;
+            if (uris[nextIndex]) {
+              playAt(nextIndex).catch(() => undefined);
+            } else {
+              setIsPlaying(false);
+            }
+          }
+        });
+      } catch {
+        setIsPlaying(false);
+        setCurrentIndex(-1);
+      }
     },
     [unload, uris],
   );
@@ -92,6 +119,72 @@ export const useAudioQueue = (uris: string[], autoPlay = false) => {
       await soundRef.current.playAsync();
     }
   }, [currentIndex, playAt, uris.length]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const preloadedSounds = new Set<Audio.Sound>();
+
+    const preloadDurations = async () => {
+      const nextDurations = Array.from({ length: uris.length }, () => 0);
+
+      await Promise.all(
+        uris.map(async (rawUri, index) => {
+          const resolvedUri = resolveAlarmAudioUrl(rawUri);
+          const auth = authStorage.getAuth();
+          const headers = auth?.accessToken
+            ? { Authorization: `Bearer ${auth.accessToken}` }
+            : undefined;
+
+          try {
+            const { sound, status } = await Audio.Sound.createAsync(
+              { uri: resolvedUri, headers },
+              { shouldPlay: false },
+            );
+            preloadedSounds.add(sound);
+
+            if (status.isLoaded) {
+              nextDurations[index] = status.durationMillis || 0;
+            }
+
+            await sound.unloadAsync().catch(() => undefined);
+            preloadedSounds.delete(sound);
+          } catch {
+            nextDurations[index] = 0;
+          } finally {
+            if (!cancelled) {
+              durationsMillisRef.current[index] = nextDurations[index];
+              setDurationsMillis([...durationsMillisRef.current]);
+              setDurationLoading((current) =>
+                current.map((loading, itemIndex) => (itemIndex === index ? false : loading)),
+              );
+            }
+          }
+        }),
+      );
+
+      if (!cancelled) {
+        durationsMillisRef.current = nextDurations;
+        setDurationsMillis(nextDurations);
+        setDurationLoading(Array.from({ length: uris.length }, () => false));
+      }
+    };
+
+    durationsMillisRef.current = Array.from({ length: uris.length }, () => 0);
+    setDurationsMillis(durationsMillisRef.current);
+    setDurationLoading(Array.from({ length: uris.length }, () => true));
+
+    if (uris.length) {
+      preloadDurations().catch(() => undefined);
+    }
+
+    return () => {
+      cancelled = true;
+      preloadedSounds.forEach((sound) => {
+        sound.unloadAsync().catch(() => undefined);
+      });
+      preloadedSounds.clear();
+    };
+  }, [uris]);
 
   useEffect(() => {
     if (autoPlay && uris.length && !hasAutoPlayedRef.current) {
@@ -118,6 +211,8 @@ export const useAudioQueue = (uris: string[], autoPlay = false) => {
     isPlaying,
     positionMillis,
     durationMillis,
+    durationsMillis,
+    durationLoading,
     playAt,
     toggle,
     stop,

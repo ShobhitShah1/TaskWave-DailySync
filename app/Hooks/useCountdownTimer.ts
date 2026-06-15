@@ -24,47 +24,46 @@ export function useCountdownTimer(
     const parsedEndDate = endDate instanceof Date ? endDate : new Date(endDate);
 
     const updateTimer = () => {
-      const now = new Date();
-      const diff = parsedEndDate.getTime() - now.getTime();
+      const diff = parsedEndDate.getTime() - Date.now();
 
       if (diff <= 0) {
         setTimeLeft('00:00:00');
         setFormattedTimeLeft('00Hrs : 00Min : 00Sec');
         setTimeIsOver(true);
-
-        if (onTimeOver) {
-          onTimeOver();
-        }
+        onTimeOver?.();
 
         if (intervalId.current) {
           clearInterval(intervalId.current);
         }
-      } else {
-        const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
-        const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const secondsLeft = Math.floor((diff % (1000 * 60)) / 1000);
-
-        setTimeLeft(
-          `${String(hoursLeft).padStart(2, '0')}:${String(minutesLeft).padStart(
-            2,
-            '0',
-          )}:${String(secondsLeft).padStart(2, '0')}`,
-        );
-        setFormattedTimeLeft(
-          `${String(hoursLeft).padStart(2, '0')}Hrs : ${String(minutesLeft).padStart(
-            2,
-            '0',
-          )}Min : ${String(secondsLeft).padStart(2, '0')}Sec`,
-        );
+        return;
       }
+
+      const totalSeconds = Math.ceil(diff / 1000);
+      const hoursLeft = Math.floor(totalSeconds / 3600);
+      const minutesLeft = Math.floor((totalSeconds % 3600) / 60);
+      const secondsLeft = totalSeconds % 60;
+
+      setTimeLeft(
+        `${String(hoursLeft).padStart(2, '0')}:${String(minutesLeft).padStart(
+          2,
+          '0',
+        )}:${String(secondsLeft).padStart(2, '0')}`,
+      );
+      setFormattedTimeLeft(
+        `${String(hoursLeft).padStart(2, '0')}Hrs : ${String(minutesLeft).padStart(
+          2,
+          '0',
+        )}Min : ${String(secondsLeft).padStart(2, '0')}Sec`,
+      );
+      setTimeIsOver(false);
     };
 
     if (intervalId.current) {
       clearInterval(intervalId.current);
     }
 
-    intervalId.current = setInterval(updateTimer, 1000);
     updateTimer();
+    intervalId.current = setInterval(updateTimer, 1000);
 
     return () => {
       if (intervalId.current) {

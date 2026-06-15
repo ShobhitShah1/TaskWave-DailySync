@@ -1,6 +1,7 @@
 import { FONTS } from '@Constants/Theme';
 import useThemeColors from '@Hooks/useThemeMode';
 import { AlarmInvitation } from '@Types/Alarm';
+import { formatAlarmInstantTime } from '@Utils/alarmDisplay';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -16,9 +17,7 @@ const AlarmInvitationCard: React.FC<AlarmInvitationCardProps> = ({
   onDecline,
 }) => {
   const colors = useThemeColors();
-  const scheduledText = `${String(invitation.hour).padStart(2, '0')}:${String(
-    invitation.minute,
-  ).padStart(2, '0')} ${invitation.meridiem.toLowerCase()}`;
+  const scheduledText = formatAlarmInstantTime(invitation.scheduledFor);
   const repeatText =
     invitation.repeat === 'weekly' && invitation.repeatDays.length
       ? invitation.repeatDays.join(', ')

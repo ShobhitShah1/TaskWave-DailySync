@@ -11,11 +11,12 @@ import { useAudioQueue } from '@Hooks/useAudioQueue';
 import { useCountdownTimer } from '@Hooks/useCountdownTimer';
 import useThemeColors from '@Hooks/useThemeMode';
 import { useVoiceRecorder } from '@Hooks/useVoiceRecorder';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import HomeHeader from '@Screens/Home/Components/HomeHeader';
 import { RootStackParamList } from '@Types/Interface';
-import React, { useMemo, useState } from 'react';
+import { dismissAlarmNotifications } from '@Utils/dismissAlarmNotifications';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -34,6 +35,7 @@ type AlarmSessionRoute = RouteProp<RootStackParamList, 'AlarmSession'>;
 
 interface AlarmSessionViewProps {
   alarmId: string;
+  notificationId?: string;
   onBack: () => void;
 }
 
@@ -52,7 +54,58 @@ const formatTime = (value: string) =>
     })
     .toLowerCase();
 
-export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({ alarmId, onBack }) => {
+const formatAudioDuration = (value: number) => {
+  const totalSeconds = Math.max(0, Math.floor(value / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+};
+
+const AudioProgress: React.FC<{
+  color: string;
+  durationMillis: number;
+  loading: boolean;
+  positionMillis: number;
+  textColor: string;
+}> = ({ color, durationMillis, loading, positionMillis, textColor }) => {
+  const progress = durationMillis ? Math.min(1, Math.max(0, positionMillis / durationMillis)) : 0;
+
+  return (
+    <View style={styles.audioProgressContent}>
+      <View style={styles.audioProgressTrack}>
+        <View
+          style={[
+            styles.audioProgressFill,
+            {
+              backgroundColor: color,
+              width: `${progress * 100}%`,
+            },
+          ]}
+        />
+      </View>
+      <View style={styles.audioProgressFooter}>
+        {loading ? (
+          <ActivityIndicator color={color} size="small" style={styles.audioProgressLoader} />
+        ) : (
+          <>
+            <Text style={[styles.audioTime, { color: textColor }]}>
+              {formatAudioDuration(positionMillis)}
+            </Text>
+            <Text style={[styles.audioTime, { color: textColor }]}>
+              {formatAudioDuration(durationMillis)}
+            </Text>
+          </>
+        )}
+      </View>
+    </View>
+  );
+};
+
+export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({
+  alarmId,
+  notificationId,
+  onBack,
+}) => {
   const colors = useThemeColors();
   const sessionQuery = useAlarmSession(alarmId);
   const { groupQuery } = useAlarmFeed();
@@ -80,6 +133,12 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({ alarmId, onB
     groupQuery.data?.alarms.find((alarm) => alarm.id === alarmId)?.nextTriggerAt ||
     session?.scheduledFor;
   const countdown = useCountdownTimer(scheduledFor);
+
+  useFocusEffect(
+    useCallback(() => {
+      dismissAlarmNotifications(alarmId, notificationId).catch(() => undefined);
+    }, [alarmId, notificationId]),
+  );
 
   const handleMemberMicPress = async (memberId: string) => {
     if (sendNoteMutation.isPending) {
@@ -254,6 +313,7 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({ alarmId, onB
               (responseMember) => responseMember.userId === member.userId,
             );
             const hasResponse = responseIndex >= 0;
+            const responseIsActive = player.currentIndex === responseIndex;
             const isPlaying = activeResponseMember?.userId === member.userId && player.isPlaying;
             const sentCount = session.ownerVoiceNotes.filter(
               (note) => note.recipientUserId === member.userId,
@@ -345,6 +405,22 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({ alarmId, onB
                   )}
                 </View>
 
+                {hasResponse ? (
+                  <View style={styles.memberAudioProgress}>
+                    <AudioProgress
+                      color={colors.alarmFocus}
+                      durationMillis={
+                        responseIsActive
+                          ? player.durationMillis || player.durationsMillis[responseIndex] || 0
+                          : player.durationsMillis[responseIndex] || 0
+                      }
+                      loading={player.durationLoading[responseIndex] ?? true}
+                      positionMillis={responseIsActive ? player.positionMillis : 0}
+                      textColor={colors.placeholderText}
+                    />
+                  </View>
+                ) : null}
+
                 {isExpanded ? (
                   <View style={[styles.sentNotes, { borderTopColor: colors.borderColor }]}>
                     {sentNotes.map((note, index) => {
@@ -353,39 +429,56 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({ alarmId, onB
                       );
                       const noteIsPlaying =
                         ownerNotePlayer.currentIndex === noteIndex && ownerNotePlayer.isPlaying;
+                      const noteIsActive = ownerNotePlayer.currentIndex === noteIndex;
 
                       return (
-                        <View
-                          key={note.id}
-                          style={[
-                            styles.sentNoteRow,
-                            { backgroundColor: colors.previewBackground },
-                          ]}
-                        >
-                          <Text style={[styles.sentNoteLabel, { color: colors.text }]}>
-                            Voice Note {String(index + 1).padStart(2, '0')}
-                          </Text>
-                          <Pressable
-                            onPress={() => handleOwnerNotePress(note.id)}
-                            style={styles.sentNoteAction}
+                        <View key={note.id}>
+                          <View
+                            style={[
+                              styles.sentNoteRow,
+                              { backgroundColor: colors.previewBackground },
+                            ]}
                           >
-                            <Image
-                              source={noteIsPlaying ? AssetsPath.ic_pause : AssetsPath.ic_play}
-                              style={styles.sentNoteIcon}
-                              tintColor={colors.text}
+                            <Text style={[styles.sentNoteLabel, { color: colors.text }]}>
+                              Voice Note {String(index + 1).padStart(2, '0')}
+                            </Text>
+                            <Pressable
+                              onPress={() => handleOwnerNotePress(note.id)}
+                              style={styles.sentNoteAction}
+                            >
+                              <Image
+                                source={noteIsPlaying ? AssetsPath.ic_pause : AssetsPath.ic_play}
+                                style={styles.sentNoteIcon}
+                                tintColor={colors.text}
+                              />
+                            </Pressable>
+                            <Pressable
+                              disabled={deleteNoteMutation.isPending}
+                              onPress={() => handleDeleteOwnerNote(note.id)}
+                              style={styles.sentNoteAction}
+                            >
+                              <Image
+                                source={AssetsPath.ic_delete}
+                                style={styles.sentNoteIcon}
+                                tintColor="#FF3B30"
+                              />
+                            </Pressable>
+                          </View>
+                          <View style={styles.sentNoteProgress}>
+                            <AudioProgress
+                              color={colors.alarmFocus}
+                              durationMillis={
+                                noteIsActive
+                                  ? ownerNotePlayer.durationMillis ||
+                                    ownerNotePlayer.durationsMillis[noteIndex] ||
+                                    0
+                                  : ownerNotePlayer.durationsMillis[noteIndex] || 0
+                              }
+                              loading={ownerNotePlayer.durationLoading[noteIndex] ?? true}
+                              positionMillis={noteIsActive ? ownerNotePlayer.positionMillis : 0}
+                              textColor={colors.placeholderText}
                             />
-                          </Pressable>
-                          <Pressable
-                            disabled={deleteNoteMutation.isPending}
-                            onPress={() => handleDeleteOwnerNote(note.id)}
-                            style={styles.sentNoteAction}
-                          >
-                            <Image
-                              source={AssetsPath.ic_delete}
-                              style={styles.sentNoteIcon}
-                              tintColor="#FF3B30"
-                            />
-                          </Pressable>
+                          </View>
                         </View>
                       );
                     })}
@@ -404,7 +497,13 @@ const AlarmSessionScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<AlarmSessionRoute>();
 
-  return <AlarmSessionView alarmId={params.alarmId} onBack={() => navigation.goBack()} />;
+  return (
+    <AlarmSessionView
+      alarmId={params.alarmId}
+      notificationId={params.notificationId}
+      onBack={() => navigation.goBack()}
+    />
+  );
 };
 
 const styles = StyleSheet.create({
@@ -561,6 +660,41 @@ const styles = StyleSheet.create({
     width: 17,
     height: 17,
     resizeMode: 'contain',
+  },
+  memberAudioProgress: {
+    paddingBottom: 8,
+    paddingHorizontal: 18,
+  },
+  sentNoteProgress: {
+    paddingHorizontal: 12,
+    paddingTop: 5,
+  },
+  audioProgressContent: {
+    width: '100%',
+  },
+  audioProgressTrack: {
+    backgroundColor: 'rgba(128, 128, 128, 0.2)',
+    borderRadius: 2,
+    height: 4,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  audioProgressFill: {
+    borderRadius: 2,
+    height: '100%',
+  },
+  audioProgressFooter: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  audioProgressLoader: {
+    alignSelf: 'center',
+  },
+  audioTime: {
+    fontFamily: FONTS.Medium,
+    fontSize: 9,
   },
   requestStatus: {
     minWidth: 86,

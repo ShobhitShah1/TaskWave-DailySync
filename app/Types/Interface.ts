@@ -57,9 +57,11 @@ export type RootStackParamList = {
   };
   AlarmSession: {
     alarmId: string;
+    notificationId?: string;
   };
   AlarmVoiceResponse: {
     alarmId: string;
+    notificationId?: string;
   };
   DevDashboard: undefined;
 };

@@ -62,7 +62,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
-    paddingHorizontal: 4,
   },
   sectionTitle: {
     fontSize: 19,

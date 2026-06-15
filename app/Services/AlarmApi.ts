@@ -1,5 +1,7 @@
 import { getAuthApiBaseUrl } from '@Constants/AuthConfig';
+import { syncGroupAlarmNotifications } from '@Services/AlarmNotificationService';
 import { authStorage } from '@Utils/authStorage';
+import { normalizeAlarmSessionAudioUrls, resolveAlarmAudioUrl } from '@Utils/alarmAudio';
 import { apiClient, toApiError } from '@Services/ApiClient';
 import { Platform } from 'react-native';
 import {
@@ -53,21 +55,26 @@ type AlarmActionResponse = ApiResponse<{
 }>;
 type AlarmSessionResponse = ApiResponse<AlarmSession>;
 
-const normalizeGroupAlarm = (alarm: GroupAlarmRecordDto): GroupAlarmRecord => ({
-  ...alarm,
-  alarmNotes: alarm.alarmNotes || [],
-  snoozeNoteIndex: alarm.snoozeNoteIndex ?? 0,
-  timezone: alarm.timezone || 'UTC',
-  startAt: alarm.startAt || alarm.nextOccurrenceAt || alarm.nextTriggerAt,
-  nextOccurrenceAt: alarm.nextOccurrenceAt || alarm.nextTriggerAt,
-  lastOccurrenceAt: alarm.lastOccurrenceAt || null,
-  lastDeliveredAt: alarm.lastDeliveredAt || null,
-  localTime: alarm.localTime || {
-    hour: alarm.hour,
-    minute: alarm.minute,
-    meridiem: alarm.meridiem,
-  },
-});
+const normalizeGroupAlarm = (alarm: GroupAlarmRecordDto): GroupAlarmRecord => {
+  const memoUri = alarm.memoUri ? resolveAlarmAudioUrl(alarm.memoUri) : null;
+
+  return {
+    ...alarm,
+    memoUri,
+    alarmNotes: alarm.alarmNotes || [],
+    snoozeNoteIndex: alarm.snoozeNoteIndex ?? 0,
+    timezone: alarm.timezone || 'UTC',
+    startAt: alarm.startAt || alarm.nextOccurrenceAt || alarm.nextTriggerAt,
+    nextOccurrenceAt: alarm.nextOccurrenceAt || alarm.nextTriggerAt,
+    lastOccurrenceAt: alarm.lastOccurrenceAt || null,
+    lastDeliveredAt: alarm.lastDeliveredAt || null,
+    localTime: alarm.localTime || {
+      hour: alarm.hour,
+      minute: alarm.minute,
+      meridiem: alarm.meridiem,
+    },
+  };
+};
 
 const normalizeInvitation = (invitation: AlarmInvitationDto): AlarmInvitation => ({
   ...invitation,
@@ -78,7 +85,7 @@ const normalizeInvitation = (invitation: AlarmInvitationDto): AlarmInvitation =>
  */
 const isLocalFileUri = (uri: string | null | undefined): uri is string => {
   if (!uri) return false;
-  // Server URLs contain /uploads/audio/, local files are file:// or content:// or raw paths
+  if (/^https?:\/\//i.test(uri) || uri.startsWith('//')) return false;
   return !uri.includes('/uploads/audio/');
 };
 
@@ -165,7 +172,7 @@ const uploadSessionAudio = async (path: string, uri: string, fields?: Record<str
         throw new Error('The server returned an empty voice note response.');
       }
 
-      return data.data;
+      return normalizeAlarmSessionAudioUrls(data.data);
     } catch (error) {
       lastError = error;
       const isNetworkFailure =
@@ -185,8 +192,11 @@ export const alarmApi = {
   getAlarmFeed: async () => {
     try {
       const response = await apiClient.get<AlarmFeedResponse>('/api/alarms/feed');
+      const alarms = response.data.data.alarms.map(normalizeGroupAlarm);
+      await syncGroupAlarmNotifications(alarms);
+
       return {
-        alarms: response.data.data.alarms.map(normalizeGroupAlarm),
+        alarms,
         invitations: response.data.data.invitations.map(normalizeInvitation),
       } satisfies GroupAlarmApiResponse;
     } catch (error) {
@@ -304,7 +314,7 @@ export const alarmApi = {
   getAlarmSession: async (alarmId: string) => {
     try {
       const response = await apiClient.get<AlarmSessionResponse>(`/api/alarms/${alarmId}/session`);
-      return response.data.data;
+      return normalizeAlarmSessionAudioUrls(response.data.data);
     } catch (error) {
       throw toApiError(error);
     }
@@ -323,7 +333,7 @@ export const alarmApi = {
       const response = await apiClient.delete<AlarmSessionResponse>(
         `/api/alarms/${alarmId}/session/owner-notes/${noteId}`,
       );
-      return response.data.data;
+      return normalizeAlarmSessionAudioUrls(response.data.data);
     } catch (error) {
       throw toApiError(error);
     }

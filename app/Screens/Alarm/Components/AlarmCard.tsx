@@ -5,7 +5,12 @@ import { useCountdownTimer } from '@Hooks/useCountdownTimer';
 import useThemeColors from '@Hooks/useThemeMode';
 import { useAuth } from '@Hooks/useAuth';
 import { GroupAlarmRecord, SoloAlarmRecord } from '@Types/Alarm';
-import { formatAlarmDate, formatAlarmRepeatLabel, formatAlarmTime } from '@Utils/alarmDisplay';
+import {
+  formatAlarmDate,
+  formatAlarmInstantTime,
+  formatAlarmRepeatLabel,
+  formatAlarmTime,
+} from '@Utils/alarmDisplay';
 import React, { useMemo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -59,8 +64,12 @@ const AlarmCard: React.FC<AlarmCardProps> = ({
     return formatAlarmRepeatLabel(alarm.repeat, alarm.repeatDays);
   }, [alarm]);
 
-  const timeLabel = formatAlarmTime(alarm.hour, alarm.minute, alarm.meridiem);
+  const timeLabel =
+    alarm.mode === 'group'
+      ? formatAlarmInstantTime(alarm.nextTriggerAt)
+      : formatAlarmTime(alarm.hour, alarm.minute, alarm.meridiem);
   const canEdit = alarm.mode === 'solo' || alarm.ownerUserId === auth?.user?.id;
+  const footerMetaColor = theme === 'dark' ? colors.white : colors.black;
 
   const cardBg = useMemo(() => {
     return theme === 'dark' ? colors.reminderCardBackground : '#F0F5FF';
@@ -114,34 +123,34 @@ const AlarmCard: React.FC<AlarmCardProps> = ({
             {timeLabel}
           </Text>
 
-          <View style={[styles.vSeparator, { backgroundColor: colors.alarmFocus }]} />
+          <View style={styles.vSeparator} />
           <Image
             source={AssetsPath.ic_calender}
             style={[styles.metaIcon, { width: 14, height: 14 }]}
-            tintColor={colors.alarmFocus}
+            tintColor={footerMetaColor}
           />
           <Text numberOfLines={1} style={[styles.dateText, { color: colors.alarmFocus }]}>
             {formatAlarmDate(alarm.nextTriggerAt)}
           </Text>
 
-          <View style={[styles.vSeparator, { backgroundColor: colors.alarmFocus }]} />
+          <View style={styles.vSeparator} />
           <Image
             source={alarm.note ? AssetsPath.ic_custom_audio : AssetsPath.ic_alertNotification}
             style={[styles.metaIcon, alarm.note && { width: 20, height: 20 }]}
-            tintColor={colors.alarmFocus}
+            tintColor={footerMetaColor}
           />
 
           {alarm.mode === 'solo' && (alarm as SoloAlarmRecord).vibrate && (
             <>
-              <View style={[styles.vSeparator, { backgroundColor: colors.alarmFocus }]} />
+              <View style={styles.vSeparator} />
               <Image
                 source={AssetsPath.ic_vibration}
                 style={[styles.metaIcon, { width: 20, height: 20 }]}
-                tintColor={colors.alarmFocus}
+                tintColor={footerMetaColor}
               />
             </>
           )}
-          <View style={[styles.vSeparator, { backgroundColor: colors.alarmFocus }]} />
+          <View style={styles.vSeparator} />
         </View>
 
         <View style={styles.actionsContainer}>
@@ -260,9 +269,9 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.SemiBold,
   },
   vSeparator: {
+    borderRightColor: '#B4C2FF',
     height: 14,
     borderRightWidth: 1.5,
-    opacity: 0.3,
   },
   metaIcon: {
     width: 16,

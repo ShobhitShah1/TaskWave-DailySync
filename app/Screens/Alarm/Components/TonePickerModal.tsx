@@ -24,6 +24,7 @@ const TonePickerModal: FC<TonePickerModalProps> = ({
   const colors = useThemeColors();
   const [currentTone, setCurrentTone] = useState(selectedTone);
   const [playingSound, setPlayingSound] = useState<Audio.Sound | null>(null);
+  const [playingKey, setPlayingKey] = useState<string | null>(null);
 
   useEffect(() => {
     setCurrentTone(selectedTone);
@@ -43,16 +44,29 @@ const TonePickerModal: FC<TonePickerModalProps> = ({
         await playingSound.stopAsync();
         await playingSound.unloadAsync();
         setPlayingSound(null);
+        setPlayingKey(null);
+        if (playingKey === toneKey) {
+          return;
+        }
       }
 
       const soundItem = sounds.find((s) => s.soundKeyName === toneKey);
       if (soundItem && soundItem.uri) {
         const { sound } = await Audio.Sound.createAsync(soundItem.uri);
         setPlayingSound(sound);
+        setPlayingKey(toneKey);
         await sound.playAsync();
+        sound.setOnPlaybackStatusUpdate((status) => {
+          if ('didJustFinish' in status && status.didJustFinish) {
+            setPlayingSound(null);
+            setPlayingKey(null);
+            sound.unloadAsync().catch(() => undefined);
+          }
+        });
       }
-    } catch (error) {
-      console.log('Error playing preview:', error);
+    } catch {
+      setPlayingSound(null);
+      setPlayingKey(null);
     }
   };
 
@@ -63,6 +77,7 @@ const TonePickerModal: FC<TonePickerModalProps> = ({
 
   const renderItem = ({ item }: { item: (typeof sounds)[0] }) => {
     const isSelected = currentTone === item.soundKeyName;
+    const isPlaying = playingKey === item.soundKeyName;
 
     return (
       <Pressable
@@ -79,7 +94,11 @@ const TonePickerModal: FC<TonePickerModalProps> = ({
 
         {item.canPlay && (
           <Pressable onPress={() => playPreview(item.soundKeyName)} style={styles.playBtn}>
-            <Image source={AssetsPath.ic_play} style={styles.playIcon} tintColor={colors?.text} />
+            <Image
+              source={isPlaying ? AssetsPath.ic_pause : AssetsPath.ic_play}
+              style={styles.playIcon}
+              tintColor={colors.text}
+            />
           </Pressable>
         )}
 

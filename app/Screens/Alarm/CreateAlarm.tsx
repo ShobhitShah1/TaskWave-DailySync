@@ -333,7 +333,7 @@ const CreateAlarmScreen = () => {
           minute,
           meridiem,
           tone,
-          alarmNotes,
+          alarmNotes: [],
           vibrate,
           bufferMinutes,
           repeat,
@@ -451,9 +451,6 @@ const CreateAlarmScreen = () => {
                     });
                   }}
                   onTonePress={() => setShowTonePicker(true)}
-                  themeColor={colors.alarmFocus}
-                  alarmNotes={alarmNotes}
-                  setAlarmNotes={setAlarmNotes}
                 />
               </>
             ) : (

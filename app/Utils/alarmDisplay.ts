@@ -6,6 +6,14 @@ export const formatAlarmTime = (hour: number, minute: number, meridiem: AlarmMer
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${meridiem}`;
 };
 
+export const formatAlarmInstantTime = (date: Date | string) => {
+  return new Date(date).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+};
+
 export const formatAlarmDate = (date: Date | string) => {
   return new Date(date).toLocaleDateString('en-GB', {
     day: '2-digit',

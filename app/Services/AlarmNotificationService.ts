@@ -6,7 +6,7 @@ import notifee, {
   TimestampTrigger,
   TriggerType,
 } from '@notifee/react-native';
-import { CreateSoloAlarmInput } from '@Types/Alarm';
+import { CreateSoloAlarmInput, GroupAlarmRecord } from '@Types/Alarm';
 import { buildNextAlarmDate } from '@Utils/alarmSchedule';
 import { NativeModules, Platform } from 'react-native';
 
@@ -158,4 +158,47 @@ export const cancelSoloAlarmNotification = async (notificationId: string | null)
     notifee.cancelNotification(notificationId).catch(() => undefined),
     notifee.cancelTriggerNotification(notificationId).catch(() => undefined),
   ]);
+};
+
+export const syncGroupAlarmNotifications = async (alarms: GroupAlarmRecord[]) => {
+  const launcher = NativeModules.AlarmLauncher;
+  if (
+    Platform.OS !== 'android' ||
+    !launcher?.scheduleGroupAlarm ||
+    !launcher?.syncGroupAlarmIds
+  ) {
+    return;
+  }
+
+  const now = Date.now();
+  const scheduledIds: string[] = [];
+
+  for (const alarm of alarms) {
+    const timestamp = new Date(alarm.nextTriggerAt).getTime();
+    if (
+      alarm.status === 'completed' ||
+      !Number.isFinite(timestamp) ||
+      timestamp <= now + 1000
+    ) {
+      continue;
+    }
+
+    try {
+      await launcher.scheduleGroupAlarm(
+        alarm.id,
+        timestamp,
+        alarm.title || 'Alarm',
+        alarm.note || 'It is time.',
+        alarm.tone,
+        String(alarm.bufferMinutes || 5),
+        JSON.stringify(alarm.alarmNotes || []),
+        String(alarm.snoozeNoteIndex || 0),
+      );
+      scheduledIds.push(alarm.id);
+    } catch {
+      // FCM remains the fallback if exact local scheduling is unavailable.
+    }
+  }
+
+  launcher.syncGroupAlarmIds(scheduledIds);
 };

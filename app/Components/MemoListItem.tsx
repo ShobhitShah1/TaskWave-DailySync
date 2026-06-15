@@ -1,7 +1,14 @@
-import { Audio, AVPlaybackStatus } from 'expo-av';
-import { Sound } from 'expo-av/build/Audio';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Image, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import React, { useMemo } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -12,6 +19,7 @@ import Animated, {
 import AssetsPath from '@Constants/AssetsPath';
 import { FONTS, SIZE } from '@Constants/Theme';
 import { useAppContext } from '@Contexts/ThemeProvider';
+import { useAudioQueue } from '@Hooks/useAudioQueue';
 import useThemeColors from '@Hooks/useThemeMode';
 import { Memo } from '@Types/Interface';
 
@@ -32,50 +40,16 @@ const AudioMemoItem = ({
 }) => {
   const colors = useThemeColors();
   const { theme } = useAppContext();
-  const [sound, setSound] = useState<Sound>();
-  const [status, setStatus] = useState<AVPlaybackStatus>();
+  const uris = useMemo(() => (memo.uri ? [memo.uri] : []), [memo.uri]);
+  const player = useAudioQueue(uris);
 
   const getColorForIndex = (index: number, totalLines: number) => {
     const progress = index / totalLines;
     return interpolateColor(progress, [0, 1], [gradientStart, gradientEnd]);
   };
 
-  useEffect(() => {
-    const loadSound = async () => {
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: memo.uri },
-        { progressUpdateIntervalMillis: 1000 / 60 },
-        onPlaybackStatusUpdate,
-      );
-      setSound(sound);
-    };
-
-    if (memo.uri) {
-      loadSound();
-    }
-
-    return () => {
-      if (sound) {
-        sound.unloadAsync();
-      }
-    };
-  }, [memo]);
-
-  const onPlaybackStatusUpdate = useCallback(
-    async (newStatus: AVPlaybackStatus) => {
-      setStatus(newStatus);
-      if (newStatus.isLoaded && sound && newStatus.didJustFinish) {
-        await sound.pauseAsync();
-        await sound.setPositionAsync(0);
-      }
-    },
-    [sound],
-  );
-
   const playSound = async () => {
-    if (!sound) return;
-
-    status?.isLoaded && status.isPlaying ? await sound.pauseAsync() : await sound.playAsync();
+    await player.toggle();
   };
 
   const formatMillis = (millis: number) => {
@@ -98,9 +72,9 @@ const AudioMemoItem = ({
     return lines;
   };
 
-  const isPlaying = status?.isLoaded ? status.isPlaying : false;
-  const position = status?.isLoaded ? status.positionMillis : 0;
-  const duration = status?.isLoaded ? status.durationMillis : 1;
+  const isPlaying = player.isPlaying;
+  const position = player.positionMillis;
+  const duration = player.durationMillis || player.durationsMillis[0] || 0;
 
   const progress = position / (duration || 1);
 
@@ -173,11 +147,14 @@ const AudioMemoItem = ({
         </View>
         <View>{renderRightIcon}</View>
       </View>
-      {memo.uri && (
-        <Text style={[styles.durationText, { color: colors.text }]}>
-          {formatMillis(position || 0)} / {formatMillis(duration || 0)}
-        </Text>
-      )}
+      {memo.uri &&
+        ((player.durationLoading[0] ?? true) ? (
+          <ActivityIndicator color={themeColor} size="small" style={styles.durationLoader} />
+        ) : (
+          <Text style={[styles.durationText, { color: colors.text }]}>
+            {formatMillis(position)} / {formatMillis(duration)}
+          </Text>
+        ))}
     </>
   );
 };
@@ -224,6 +201,10 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.Medium,
     textAlign: 'right',
     fontSize: 12,
+  },
+  durationLoader: {
+    alignSelf: 'flex-end',
+    marginTop: 6,
   },
 });
 

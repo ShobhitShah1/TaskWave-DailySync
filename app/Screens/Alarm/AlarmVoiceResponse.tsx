@@ -7,6 +7,7 @@ import { useVoiceRecorder } from '@Hooks/useVoiceRecorder';
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@Types/Interface';
+import { dismissAlarmNotifications } from '@Utils/dismissAlarmNotifications';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
@@ -58,7 +59,7 @@ const AlarmVoiceResponseScreen = () => {
     [ownerVoiceNotes, session?.mainMemoUri],
   );
   const mainMemoOffset = session?.mainMemoUri ? 1 : 0;
-  const player = useAudioQueue(queueUris, queueUris.length > 0);
+  const player = useAudioQueue(queueUris);
   const recordingPlayer = useAudioQueue(
     useMemo(() => (recorder.recordingUri ? [recorder.recordingUri] : []), [recorder.recordingUri]),
   );
@@ -76,13 +77,14 @@ const AlarmVoiceResponseScreen = () => {
   }, [navigation, params.alarmId, session?.currentUserRole]);
 
   useFocusEffect(
-    useCallback(
-      () => () => {
+    useCallback(() => {
+      dismissAlarmNotifications(params.alarmId, params.notificationId).catch(() => undefined);
+
+      return () => {
         player.stop().catch(() => undefined);
         recordingPlayer.stop().catch(() => undefined);
-      },
-      [player.stop, recordingPlayer.stop],
-    ),
+      };
+    }, [params.alarmId, params.notificationId, player.stop, recordingPlayer.stop]),
   );
 
   const handleBack = async () => {
@@ -206,6 +208,24 @@ const AlarmVoiceResponseScreen = () => {
             />
           </Pressable>
         </View>
+        {session.mainMemoUri ? (
+          (player.durationLoading[0] ?? true) ? (
+            <ActivityIndicator
+              color={colors.alarmFocus}
+              size="small"
+              style={styles.mainMemoLoader}
+            />
+          ) : (
+            <Text style={[styles.mainMemoDuration, { color: colors.placeholderText }]}>
+              {formatDuration(player.currentIndex === 0 ? player.positionMillis : 0)} /{' '}
+              {formatDuration(
+                player.currentIndex === 0
+                  ? player.durationMillis || player.durationsMillis[0] || 0
+                  : player.durationsMillis[0] || 0,
+              )}
+            </Text>
+          )
+        ) : null}
 
         <ScrollView
           style={styles.noteScroller}
@@ -222,6 +242,13 @@ const AlarmVoiceResponseScreen = () => {
                   label={note.label}
                   active={player.currentIndex === queueIndex}
                   playing={player.currentIndex === queueIndex && player.isPlaying}
+                  durationMillis={
+                    player.currentIndex === queueIndex
+                      ? player.durationMillis || player.durationsMillis[queueIndex] || 0
+                      : player.durationsMillis[queueIndex] || 0
+                  }
+                  loading={player.durationLoading[queueIndex] ?? true}
+                  positionMillis={player.currentIndex === queueIndex ? player.positionMillis : 0}
                   backgroundColor={colors.previewBackground}
                   textColor={colors.text}
                   onPress={() =>
@@ -387,6 +414,15 @@ const styles = StyleSheet.create({
     width: 15,
     height: 15,
     resizeMode: 'contain',
+  },
+  mainMemoDuration: {
+    fontFamily: FONTS.Medium,
+    fontSize: 11,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  mainMemoLoader: {
+    marginTop: 4,
   },
   noteList: {
     paddingTop: 12,
