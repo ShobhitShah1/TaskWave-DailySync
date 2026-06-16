@@ -162,11 +162,7 @@ export const cancelSoloAlarmNotification = async (notificationId: string | null)
 
 export const syncGroupAlarmNotifications = async (alarms: GroupAlarmRecord[]) => {
   const launcher = NativeModules.AlarmLauncher;
-  if (
-    Platform.OS !== 'android' ||
-    !launcher?.scheduleGroupAlarm ||
-    !launcher?.syncGroupAlarmIds
-  ) {
+  if (Platform.OS !== 'android' || !launcher?.scheduleGroupAlarm || !launcher?.syncGroupAlarmIds) {
     return;
   }
 
@@ -175,11 +171,7 @@ export const syncGroupAlarmNotifications = async (alarms: GroupAlarmRecord[]) =>
 
   for (const alarm of alarms) {
     const timestamp = new Date(alarm.nextTriggerAt).getTime();
-    if (
-      alarm.status === 'completed' ||
-      !Number.isFinite(timestamp) ||
-      timestamp <= now + 1000
-    ) {
+    if (alarm.status === 'completed' || !Number.isFinite(timestamp) || timestamp <= now + 1000) {
       continue;
     }
 

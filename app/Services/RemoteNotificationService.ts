@@ -195,13 +195,19 @@ export const displayRemoteNotification = async (
       },
     });
   } else if (notification.data.kind === 'alarm-session-update') {
+    const sessionPressAction =
+      notification.data.event === 'member-response-required' ||
+      notification.data.event === 'owner-voice-note'
+        ? 'open-alarm-response'
+        : 'open-alarm-session';
+
     await notifee.displayNotification({
       title: notification.title,
       body: notification.body,
       data: notification.data,
       android: {
         channelId: REMOTE_NOTIFICATION_CHANNEL_ID,
-        pressAction: { id: 'open-alarm-session' },
+        pressAction: { id: sessionPressAction },
         importance: AndroidImportance.HIGH,
         autoCancel: true,
         style: {

@@ -130,6 +130,7 @@ export interface Notification {
   };
   status?: LocationReminderStatus;
   kind?: string;
+  event?: string;
   alarmId?: string;
   mode?: string;
   tone?: string;

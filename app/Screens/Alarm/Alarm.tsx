@@ -296,37 +296,40 @@ const Alarm = () => {
         ))}
       </View> */}
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterScroll}
-        contentContainerStyle={styles.filterRow}
-      >
-        {FILTERS.map((filter) => {
-          const selected = selectedFilter === filter.key;
+      <View style={styles.filterWrap}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterScroll}
+          contentContainerStyle={styles.filterRow}
+        >
+          {FILTERS.map((filter) => {
+            const selected = selectedFilter === filter.key;
 
-          return (
-            <Pressable
-              key={filter.key}
-              onPress={() => setSelectedFilter(filter.key)}
-              style={[
-                styles.filterChip,
-                {
-                  backgroundColor: selected ? colors.text : colors.contactBackground,
-                },
-              ]}
-            >
-              <Text
-                style={[styles.filterText, { color: selected ? colors.background : colors.text }]}
+            return (
+              <Pressable
+                key={filter.key}
+                onPress={() => setSelectedFilter(filter.key)}
+                style={[
+                  styles.filterChip,
+                  {
+                    backgroundColor: selected ? colors.text : colors.contactBackground,
+                  },
+                ]}
               >
-                {filter.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+                <Text
+                  style={[styles.filterText, { color: selected ? colors.background : colors.text }]}
+                >
+                  {filter.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
 
       <FlatList
+        style={styles.list}
         data={listData}
         extraData={groupQuery?.data}
         renderItem={renderItem}
@@ -387,12 +390,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: FONTS.SemiBold,
   },
+  filterWrap: {
+    flexGrow: 0,
+    height: 48,
+    justifyContent: 'center',
+  },
   filterScroll: {
-    maxHeight: 40,
-    marginTop: 2,
+    flexGrow: 0,
   },
   filterRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
     gap: 8,
   },
@@ -408,9 +416,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: FONTS.SemiBold,
   },
+  list: {
+    flex: 1,
+  },
   content: {
-    padding: 16,
-    paddingBottom: 40,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 80,
   },
   invitationWrapper: {
     marginBottom: 15,

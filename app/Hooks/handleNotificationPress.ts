@@ -178,10 +178,20 @@ export const handleNotificationPress = async (
       await appQueryClient.invalidateQueries({
         queryKey: ['alarms', 'session', notification.alarmId],
       });
-      navigationRef.navigate('AlarmSession', {
-        alarmId: notification.alarmId,
-        notificationId,
-      });
+      if (
+        notification.event === 'member-response-required' ||
+        notification.event === 'owner-voice-note'
+      ) {
+        navigationRef.navigate('AlarmVoiceResponse', {
+          alarmId: notification.alarmId,
+          notificationId,
+        });
+      } else {
+        navigationRef.navigate('AlarmSession', {
+          alarmId: notification.alarmId,
+          notificationId,
+        });
+      }
       return;
     }
 

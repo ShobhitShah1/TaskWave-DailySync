@@ -129,9 +129,8 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({
     [session?.ownerVoiceNotes],
   );
   const ownerNotePlayer = useAudioQueue(ownerNoteUris);
-  const scheduledFor =
-    groupQuery.data?.alarms.find((alarm) => alarm.id === alarmId)?.nextTriggerAt ||
-    session?.scheduledFor;
+  const feedAlarm = groupQuery.data?.alarms.find((alarm) => alarm.id === alarmId);
+  const scheduledFor = feedAlarm?.nextTriggerAt || session?.scheduledFor;
   const countdown = useCountdownTimer(scheduledFor);
 
   useFocusEffect(
@@ -140,8 +139,16 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({
     }, [alarmId, notificationId]),
   );
 
-  const handleMemberMicPress = async (memberId: string) => {
+  const handleMemberMicPress = async (memberId: string, canSendVoiceNote: boolean) => {
     if (sendNoteMutation.isPending) {
+      return;
+    }
+
+    if (!canSendVoiceNote) {
+      showMessage({
+        message: 'This member is already awake. You cannot send more voice notes.',
+        type: 'warning',
+      });
       return;
     }
 
@@ -323,6 +330,7 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({
             );
             const isRecording = recorder.isRecording && recordingMemberId === member.userId;
             const isExpanded = expandedMemberId === member.userId && sentNotes.length > 0;
+            const canSendVoiceNote = isAccepted && !member.responseMemoUri;
 
             return (
               <View
@@ -380,13 +388,24 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({
                       </Pressable>
 
                       <Pressable
-                        onPress={() => handleMemberMicPress(member.userId)}
-                        style={[styles.micButton, isRecording && styles.recordingMic]}
+                        disabled={!canSendVoiceNote}
+                        onPress={() => handleMemberMicPress(member.userId, canSendVoiceNote)}
+                        style={[
+                          styles.micButton,
+                          isRecording && styles.recordingMic,
+                          !canSendVoiceNote && styles.disabledAction,
+                        ]}
                       >
                         <Image
                           source={AssetsPath.ic_alarm_mic}
                           style={styles.micIcon}
-                          tintColor={isRecording ? '#FF3B30' : colors.text}
+                          tintColor={
+                            !canSendVoiceNote
+                              ? colors.placeholderText
+                              : isRecording
+                              ? '#FF3B30'
+                              : colors.text
+                          }
                           resizeMode="contain"
                         />
                         {sentCount > 0 ? (

@@ -103,7 +103,7 @@ const AlarmNotePickerModal: FC<AlarmNotePickerModalProps> = ({
             <Image
               source={isPlaying ? AssetsPath.ic_pause : AssetsPath.ic_play}
               style={styles.playIcon}
-              tintColor={isPlaying ? themeColor : colors.text}
+              tintColor={colors.text}
             />
           </Pressable>
         )}

@@ -44,10 +44,9 @@ export function useCountdownTimer(
       const secondsLeft = totalSeconds % 60;
 
       setTimeLeft(
-        `${String(hoursLeft).padStart(2, '0')}:${String(minutesLeft).padStart(
-          2,
-          '0',
-        )}:${String(secondsLeft).padStart(2, '0')}`,
+        `${String(hoursLeft).padStart(2, '0')}:${String(minutesLeft).padStart(2, '0')}:${String(
+          secondsLeft,
+        ).padStart(2, '0')}`,
       );
       setFormattedTimeLeft(
         `${String(hoursLeft).padStart(2, '0')}Hrs : ${String(minutesLeft).padStart(

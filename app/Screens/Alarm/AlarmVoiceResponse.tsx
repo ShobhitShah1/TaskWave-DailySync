@@ -1,5 +1,6 @@
 import AssetsPath from '@Constants/AssetsPath';
 import { FONTS } from '@Constants/Theme';
+import { useAuth } from '@Hooks/useAuth';
 import { useAlarmSession, useSubmitMemberVoiceResponse } from '@Hooks/useAlarm';
 import { useAudioQueue } from '@Hooks/useAudioQueue';
 import useThemeColors from '@Hooks/useThemeMode';
@@ -8,9 +9,11 @@ import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navig
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@Types/Interface';
 import { dismissAlarmNotifications } from '@Utils/dismissAlarmNotifications';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  BackHandler,
   Image,
   Pressable,
   ScrollView,
@@ -40,16 +43,22 @@ const AlarmVoiceResponseScreen = () => {
   const { params } = useRoute<AlarmVoiceResponseRoute>();
   const sessionQuery = useAlarmSession(params.alarmId);
   const submitMutation = useSubmitMemberVoiceResponse(params.alarmId);
+  const { auth } = useAuth();
   const recorder = useVoiceRecorder();
+  const responseSubmittedRef = useRef(false);
+  const previousQueueLengthRef = useRef(0);
   const session = sessionQuery.data;
+  const isOwnerSession = session?.currentUserRole === 'owner';
   const ownerVoiceNotes = useMemo(
     () =>
-      (session?.ownerVoiceNotes || []).map((note, index) => ({
-        id: note.id,
-        uri: note.uri,
-        label: `Alarm Note_${String(index + 1).padStart(2, '0')}`,
-      })),
-    [session?.ownerVoiceNotes],
+      (session?.ownerVoiceNotes || [])
+        .filter((note) => note.recipientUserId === auth?.user?.id)
+        .map((note, index) => ({
+          id: note.id,
+          uri: note.uri,
+          label: `Alarm Note_${String(index + 1).padStart(2, '0')}`,
+        })),
+    [auth?.user?.id, session?.ownerVoiceNotes],
   );
   const queueUris = useMemo(
     () => [
@@ -59,7 +68,7 @@ const AlarmVoiceResponseScreen = () => {
     [ownerVoiceNotes, session?.mainMemoUri],
   );
   const mainMemoOffset = session?.mainMemoUri ? 1 : 0;
-  const player = useAudioQueue(queueUris);
+  const player = useAudioQueue(queueUris, queueUris.length > 0 && !isOwnerSession);
   const recordingPlayer = useAudioQueue(
     useMemo(() => (recorder.recordingUri ? [recorder.recordingUri] : []), [recorder.recordingUri]),
   );
@@ -67,14 +76,56 @@ const AlarmVoiceResponseScreen = () => {
   const recordingProgress = recordingPlayer.durationMillis
     ? recordingPlayer.positionMillis / recordingPlayer.durationMillis
     : hasRecording
-      ? 1
-      : 0;
+    ? 1
+    : 0;
+
+  const showResponseRequiredMessage = useCallback(() => {
+    Alert.alert(
+      'Voice response required',
+      'You need to record and send a voice note before leaving this screen.',
+      [{ text: 'Record now', style: 'default' }],
+    );
+  }, []);
 
   useEffect(() => {
     if (session?.currentUserRole === 'owner') {
       navigation.replace('AlarmSession', { alarmId: params.alarmId });
     }
   }, [navigation, params.alarmId, session?.currentUserRole]);
+
+  useEffect(() => {
+    const previousLength = previousQueueLengthRef.current;
+    previousQueueLengthRef.current = queueUris.length;
+
+    if (
+      previousLength > 0 &&
+      queueUris.length > previousLength &&
+      !recorder.isRecording &&
+      !recorder.recordingUri &&
+      !isOwnerSession
+    ) {
+      player.playAt(previousLength).catch(() => undefined);
+    }
+  }, [
+    isOwnerSession,
+    player.playAt,
+    queueUris.length,
+    recorder.isRecording,
+    recorder.recordingUri,
+  ]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (event) => {
+      if (!session || isOwnerSession || responseSubmittedRef.current) {
+        return;
+      }
+
+      event.preventDefault();
+      showResponseRequiredMessage();
+    });
+
+    return unsubscribe;
+  }, [isOwnerSession, navigation, session, showResponseRequiredMessage]);
 
   useFocusEffect(
     useCallback(() => {
@@ -87,7 +138,27 @@ const AlarmVoiceResponseScreen = () => {
     }, [params.alarmId, params.notificationId, player.stop, recordingPlayer.stop]),
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (!session || isOwnerSession || responseSubmittedRef.current) {
+          return false;
+        }
+
+        showResponseRequiredMessage();
+        return true;
+      });
+
+      return () => subscription.remove();
+    }, [isOwnerSession, session, showResponseRequiredMessage]),
+  );
+
   const handleBack = async () => {
+    if (session && !isOwnerSession && !responseSubmittedRef.current) {
+      showResponseRequiredMessage();
+      return;
+    }
+
     await Promise.all([player.stop(), recordingPlayer.stop()]);
     navigation.goBack();
   };
@@ -115,6 +186,7 @@ const AlarmVoiceResponseScreen = () => {
       await submitMutation.mutateAsync(recorder.recordingUri);
       recorder.resetRecording();
       showMessage({ message: 'Voice response sent.', type: 'success' });
+      responseSubmittedRef.current = true;
       navigation.reset({
         index: 0,
         routes: [{ name: 'BottomTab', params: { screen: 'Alarm' } }],
@@ -209,7 +281,7 @@ const AlarmVoiceResponseScreen = () => {
           </Pressable>
         </View>
         {session.mainMemoUri ? (
-          (player.durationLoading[0] ?? true) ? (
+          player.durationLoading[0] ?? true ? (
             <ActivityIndicator
               color={colors.alarmFocus}
               size="small"
