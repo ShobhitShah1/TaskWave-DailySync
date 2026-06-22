@@ -2,6 +2,7 @@ import { NativeModules, Platform } from 'react-native';
 import notifee, { AndroidCategory, AndroidImportance, AndroidStyle } from '@notifee/react-native';
 import { FirebaseMessagingTypes, getMessaging } from '@react-native-firebase/messaging';
 import { appQueryClient } from './QueryClient';
+import { isAlarmLaunchSuppressed } from '@Utils/alarmLaunchSuppression';
 
 const REMOTE_NOTIFICATION_CHANNEL_ID = 'daily-sync-remote';
 const PRIORITY_NOTIFICATION_CHANNEL_ID = 'daily-sync-priority';
@@ -144,10 +145,17 @@ export const displayRemoteNotification = async (
   }
 
   if (isAlarm && Platform.OS === 'android') {
+    const alarmId = readTextValue(notification.data.alarmId, messageId || `alarm-${Date.now()}`);
+
+    if (isAlarmLaunchSuppressed(alarmId)) {
+      await notifee.cancelNotification(alarmId).catch(() => undefined);
+      return;
+    }
+
     await launchNativeAlarm({
       title: notification.title,
       body: notification.body,
-      alarmId: readTextValue(notification.data.alarmId, messageId || `alarm-${Date.now()}`),
+      alarmId,
       mode: readTextValue(notification.data.mode, 'solo'),
       tone: readTextValue(notification.data.tone, 'default'),
       bufferMinutes: readTextValue(notification.data.bufferMinutes, '5'),

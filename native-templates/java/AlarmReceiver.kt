@@ -8,7 +8,12 @@ import android.util.Log
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("AlarmReceiver", "Solo alarm triggered: ${intent.getStringExtra("alarmId")}")
+        val alarmId = intent.getStringExtra("alarmId") ?: ""
+        Log.d("AlarmReceiver", "Solo alarm triggered: $alarmId")
+
+        if (AlarmLauncherModule.isAlarmLaunchSuppressed(context, alarmId)) {
+            return
+        }
 
         val serviceIntent = Intent(context, AlarmService::class.java).apply {
             putExtras(intent)

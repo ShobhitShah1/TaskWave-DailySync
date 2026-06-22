@@ -14,10 +14,18 @@ const AlarmContext = createContext<AlarmContextType | undefined>(undefined);
 export const AlarmProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeAlarm, setActiveAlarm] = useState<any | null>(null);
   const checkingNativeActionRef = useRef(false);
+  const handledNativeActionRef = useRef<string | null>(null);
 
   useEffect(() => {
     const openGroupResponse = (alarmId: string, attempt = 0) => {
       if (navigationRef.isReady()) {
+        const currentRoute = navigationRef.getCurrentRoute();
+        const currentParams = currentRoute?.params as { alarmId?: string } | undefined;
+
+        if (currentRoute?.name === 'AlarmVoiceResponse' && currentParams?.alarmId === alarmId) {
+          return;
+        }
+
         navigationRef.navigate('AlarmVoiceResponse', { alarmId });
         return;
       }
@@ -50,6 +58,24 @@ export const AlarmProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (NativeModules.AlarmLauncher?.getInitialAction) {
           const result = await NativeModules.AlarmLauncher.getInitialAction();
           if (result && result.action) {
+            const actionKey = [
+              result.action,
+              result.alarmId,
+              result.mode || 'solo',
+              result.snoozeNoteIndex || '0',
+            ].join(':');
+
+            if (handledNativeActionRef.current === actionKey) {
+              return;
+            }
+
+            handledNativeActionRef.current = actionKey;
+            setTimeout(() => {
+              if (handledNativeActionRef.current === actionKey) {
+                handledNativeActionRef.current = null;
+              }
+            }, 10000);
+
             console.log(
               `[AlarmProvider] Native action received: ${result.action} for ${result.alarmId}, notes: ${result.alarmNotes}`,
             );

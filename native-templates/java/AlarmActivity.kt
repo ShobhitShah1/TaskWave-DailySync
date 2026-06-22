@@ -7,16 +7,46 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
-import android.widget.Button
 import android.widget.TextView
 
 class AlarmActivity : Activity() {
 
     companion object {
         private const val TAG = "AlarmActivity"
+        private const val AUTO_SNOOZE_DELAY_MS = 60_000L
+        private const val ALARM_NOTIFICATION_ID = 999
+        private const val MAIN_APP_LAUNCH_FINISH_DELAY_MS = 350L
+    }
+
+    private val autoSnoozeHandler = Handler(Looper.getMainLooper())
+    private var actionHandled = false
+    private var currentTitle = "Alarm"
+    private var currentBody = ""
+    private var currentAlarmId = ""
+    private var currentMode = "solo"
+    private var currentTone = "default"
+    private var currentBufferMinutes = "5"
+    private var currentAlarmNotes = "[]"
+    private var currentSnoozeNoteIndex = "0"
+    private val autoSnoozeRunnable = Runnable {
+        if (!actionHandled && currentAlarmId.isNotBlank()) {
+            handleUserAction(
+                "snooze-alarm",
+                currentAlarmId,
+                currentMode,
+                currentTone,
+                currentBufferMinutes,
+                currentTitle,
+                currentBody,
+                currentAlarmNotes,
+                currentSnoozeNoteIndex
+            )
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,6 +123,15 @@ class AlarmActivity : Activity() {
 
         Log.d(TAG, "🏁 AlarmActivity: title=$titleText, mode=$mode, action=$requestedAction, buffer=$bufferMinutes, notes=$alarmNotes, index=$snoozeNoteIndex")
 
+        currentTitle = titleText
+        currentBody = bodyText
+        currentAlarmId = alarmId
+        currentMode = mode
+        currentTone = tone
+        currentBufferMinutes = bufferMinutes
+        currentAlarmNotes = alarmNotes
+        currentSnoozeNoteIndex = snoozeNoteIndex
+
         // If the activity was started directly with a dismiss or snooze action (from notification buttons)
         if (requestedAction == "dismiss-alarm" || requestedAction == "snooze-alarm") {
             Log.d(TAG, "⚡ Notification action received: $requestedAction")
@@ -102,6 +141,7 @@ class AlarmActivity : Activity() {
 
         // START the AlarmService to play sound/vibration if this is a fresh ringing
         startAlarmMedia(titleText, bodyText, alarmId, mode, tone, bufferMinutes, alarmNotes, snoozeNoteIndex)
+        scheduleAutoSnooze()
 
         findViewById<TextView>(R.id.alarmTitle).text = titleText
         val bodyView = findViewById<TextView>(R.id.alarmBody)
@@ -127,7 +167,7 @@ class AlarmActivity : Activity() {
         super.onNewIntent(intent)
         setIntent(intent)
         Log.d(TAG, "⏰ AlarmActivity: onNewIntent")
-        
+
         try {
             val extras = intent?.extras
             if (extras != null) {
@@ -144,7 +184,20 @@ class AlarmActivity : Activity() {
                     val alarmNotes = extras.getString("alarmNotes") ?: "[]"
                     val snoozeNoteIndex = extras.getString("snoozeNoteIndex") ?: "0"
                     Log.d(TAG, "⚡ Action: $requestedAction, notes: $alarmNotes, index: $snoozeNoteIndex")
+                    currentTitle = titleText
+                    currentBody = bodyText
+                    currentAlarmId = alarmId
+                    currentMode = mode
+                    currentTone = tone
+                    currentBufferMinutes = bufferMinutes
+                    currentAlarmNotes = alarmNotes
+                    currentSnoozeNoteIndex = snoozeNoteIndex
                     handleUserAction(requestedAction, alarmId, mode, tone, bufferMinutes, titleText, bodyText, alarmNotes, snoozeNoteIndex)
+                } else {
+                    val alarmId = extras.getString("alarmId") ?: ""
+                    if (alarmId.isNotBlank() && alarmId == currentAlarmId) {
+                        cancelAlarmNotificationOnly()
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -154,6 +207,11 @@ class AlarmActivity : Activity() {
 
     private fun startAlarmMedia(title: String, body: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, alarmNotes: String, snoozeNoteIndex: String) {
         Log.d(TAG, "🎺 Starting AlarmService: tone=$tone")
+
+        if (AlarmLauncherModule.isAlarmLaunchSuppressed(this, alarmId)) {
+            return
+        }
+
         val serviceIntent = Intent(this, AlarmService::class.java).apply {
             putExtra("title", title)
             putExtra("body", body)
@@ -176,37 +234,114 @@ class AlarmActivity : Activity() {
     }
 
     private fun handleUserAction(action: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, title: String, body: String, alarmNotes: String, snoozeNoteIndex: String) {
+        if (actionHandled) {
+            return
+        }
+
+        actionHandled = true
+        if (action == "dismiss-alarm") {
+            AlarmLauncherModule.suppressAlarmLaunch(this, alarmId)
+        }
+        cancelAutoSnooze()
         cancelNotifications()
-        launchMainApp(action, alarmId, mode, tone, bufferMinutes, title, body, alarmNotes, snoozeNoteIndex)
-        finish()
+        savePendingAction(action, alarmId, mode, tone, bufferMinutes, title, body, alarmNotes, snoozeNoteIndex)
+        val appLaunchStarted = launchMainApp(
+            action,
+            alarmId,
+            mode,
+            tone,
+            bufferMinutes,
+            title,
+            body,
+            alarmNotes,
+            snoozeNoteIndex
+        )
+
+        if (appLaunchStarted) {
+            autoSnoozeHandler.postDelayed(
+                { if (!isFinishing) finish() },
+                MAIN_APP_LAUNCH_FINISH_DELAY_MS
+            )
+        } else {
+            finish()
+        }
+    }
+
+    private fun scheduleAutoSnooze() {
+        cancelAutoSnooze()
+        autoSnoozeHandler.postDelayed(autoSnoozeRunnable, AUTO_SNOOZE_DELAY_MS)
+    }
+
+    private fun cancelAutoSnooze() {
+        autoSnoozeHandler.removeCallbacks(autoSnoozeRunnable)
+    }
+
+    private fun autoDismissOnExit() {
+        if (actionHandled || currentAlarmId.isBlank()) {
+            return
+        }
+
+        Log.d(TAG, "Auto-dismissing alarm after AlarmActivity exit: $currentAlarmId")
+        actionHandled = true
+        AlarmLauncherModule.suppressAlarmLaunch(this, currentAlarmId)
+        cancelAutoSnooze()
+        cancelNotifications()
+        savePendingAction(
+            "dismiss-alarm",
+            currentAlarmId,
+            currentMode,
+            currentTone,
+            currentBufferMinutes,
+            currentTitle,
+            currentBody,
+            currentAlarmNotes,
+            currentSnoozeNoteIndex
+        )
+    }
+
+    override fun onBackPressed() {
+        autoDismissOnExit()
+        super.onBackPressed()
+    }
+
+    override fun onStop() {
+        if (!isChangingConfigurations) {
+            autoDismissOnExit()
+        }
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        if (!isChangingConfigurations) {
+            autoDismissOnExit()
+        }
+        cancelAutoSnooze()
+        super.onDestroy()
     }
 
     private fun cancelNotifications() {
         Log.d(TAG, "🔕 Stopping AlarmService and cancelling notification")
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        nm.cancelAll()
+        nm.cancel(ALARM_NOTIFICATION_ID)
 
         // Stop the service by sending the STOP action
         val stopServiceIntent = Intent(this, AlarmService::class.java).apply {
             action = AlarmService.ACTION_STOP
         }
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(stopServiceIntent)
-            } else {
-                startService(stopServiceIntent)
-            }
-            // Explicitly stop the service as well
-            stopService(stopServiceIntent)
+            startService(stopServiceIntent)
         } catch (e: Exception) {
             Log.e(TAG, "❌ Error stopping AlarmService", e)
+            stopService(stopServiceIntent)
         }
     }
 
-    private fun launchMainApp(action: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, title: String, body: String, alarmNotes: String, snoozeNoteIndex: String) {
-        Log.d(TAG, "🚀 Preparing app launch: action=$action, buffer=$bufferMinutes")
-        
-        // Save to SharedPreferences using COMMIT (synchronous) to ensure it's written before launch
+    private fun cancelAlarmNotificationOnly() {
+        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        nm.cancel(ALARM_NOTIFICATION_ID)
+    }
+
+    private fun savePendingAction(action: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, title: String, body: String, alarmNotes: String, snoozeNoteIndex: String) {
         getSharedPreferences(AlarmLauncherModule.PREFS_NAME, 0)
             .edit()
             .putString(AlarmLauncherModule.KEY_ACTION, action)
@@ -219,10 +354,18 @@ class AlarmActivity : Activity() {
             .putString(AlarmLauncherModule.KEY_TITLE, title)
             .putString(AlarmLauncherModule.KEY_BODY, body)
             .commit()
+    }
 
-        val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
-        if (launchIntent != null) {
-            launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+    private fun launchMainApp(action: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, title: String, body: String, alarmNotes: String, snoozeNoteIndex: String): Boolean {
+        Log.d(TAG, "🚀 Preparing app launch: action=$action, buffer=$bufferMinutes")
+
+        return try {
+            val launchIntent = Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_NO_ANIMATION
+            }
             launchIntent.putExtra("alarm_action", action)
             launchIntent.putExtra("alarmId", alarmId)
             launchIntent.putExtra("mode", mode)
@@ -230,11 +373,15 @@ class AlarmActivity : Activity() {
             launchIntent.putExtra("bufferMinutes", bufferMinutes)
             launchIntent.putExtra("title", title)
             launchIntent.putExtra("body", body)
+            launchIntent.putExtra("alarmNotes", alarmNotes)
             launchIntent.putExtra("snoozeNoteIndex", snoozeNoteIndex)
             Log.d(TAG, "📦 Starting Main Activity")
             startActivity(launchIntent)
-        } else {
-            Log.e(TAG, "❌ Fatal: Could not find launch intent for $packageName")
+            overridePendingTransition(0, 0)
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Fatal: Could not launch MainActivity", e)
+            false
         }
     }
 }

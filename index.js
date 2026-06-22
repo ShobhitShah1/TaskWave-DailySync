@@ -4,17 +4,6 @@ import App from './App';
 import { registerBackgroundRemoteMessages } from './app/Services/RemoteNotificationService';
 
 import notifee from '@notifee/react-native';
-import { handleAlarmEvent } from './app/Services/AlarmProcessor';
-
-notifee.onBackgroundEvent(async ({ type, detail }) => {
-  if (
-    detail.notification?.data?.kind === 'alarm' ||
-    detail.notification?.data?.kind === 'alarm-invitation'
-  ) {
-    console.log('[index] Handling background alarm event:', type);
-    await handleAlarmEvent(type, detail);
-  }
-});
 
 notifee.registerForegroundService(() => {
   return new Promise(() => {

@@ -4,9 +4,18 @@ import { Audio, AVPlaybackStatus } from 'expo-av';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
-export const useAudioQueue = (uris: string[], autoPlay = false) => {
+type AudioQueueOptions = {
+  autoAdvance?: boolean;
+  autoPlay?: boolean;
+};
+
+export const useAudioQueue = (uris: string[], options: boolean | AudioQueueOptions = false) => {
+  const autoPlay = typeof options === 'boolean' ? options : Boolean(options.autoPlay);
+  const autoAdvance =
+    typeof options === 'boolean' ? Boolean(options) : Boolean(options.autoAdvance);
   const soundRef = useRef<Audio.Sound | null>(null);
   const hasAutoPlayedRef = useRef(false);
+  const finishedGenerationRef = useRef<number | null>(null);
   const playbackGenerationRef = useRef(0);
   const durationsMillisRef = useRef<number[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
@@ -52,6 +61,7 @@ export const useAudioQueue = (uris: string[], autoPlay = false) => {
         : undefined;
       const generation = playbackGenerationRef.current + 1;
       playbackGenerationRef.current = generation;
+      finishedGenerationRef.current = null;
       await unload();
       setCurrentIndex(index);
       setPositionMillis(0);
@@ -68,7 +78,7 @@ export const useAudioQueue = (uris: string[], autoPlay = false) => {
 
         const { sound } = await Audio.Sound.createAsync(
           { uri: resolvedUri, headers },
-          { shouldPlay: true, progressUpdateIntervalMillis: 200 },
+          { isLooping: false, shouldPlay: true, progressUpdateIntervalMillis: 200 },
         );
         if (playbackGenerationRef.current !== generation) {
           await sound.unloadAsync().catch(() => undefined);
@@ -87,10 +97,18 @@ export const useAudioQueue = (uris: string[], autoPlay = false) => {
           setDurationMillis(status.durationMillis || 0);
           if (status.didJustFinish) {
             const nextIndex = index + 1;
-            if (uris[nextIndex]) {
+            if (autoAdvance && uris[nextIndex]) {
               playAt(nextIndex).catch(() => undefined);
             } else {
+              if (finishedGenerationRef.current === generation) {
+                return;
+              }
+              finishedGenerationRef.current = generation;
+              sound.stopAsync().catch(() => {
+                sound.setPositionAsync(0).catch(() => undefined);
+              });
               setIsPlaying(false);
+              setPositionMillis(0);
             }
           }
         });
@@ -99,7 +117,7 @@ export const useAudioQueue = (uris: string[], autoPlay = false) => {
         setCurrentIndex(-1);
       }
     },
-    [unload, uris],
+    [autoAdvance, unload, uris],
   );
 
   const toggle = useCallback(async () => {
@@ -138,7 +156,7 @@ export const useAudioQueue = (uris: string[], autoPlay = false) => {
           try {
             const { sound, status } = await Audio.Sound.createAsync(
               { uri: resolvedUri, headers },
-              { shouldPlay: false },
+              { isLooping: false, shouldPlay: false },
             );
             preloadedSounds.add(sound);
 

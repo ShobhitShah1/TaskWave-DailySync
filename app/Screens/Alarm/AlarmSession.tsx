@@ -85,7 +85,12 @@ const AudioProgress: React.FC<{
       </View>
       <View style={styles.audioProgressFooter}>
         {loading ? (
-          <ActivityIndicator color={color} size="small" style={styles.audioProgressLoader} />
+          <View style={styles.audioLoadingRow}>
+            <View style={[styles.audioLoadingDot, { backgroundColor: color }]} />
+            <View style={[styles.audioLoadingDot, { backgroundColor: color, opacity: 0.65 }]} />
+            <View style={[styles.audioLoadingDot, { backgroundColor: color, opacity: 0.35 }]} />
+            <Text style={[styles.audioLoadingText, { color: textColor }]}>Loading audio</Text>
+          </View>
         ) : (
           <>
             <Text style={[styles.audioTime, { color: textColor }]}>
@@ -123,12 +128,12 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({
     () => responseMembers.map((member) => member.responseMemoUri as string),
     [responseMembers],
   );
-  const player = useAudioQueue(responseUris);
+  const player = useAudioQueue(responseUris, { autoAdvance: false, autoPlay: false });
   const ownerNoteUris = useMemo(
     () => session?.ownerVoiceNotes.map((note) => note.uri) || [],
     [session?.ownerVoiceNotes],
   );
-  const ownerNotePlayer = useAudioQueue(ownerNoteUris);
+  const ownerNotePlayer = useAudioQueue(ownerNoteUris, { autoAdvance: false, autoPlay: false });
   const feedAlarm = groupQuery.data?.alarms.find((alarm) => alarm.id === alarmId);
   const scheduledFor = feedAlarm?.nextTriggerAt || session?.scheduledFor;
   const countdown = useCountdownTimer(scheduledFor);
@@ -403,8 +408,8 @@ export const AlarmSessionView: React.FC<AlarmSessionViewProps> = ({
                             !canSendVoiceNote
                               ? colors.placeholderText
                               : isRecording
-                              ? '#FF3B30'
-                              : colors.text
+                                ? '#FF3B30'
+                                : colors.text
                           }
                           resizeMode="contain"
                         />
@@ -708,8 +713,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 4,
   },
-  audioProgressLoader: {
+  audioLoadingRow: {
+    minHeight: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'center',
+    gap: 4,
+  },
+  audioLoadingDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+  },
+  audioLoadingText: {
+    marginLeft: 4,
+    fontFamily: FONTS.Medium,
+    fontSize: 9,
   },
   audioTime: {
     fontFamily: FONTS.Medium,

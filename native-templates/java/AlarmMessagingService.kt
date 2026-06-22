@@ -26,6 +26,11 @@ class AlarmMessagingService : ReactNativeFirebaseMessagingService() {
             val tone = data["tone"] ?: "default"
             val bufferMinutes = data["bufferMinutes"] ?: "5"
 
+            if (AlarmLauncherModule.isAlarmLaunchSuppressed(this, alarmId)) {
+                Log.d(TAG, "Ignoring recently dismissed alarm: $alarmId")
+                return
+            }
+
             val serviceIntent = Intent(this, AlarmService::class.java).apply {
                 putExtra("title", title)
                 putExtra("body", body)

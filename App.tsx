@@ -10,9 +10,8 @@ import FlashMessage, { showMessage } from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import BatteryOptimizationModal from './app/Components/BatteryOptimizationModal';
-import OverlayPermissionModal from './app/Components/OverlayPermissionModal';
 import AssetsPath from './app/Constants/AssetsPath';
-import { AlarmProvider, useAlarmContext } from './app/Contexts/AlarmProvider';
+import { AlarmProvider } from './app/Contexts/AlarmProvider';
 import { BatteryOptimizationProvider } from './app/Contexts/BatteryOptimizationProvider';
 import { BottomSheetProvider } from './app/Contexts/BottomSheetProvider';
 import { ContactProvider } from './app/Contexts/ContactProvider';
@@ -24,10 +23,9 @@ import { updateNotification } from './app/Hooks/updateNotification';
 import updateToNextDate from './app/Hooks/updateToNextDate';
 import useReminder, { createNotificationChannel } from './app/Hooks/useReminder';
 import Routes from './app/Routes/Routes';
-import LiveAlarmOverlay from './app/Screens/Alarm/Components/LiveAlarmOverlay';
+import { handleAlarmEvent } from './app/Services/AlarmProcessor';
 import LocationService from './app/Services/LocationService';
 import { appQueryClient } from './app/Services/QueryClient';
-import { handleAlarmEvent } from './app/Services/AlarmProcessor';
 import {
   ensureRemoteNotificationChannel,
   subscribeToForegroundRemoteMessages,
@@ -68,7 +66,7 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
         // Handle dismissed notifications
         break;
       case EventType.PRESS:
-        if (notification?.kind !== 'alarm') {
+        if (notification) {
           handleNotificationPress(notification, detail.notification?.id);
         }
         break;
@@ -116,8 +114,6 @@ const AppContent = () => {
   const { theme } = useAppContext();
   const backgroundColor = theme === 'dark' ? '#303334' : '#ffffff';
 
-  const { activeAlarm, setActiveAlarm } = useAlarmContext();
-
   return (
     <GestureHandlerRootView style={[styles.container, { backgroundColor }]}>
       <BottomSheetProvider>
@@ -155,7 +151,7 @@ const AppContent = () => {
 };
 
 export default function App() {
-  const { updateNotification, createNotification } = useReminder();
+  const { updateNotification } = useReminder();
 
   const [loaded, error] = useFonts({
     'ClashGrotesk-Bold': require('./assets/Fonts/ClashGrotesk-Bold.otf'),
@@ -187,7 +183,7 @@ export default function App() {
 
         switch (type) {
           case EventType.PRESS:
-            if (notification?.kind !== 'alarm') {
+            if (notification) {
               handleNotificationPress(notification, detail.notification?.id);
             }
             break;

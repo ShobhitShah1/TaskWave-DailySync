@@ -6,6 +6,7 @@ import { navigationRef } from '@Routes/RootNavigation';
 import { appQueryClient } from '@Services/QueryClient';
 import type { Notification } from '@Types/Interface';
 import { parseNotificationData } from '@Utils/notificationParser';
+import { routeAlarmNotificationPress } from '@Utils/routeAlarmNotificationPress';
 
 const parseContacts = (toContact: any): string[] => {
   try {
@@ -174,24 +175,26 @@ export const handleNotificationPress = async (
   notificationId?: string,
 ) => {
   try {
+    if (notification.kind === 'alarm' && notification.alarmId) {
+      await routeAlarmNotificationPress({
+        alarmId: notification.alarmId,
+        event: notification.event as string | undefined,
+        mode: notification.mode === 'solo' ? 'solo' : 'group',
+        notificationId,
+      });
+      return;
+    }
+
     if (notification.kind === 'alarm-session-update' && notification.alarmId) {
       await appQueryClient.invalidateQueries({
         queryKey: ['alarms', 'session', notification.alarmId],
       });
-      if (
-        notification.event === 'member-response-required' ||
-        notification.event === 'owner-voice-note'
-      ) {
-        navigationRef.navigate('AlarmVoiceResponse', {
-          alarmId: notification.alarmId,
-          notificationId,
-        });
-      } else {
-        navigationRef.navigate('AlarmSession', {
-          alarmId: notification.alarmId,
-          notificationId,
-        });
-      }
+      await routeAlarmNotificationPress({
+        alarmId: notification.alarmId,
+        event: notification.event as string | undefined,
+        mode: 'group',
+        notificationId,
+      });
       return;
     }
 

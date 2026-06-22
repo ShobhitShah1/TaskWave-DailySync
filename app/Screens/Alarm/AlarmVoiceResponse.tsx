@@ -68,7 +68,10 @@ const AlarmVoiceResponseScreen = () => {
     [ownerVoiceNotes, session?.mainMemoUri],
   );
   const mainMemoOffset = session?.mainMemoUri ? 1 : 0;
-  const player = useAudioQueue(queueUris, queueUris.length > 0 && !isOwnerSession);
+  const player = useAudioQueue(queueUris, {
+    autoAdvance: !isOwnerSession,
+    autoPlay: queueUris.length > 0 && !isOwnerSession,
+  });
   const recordingPlayer = useAudioQueue(
     useMemo(() => (recorder.recordingUri ? [recorder.recordingUri] : []), [recorder.recordingUri]),
   );

@@ -2,6 +2,7 @@ package {{PACKAGE_NAME}}
 
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
@@ -24,6 +25,35 @@ class AlarmLauncherModule(reactContext: ReactApplicationContext) : ReactContextB
         const val KEY_MODE = "mode"
         const val KEY_TITLE = "title"
         const val KEY_BODY = "body"
+        private const val SUPPRESSION_PREFS_NAME = "DailySyncAlarmSuppression"
+        private const val SUPPRESSED_UNTIL_PREFIX = "suppressedUntil:"
+        private const val DISMISS_SUPPRESSION_MS = 90_000L
+
+        fun suppressAlarmLaunch(context: Context, alarmId: String) {
+            if (alarmId.isBlank()) return
+
+            context.getSharedPreferences(SUPPRESSION_PREFS_NAME, 0)
+                .edit()
+                .putLong(
+                    "$SUPPRESSED_UNTIL_PREFIX$alarmId",
+                    System.currentTimeMillis() + DISMISS_SUPPRESSION_MS
+                )
+                .apply()
+        }
+
+        fun isAlarmLaunchSuppressed(context: Context, alarmId: String): Boolean {
+            if (alarmId.isBlank()) return false
+
+            val prefs = context.getSharedPreferences(SUPPRESSION_PREFS_NAME, 0)
+            val key = "$SUPPRESSED_UNTIL_PREFIX$alarmId"
+            val isSuppressed = prefs.getLong(key, 0L) > System.currentTimeMillis()
+
+            if (!isSuppressed) {
+                prefs.edit().remove(key).apply()
+            }
+
+            return isSuppressed
+        }
     }
 
     override fun getName(): String = "AlarmLauncher"
@@ -96,6 +126,10 @@ class AlarmLauncherModule(reactContext: ReactApplicationContext) : ReactContextB
     @ReactMethod
     fun launch(title: String, body: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, alarmNotes: String, snoozeNoteIndex: String) {
         Log.d("AlarmLauncher", "🚀 [NEW BUILD] launch called: title=$title, alarmId=$alarmId, tone=$tone, notes=$alarmNotes, index=$snoozeNoteIndex")
+
+        if (isAlarmLaunchSuppressed(reactApplicationContext, alarmId)) {
+            return
+        }
         
         val serviceIntent = Intent(reactApplicationContext, AlarmService::class.java).apply {
             putExtra("title", title)
@@ -175,7 +209,7 @@ class AlarmLauncherModule(reactContext: ReactApplicationContext) : ReactContextB
         result.putString("alarmNotes", notes)
         result.putString("snoozeNoteIndex", snoozeNoteIndex)
         Log.d("AlarmLauncher", "📤 getInitialAction: action=$action, notes=$notes, index=$snoozeNoteIndex")
-        prefs.edit().clear().apply()
+        prefs.edit().clear().commit()
         promise.resolve(result)
     }
 

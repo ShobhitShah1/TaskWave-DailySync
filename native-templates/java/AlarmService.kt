@@ -59,7 +59,7 @@ class AlarmService : Service() {
         showForegroundNotification(title, body, alarmId, mode, tone, bufferMinutes, alarmNotes, snoozeNoteIndex)
         startAlarmMedia(tone)
 
-        return START_REDELIVER_INTENT
+        return START_NOT_STICKY
     }
 
     private fun showForegroundNotification(title: String, body: String, alarmId: String, mode: String, tone: String, bufferMinutes: String, alarmNotes: String, snoozeNoteIndex: String) {

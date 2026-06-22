@@ -16,6 +16,10 @@ import { AlarmRepeat } from '@Types/Alarm';
 import { getSoloAlarmById, updateSoloAlarmStatus } from '@Utils/alarmDatabase';
 import { buildNextAlarmDate } from '@Utils/alarmSchedule';
 import { clearGroupAlarmSnooze, setGroupAlarmSnooze } from '@Utils/groupAlarmSnoozeStorage';
+import {
+  isAlarmLaunchSuppressed,
+  suppressAlarmLaunchAfterDismiss,
+} from '@Utils/alarmLaunchSuppression';
 import { NativeModules } from 'react-native';
 import { appQueryClient } from './QueryClient';
 import { launchNativeAlarm, stopNativeAlarm } from './RemoteNotificationService';
@@ -84,6 +88,11 @@ export const handleAlarmEvent = async (
 
   // ─── DELIVERED: Snooze trigger fired — launch native alarm ───
   if (type === EventType.DELIVERED) {
+    if (isAlarmLaunchSuppressed(alarmId)) {
+      await cancelAlarmNotifications(notification.id!, alarmId);
+      return;
+    }
+
     console.log(`[AlarmProcessor] 📬 Alarm DELIVERED (trigger fired): ${alarmId}`);
 
     const launcher = NativeModules.AlarmLauncher;
@@ -155,6 +164,7 @@ export const handleAlarmEvent = async (
     console.log(`[AlarmProcessor] 🗑️ Alarm notification dismissed (swiped): ${alarmId}`);
 
     stopNativeAlarm();
+    suppressAlarmLaunchAfterDismiss(alarmId);
     await cancelAlarmNotifications(notification.id!, alarmId);
 
     // Cancel any pending snooze triggers for this alarm
@@ -186,6 +196,8 @@ export const handleAlarmEvent = async (
       console.log(`[AlarmProcessor] 🛑 Alarm dismissed: ${alarmId}`);
 
       try {
+        suppressAlarmLaunchAfterDismiss(alarmId);
+
         // Cancel all potential notification IDs for this alarm
         await cancelAlarmNotifications(notification.id!, alarmId);
 
