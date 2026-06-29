@@ -7,7 +7,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AddReminder from '@Screens/AddReminder/AddReminder';
 import CompleteProfileScreen from '@Screens/Auth/CompleteProfile';
 import SignInScreen from '@Screens/Auth/SignIn';
-import SignUpScreen from '@Screens/Auth/SignUp';
 import AlarmDetailsScreen from '@Screens/Alarm/AlarmDetails';
 import AlarmSessionScreen from '@Screens/Alarm/AlarmSession';
 import AlarmVoiceResponseScreen from '@Screens/Alarm/AlarmVoiceResponse';
@@ -119,7 +118,6 @@ const Routes = () => {
             <>
               <Stack.Screen name="OnBoarding" component={OnBoarding} />
               <Stack.Screen name="SignIn" component={SignInScreen} />
-              <Stack.Screen name="SignUp" component={SignUpScreen} />
             </>
           ) : !isProfileComplete ? (
             <Stack.Screen name="CompleteProfile" component={CompleteProfileScreen} />

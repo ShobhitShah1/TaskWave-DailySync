@@ -4,9 +4,8 @@ import {
   CompletePhoneInput,
   DeviceRegistrationInput,
   AuthData,
+  GuestAuthInput,
   GoogleAuthPayload,
-  SignInInput,
-  SignUpInput,
 } from '@Types/Auth';
 
 interface ApiResponse<T> {
@@ -22,37 +21,21 @@ type SignOutResponseBody = ApiResponse<{ success: boolean }>;
 type CompletePhoneResponseBody = ApiResponse<AuthData>;
 
 export const authApi = {
-  signUp: async (input: SignUpInput) => {
-    try {
-      const response = await apiClient.post<AuthResponseBody>('/api/auth/register', {
-        ...input,
-        fullName: input.fullName.trim(),
-        email: input.email.trim().toLowerCase(),
-        phoneCountryCode: input.phoneCountryCode.trim(),
-        phoneNumber: input.phoneNumber.trim(),
-      });
-
-      return response.data.data;
-    } catch (error) {
-      throw toApiError(error);
-    }
-  },
-  signIn: async (input: SignInInput) => {
-    try {
-      const response = await apiClient.post<AuthResponseBody>('/api/auth/login', {
-        ...input,
-        identifier: input.identifier.trim(),
-      });
-
-      return response.data.data;
-    } catch (error) {
-      throw toApiError(error);
-    }
-  },
   signInWithGoogle: async (payload: GoogleAuthPayload) => {
     try {
       const response = await apiClient.post<AuthResponseBody>('/api/auth/google', {
         ...payload,
+      });
+
+      return response.data.data;
+    } catch (error) {
+      throw toApiError(error);
+    }
+  },
+  continueAsGuest: async (input: GuestAuthInput) => {
+    try {
+      const response = await apiClient.post<AuthResponseBody>('/api/auth/guest', {
+        ...input,
       });
 
       return response.data.data;

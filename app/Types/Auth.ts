@@ -1,6 +1,6 @@
 export type AuthStatus = 'loading' | 'signedOut' | 'signedIn';
 
-export type AuthProviderType = 'password' | 'google';
+export type AuthProviderType = 'google' | 'guest';
 
 export interface AuthUser {
   id: string;
@@ -13,6 +13,7 @@ export interface AuthUser {
   phoneCountryCode: string | null;
   phoneNumber: string | null;
   phoneE164: string | null;
+  deviceId: string | null;
 }
 
 export interface AuthData {
@@ -22,23 +23,10 @@ export interface AuthData {
 }
 
 export interface DeviceFields {
+  deviceId?: string;
   fcmToken?: string;
   platform?: 'ios' | 'android';
   timezone?: string;
-}
-
-export interface SignInInput extends DeviceFields {
-  identifier: string;
-  password: string;
-}
-
-export interface SignUpInput extends DeviceFields {
-  fullName: string;
-  email: string;
-  phoneCountryCode: string;
-  phoneNumber: string;
-  password: string;
-  confirmPassword: string;
 }
 
 export interface CompletePhoneInput {
@@ -58,9 +46,14 @@ export interface GoogleAuthPayload extends DeviceFields {
 }
 
 export interface DeviceRegistrationInput {
+  deviceId?: string;
   fcmToken: string;
   platform: 'ios' | 'android';
   timezone: string;
+}
+
+export interface GuestAuthInput extends DeviceFields {
+  deviceId: string;
 }
 
 export interface AuthContextValue {
@@ -69,9 +62,8 @@ export interface AuthContextValue {
   isAuthenticated: boolean;
   isProfileComplete: boolean;
   isAuthMutationPending: boolean;
-  signIn: (input: SignInInput) => Promise<AuthData>;
-  signUp: (input: SignUpInput) => Promise<AuthData>;
   signInWithGoogle: () => Promise<AuthData | null>;
+  continueAsGuest: () => Promise<AuthData>;
   completePhoneProfile: (input: CompletePhoneInput) => Promise<AuthData>;
   signOut: () => Promise<void>;
 }

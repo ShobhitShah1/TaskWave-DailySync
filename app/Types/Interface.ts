@@ -14,7 +14,6 @@ declare global {
 export type RootStackParamList = {
   OnBoarding: undefined;
   SignIn: undefined;
-  SignUp: undefined;
   CompleteProfile: undefined;
   BottomTab:
     | {

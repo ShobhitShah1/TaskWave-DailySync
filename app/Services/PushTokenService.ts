@@ -3,6 +3,7 @@ import notifee from '@notifee/react-native';
 import { authApi } from '@Services/AuthService';
 import { ensureRemoteNotificationChannel } from '@Services/RemoteNotificationService';
 import { DeviceRegistrationInput } from '@Types/Auth';
+import { getOrCreateDeviceId } from '@Utils/deviceIdentity';
 import { Platform } from 'react-native';
 
 const getTimezone = () => {
@@ -36,6 +37,7 @@ export const getRegistrationPayload = async (
   }
 
   return {
+    deviceId: await getOrCreateDeviceId(),
     fcmToken,
     platform: Platform.OS === 'ios' ? 'ios' : 'android',
     timezone: getTimezone(),
@@ -64,6 +66,7 @@ export const subscribeToPushTokenRefresh = (onRefresh?: (newToken: string) => vo
     }
 
     await authApi.registerDevice({
+      deviceId: await getOrCreateDeviceId(),
       fcmToken,
       platform: Platform.OS === 'ios' ? 'ios' : 'android',
       timezone: getTimezone(),

@@ -9,14 +9,9 @@ import {
   syncPushToken,
   getRegistrationPayload,
 } from '@Services/PushTokenService';
-import {
-  AuthContextValue,
-  AuthData,
-  CompletePhoneInput,
-  SignInInput,
-  SignUpInput,
-} from '@Types/Auth';
+import { AuthContextValue, AuthData, CompletePhoneInput } from '@Types/Auth';
 import { authStorage } from '@Utils/authStorage';
+import { getOrCreateDeviceId } from '@Utils/deviceIdentity';
 import React, { createContext, useEffect, useMemo, useState } from 'react';
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -43,7 +38,9 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.currentUser });
   };
 
-  const isProfileComplete = Boolean(auth?.user.phoneCountryCode && auth?.user.phoneNumber);
+  const isProfileComplete =
+    auth?.user.provider === 'guest' ||
+    Boolean(auth?.user.phoneCountryCode && auth?.user.phoneNumber);
 
   useEffect(() => {
     const authOnMount = authStorage.getAuth();
@@ -54,14 +51,12 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
       queryClient.setQueryData(AUTH_QUERY_KEYS.auth, authOnMount);
       queryClient.setQueryData(AUTH_QUERY_KEYS.currentUser, authOnMount.user);
 
-      // Fetch fresh profile from API to validate session and get current DB fcmToken
       authApi
         .getCurrentUser()
         .then((freshUser) => {
           const updatedAuth = { ...authOnMount, user: freshUser };
           persistAuth(updatedAuth);
 
-          // Check if the actual device token matches the one in the database
           syncPushToken(freshUser.fcmToken)
             .then((newToken) => {
               if (newToken) {
@@ -96,20 +91,15 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     return unsubscribe;
   }, [auth?.accessToken]);
 
-  const signInMutation = useMutation({
-    mutationKey: ['auth', 'sign-in'],
-    mutationFn: async (input: SignInInput) => {
-      const device = await getRegistrationPayload();
-      return authApi.signIn({ ...input, ...(device || {}) });
-    },
-    onSuccess: persistAuth,
-  });
-
-  const signUpMutation = useMutation({
-    mutationKey: ['auth', 'sign-up'],
-    mutationFn: async (input: SignUpInput) => {
-      const device = await getRegistrationPayload(true);
-      return authApi.signUp({ ...input, ...(device || {}) });
+  const guestMutation = useMutation({
+    mutationKey: ['auth', 'guest'],
+    mutationFn: async () => {
+      const deviceId = await getOrCreateDeviceId();
+      const device = await getRegistrationPayload(false);
+      return authApi.continueAsGuest({
+        deviceId,
+        ...(device || {}),
+      });
     },
     onSuccess: persistAuth,
   });
@@ -123,8 +113,10 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
         return null;
       }
 
+      const deviceId = await getOrCreateDeviceId();
       const device = await getRegistrationPayload(true);
       return authApi.signInWithGoogle({
+        deviceId,
         idToken: result.data.idToken,
         accessToken: result.data.accessToken,
         user: {
@@ -152,16 +144,12 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     onSuccess: persistAuth,
   });
 
-  const signIn = async (input: SignInInput) => {
-    return signInMutation.mutateAsync(input);
-  };
-
-  const signUp = async (input: SignUpInput) => {
-    return signUpMutation.mutateAsync(input);
-  };
-
   const signInWithGoogle = async () => {
     return googleMutation.mutateAsync();
+  };
+
+  const continueAsGuest = async () => {
+    return guestMutation.mutateAsync();
   };
 
   const completePhoneProfile = async (input: CompletePhoneInput) => {
@@ -194,23 +182,18 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
       isAuthenticated: Boolean(auth),
       isProfileComplete,
       isAuthMutationPending:
-        signInMutation.isPending ||
-        signUpMutation.isPending ||
-        googleMutation.isPending ||
-        completePhoneMutation.isPending,
-      signIn,
-      signUp,
+        guestMutation.isPending || googleMutation.isPending || completePhoneMutation.isPending,
       signInWithGoogle,
+      continueAsGuest,
       completePhoneProfile,
       signOut,
     }),
     [
       completePhoneMutation.isPending,
+      guestMutation.isPending,
       googleMutation.isPending,
       auth,
       isProfileComplete,
-      signInMutation.isPending,
-      signUpMutation.isPending,
       status,
     ],
   );

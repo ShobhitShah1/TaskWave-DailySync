@@ -27,7 +27,10 @@ const Settings = () => {
 
   const [modalStatus, setModalStatus] = useState({ rateUs: false, locationRadius: false });
 
-  const accountEmail = auth?.user.email?.trim() || 'No email available';
+  const isGuestAccount = auth?.user.provider === 'guest';
+  const accountLabel = isGuestAccount
+    ? 'Guest mode'
+    : auth?.user.email?.trim() || 'No email available';
 
   const formatRadius = (meters: number): string => {
     if (meters >= 1000) {
@@ -173,10 +176,21 @@ const Settings = () => {
           {auth && (
             <>
               <Pressable onPress={signOut} style={style.actionButton}>
-                <Ionicons name="log-out-outline" size={20} color={colors.red} />
-                <Text style={[style.actionButtonText, { color: colors.red }]}>Log Out</Text>
+                <Ionicons
+                  name={isGuestAccount ? 'log-in-outline' : 'log-out-outline'}
+                  size={20}
+                  color={isGuestAccount ? colors.darkBlue : colors.red}
+                />
+                <Text
+                  style={[
+                    style.actionButtonText,
+                    { color: isGuestAccount ? colors.darkBlue : colors.red },
+                  ]}
+                >
+                  {isGuestAccount ? 'Sign In' : 'Log Out'}
+                </Text>
               </Pressable>
-              <Text style={style.emailText}>{accountEmail}</Text>
+              <Text style={style.emailText}>{accountLabel}</Text>
             </>
           )}
         </View>

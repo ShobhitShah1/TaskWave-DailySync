@@ -54,7 +54,7 @@ const CompleteProfileScreen = () => {
       centerContent
       iconName="call-outline"
       subtitle={helperText}
-      type="signUp"
+      type="profile"
       title="Add phone number"
       footer={
         <Text style={[styles.footerText, { color: colors.grayTitle }]}>

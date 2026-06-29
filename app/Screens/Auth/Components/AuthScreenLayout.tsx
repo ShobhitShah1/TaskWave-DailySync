@@ -12,14 +12,16 @@ interface AuthScreenLayoutProps {
   title: string;
   subtitle: string;
   footer?: React.ReactNode;
+  header?: React.ReactNode;
   centerContent?: boolean;
-  type: 'signIn' | 'signUp' | 'onBoarding';
+  type: 'signIn' | 'profile' | 'onBoarding';
 }
 
 const AuthScreenLayout: React.FC<React.PropsWithChildren<AuthScreenLayoutProps>> = ({
   centerContent = false,
   children,
   footer,
+  header,
   iconName,
   subtitle,
   title,
@@ -38,6 +40,8 @@ const AuthScreenLayout: React.FC<React.PropsWithChildren<AuthScreenLayoutProps>>
         enableOnAndroid={true}
         extraScrollHeight={20}
       >
+        {header ? <View style={styles.header}>{header}</View> : null}
+
         {type === 'signIn' ? (
           <View style={{ marginVertical: 10 }}>
             <Image
@@ -74,6 +78,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingBottom: 22,
     gap: 18,
+  },
+  header: {
+    paddingTop: 4,
   },
   centeredContent: {
     justifyContent: 'center',
