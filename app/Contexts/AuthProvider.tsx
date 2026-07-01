@@ -157,16 +157,16 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
   };
 
   const signOut = async () => {
-    try {
-      if (auth?.accessToken) {
-        await authApi.signOut().catch(() => undefined);
-      }
+    const currentAuth = auth;
 
-      if (auth?.user.provider === 'google') {
-        await signOutFromGoogle();
-      }
-    } finally {
-      clearAuth();
+    clearAuth();
+
+    if (currentAuth?.user.provider === 'google') {
+      await signOutFromGoogle().catch(() => undefined);
+    }
+
+    if (currentAuth?.accessToken) {
+      await authApi.signOut().catch(() => undefined);
     }
   };
 

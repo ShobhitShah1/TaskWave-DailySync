@@ -34,7 +34,10 @@ const AuthScreenLayout: React.FC<React.PropsWithChildren<AuthScreenLayoutProps>>
     <View style={[styles.safeArea, { backgroundColor: colors.background, paddingTop: top }]}>
       <KeyboardAwareScrollView
         bounces={false}
-        contentContainerStyle={[styles.contentContainer, centerContent && styles.centeredContent]}
+        contentContainerStyle={[
+          styles.contentContainer,
+          centerContent && styles.centeredContent,
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         enableOnAndroid={true}
@@ -43,10 +46,10 @@ const AuthScreenLayout: React.FC<React.PropsWithChildren<AuthScreenLayoutProps>>
         {header ? <View style={styles.header}>{header}</View> : null}
 
         {type === 'signIn' ? (
-          <View style={{ marginVertical: 10 }}>
+          <View style={styles.signInHero}>
             <Image
               source={AssetsPath.login}
-              style={{ width: '100%', height: 280 }}
+              style={styles.signInImage}
               resizeMode="contain"
             />
           </View>
@@ -76,7 +79,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
     paddingHorizontal: 18,
-    paddingBottom: 22,
+    paddingBottom: 28,
     gap: 18,
   },
   header: {
@@ -90,6 +93,14 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     marginBottom: 20,
     alignItems: 'center',
+  },
+  signInHero: {
+    marginTop: 24,
+    marginBottom: 12,
+  },
+  signInImage: {
+    width: '100%',
+    height: 280,
   },
   iconBadge: {
     width: 72,
@@ -111,7 +122,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     alignItems: 'center',
-    paddingBottom: 16,
+    paddingTop: 4,
+    paddingBottom: 18,
   },
 });
 

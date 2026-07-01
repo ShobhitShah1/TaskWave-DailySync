@@ -7693,12 +7693,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-application@npm:^56.0.3":
-  version: 56.0.3
-  resolution: "expo-application@npm:56.0.3"
+"expo-application@npm:~7.0.8":
+  version: 7.0.8
+  resolution: "expo-application@npm:7.0.8"
   peerDependencies:
     expo: "*"
-  checksum: 10c0/868d40fcbaa7618beb088c72480286ce0a10f8cc80292f8fe56897249e411d63c19141041a88724473bbdf415fae694ac3327d7b669cf82997c2762f668403a1
+  checksum: 10c0/3926cb3e0be1ea82ee991cab55c0b7baf40a5b4ec5812857fc4c8fe1cb63b9dc5e94b2a7030b0cb1d6288d2a4877459f775118075d72b868fd19b57b5b789981
   languageName: node
   linkType: hard
 
@@ -13853,12 +13853,12 @@ __metadata:
 
 "send-message@file:./send-message::locator=taskwave-dailysync%40workspace%3A.":
   version: 0.1.0
-  resolution: "send-message@file:./send-message#./send-message::hash=d40ba6&locator=taskwave-dailysync%40workspace%3A."
+  resolution: "send-message@file:./send-message#./send-message::hash=31a96b&locator=taskwave-dailysync%40workspace%3A."
   peerDependencies:
     expo: "*"
     react: "*"
     react-native: "*"
-  checksum: 10c0/1ca23c346d9add9c864a9d71153d20ae249758b931ae614553c614bfdc49bdad786b0932f118ba65b5e1382b37f1b7ca1117b3f63092af9e05a7fc6fa1d9317c
+  checksum: 10c0/57479ca42254b9da56d1c1de16afc29912a7f5d17386c987c6b8a9835084d70eecd4823a0118649f813f5be5d06cfd5902df1de12d129bdd1d3dc6e206665867
   languageName: node
   linkType: hard
 
@@ -14738,7 +14738,7 @@ __metadata:
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
     eslint-plugin-unused-imports: "npm:^4.1.4"
     expo: "npm:^54.0.0"
-    expo-application: "npm:^56.0.3"
+    expo-application: "npm:~7.0.8"
     expo-av: "npm:~16.0.8"
     expo-blur: "npm:~15.0.8"
     expo-build-properties: "npm:~1.0.10"

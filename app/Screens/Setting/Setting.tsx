@@ -1,6 +1,6 @@
 import { useAuth } from '@Hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Linking, Platform, StyleSheet, View, ScrollView, Pressable, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Share from 'react-native-share';
@@ -13,6 +13,7 @@ import { SIZE } from '@Constants/Theme';
 import { useBatteryOptimization } from '@Contexts/BatteryOptimizationProvider';
 import { useSettings } from '@Contexts/SettingsProvider';
 import useThemeColors from '@Hooks/useThemeMode';
+import { getOrCreateDeviceId } from '@Utils/deviceIdentity';
 import HomeHeader from '../Home/Components/HomeHeader';
 import SettingItem from './Components/SettingItem';
 import LocationRadiusModal from './Components/LocationRadiusModal';
@@ -26,11 +27,25 @@ const Settings = () => {
   const { auth, signOut } = useAuth();
 
   const [modalStatus, setModalStatus] = useState({ rateUs: false, locationRadius: false });
+  const [deviceId, setDeviceId] = useState<string | null>(auth?.user.deviceId || null);
 
   const isGuestAccount = auth?.user.provider === 'guest';
   const accountLabel = isGuestAccount
-    ? 'Guest mode'
+    ? deviceId
+      ? `Device ID: ${deviceId}`
+      : 'Device ID unavailable'
     : auth?.user.email?.trim() || 'No email available';
+
+  useEffect(() => {
+    if (auth?.user.deviceId) {
+      setDeviceId(auth.user.deviceId);
+      return;
+    }
+
+    getOrCreateDeviceId()
+      .then(setDeviceId)
+      .catch(() => undefined);
+  }, [auth?.user.deviceId]);
 
   const formatRadius = (meters: number): string => {
     if (meters >= 1000) {

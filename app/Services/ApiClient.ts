@@ -25,24 +25,16 @@ export const apiClient = axios.create({
 
 import { authStorage } from '@Utils/authStorage';
 
-// Request Logger & Auth Injector
 apiClient.interceptors.request.use((config) => {
   const auth = authStorage.getAuth();
   if (auth?.accessToken) {
     config.headers.Authorization = `Bearer ${auth.accessToken}`;
   }
 
-  // When sending FormData (file uploads), remove Content-Type so the
-  // browser/RN networking layer auto-sets multipart/form-data with boundary
   if (config.data instanceof FormData) {
     delete config.headers['Content-Type'];
   }
 
-  console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
-    data: config.data instanceof FormData ? '[FormData]' : config.data,
-    params: config.params,
-    headers: config.headers,
-  });
   return config;
 });
 
@@ -53,27 +45,13 @@ export const setAuthErrorListener = (listener: AuthErrorListener) => {
   authErrorListener = listener;
 };
 
-// Response Interceptor for 401s
 apiClient.interceptors.response.use(
-  (response) => {
-    console.log(`[API Response] ${response.status} ${response.config.url}`, {
-      data: response.data,
-    });
-    return response;
-  },
+  (response) => response,
   (error) => {
     if (error.response) {
-      console.log(`[API Error Response] ${error.response.status} ${error.config?.url}`, {
-        data: error.response.data,
-      });
-
-      // Handle global logout on 401
       if (error.response.status === 401 && authErrorListener) {
-        console.log('[API Interceptor] 401 detected, triggering global logout.');
         authErrorListener();
       }
-    } else {
-      console.log(`[API Error] ${error.message}`, { config: error.config });
     }
     return Promise.reject(error);
   },

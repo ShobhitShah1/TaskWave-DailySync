@@ -70,6 +70,8 @@ const Routes = () => {
       ? 'light-content'
       : 'dark-content';
 
+  const navigatorKey = isAuthenticated ? (isProfileComplete ? 'app' : 'complete-profile') : 'auth';
+
   if (status === 'loading') {
     return <View style={{ flex: 1, backgroundColor: colors.background }} />;
   }
@@ -101,6 +103,7 @@ const Routes = () => {
         }}
       >
         <Stack.Navigator
+          key={navigatorKey}
           screenOptions={{
             headerShown: false,
             animation: 'ios_from_right',

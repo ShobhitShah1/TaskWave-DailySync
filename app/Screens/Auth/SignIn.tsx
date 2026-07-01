@@ -47,7 +47,6 @@ const SignInScreen = () => {
 
   return (
     <AuthScreenLayout
-      // centerContent
       type="signIn"
       iconName="notifications-outline"
       subtitle="Sign in to Sync Alarm"
@@ -65,24 +64,25 @@ const SignInScreen = () => {
         </Text>
       }
     >
-      <View style={styles.form}>
-        <AuthGoogleButton
-          loading={isGoogleSubmitting}
-          onPress={handleGoogleSubmit}
-          title="Continue with Google"
-        />
+        <View style={styles.form}>
+          <AuthGoogleButton
+            loading={isGoogleSubmitting}
+            onPress={handleGoogleSubmit}
+            title="Continue with Google"
+          />
 
-        <AuthDivider label="or" />
+          <AuthDivider label="or" />
 
-        <AuthButton loading={isGuestSubmitting} onPress={handleGuestSubmit} title="Skip for now" />
-      </View>
+          <AuthButton loading={isGuestSubmitting} onPress={handleGuestSubmit} title="Skip for now" />
+        </View>
     </AuthScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
   form: {
-    gap: 16,
+    gap: 18,
+    paddingTop: 4,
   },
   legalText: {
     fontSize: 14,

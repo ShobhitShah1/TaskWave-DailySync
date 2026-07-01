@@ -2,6 +2,7 @@ import { storage } from '@Contexts/ThemeProvider';
 import { AuthData } from '@Types/Auth';
 
 const AUTH_DATA_KEY = 'auth:data';
+const DEVICE_ID_KEY = 'auth:device-id';
 
 const safeParse = <T>(value: string | undefined): T | null => {
   if (!value) {
@@ -24,5 +25,9 @@ export const authStorage = {
   },
   clearAuth: () => {
     storage.delete(AUTH_DATA_KEY);
+    storage
+      .getAllKeys()
+      .filter((key) => key.startsWith('auth:') && key !== DEVICE_ID_KEY)
+      .forEach((key) => storage.delete(key));
   },
 };

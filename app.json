@@ -141,6 +141,7 @@
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       "@react-native-firebase/crashlytics",
+      "./plugins/withAndroidAapt2Override",
       "./plugins/withAndroidAssets"
     ],
     "notification": {
