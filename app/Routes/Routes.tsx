@@ -1,4 +1,5 @@
 import { useBottomSheet } from '@Contexts/BottomSheetProvider';
+import DelayedInterstitialAd from '@Components/DelayedInterstitialAd';
 import { storage, useAppContext } from '@Contexts/ThemeProvider';
 import { useAuth } from '@Hooks/useAuth';
 import useThemeColors from '@Hooks/useThemeMode';
@@ -20,6 +21,7 @@ import AboutApp from '@Screens/Setting/AboutApp';
 import DevDashboard from '@Screens/Setting/DevDashboard';
 import HowAppWorks from '@Screens/Setting/HowAppWorks';
 import NotificationSound from '@Screens/Setting/NotificationSound';
+import SubscriptionScreen from '@Screens/Subscription/Subscription';
 import { RootStackParamList } from '@Types/Interface';
 import { useQuickActionCallback } from 'expo-quick-actions/hooks';
 import * as SystemUI from 'expo-system-ui';
@@ -90,6 +92,7 @@ const Routes = () => {
       />
 
       <StatusBar backgroundColor="transparent" translucent barStyle={statusBarStyle} />
+      {isAuthenticated && isProfileComplete && <DelayedInterstitialAd />}
 
       <NavigationContainer
         ref={navigationRef}
@@ -133,6 +136,14 @@ const Routes = () => {
               <Stack.Screen name="AboutApp" component={AboutApp} />
               <Stack.Screen name="HowAppWorks" component={HowAppWorks} />
               <Stack.Screen name="NotificationSound" component={NotificationSound} />
+              <Stack.Screen
+                name="Subscription"
+                component={SubscriptionScreen}
+                options={{
+                  animation: 'slide_from_bottom',
+                  presentation: 'modal',
+                }}
+              />
               <Stack.Screen name="LocationDetails" component={LocationDetails} />
               <Stack.Screen name="LocationPreview" component={LocationPreview} />
               <Stack.Screen name="CreateAlarm" component={CreateAlarmScreen} />

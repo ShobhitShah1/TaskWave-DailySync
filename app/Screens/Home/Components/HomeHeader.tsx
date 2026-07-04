@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { memo, useCallback } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -8,6 +9,7 @@ import AssetsPath from '@Constants/AssetsPath';
 import TextString from '@Constants/TextString';
 import { FONTS, SIZE } from '@Constants/Theme';
 import { useAppContext } from '@Contexts/ThemeProvider';
+import { useMonetization } from '@Hooks/useMonetization';
 import useThemeColors from '@Hooks/useThemeMode';
 
 type LeftIconType = 'grid' | 'back' | 'none';
@@ -17,6 +19,7 @@ interface IHomeHeaderProps {
   leftIconType?: LeftIconType;
   titleAlignment?: 'left' | 'center';
   showThemeSwitch?: boolean;
+  showPremiumButton?: boolean;
   onBackPress?: () => void;
   onServicePress?: () => void;
 }
@@ -26,12 +29,14 @@ const HomeHeader = ({
   leftIconType = 'grid',
   titleAlignment = 'left',
   showThemeSwitch = true,
+  showPremiumButton = false,
   onBackPress,
   onServicePress,
 }: IHomeHeaderProps) => {
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { theme, toggleTheme, viewMode, toggleViewMode } = useAppContext();
+  const { isPremium } = useMonetization();
 
   const handleToggle = useCallback(
     (state: boolean) => {
@@ -63,20 +68,41 @@ const HomeHeader = ({
   return (
     <Animated.View entering={FadeIn.duration(400)}>
       <View style={styles.container}>
-        <View
-          style={[
-            styles.leftIconContainer,
-            {
-              backgroundColor:
-                leftIconType === 'grid'
-                  ? theme === 'dark'
-                    ? colors.grayBackground
-                    : 'rgba(173, 175, 176, 0.4)'
-                  : 'transparent',
-            },
-          ]}
-        >
-          {renderLeftIcon()}
+        <View style={[styles.leftActions, { width: showPremiumButton ? 64 : 28 }]}>
+          <View
+            style={[
+              styles.leftIconContainer,
+              {
+                backgroundColor:
+                  leftIconType === 'grid'
+                    ? theme === 'dark'
+                      ? colors.grayBackground
+                      : 'rgba(173, 175, 176, 0.4)'
+                    : 'transparent',
+              },
+            ]}
+          >
+            {renderLeftIcon()}
+          </View>
+
+          {showPremiumButton && (
+            <Pressable
+              hitSlop={10}
+              onPress={() => navigation.navigate('Subscription')}
+              style={[
+                styles.premiumButton,
+                {
+                  backgroundColor: colors.darkBlue,
+                },
+              ]}
+            >
+              <MaterialCommunityIcons
+                name={isPremium ? 'crown' : 'crown-outline'}
+                size={18}
+                color={colors.white}
+              />
+            </Pressable>
+          )}
         </View>
 
         <Text
@@ -114,6 +140,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  leftActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  premiumButton: {
+    height: 30,
+    width: 30,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   icon: {
     width: 18,
     height: 18,
@@ -121,7 +159,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     flex: 1,
-    left: 17,
+    left: 5,
     fontSize: 24,
     fontFamily: FONTS.Medium,
   },

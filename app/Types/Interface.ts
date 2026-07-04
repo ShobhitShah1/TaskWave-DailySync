@@ -42,6 +42,7 @@ export type RootStackParamList = {
   AboutApp: undefined;
   HowAppWorks: undefined;
   NotificationSound: undefined;
+  Subscription: undefined;
   LocationDetails: {
     notificationType: NotificationType;
     id?: string;

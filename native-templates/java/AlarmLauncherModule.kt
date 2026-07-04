@@ -15,6 +15,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.Arguments
+import java.util.HashSet
 
 class AlarmLauncherModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
@@ -26,6 +27,8 @@ class AlarmLauncherModule(reactContext: ReactApplicationContext) : ReactContextB
         const val KEY_TITLE = "title"
         const val KEY_BODY = "body"
         private const val SUPPRESSION_PREFS_NAME = "DailySyncAlarmSuppression"
+        private const val GROUP_ALARM_PREFS_NAME = "DailySyncGroupAlarms"
+        private const val GROUP_ALARM_IDS_KEY = "groupAlarmIds"
         private const val SUPPRESSED_UNTIL_PREFIX = "suppressedUntil:"
         private const val DISMISS_SUPPRESSION_MS = 90_000L
 
@@ -63,6 +66,16 @@ class AlarmLauncherModule(reactContext: ReactApplicationContext) : ReactContextB
         return PendingIntent.getBroadcast(
             reactApplicationContext,
             alarmId.hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun getGroupAlarmPendingIntent(alarmId: String, extras: Intent? = null): PendingIntent {
+        val intent = extras ?: Intent(reactApplicationContext, AlarmReceiver::class.java)
+        return PendingIntent.getBroadcast(
+            reactApplicationContext,
+            "group:$alarmId".hashCode(),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -121,6 +134,31 @@ class AlarmLauncherModule(reactContext: ReactApplicationContext) : ReactContextB
         val alarmManager = reactApplicationContext.getSystemService(AlarmManager::class.java)
         alarmManager.cancel(getSoloAlarmPendingIntent(alarmId))
         Log.d("AlarmLauncher", "Cancelled native solo alarm: $alarmId")
+    }
+
+    @ReactMethod
+    fun cancelGroupAlarm(alarmId: String) {
+        val alarmManager = reactApplicationContext.getSystemService(AlarmManager::class.java)
+        alarmManager.cancel(getGroupAlarmPendingIntent(alarmId))
+
+        val prefs = reactApplicationContext.getSharedPreferences(GROUP_ALARM_PREFS_NAME, 0)
+        val ids = HashSet(prefs.getStringSet(GROUP_ALARM_IDS_KEY, emptySet()) ?: emptySet())
+        ids.remove(alarmId)
+        prefs.edit().putStringSet(GROUP_ALARM_IDS_KEY, ids).apply()
+    }
+
+    @ReactMethod
+    fun syncGroupAlarmIds(activeIds: com.facebook.react.bridge.ReadableArray) {
+        val nextIds = HashSet<String>()
+        for (index in 0 until activeIds.size()) {
+            activeIds.getString(index)?.let { nextIds.add(it) }
+        }
+
+        val prefs = reactApplicationContext.getSharedPreferences(GROUP_ALARM_PREFS_NAME, 0)
+        val previousIds = HashSet(prefs.getStringSet(GROUP_ALARM_IDS_KEY, emptySet()) ?: emptySet())
+
+        previousIds.filter { !nextIds.contains(it) }.forEach { cancelGroupAlarm(it) }
+        prefs.edit().putStringSet(GROUP_ALARM_IDS_KEY, nextIds).apply()
     }
 
     @ReactMethod

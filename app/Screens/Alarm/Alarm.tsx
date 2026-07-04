@@ -1,4 +1,6 @@
 import { FONTS } from '@Constants/Theme';
+import InlineListAd from '@Components/InlineListAd';
+import { AD_PLACEMENTS } from '@Constants/MonetizationConfig';
 import {
   useAlarmFeed,
   useDeleteAlarm,
@@ -144,6 +146,20 @@ const Alarm = () => {
     return items;
   }, [invitations, filteredAlarms, selectedFilter]);
 
+  const listDataWithAds = useMemo(() => {
+    if (listData.length <= AD_PLACEMENTS.inlineListAdAfterItemCount) {
+      return listData;
+    }
+
+    const nextList = [...listData];
+    nextList.splice(AD_PLACEMENTS.inlineListAdAfterItemCount, 0, {
+      id: 'inline-list-ad',
+      isInlineAd: true,
+    });
+
+    return nextList;
+  }, [listData]);
+
   const handleInvitationAction = async (invitationId: string, action: 'accept' | 'decline') => {
     try {
       await respondMutation.mutateAsync({ invitationId, action });
@@ -220,6 +236,10 @@ const Alarm = () => {
   const isLoading = soloQuery.isLoading || groupQuery.isLoading;
 
   const renderItem = ({ item }: { item: any }) => {
+    if (item.isInlineAd) {
+      return <InlineListAd />;
+    }
+
     if (item.isInvitation) {
       return (
         <View style={styles.invitationWrapper}>
@@ -330,14 +350,14 @@ const Alarm = () => {
 
       <FlatList
         style={styles.list}
-        data={listData}
+        data={listDataWithAds}
         extraData={groupQuery?.data}
         renderItem={renderItem}
         keyExtractor={(item, index) => item?.id + index?.toString()}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.content,
-          listData.length === 0 && { flexGrow: 1, justifyContent: 'center' },
+          listDataWithAds.length === 0 && { flexGrow: 1, justifyContent: 'center' },
         ]}
         refreshControl={
           <RefreshControl

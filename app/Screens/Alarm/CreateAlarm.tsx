@@ -16,6 +16,7 @@ import {
   useUpdateSoloAlarm,
 } from '@Hooks/useAlarm';
 import { useAuth } from '@Hooks/useAuth';
+import { useInterstitialAd } from '@Hooks/useInterstitialAd';
 import useThemeColors from '@Hooks/useThemeMode';
 import AddMessage from '@Screens/AddReminder/Components/AddMessage';
 import AddScheduleFrequency, {
@@ -103,7 +104,9 @@ const CreateAlarmScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<CreateAlarmRoute>();
   const scrollViewRef = useRef<ScrollView>(null);
+  const isSubmittingRef = useRef(false);
   const { auth } = useAuth();
+  const { showAd: showInterstitialIfNeeded } = useInterstitialAd();
 
   const [mode, setMode] = useState<AlarmMode>(route.params?.mode || 'solo');
   const [tone, setTone] = useState('default');
@@ -118,6 +121,7 @@ const CreateAlarmScreen = () => {
   const [showTonePicker, setShowTonePicker] = useState(false);
   const { checkPermission } = useOverlayPermission();
   const [showOverlayModal, setShowOverlayModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const createSoloAlarmMutation = useCreateSoloAlarm();
   const createGroupAlarmMutation = useCreateGroupAlarm();
@@ -285,7 +289,15 @@ const CreateAlarmScreen = () => {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting || isSubmittingRef.current) {
+      return;
+    }
+
+    isSubmittingRef.current = true;
+
     try {
+      setIsSaving(true);
+
       const permission = await checkPermission();
       if (permission === false) {
         setShowOverlayModal(true);
@@ -326,6 +338,8 @@ const CreateAlarmScreen = () => {
           : message || 'Solo Alarm';
 
       if (mode === 'solo') {
+        await showInterstitialIfNeeded();
+
         const payload = {
           title,
           note: message,
@@ -353,6 +367,8 @@ const CreateAlarmScreen = () => {
           showMessage({ message: 'Select at least one registered user.', type: 'warning' });
           return;
         }
+
+        await showInterstitialIfNeeded();
 
         const payload = {
           title,
@@ -395,10 +411,14 @@ const CreateAlarmScreen = () => {
         message: error instanceof Error ? error.message : 'Unable to save alarm.',
         type: 'danger',
       });
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSaving(false);
     }
   };
 
   const isSubmitting =
+    isSaving ||
     createSoloAlarmMutation.isPending ||
     createGroupAlarmMutation.isPending ||
     updateSoloAlarmMutation.isPending ||

@@ -1516,6 +1516,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.12.5":
+  version: 7.29.7
+  resolution: "@babel/runtime@npm:7.29.7"
+  checksum: 10c0/ca11572f7146b21e0bde6a9ed4bb6a89eafbee5f0944c7eb54d0d8a2dac962c33638a1d611e14faa71dfbb92b4b5f9236232208568a6b7d5c6f3f39ddb91771e
+  languageName: node
+  linkType: hard
+
 "@babel/runtime@npm:^7.20.0, @babel/runtime@npm:^7.25.0":
   version: 7.29.2
   resolution: "@babel/runtime@npm:7.29.2"
@@ -3183,6 +3190,13 @@ __metadata:
   version: 0.4.3
   resolution: "@humanwhocodes/retry@npm:0.4.3"
   checksum: 10c0/3775bb30087d4440b3f7406d5a057777d90e4b9f435af488a4923ef249e93615fb78565a85f173a186a076c7706a81d0d57d563a2624e4de2c5c9c66c486ce42
+  languageName: node
+  linkType: hard
+
+"@iabtcf/core@npm:^1.5.6":
+  version: 1.5.6
+  resolution: "@iabtcf/core@npm:1.5.6"
+  checksum: 10c0/e7bb104fab82c5c2a051986b51bf31577f6cc9ca84b5561612d649d4503aa7db21113e667c241cb9ec93c8fe9ce65e1266396174e2f64dd1105f91a097ffa85c
   languageName: node
   linkType: hard
 
@@ -6771,6 +6785,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dequal@npm:^2.0.2":
+  version: 2.0.3
+  resolution: "dequal@npm:2.0.3"
+  checksum: 10c0/f98860cdf58b64991ae10205137c0e97d384c3a4edc7f807603887b7c4b850af1224a33d88012009f150861cbee4fa2d322c4cc04b9313bee312e47f6ecaa888
+  languageName: node
+  linkType: hard
+
 "destroy@npm:1.2.0":
   version: 1.2.0
   resolution: "destroy@npm:1.2.0"
@@ -7836,6 +7857,17 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 10c0/ba74ff17b01dedc4a8145170b7098a95e037a7bd8ac0b8d0bf80bf28589383c22ba1a3f8ab68d901eafa75e311eb2fcd9edc414c18957a8827063623e2af9e0f
+  languageName: node
+  linkType: hard
+
+"expo-iap@npm:^4.3.6":
+  version: 4.3.6
+  resolution: "expo-iap@npm:4.3.6"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/b967e963ac33ce35439dbe1a4c90f2a21670c62084edce1634e40d1f1384f07f4ca35c4bf290ab09f689b53e096be685aecc29510b883946641e90ab75a095d7
   languageName: node
   linkType: hard
 
@@ -13073,6 +13105,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-google-mobile-ads@npm:16.3.0":
+  version: 16.3.0
+  resolution: "react-native-google-mobile-ads@npm:16.3.0"
+  dependencies:
+    "@iabtcf/core": "npm:^1.5.6"
+    use-deep-compare-effect: "npm:^1.8.1"
+  peerDependencies:
+    expo: ">=47.0.0"
+  peerDependenciesMeta:
+    expo:
+      optional: true
+  checksum: 10c0/09ff6b587b27b0cf74f66341cbda6cf0a124760f38be8b507f92fbd4e9330cc9ceedbddd105e32d0784c9e3e9099bb44412fce95a6b115a6d48177fc75753b95
+  languageName: node
+  linkType: hard
+
 "react-native-iphone-screen-helper@npm:^2.0.2":
   version: 2.2.1
   resolution: "react-native-iphone-screen-helper@npm:2.2.1"
@@ -14743,6 +14790,7 @@ __metadata:
     expo-blur: "npm:~15.0.8"
     expo-build-properties: "npm:~1.0.10"
     expo-font: "npm:~14.0.10"
+    expo-iap: "npm:^4.3.6"
     expo-linear-gradient: "npm:~15.0.8"
     expo-location: "npm:~19.0.8"
     expo-modules-core: "npm:~3.0.29"
@@ -14766,6 +14814,7 @@ __metadata:
     react-native-edge-to-edge: "npm:1.6.0"
     react-native-flash-message: "npm:^0.4.2"
     react-native-gesture-handler: "npm:~2.28.0"
+    react-native-google-mobile-ads: "npm:16.3.0"
     react-native-keyboard-aware-scroll-view: "npm:^0.9.5"
     react-native-mmkv: "npm:^3.3.0"
     react-native-modal: "npm:^14.0.0-rc.1"
@@ -14780,6 +14829,7 @@ __metadata:
     send-message: ./send-message
     ts-jest: "npm:^29.4.0"
     typescript: "npm:~5.9.2"
+    zustand: "npm:^5.0.14"
   languageName: unknown
   linkType: soft
 
@@ -15345,6 +15395,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"use-deep-compare-effect@npm:^1.8.1":
+  version: 1.8.1
+  resolution: "use-deep-compare-effect@npm:1.8.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.12.5"
+    dequal: "npm:^2.0.2"
+  peerDependencies:
+    react: ">=16.13"
+  checksum: 10c0/f21f4239d774182e5389172321f00db487b415a97f5835abbe99d228eec45e3fd97803a52a25db6216ae6e1e1203b3f523336d94695dc683c661bad36a318891
+  languageName: node
+  linkType: hard
+
 "use-latest-callback@npm:^0.2.4":
   version: 0.2.6
   resolution: "use-latest-callback@npm:0.2.6"
@@ -15844,5 +15906,26 @@ __metadata:
   version: 1.2.2
   resolution: "yocto-queue@npm:1.2.2"
   checksum: 10c0/36d4793e9cf7060f9da543baf67c55e354f4862c8d3d34de1a1b1d7c382d44171315cc54abf84d8900b8113d742b830108a1434f4898fb244f9b7e8426d4b8f5
+  languageName: node
+  linkType: hard
+
+"zustand@npm:^5.0.14":
+  version: 5.0.14
+  resolution: "zustand@npm:5.0.14"
+  peerDependencies:
+    "@types/react": ">=18.0.0"
+    immer: ">=9.0.6"
+    react: ">=18.0.0"
+    use-sync-external-store: ">=1.2.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    immer:
+      optional: true
+    react:
+      optional: true
+    use-sync-external-store:
+      optional: true
+  checksum: 10c0/89de0c8119f1e0861b2f896a0b4df0d67994a373ecee02628d4e7b97cee1885207f646917d3ede395c3a5083316d48846855cfbc84aced7cd23a6db3238930a8
   languageName: node
   linkType: hard

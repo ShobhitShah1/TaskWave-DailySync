@@ -16,6 +16,7 @@ import { BatteryOptimizationProvider } from './app/Contexts/BatteryOptimizationP
 import { BottomSheetProvider } from './app/Contexts/BottomSheetProvider';
 import { ContactProvider } from './app/Contexts/ContactProvider';
 import { LocationProvider } from './app/Contexts/LocationProvider';
+import { MonetizationProvider } from './app/Contexts/MonetizationProvider';
 import { SettingsProvider } from './app/Contexts/SettingsProvider';
 import { AppProvider, useAppContext } from './app/Contexts/ThemeProvider';
 import { handleNotificationPress } from './app/Hooks/handleNotificationPress';
@@ -263,15 +264,17 @@ export default function App() {
         <AppProvider>
           <AlarmProvider>
             <AuthProvider>
-              <SettingsProvider>
-                <BatteryOptimizationProvider>
-                  <ContactProvider>
-                    <LocationProvider>
-                      <AppContent />
-                    </LocationProvider>
-                  </ContactProvider>
-                </BatteryOptimizationProvider>
-              </SettingsProvider>
+              <MonetizationProvider>
+                <SettingsProvider>
+                  <BatteryOptimizationProvider>
+                    <ContactProvider>
+                      <LocationProvider>
+                        <AppContent />
+                      </LocationProvider>
+                    </ContactProvider>
+                  </BatteryOptimizationProvider>
+                </SettingsProvider>
+              </MonetizationProvider>
             </AuthProvider>
           </AlarmProvider>
         </AppProvider>

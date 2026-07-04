@@ -2,8 +2,8 @@ const normalize = (value?: string) => value?.trim() ?? '';
 const defaultGoogleWebClientId =
   '965182017324-b98namhrmi7sa4ise5t89bk00lhssvej.apps.googleusercontent.com';
 
-// const apiBaseUrl = 'https://nirvanatechlabs.in/dailysync';
-const apiBaseUrl = 'http://192.168.29.87:4000';
+const apiBaseUrl = 'https://nirvanatechlabs.in/dailysync';
+// const apiBaseUrl = 'http://192.168.29.87:4000';
 
 export const authConfig = {
   apiBaseUrl,

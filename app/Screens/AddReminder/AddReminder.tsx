@@ -1,10 +1,11 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Keyboard, Pressable, ScrollView, Text, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import useNotificationIconColors from '@Hooks/useNotificationIconColors';
+import { useInterstitialAd } from '@Hooks/useInterstitialAd';
 import useDatabase, { createNotificationChannel, scheduleNotification } from '@Hooks/useReminder';
 import useThemeColors from '@Hooks/useThemeMode';
 import { Contact, Notification, NotificationType } from '@Types/Interface';
@@ -42,6 +43,7 @@ const AddReminder = () => {
   const navigation = useNavigation();
   const { params } = useRoute<RouteProp<NotificationProps, 'params'>>();
   const { createNotification, getNotificationById, updateNotification } = useDatabase();
+  const { showAd: showInterstitialIfNeeded } = useInterstitialAd();
 
   const notificationType = useMemo(() => {
     return params.notificationType as NotificationType;
@@ -81,6 +83,7 @@ const AddReminder = () => {
   } = useAddReminderForm(notificationType);
 
   const [isLoading, setIsLoading] = useState(false);
+  const isSubmittingRef = useRef(false);
   const { createViewColor, iconColor } = useNotificationIconColors(notificationType);
 
   const { recording, memos, setMemos, onRecordingPress, stopRecording, animatedRecordWave } =
@@ -135,6 +138,12 @@ const AddReminder = () => {
   };
 
   const handleCreateNotification = async () => {
+    if (isLoading || isSubmittingRef.current) {
+      return;
+    }
+
+    isSubmittingRef.current = true;
+
     try {
       // Check overlay permission first
       const permission = await checkPermission();
@@ -157,6 +166,8 @@ const AddReminder = () => {
         if (!validateDateTime(selectedDateTime)) {
           throw new Error('The notification must be scheduled at least 10 seconds in the future.');
         }
+
+        await showInterstitialIfNeeded();
 
         const extractedContacts: Contact[] = selectedContacts?.map((contact) => ({
           name: contact.name,
@@ -240,6 +251,8 @@ const AddReminder = () => {
         type: 'danger',
       });
       setIsLoading(false);
+    } finally {
+      isSubmittingRef.current = false;
     }
   };
 

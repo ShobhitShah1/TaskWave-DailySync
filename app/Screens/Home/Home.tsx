@@ -1,11 +1,13 @@
 import ExitAppModal from '@Components/ExitAppModal';
 import FullScreenPreviewModal from '@Components/FullScreenPreviewModal';
+import InlineListAd from '@Components/InlineListAd';
 import ReminderCard from '@Components/ReminderCard';
 import RenderCalenderView from '@Components/RenderCalenderView';
 import ServiceManager from '@Components/ServiceManager';
 import OverlayPermissionModal from '@Components/OverlayPermissionModal';
 import YearMonthPicker from '@Components/YearMonthPicker';
 import { APP_CONFIG } from '@Constants/AppConfig';
+import { AD_PLACEMENTS } from '@Constants/MonetizationConfig';
 import TextString from '@Constants/TextString';
 import { useBatteryOptimization } from '@Contexts/BatteryOptimizationProvider';
 import { useContacts } from '@Contexts/ContactProvider';
@@ -20,7 +22,15 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { Notification, NotificationStatus, NotificationType } from '@Types/Interface';
 import { fromNowText } from '@Utils/isSameDat';
 import notifee, { AndroidNotificationSetting } from '@notifee/react-native';
-import React, { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -327,12 +337,29 @@ const Home = () => {
     setShowDateAndYearModal(false);
   };
 
+  const reminderListData = useMemo(() => {
+    const reminders = notificationsState?.allByDate || [];
+
+    if (isGrid || reminders.length <= AD_PLACEMENTS.inlineListAdAfterItemCount) {
+      return reminders;
+    }
+
+    const nextList: Array<Notification | { id: string; kind: 'inline-ad' }> = [...reminders];
+    nextList.splice(AD_PLACEMENTS.inlineListAdAfterItemCount, 0, {
+      id: 'inline-list-ad',
+      kind: 'inline-ad',
+    });
+
+    return nextList;
+  }, [isGrid, notificationsState?.allByDate]);
+
   return (
     <SafeAreaView style={style.container}>
       <HomeHeader
         title={TextString.DailySync}
         titleAlignment="center"
         leftIconType="grid"
+        showPremiumButton
         onServicePress={() => setShowServiceManager(true)}
       />
 
@@ -402,8 +429,8 @@ const Home = () => {
               columnWrapperStyle={isGrid ? { justifyContent: 'space-between' } : undefined}
               key={isGrid ? 'grid' : 'list'}
               numColumns={isGrid ? 2 : undefined}
-              data={notificationsState?.allByDate}
-              extraData={notificationsState?.allByDate}
+              data={reminderListData}
+              extraData={reminderListData}
               refreshControl={
                 <RefreshControl
                   onRefresh={onRefresh}
@@ -415,13 +442,17 @@ const Home = () => {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 93 }}
               keyExtractor={(item) => item?.id?.toString()}
-              renderItem={({ item }) => (
-                <ReminderCard
-                  notification={item}
-                  onRefreshData={loadNotifications}
-                  deleteReminder={deleteReminder}
-                />
-              )}
+              renderItem={({ item }: { item: Notification | { id: string; kind: 'inline-ad' } }) =>
+                'kind' in item && item.kind === 'inline-ad' ? (
+                  <InlineListAd />
+                ) : (
+                  <ReminderCard
+                    notification={item as Notification}
+                    onRefreshData={loadNotifications}
+                    deleteReminder={deleteReminder}
+                  />
+                )
+              }
               initialNumToRender={10}
               maxToRenderPerBatch={10}
               windowSize={5}

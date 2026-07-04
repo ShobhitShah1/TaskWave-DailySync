@@ -37,10 +37,10 @@
         "USE_FULL_SCREEN_INTENT",
         "FOREGROUND_SERVICE",
         "FOREGROUND_SERVICE_MEDIA_PLAYBACK",
-        "FOREGROUND_SERVICE_SPECIAL_USE"
+        "FOREGROUND_SERVICE_SPECIAL_USE",
+        "com.android.vending.BILLING"
       ],
       "googleServicesFile": "./google-services.json",
-      "blockedPermissions": ["com.google.android.gms.permission.AD_ID"],
       "package": "com.taskwave.dailysync",
       "allowBackup": false,
       "intentFilters": [
@@ -135,6 +135,14 @@
           }
         }
       ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-9745099446260761~7380225743",
+          "iosAppId": "ca-app-pub-9745099446260761~7380225743"
+        }
+      ],
+      "expo-iap",
       "expo-sqlite",
       "@maplibre/maplibre-react-native",
       "@react-native-community/datetimepicker",
@@ -144,6 +152,10 @@
       "./plugins/withAndroidAapt2Override",
       "./plugins/withAndroidAssets"
     ],
+    "react-native-google-mobile-ads": {
+      "android_app_id": "ca-app-pub-9745099446260761~7380225743",
+      "ios_app_id": "ca-app-pub-9745099446260761~7380225743"
+    },
     "notification": {
       "icon": "./assets/Icons/ic_notification.png",
       "color": "#405df0"

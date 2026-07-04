@@ -65,9 +65,7 @@ const withAndroidAapt2Override = (config) =>
         readSdkDir(androidProjectRoot) ||
         process.env.ANDROID_HOME ||
         process.env.ANDROID_SDK_ROOT ||
-        (process.env.LOCALAPPDATA
-          ? path.join(process.env.LOCALAPPDATA, 'Android', 'Sdk')
-          : null);
+        (process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Android', 'Sdk') : null);
       const aapt2Path = findAapt2(sdkDir);
 
       if (!aapt2Path || !fs.existsSync(gradlePropertiesPath)) {

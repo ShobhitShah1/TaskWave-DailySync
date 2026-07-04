@@ -12,6 +12,7 @@ import AssetsPath from '@Constants/AssetsPath';
 import { SIZE } from '@Constants/Theme';
 import { useBatteryOptimization } from '@Contexts/BatteryOptimizationProvider';
 import { useSettings } from '@Contexts/SettingsProvider';
+import { useMonetization } from '@Hooks/useMonetization';
 import useThemeColors from '@Hooks/useThemeMode';
 import { getOrCreateDeviceId } from '@Utils/deviceIdentity';
 import HomeHeader from '../Home/Components/HomeHeader';
@@ -25,6 +26,7 @@ const Settings = () => {
   const { showModal: showBatteryModal, isBatteryOptimized } = useBatteryOptimization();
   const { locationRadius, setLocationRadius } = useSettings();
   const { auth, signOut } = useAuth();
+  const { isPremium } = useMonetization();
 
   const [modalStatus, setModalStatus] = useState({ rateUs: false, locationRadius: false });
   const [deviceId, setDeviceId] = useState<string | null>(auth?.user.deviceId || null);
@@ -62,6 +64,8 @@ const Settings = () => {
     onPress: () => void;
     subtitle?: string;
     showAlert?: boolean;
+    variant?: 'default' | 'premium';
+    badgeText?: string;
   }
 
   const settingsData: SettingItemData[] = [
@@ -81,6 +85,15 @@ const Settings = () => {
           },
         ]
       : []),
+    {
+      title: isPremium ? 'Premium active' : 'Remove Ads',
+      ionicon: 'sparkles-outline',
+      ioniconColor: colors.darkBlue,
+      onPress: () => navigation.navigate('Subscription'),
+      subtitle: isPremium ? 'Ads are removed everywhere' : 'Go ad-free on this device or account',
+      variant: 'premium' as const,
+      badgeText: isPremium ? 'Active' : 'Upgrade',
+    },
     {
       title: 'Location Radius',
       icon: AssetsPath.ic_location_history,
@@ -172,6 +185,8 @@ const Settings = () => {
               ioniconColor={item.ioniconColor}
               subtitle={item.subtitle}
               showAlert={item.showAlert}
+              variant={item.variant}
+              badgeText={item.badgeText}
               onPress={item.onPress}
             />
           ))}
@@ -239,7 +254,7 @@ const styles = () => {
     wrapper: {
       width: SIZE.appContainWidth,
       alignSelf: 'center',
-      marginVertical: 15,
+      marginVertical: 5,
       gap: 10,
     },
     actionButtonsContainer: {

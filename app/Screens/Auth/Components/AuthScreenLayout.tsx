@@ -34,10 +34,7 @@ const AuthScreenLayout: React.FC<React.PropsWithChildren<AuthScreenLayoutProps>>
     <View style={[styles.safeArea, { backgroundColor: colors.background, paddingTop: top }]}>
       <KeyboardAwareScrollView
         bounces={false}
-        contentContainerStyle={[
-          styles.contentContainer,
-          centerContent && styles.centeredContent,
-        ]}
+        contentContainerStyle={[styles.contentContainer, centerContent && styles.centeredContent]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         enableOnAndroid={true}
@@ -47,11 +44,7 @@ const AuthScreenLayout: React.FC<React.PropsWithChildren<AuthScreenLayoutProps>>
 
         {type === 'signIn' ? (
           <View style={styles.signInHero}>
-            <Image
-              source={AssetsPath.login}
-              style={styles.signInImage}
-              resizeMode="contain"
-            />
+            <Image source={AssetsPath.login} style={styles.signInImage} resizeMode="contain" />
           </View>
         ) : (
           <View style={styles.hero}>

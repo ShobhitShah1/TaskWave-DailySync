@@ -6,6 +6,8 @@ const {
 const fs = require('fs');
 const path = require('path');
 
+const GOOGLE_MOBILE_ADS_APP_ID = 'ca-app-pub-9745099446260761~7380225743';
+
 /**
  * Custom Expo Config Plugin to handle Android Raw and XML resources.
  */
@@ -293,11 +295,13 @@ const withAndroidAssets = (config) => {
     }
 
     const providerName = 'androidx.core.content.FileProvider';
-    const authorities = `${packageName}.provider`;
+    const authorities = `${packageName}.fileprovider`;
 
     // Remove existing provider if it has the same name to avoid duplicates/conflicts
     mainApplication.provider = mainApplication.provider.filter(
-      (p) => p.$['android:name'] !== providerName,
+      (p) =>
+        p.$['android:name'] !== providerName &&
+        p.$['android:name'] !== 'com.google.android.gms.ads.MobileAdsInitProvider',
     );
 
     // Add FileProvider
@@ -316,6 +320,22 @@ const withAndroidAssets = (config) => {
           },
         },
       ],
+    });
+
+    if (!mainApplication['meta-data']) {
+      mainApplication['meta-data'] = [];
+    }
+
+    mainApplication['meta-data'] = mainApplication['meta-data'].filter(
+      (meta) => meta.$['android:name'] !== 'com.google.android.gms.ads.APPLICATION_ID',
+    );
+
+    mainApplication['meta-data'].push({
+      $: {
+        'android:name': 'com.google.android.gms.ads.APPLICATION_ID',
+        'android:value': GOOGLE_MOBILE_ADS_APP_ID,
+        'tools:replace': 'android:value',
+      },
     });
 
     // Add Queries

@@ -79,8 +79,8 @@ const AlarmVoiceResponseScreen = () => {
   const recordingProgress = recordingPlayer.durationMillis
     ? recordingPlayer.positionMillis / recordingPlayer.durationMillis
     : hasRecording
-    ? 1
-    : 0;
+      ? 1
+      : 0;
 
   const showResponseRequiredMessage = useCallback(() => {
     Alert.alert(
@@ -284,7 +284,7 @@ const AlarmVoiceResponseScreen = () => {
           </Pressable>
         </View>
         {session.mainMemoUri ? (
-          player.durationLoading[0] ?? true ? (
+          (player.durationLoading[0] ?? true) ? (
             <ActivityIndicator
               color={colors.alarmFocus}
               size="small"
