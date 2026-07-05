@@ -356,8 +356,7 @@ const Alarm = () => {
         keyExtractor={(item, index) => item?.id + index?.toString()}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
-          styles.content,
-          listDataWithAds.length === 0 && { flexGrow: 1, justifyContent: 'center' },
+          listDataWithAds.length === 0 ? styles.emptyContent : styles.content,
         ]}
         refreshControl={
           <RefreshControl
@@ -383,7 +382,7 @@ const Alarm = () => {
               <Text style={[styles.emptyText, { color: colors.grayTitle }]}>
                 {selectedFilter === 'invites'
                   ? 'New group alarm invites will show here.'
-                  : 'On the alarm tab, the center plus now opens the alarm create flow.'}
+                  : 'Tap the center plus button to create your first alarm.'}
               </Text>
             </View>
           ) : null
@@ -444,6 +443,11 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 80,
   },
+  emptyContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
   invitationWrapper: {
     marginBottom: 15,
   },
@@ -453,19 +457,22 @@ const styles = StyleSheet.create({
   },
   emptyWrap: {
     alignItems: 'center',
-    paddingBottom: 100,
+    justifyContent: 'center',
+    alignSelf: 'center',
+    maxWidth: 300,
   },
   emptyTitle: {
-    fontSize: 22,
-    fontFamily: FONTS.SemiBold,
+    fontSize: 24,
+    lineHeight: 30,
+    fontFamily: FONTS.Bold,
+    textAlign: 'center',
   },
   emptyText: {
-    marginTop: 5,
-    fontSize: 14,
-    lineHeight: 20,
+    marginTop: 4,
+    fontSize: 15,
+    lineHeight: 21,
     textAlign: 'center',
     fontFamily: FONTS.Medium,
-    maxWidth: 260,
   },
 });
 

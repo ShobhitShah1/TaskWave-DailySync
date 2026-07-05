@@ -5,10 +5,23 @@ import {
   useIapStore,
 } from '@Services/IapService';
 import { ensureMobileAdsInitialized } from '@Services/MobileAdsService';
+import { purchaseApi } from '@Services/PurchaseService';
 import { useAuth } from '@Hooks/useAuth';
 import { getOrCreateDeviceId } from '@Utils/deviceIdentity';
-import { Product, Purchase, useIAP } from 'expo-iap';
-import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  endConnection,
+  fetchProducts,
+  finishTransaction,
+  getAvailablePurchases,
+  initConnection,
+  Product,
+  purchaseErrorListener,
+  Purchase,
+  purchaseUpdatedListener,
+  requestPurchase,
+  restorePurchases as restoreStorePurchases,
+} from 'expo-iap';
+import React, { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 
 interface MonetizationContextValue {
@@ -42,6 +55,7 @@ const getPurchaseRecord = (
   accountEmail: identity.accountEmail ?? null,
   accountId: identity.accountId ?? null,
   deviceId: identity.deviceId,
+  platform: Platform.OS as 'ios' | 'android' | 'web',
   productId: purchase.productId,
   provider: identity.provider ?? null,
   purchaseTime: purchase.transactionDate || Date.now(),
@@ -53,11 +67,20 @@ export const MonetizationProvider: React.FC<React.PropsWithChildren> = ({ childr
   const { auth } = useAuth();
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [connected, setConnected] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [availablePurchases, setAvailablePurchases] = useState<Purchase[]>([]);
   const productSKUs = useMemo(getProductSKUs, []);
   const isConfigured = productSKUs.length > 0;
   const purchasedProductIds = useIapStore((state) => state.purchasedProductIds);
+  const purchases = useIapStore((state) => state.purchases);
   const addPurchase = useIapStore((state) => state.addPurchase);
   const linkPurchasesToAccount = useIapStore((state) => state.linkPurchasesToAccount);
+  const syncedPurchaseKeysRef = useRef<Set<string>>(new Set());
+
+  const getPurchaseKey = useCallback((purchase: PurchaseRecord) => {
+    return `${purchase.productId}:${purchase.transactionId}`;
+  }, []);
 
   const identity = useMemo(
     () => ({
@@ -69,27 +92,43 @@ export const MonetizationProvider: React.FC<React.PropsWithChildren> = ({ childr
     [auth?.user.email, auth?.user.id, auth?.user.provider, deviceId],
   );
 
-  const {
-    connected,
-    products,
-    availablePurchases,
-    fetchProducts,
-    finishTransaction,
-    getAvailablePurchases,
-    requestPurchase,
-    restorePurchases: restoreStorePurchases,
-  } = useIAP({
-    onPurchaseSuccess: async (purchase) => {
+  const handlePurchaseSuccess = useCallback(
+    async (purchase: Purchase) => {
       const currentDeviceId = deviceId || (await getOrCreateDeviceId());
       const currentIdentity = { ...identity, deviceId: currentDeviceId };
 
       if (isPremiumProductId(purchase.productId)) {
-        addPurchase(getPurchaseRecord(purchase, currentIdentity));
+        const purchaseRecord = getPurchaseRecord(purchase, currentIdentity);
+        addPurchase(purchaseRecord);
+        purchaseApi
+          .syncPurchase(purchaseRecord)
+          .then(() => syncedPurchaseKeysRef.current.add(getPurchaseKey(purchaseRecord)))
+          .catch(() => undefined);
       }
 
       await finishTransaction({ purchase, isConsumable: false });
     },
-  });
+    [addPurchase, deviceId, getPurchaseKey, identity],
+  );
+
+  const ensureIapConnection = useCallback(async () => {
+    if (Platform.OS === 'web') {
+      return false;
+    }
+
+    if (connected) {
+      return true;
+    }
+
+    try {
+      const isConnected = await initConnection();
+      setConnected(isConnected);
+      return isConnected;
+    } catch {
+      setConnected(false);
+      return false;
+    }
+  }, [connected]);
 
   useEffect(() => {
     ensureMobileAdsInitialized().catch(() => undefined);
@@ -100,6 +139,22 @@ export const MonetizationProvider: React.FC<React.PropsWithChildren> = ({ childr
   }, []);
 
   useEffect(() => {
+    const purchaseSubscription = purchaseUpdatedListener((purchase) => {
+      handlePurchaseSuccess(purchase).catch(() => undefined);
+    });
+
+    const errorSubscription = purchaseErrorListener(() => undefined);
+
+    return () => {
+      purchaseSubscription.remove();
+      errorSubscription.remove();
+      endConnection()
+        .then(() => setConnected(false))
+        .catch(() => undefined);
+    };
+  }, [handlePurchaseSuccess]);
+
+  useEffect(() => {
     if (!deviceId) {
       return;
     }
@@ -108,20 +163,94 @@ export const MonetizationProvider: React.FC<React.PropsWithChildren> = ({ childr
   }, [deviceId, identity, linkPurchasesToAccount]);
 
   useEffect(() => {
-    if (!connected || !isConfigured) {
+    if (!auth?.accessToken || !deviceId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const syncBackendPurchases = async () => {
+      try {
+        const backendPurchases = await purchaseApi.getPurchases();
+
+        if (!isMounted) {
+          return;
+        }
+
+        backendPurchases.forEach((purchase) => {
+          syncedPurchaseKeysRef.current.add(getPurchaseKey(purchase));
+          if (isPremiumProductId(purchase.productId)) {
+            addPurchase(purchase);
+          }
+        });
+      } catch {}
+
+      const currentPurchases = useIapStore.getState().purchases;
+      await Promise.allSettled(
+        currentPurchases
+          .filter((purchase) => isPremiumProductId(purchase.productId))
+          .filter((purchase) => !syncedPurchaseKeysRef.current.has(getPurchaseKey(purchase)))
+          .map(async (purchase) => {
+            await purchaseApi.syncPurchase(purchase);
+            syncedPurchaseKeysRef.current.add(getPurchaseKey(purchase));
+          }),
+      );
+    };
+
+    syncBackendPurchases();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [addPurchase, auth?.accessToken, deviceId, getPurchaseKey, purchases.length]);
+
+  useEffect(() => {
+    if (!isConfigured) {
       setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
+    let isMounted = true;
 
-    Promise.all([
-      fetchProducts({ skus: productSKUs, type: 'in-app' }),
-      getAvailablePurchases({ onlyIncludeActiveItemsIOS: true }),
-    ])
-      .catch(() => undefined)
-      .finally(() => setIsLoading(false));
-  }, [connected, fetchProducts, getAvailablePurchases, isConfigured, productSKUs]);
+    const loadStoreData = async () => {
+      setIsLoading(true);
+
+      try {
+        const isConnected = await ensureIapConnection();
+        if (!isConnected) {
+          return;
+        }
+
+        const [storeProducts, storePurchases] = await Promise.all([
+          fetchProducts({ skus: productSKUs, type: 'in-app' }),
+          getAvailablePurchases({ onlyIncludeActiveItemsIOS: true }),
+        ]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setProducts(
+          (storeProducts || []).filter(
+            (product): product is Product =>
+              product.type === 'in-app' && isPremiumProductId(product.id),
+          ),
+        );
+        setAvailablePurchases(storePurchases || []);
+      } catch {
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadStoreData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [ensureIapConnection, isConfigured, productSKUs]);
 
   useEffect(() => {
     if (!deviceId) {
@@ -137,6 +266,11 @@ export const MonetizationProvider: React.FC<React.PropsWithChildren> = ({ childr
 
   const purchaseProduct = useCallback(
     async (product: Product) => {
+      const isConnected = await ensureIapConnection();
+      if (!isConnected) {
+        throw new Error('Store is not available right now.');
+      }
+
       const currentDeviceId = deviceId || (await getOrCreateDeviceId());
       const requestIdentity = {
         accountId: identity.accountId ?? undefined,
@@ -158,25 +292,28 @@ export const MonetizationProvider: React.FC<React.PropsWithChildren> = ({ childr
         },
       });
     },
-    [deviceId, identity.accountId, requestPurchase],
+    [deviceId, ensureIapConnection, identity.accountId],
   );
 
   const refreshPurchases = useCallback(async () => {
-    if (!connected) {
+    const isConnected = await ensureIapConnection();
+    if (!isConnected) {
       return;
     }
 
-    await getAvailablePurchases({ onlyIncludeActiveItemsIOS: true });
-  }, [connected, getAvailablePurchases]);
+    const storePurchases = await getAvailablePurchases({ onlyIncludeActiveItemsIOS: true });
+    setAvailablePurchases(storePurchases || []);
+  }, [ensureIapConnection]);
 
   const restorePurchases = useCallback(async () => {
-    if (!connected) {
+    const isConnected = await ensureIapConnection();
+    if (!isConnected) {
       return;
     }
 
-    await restoreStorePurchases({ onlyIncludeActiveItemsIOS: true });
+    await restoreStorePurchases();
     await refreshPurchases();
-  }, [connected, refreshPurchases, restoreStorePurchases]);
+  }, [ensureIapConnection, refreshPurchases]);
 
   const hasLocalPremium = purchasedProductIds.some(isPremiumProductId);
   const isPremium = hasLocalPremium;

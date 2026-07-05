@@ -3,33 +3,64 @@ import { useMonetization } from '@Hooks/useMonetization';
 import useThemeColors from '@Hooks/useThemeMode';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Product } from 'expo-iap';
 import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+const purchaseCrown = require('../../../assets/Icons/purchase_crown.png');
 
 const SubscriptionScreen = () => {
   const colors = useThemeColors();
   const navigation = useNavigation();
   const { isConfigured, isLoading, isPremium, products, purchaseProduct, restorePurchases } =
     useMonetization();
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const style = styles();
-  const activeProduct = selectedProduct || products[0] || null;
-  const benefits = useMemo(
+  const activeProduct = products[0] || null;
+  const purchaseLabel = isPremium
+    ? 'Ads removed'
+    : activeProduct?.displayPrice
+      ? `Remove ads - ${activeProduct.displayPrice}`
+      : 'Remove ads';
+
+  const features = useMemo(
     () => [
-      'No fullscreen ads before alarms or reminders',
-      'One-time purchase, no monthly plan',
-      'Works on this device and links when you sign in',
+      {
+        icon: 'bell-off-outline' as const,
+        title: 'Ad-Free Experience',
+        text: 'No fullscreen or inline ads before alarms and reminders.',
+      },
+      {
+        icon: 'credit-card-outline' as const,
+        title: 'One-Time Purchase',
+        text: 'Pay once and keep DailySync clean forever.',
+      },
+      {
+        icon: 'link-variant' as const,
+        title: 'Device and Account Access',
+        text: 'Works on this device and links when you sign in.',
+      },
+      {
+        icon: 'restore' as const,
+        title: 'Restore Anytime',
+        text: 'Restore your remove-ads purchase whenever needed.',
+      },
     ],
     [],
   );
 
   const handlePurchase = async () => {
     if (!activeProduct) {
-      showMessage({ message: 'No subscription product is configured yet.', type: 'warning' });
+      showMessage({ message: 'No purchase product is configured yet.', type: 'warning' });
       return;
     }
 
@@ -61,104 +92,125 @@ const SubscriptionScreen = () => {
     }
   };
 
+  const renderProductCard = () => {
+    if (isLoading) {
+      return (
+        <View style={style.productCard}>
+          <ActivityIndicator color={colors.darkBlue} />
+        </View>
+      );
+    }
+
+    if (isPremium) {
+      return (
+        <View style={style.productCard}>
+          <Text style={style.productTitle}>Remove Ads Active</Text>
+          <Text style={style.productDescription}>
+            Your one-time purchase is active. Ads are removed across DailySync.
+          </Text>
+          <View style={style.activeState}>
+            <Ionicons name="checkmark-circle" size={28} color={colors.darkBlue} />
+            <Text style={style.activeStateText}>Ad-free access is enabled</Text>
+          </View>
+        </View>
+      );
+    }
+
+    if (!isConfigured || !products.length || !activeProduct) {
+      return (
+        <View style={style.productCard}>
+          <Text style={style.productTitle}>No product found</Text>
+          <Text style={style.productDescription}>No purchase option is available right now.</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={style.productCard}>
+        <Text style={style.productTitle}>Lifetime Remove Ads</Text>
+        <View style={style.priceRow}>
+          <Text style={style.priceText}>{activeProduct.displayPrice}</Text>
+          <Text style={style.priceNote}>one-time</Text>
+        </View>
+        <Text style={style.productDescription}>
+          One-time payment. Remove ads from alarms, reminders, scheduling, and list screens.
+        </Text>
+
+        <Pressable
+          disabled={isSubmitting}
+          onPress={handlePurchase}
+          style={[style.primaryButton, isSubmitting && { backgroundColor: colors.lightContact }]}
+        >
+          {isSubmitting ? (
+            <ActivityIndicator color={colors.white} />
+          ) : (
+            <>
+              <Text style={style.primaryButtonText}>{purchaseLabel}</Text>
+            </>
+          )}
+        </Pressable>
+
+        <View style={style.purchaseMetaRow}>
+          <View style={style.purchaseMetaItem}>
+            <Ionicons name="card-outline" size={15} color={colors.grayTitle} />
+            <Text style={style.purchaseMetaText}>One-time payment</Text>
+          </View>
+          <View style={style.purchaseMetaItem}>
+            <MaterialCommunityIcons name="infinity" size={16} color={colors.grayTitle} />
+            <Text style={style.purchaseMetaText}>Lifetime access</Text>
+          </View>
+          <View style={style.purchaseMetaItem}>
+            <Ionicons name="refresh-circle-outline" size={16} color={colors.grayTitle} />
+            <Text style={style.purchaseMetaText}>Restore anytime</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={style.container}>
+      <View style={style.header}>
+        <Pressable hitSlop={10} onPress={() => navigation.goBack()} style={style.backButton}>
+          <Ionicons name="chevron-back" size={30} color={colors.text} />
+        </Pressable>
+        <Text style={style.headerTitle}>Go Ad-Free</Text>
+      </View>
+
       <ScrollView contentContainerStyle={style.content} showsVerticalScrollIndicator={false}>
-        <View style={style.topRow}>
-          <View style={style.headerCopy}>
-            <Text style={style.headerTitle}>Remove ads</Text>
-          </View>
-          <Pressable hitSlop={10} onPress={() => navigation.goBack()} style={style.closeButton}>
-            <Ionicons name="close" size={20} color={colors.text} />
-          </Pressable>
+        <View style={style.hero}>
+          <Image source={purchaseCrown} resizeMode="contain" style={style.crownImage} />
+          <Text style={style.heroTitle}>Go Ad-Free. Forever.</Text>
+          <Text style={style.heroSubtitle}>One-time payment. Lifetime remove ads access.</Text>
         </View>
 
-        <View style={style.heroCard}>
-          <View style={style.badge}>
-            <MaterialCommunityIcons name="crown" size={30} color={colors.white} />
-          </View>
-          <Text style={style.title}>Remove ads from DailySync</Text>
-          <Text style={style.subtitle}>
-            Keep the app clean when you schedule alarms, reminders, and other actions.
-          </Text>
-        </View>
-
-        <View style={style.body}>
-          <View style={style.benefitList}>
-            {benefits.map((benefit) => (
-              <View key={benefit} style={style.benefitRow}>
-                <View style={style.checkIcon}>
-                  <Ionicons name="checkmark" size={15} color={colors.white} />
-                </View>
-                <Text style={style.benefitText}>{benefit}</Text>
+        <View style={style.featurePanel}>
+          {features.map((feature, index) => (
+            <View
+              key={feature.title}
+              style={[style.featureRow, index === features.length - 1 && style.featureRowLast]}
+            >
+              <View style={style.featureIcon}>
+                <MaterialCommunityIcons name={feature.icon} size={30} color={colors.white} />
               </View>
-            ))}
-          </View>
-
-          {isLoading ? (
-            <View style={style.statusBox}>
-              <ActivityIndicator color={colors.darkBlue} />
+              <View style={style.featureCopy}>
+                <Text style={style.featureTitle}>{feature.title}</Text>
+                <Text style={style.featureText}>{feature.text}</Text>
+              </View>
             </View>
-          ) : isPremium ? (
-            <View style={style.statusBox}>
-              <Ionicons name="shield-checkmark" size={26} color={colors.darkBlue} />
-              <Text style={style.statusTitle}>Ads removed</Text>
-              <Text style={style.statusText}>This device already has the remove ads purchase.</Text>
-            </View>
-          ) : !isConfigured || !products.length ? (
-            <View style={[style.statusBox, style.statusBoxCentered]}>
-              <Ionicons name="bag-handle" size={26} color={colors.darkBlue} />
-              <Text style={style.statusTitle}>No product found</Text>
-              <Text style={style.statusText}>No purchase option is available right now.</Text>
-            </View>
-          ) : (
-            <View style={style.packageList}>
-              {products.map((product) => {
-                const selected = activeProduct?.id === product.id;
-
-                return (
-                  <Pressable
-                    key={product.id}
-                    onPress={() => setSelectedProduct(product)}
-                    style={[style.packageCard, selected && style.packageCardSelected]}
-                  >
-                    <View style={style.packageText}>
-                      <Text style={style.packageTitle}>{product.title}</Text>
-                      <Text style={style.packageSubtitle}>{product.description}</Text>
-                    </View>
-                    <View style={style.pricePill}>
-                      <Text style={style.packagePrice}>{product.displayPrice}</Text>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
+          ))}
         </View>
 
-        <View style={style.footer}>
-          <Pressable
-            disabled={isSubmitting || isPremium || !activeProduct}
-            onPress={handlePurchase}
-            style={[
-              style.primaryButton,
-              {
-                backgroundColor:
-                  isSubmitting || isPremium || !activeProduct
-                    ? colors.lightContact
-                    : colors.darkBlue,
-              },
-            ]}
-          >
-            <Text style={style.primaryButtonText}>
-              {isPremium ? 'Ads removed' : activeProduct ? 'Remove ads' : 'Unavailable'}
-            </Text>
-          </Pressable>
+        {renderProductCard()}
 
-          <Pressable disabled={isSubmitting} onPress={handleRestore} style={style.restoreButton}>
-            <Text style={[style.restoreText, { color: colors.darkBlue }]}>Restore purchase</Text>
-          </Pressable>
-        </View>
+        <Pressable disabled={isSubmitting} onPress={handleRestore} style={style.restoreButton}>
+          <Ionicons name="refresh-circle-outline" size={18} color={colors.darkBlue} />
+          <Text style={style.restoreText}>Restore purchase</Text>
+        </Pressable>
+
+        <Text style={style.footerText}>
+          Purchase removes ads only. Your reminders, alarms, and app data continue to work normally.
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -172,194 +224,208 @@ const styles = () => {
       flex: 1,
       backgroundColor: colors.background,
     },
-    content: {
+    header: {
       width: SIZE.appContainWidth,
+      minHeight: 54,
       alignSelf: 'center',
-      flexGrow: 1,
-      paddingTop: 16,
-      paddingBottom: 0,
-    },
-    topRow: {
-      minHeight: 40,
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      gap: 8,
     },
-    headerCopy: {
-      flex: 1,
-      gap: 0,
-      paddingRight: 12,
+    backButton: {
+      width: 34,
+      height: 34,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     headerTitle: {
       color: colors.text,
-      fontSize: 18,
-      fontFamily: FONTS.SemiBold,
+      fontSize: 24,
+      fontFamily: FONTS.Bold,
     },
-    closeButton: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
+    content: {
+      width: SIZE.appContainWidth,
+      alignSelf: 'center',
+      paddingTop: 16,
+      paddingBottom: 24,
+    },
+    hero: {
       alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.previewBackground,
+      marginBottom: 22,
     },
-    body: {
-      gap: 22,
-      marginVertical: 10,
+    crownImage: {
+      width: 130,
+      height: 130,
+      marginBottom: 5,
     },
-    heroCard: {
-      gap: 14,
-      alignItems: 'center',
-      paddingVertical: 26,
-      paddingHorizontal: 20,
-      borderRadius: 20,
-      backgroundColor: colors.darkBlue,
-      marginVertical: 10,
+    heroTitle: {
+      color: colors.text,
+      fontSize: 26,
+      lineHeight: 32,
+      fontFamily: FONTS.Bold,
+      textAlign: 'center',
     },
-    badge: {
-      width: 62,
-      height: 62,
+    heroSubtitle: {
+      color: colors.grayTitle,
+      fontSize: 16,
+      lineHeight: 21,
+      fontFamily: FONTS.Medium,
+      textAlign: 'center',
+    },
+    featurePanel: {
+      borderWidth: 1,
+      borderColor: 'rgba(139, 142, 142, 0.22)',
       borderRadius: 18,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: 'rgba(255, 255, 255, 0.18)',
-    },
-    title: {
-      color: colors.white,
-      fontSize: 25,
-      fontFamily: FONTS.Bold,
-      textAlign: 'center',
-    },
-    subtitle: {
-      color: 'rgba(255, 255, 255, 0.78)',
-      fontSize: 15,
-      lineHeight: 18,
-      fontFamily: FONTS.Medium,
-      textAlign: 'center',
-      paddingHorizontal: 2,
-    },
-    footer: {
-      marginTop: 'auto',
-      gap: 12,
-      paddingTop: 20,
-      paddingBottom: 12,
-    },
-    benefitList: {
-      gap: 15,
-      paddingVertical: 5,
-    },
-    benefitRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      paddingHorizontal: 0,
-    },
-    checkIcon: {
-      width: 22,
-      height: 22,
-      borderRadius: 11,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.darkBlue,
-    },
-    benefitText: {
-      color: colors.text,
-      fontSize: 15,
-      fontFamily: FONTS.Medium,
-    },
-    statusBox: {
-      minHeight: 96,
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 8,
-      borderWidth: 1,
-      borderColor: colors.darkBlue,
-      borderRadius: 16,
-      paddingVertical: 18,
-      paddingHorizontal: 18,
-      backgroundColor: colors.previewBackground,
-    },
-    statusBoxCentered: {
-      minHeight: 116,
-      alignItems: 'center',
-      justifyContent: 'center',
-      textAlign: 'center',
-    },
-    statusTitle: {
-      color: colors.text,
-      fontFamily: FONTS.SemiBold,
-      fontSize: 16,
-    },
-    statusText: {
-      color: colors.grayTitle,
-      fontFamily: FONTS.Medium,
-      textAlign: 'center',
-    },
-    packageList: {
-      gap: 16,
-    },
-    packageCard: {
-      minHeight: 82,
-      borderWidth: 1,
-      borderColor: colors.borderColor,
-      borderRadius: 16,
-      paddingVertical: 16,
       paddingHorizontal: 16,
+      backgroundColor: colors.previewBackground,
+      marginBottom: 22,
+    },
+    featureRow: {
+      minHeight: 90,
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 12,
-      backgroundColor: colors.previewBackground,
+      gap: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: 'rgba(139, 142, 142, 0.18)',
     },
-    packageCardSelected: {
-      borderColor: colors.darkBlue,
-      backgroundColor: colors.previewBackground,
+    featureRowLast: {
+      borderBottomWidth: 0,
     },
-    packageText: {
-      flex: 1,
-      gap: 1,
-    },
-    packageTitle: {
-      color: colors.text,
-      fontSize: 16,
-      fontFamily: FONTS.SemiBold,
-    },
-    packageSubtitle: {
-      color: colors.grayTitle,
-      fontSize: 13,
-      fontFamily: FONTS.Medium,
-    },
-    packagePrice: {
-      color: colors.white,
-      fontSize: 14,
-      fontFamily: FONTS.Bold,
-    },
-    pricePill: {
-      minHeight: 36,
-      paddingHorizontal: 12,
-      borderRadius: 12,
+    featureIcon: {
+      width: 58,
+      height: 58,
+      borderRadius: 14,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: colors.darkBlue,
+    },
+    featureCopy: {
+      flex: 1,
+      gap: 4,
+    },
+    featureTitle: {
+      color: colors.text,
+      fontSize: 16,
+      lineHeight: 20,
+      fontFamily: FONTS.SemiBold,
+    },
+    featureText: {
+      color: colors.grayTitle,
+      fontSize: 14,
+      lineHeight: 19,
+      fontFamily: FONTS.Medium,
+    },
+    productCard: {
+      borderWidth: 1,
+      borderColor: 'rgba(139, 142, 142, 0.24)',
+      borderRadius: 18,
+      padding: 18,
+      backgroundColor: colors.previewBackground,
+      marginBottom: 14,
+    },
+    productTitle: {
+      color: colors.text,
+      fontSize: 20,
+      lineHeight: 25,
+      fontFamily: FONTS.Bold,
+      marginBottom: 8,
+    },
+    priceRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: 10,
+      marginBottom: 8,
+    },
+    priceText: {
+      color: colors.darkBlue,
+      fontSize: 38,
+      lineHeight: 44,
+      fontFamily: FONTS.Bold,
+    },
+    priceNote: {
+      color: colors.grayTitle,
+      fontSize: 14,
+      fontFamily: FONTS.Medium,
+      marginBottom: 7,
+    },
+    productDescription: {
+      color: colors.grayTitle,
+      fontSize: 15,
+      lineHeight: 21,
+      fontFamily: FONTS.Medium,
+      marginBottom: 18,
     },
     primaryButton: {
-      height: 54,
-      borderRadius: 16,
+      minHeight: 58,
+      borderRadius: 13,
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
+      gap: 10,
+      backgroundColor: colors.darkBlue,
+      marginBottom: 16,
     },
     primaryButtonText: {
       color: colors.white,
-      fontSize: 16,
+      fontSize: 17,
       fontFamily: FONTS.Bold,
+      textAlign: 'center',
     },
-    restoreButton: {
+    purchaseMetaRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: 10,
+      borderTopWidth: 1,
+      borderTopColor: 'rgba(139, 142, 142, 0.18)',
+      paddingTop: 14,
+    },
+    purchaseMetaItem: {
+      flex: 1,
       alignItems: 'center',
-      paddingVertical: 0,
+      gap: 5,
     },
-    restoreText: {
+    purchaseMetaText: {
+      color: colors.grayTitle,
+      fontSize: 11.5,
+      lineHeight: 15,
+      fontFamily: FONTS.Medium,
+      textAlign: 'center',
+    },
+    activeState: {
+      minHeight: 56,
+      borderRadius: 13,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingHorizontal: 14,
+      backgroundColor: 'rgba(64, 93, 240, 0.14)',
+    },
+    activeStateText: {
+      color: colors.text,
       fontSize: 15,
       fontFamily: FONTS.SemiBold,
+    },
+    restoreButton: {
+      alignSelf: 'center',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+    },
+    restoreText: {
+      color: colors.darkBlue,
+      fontSize: 15,
+      fontFamily: FONTS.SemiBold,
+    },
+    footerText: {
+      color: colors.grayTitle,
+      fontSize: 13,
+      lineHeight: 18,
+      fontFamily: FONTS.Medium,
+      textAlign: 'center',
+      marginTop: 6,
+      paddingHorizontal: 18,
     },
   });
 };

@@ -68,7 +68,7 @@ const HomeHeader = ({
   return (
     <Animated.View entering={FadeIn.duration(400)}>
       <View style={styles.container}>
-        <View style={[styles.leftActions, { width: showPremiumButton ? 64 : 28 }]}>
+        <View style={styles.leftActions}>
           <View
             style={[
               styles.leftIconContainer,
@@ -105,16 +105,22 @@ const HomeHeader = ({
           )}
         </View>
 
-        <Text
-          onLongPress={() => onServicePress && onServicePress()}
-          style={[
-            styles.titleText,
-            titleAlignment === 'center' && styles.titleCenter,
-            { color: colors.text },
-          ]}
+        <View
+          pointerEvents="box-none"
+          style={titleAlignment === 'center' ? styles.titleOverlay : styles.titleInline}
         >
-          {title || TextString.DailySync}
-        </Text>
+          <Text
+            numberOfLines={1}
+            onLongPress={() => onServicePress && onServicePress()}
+            style={[
+              styles.titleText,
+              titleAlignment === 'center' && styles.titleCenter,
+              { color: colors.text },
+            ]}
+          >
+            {title || TextString.DailySync}
+          </Text>
+        </View>
 
         <View style={styles.switchContainer}>
           {showThemeSwitch && <CustomSwitch isOn={theme !== 'dark'} onToggle={handleToggle} />}
@@ -132,6 +138,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    position: 'relative',
   },
   leftIconContainer: {
     width: 28,
@@ -144,6 +151,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    zIndex: 1,
   },
   premiumButton: {
     height: 30,
@@ -158,13 +166,21 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   titleText: {
-    flex: 1,
-    left: 5,
     fontSize: 24,
     fontFamily: FONTS.Medium,
   },
+  titleInline: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  titleOverlay: {
+    position: 'absolute',
+    left: 78,
+    right: 78,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   titleCenter: {
-    left: 15,
     textAlign: 'center',
   },
   iconButton: {
@@ -176,6 +192,7 @@ const styles = StyleSheet.create({
   switchContainer: {
     width: 70,
     height: 35,
+    zIndex: 1,
   },
 });
 

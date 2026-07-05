@@ -7,6 +7,7 @@ export interface PurchaseRecord {
   accountId?: string | null;
   accountEmail?: string | null;
   deviceId: string;
+  platform?: 'ios' | 'android' | 'web';
   productId: string;
   provider?: string | null;
   purchaseTime: number;

@@ -18,6 +18,7 @@ import { getOrCreateDeviceId } from '@Utils/deviceIdentity';
 import HomeHeader from '../Home/Components/HomeHeader';
 import SettingItem from './Components/SettingItem';
 import LocationRadiusModal from './Components/LocationRadiusModal';
+import SettingPremiumBanner from './Components/SettingPremiumBanner';
 
 const Settings = () => {
   const style = styles();
@@ -64,8 +65,6 @@ const Settings = () => {
     onPress: () => void;
     subtitle?: string;
     showAlert?: boolean;
-    variant?: 'default' | 'premium';
-    badgeText?: string;
   }
 
   const settingsData: SettingItemData[] = [
@@ -85,15 +84,6 @@ const Settings = () => {
           },
         ]
       : []),
-    {
-      title: isPremium ? 'Premium active' : 'Remove Ads',
-      ionicon: 'sparkles-outline',
-      ioniconColor: colors.darkBlue,
-      onPress: () => navigation.navigate('Subscription'),
-      subtitle: isPremium ? 'Ads are removed everywhere' : 'Go ad-free on this device or account',
-      variant: 'premium' as const,
-      badgeText: isPremium ? 'Active' : 'Upgrade',
-    },
     {
       title: 'Location Radius',
       icon: AssetsPath.ic_location_history,
@@ -175,6 +165,13 @@ const Settings = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
+        <View style={style.premiumWrapper}>
+          <SettingPremiumBanner
+            isPremium={isPremium}
+            onPress={() => navigation.navigate('Subscription')}
+          />
+        </View>
+
         <View style={style.wrapper}>
           {settingsData.map((item, index) => (
             <SettingItem
@@ -185,24 +182,12 @@ const Settings = () => {
               ioniconColor={item.ioniconColor}
               subtitle={item.subtitle}
               showAlert={item.showAlert}
-              variant={item.variant}
-              badgeText={item.badgeText}
               onPress={item.onPress}
             />
           ))}
         </View>
 
         <View style={style.actionButtonsContainer}>
-          {/* {__DEV__ && (
-            <Pressable
-              onPress={() => navigation.navigate('DevDashboard')}
-              style={style.actionButton}
-            >
-              <Ionicons name="construct-outline" size={20} color={colors.darkBlue} />
-              <Text style={[style.actionButtonText, { color: colors.darkBlue }]}>Dev Tools</Text>
-            </Pressable>
-          )} */}
-
           {auth && (
             <>
               <Pressable onPress={signOut} style={style.actionButton}>
@@ -254,8 +239,14 @@ const styles = () => {
     wrapper: {
       width: SIZE.appContainWidth,
       alignSelf: 'center',
-      marginVertical: 5,
+      marginTop: 10,
       gap: 10,
+    },
+    premiumWrapper: {
+      width: SIZE.appContainWidth,
+      alignSelf: 'center',
+      marginTop: 5,
+      marginBottom: 4,
     },
     actionButtonsContainer: {
       width: SIZE.appContainWidth,
@@ -268,7 +259,7 @@ const styles = () => {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-      paddingTop: 10,
+      paddingTop: 5,
       paddingHorizontal: 15,
     },
     actionButtonText: {
